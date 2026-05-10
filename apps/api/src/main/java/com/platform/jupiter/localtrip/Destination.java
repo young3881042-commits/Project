@@ -46,6 +46,9 @@ public class Destination {
     @Column(nullable = false, length = 255)
     private String headline;
 
+    @Column(length = 512)
+    private String imageUrl;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
@@ -145,6 +148,14 @@ public class Destination {
 
     public void setHeadline(String headline) {
         this.headline = headline;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public String getDescription() {

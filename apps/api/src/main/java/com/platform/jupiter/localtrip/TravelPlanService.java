@@ -5,16 +5,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.platform.jupiter.chat.ChatCredentialService;
 import com.platform.jupiter.chat.ChatUsage;
 import com.platform.jupiter.chat.ChatUsageService;
+import com.platform.jupiter.config.AppProperties;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +28,9 @@ import org.springframework.web.server.ResponseStatusException;
 public class TravelPlanService {
     private static final List<String> TIME_SLOTS = List.of("오전", "점심", "오후");
     private static final String PLAN_PROVIDER = "openai";
-    private static final String PLAN_MODEL = ChatCredentialService.DEFAULT_CODEX_MODEL;
+    private static final String CODEX_CLI_PATH = "/opt/jupiter-cli/bin/codex";
     private static final int MAX_OUTPUT_TOKENS = 900;
+    private static final int CODEX_TIMEOUT_SECONDS = 180;
 
     private final TravelPlanRepository travelPlanRepository;
     private final TravelPlanItemRepository travelPlanItemRepository;
@@ -33,6 +38,7 @@ public class TravelPlanService {
     private final LocalTripSchemaService schemaService;
     private final ChatCredentialService chatCredentialService;
     private final ChatUsageService chatUsageService;
+    private final AppProperties appProperties;
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
@@ -43,6 +49,7 @@ public class TravelPlanService {
             LocalTripSchemaService schemaService,
             ChatCredentialService chatCredentialService,
             ChatUsageService chatUsageService,
+            AppProperties appProperties,
             ObjectMapper objectMapper) {
         this.travelPlanRepository = travelPlanRepository;
         this.travelPlanItemRepository = travelPlanItemRepository;
@@ -50,6 +57,7 @@ public class TravelPlanService {
         this.schemaService = schemaService;
         this.chatCredentialService = chatCredentialService;
         this.chatUsageService = chatUsageService;
+        this.appProperties = appProperties;
         this.objectMapper = objectMapper;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(20))
@@ -94,13 +102,20 @@ public class TravelPlanService {
 
     private List<TravelPlanItem> generateItineraryWithLocalGpt(TravelPlan plan, TravelPlanGenerateRequest request, String username) {
         String prompt = buildPrompt(plan, request);
+        if (Boolean.TRUE.equals(appProperties.enableCodexCliMode())) {
+            List<TravelPlanItem> codexItems = generateItineraryWithCodexCli(plan, prompt);
+            if (!codexItems.isEmpty()) {
+                return codexItems;
+            }
+        }
         String apiKey = chatCredentialService.resolveOpenAiApiKey(username).orElse("");
         if (apiKey.isBlank()) {
             return fallbackItems(plan);
         }
         try {
+            String model = codexModel();
             Map<String, Object> payload = new LinkedHashMap<>();
-            payload.put("model", PLAN_MODEL);
+            payload.put("model", model);
             payload.put("max_tokens", MAX_OUTPUT_TOKENS);
             payload.put("temperature", 0.35);
             payload.put(
@@ -112,7 +127,7 @@ public class TravelPlanService {
             );
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.openai.com/v1/chat/completions"))
+                    .uri(URI.create(normalizeBaseUrl(appProperties.codexApiBaseUrl()) + "/chat/completions"))
                     .timeout(Duration.ofSeconds(120))
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + apiKey)
@@ -121,13 +136,11 @@ public class TravelPlanService {
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_GATEWAY,
-                        "OpenAI/Codex itinerary request failed.");
+                return fallbackItems(plan);
             }
 
             JsonNode root = objectMapper.readTree(response.body());
-            chatUsageService.recordUsage(username, PLAN_PROVIDER, PLAN_MODEL, extractUsage(root));
+            chatUsageService.recordUsage(username, PLAN_PROVIDER, model, extractUsage(root));
             String content = root.path("choices").path(0).path("message").path("content").asText("");
             
             if (content.contains("```json")) {
@@ -138,20 +151,57 @@ public class TravelPlanService {
                 content = content.substring(0, content.lastIndexOf("```"));
             }
 
-            JsonNode itineraryNode = objectMapper.readTree(content);
-            List<TravelPlanItem> items = new ArrayList<>();
-            int seq = 1;
-            if (itineraryNode.isArray()) {
-                for (JsonNode node : itineraryNode) {
-                    items.add(parseItem(plan, node, seq++));
-                }
-            }
+            List<TravelPlanItem> items = parseGeneratedItems(plan, content);
             return items.isEmpty() ? fallbackItems(plan) : items;
 
         } catch (ResponseStatusException e) {
             throw e;
         } catch (Exception e) {
             return fallbackItems(plan);
+        }
+    }
+
+    private List<TravelPlanItem> generateItineraryWithCodexCli(TravelPlan plan, String prompt) {
+        try {
+            Path outputPath = Files.createTempFile("localtrip-codex-", ".json");
+            ProcessBuilder builder = new ProcessBuilder(
+                    CODEX_CLI_PATH,
+                    "exec",
+                    "--skip-git-repo-check",
+                    "--ephemeral",
+                    "--ignore-rules",
+                    "-m",
+                    codexModel(),
+                    "-o",
+                    outputPath.toString(),
+                    prompt);
+            builder.redirectErrorStream(true);
+            Map<String, String> environment = builder.environment();
+            environment.put("CI", "1");
+            environment.put("NO_COLOR", "1");
+            environment.put("TERM", "dumb");
+            environment.put("HOME", "/root");
+            environment.put("CODEX_MODEL", codexModel());
+            Process process = builder.start();
+            process.getOutputStream().close();
+            boolean completed = process.waitFor(CODEX_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            if (!completed) {
+                process.destroyForcibly();
+                Files.deleteIfExists(outputPath);
+                return List.of();
+            }
+            String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            if (process.exitValue() != 0) {
+                Files.deleteIfExists(outputPath);
+                return List.of();
+            }
+            String lastMessage = Files.exists(outputPath)
+                    ? Files.readString(outputPath, StandardCharsets.UTF_8)
+                    : "";
+            Files.deleteIfExists(outputPath);
+            return parseGeneratedItems(plan, lastMessage.isBlank() ? output : lastMessage);
+        } catch (Exception ignored) {
+            return List.of();
         }
     }
 
@@ -199,6 +249,45 @@ public class TravelPlanService {
             return first;
         }
         return Math.max(0, fallback);
+    }
+
+    private List<TravelPlanItem> parseGeneratedItems(TravelPlan plan, String content) throws java.io.IOException {
+        JsonNode itineraryNode = objectMapper.readTree(extractJsonArray(content));
+        List<TravelPlanItem> items = new ArrayList<>();
+        int seq = 1;
+        if (itineraryNode.isArray()) {
+            for (JsonNode node : itineraryNode) {
+                items.add(parseItem(plan, node, seq++));
+            }
+        }
+        return items;
+    }
+
+    private String extractJsonArray(String content) {
+        String normalized = content == null ? "" : content.trim();
+        if (normalized.contains("```json")) {
+            normalized = normalized.substring(normalized.indexOf("```json") + 7);
+            normalized = normalized.substring(0, normalized.lastIndexOf("```"));
+        } else if (normalized.contains("```")) {
+            normalized = normalized.substring(normalized.indexOf("```") + 3);
+            normalized = normalized.substring(0, normalized.lastIndexOf("```"));
+        }
+        int start = normalized.indexOf('[');
+        int end = normalized.lastIndexOf(']');
+        if (start >= 0 && end > start) {
+            return normalized.substring(start, end + 1);
+        }
+        return normalized;
+    }
+
+    private String codexModel() {
+        String model = appProperties.codexModel();
+        return model == null || model.isBlank() ? ChatCredentialService.DEFAULT_CODEX_MODEL : model.trim();
+    }
+
+    private String normalizeBaseUrl(String value) {
+        String baseUrl = value == null || value.isBlank() ? "https://api.openai.com/v1" : value.trim();
+        return baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
     }
 
     private TravelPlanItem parseItem(TravelPlan plan, JsonNode node, int sequence) {

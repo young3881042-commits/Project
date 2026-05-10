@@ -240,6 +240,7 @@ CREATE TABLE IF NOT EXISTS localtrip_destination (
     style_tags VARCHAR(255) NOT NULL,
     address VARCHAR(255) NOT NULL,
     headline VARCHAR(255) NOT NULL,
+    image_url VARCHAR(512),
     description TEXT NOT NULL,
     recommended_minutes INT NOT NULL,
     popularity_score INT NOT NULL,

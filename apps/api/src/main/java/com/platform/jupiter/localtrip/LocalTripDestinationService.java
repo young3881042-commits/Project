@@ -145,6 +145,7 @@ public class LocalTripDestinationService {
                 destination.getStyleTags(),
                 destination.getAddress(),
                 destination.getHeadline(),
+                destination.getImageUrl() == null ? "" : destination.getImageUrl(),
                 destination.getDescription()).toLowerCase(Locale.ROOT);
         return haystack.contains(keyword);
     }
@@ -174,6 +175,7 @@ public class LocalTripDestinationService {
         destination.setStyleTags(String.join(",", seed.styleTags()));
         destination.setAddress(seed.address());
         destination.setHeadline(seed.headline());
+        destination.setImageUrl(defaultImageUrl(seed.sourceRef()));
         destination.setDescription(seed.description());
         destination.setRecommendedMinutes(seed.recommendedMinutes());
         destination.setPopularityScore(seed.popularityScore());
@@ -222,5 +224,17 @@ public class LocalTripDestinationService {
             String description,
             Integer recommendedMinutes,
             Integer popularityScore) {
+    }
+
+    private String defaultImageUrl(String sourceRef) {
+        return switch (sourceRef) {
+            case "SEOUL-001" -> "https://commons.wikimedia.org/wiki/Special:Redirect/file/Gyeongbokgung%20Palace%20Main%20Gate.jpg?width=1200";
+            case "SEOUL-002" -> "https://commons.wikimedia.org/wiki/Special:Redirect/file/Bukchon%20Hanok%20Village%2005.jpg?width=1200";
+            case "SEOUL-003" -> "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cafe%20storefront%20in%20Seongsu-dong.jpg?width=1200";
+            case "BUSAN-001" -> "https://commons.wikimedia.org/wiki/Special:Redirect/file/Gamcheon%20culture%20village.jpg?width=1200";
+            case "JEJU-001" -> "https://commons.wikimedia.org/wiki/Special:Redirect/file/Seongsan%20Ilchulbong%2001.jpg?width=1200";
+            case "GYEONGJU-001" -> "https://commons.wikimedia.org/wiki/Special:Redirect/file/Bulguksa%20temple%20main%20building.jpg?width=1200";
+            default -> null;
+        };
     }
 }

@@ -26,8 +26,8 @@ const DESTINATION_IMAGES = {
   'GYEONGJU-004': commonsImage('Street in Gyeongju.jpg'),
   'GYEONGJU-005': commonsImage('Bomun Lake.jpg'),
   'GYEONGJU-006': commonsImage('Gyochon Village 1.jpg'),
-  'BUSAN-001': commonsImage('Gamcheon Culture Village.jpg'),
-  'BUSAN-002': commonsImage('Haeundae beach in Busan.jpg'),
+  'BUSAN-001': commonsImage('Gamcheon culture village.jpg'),
+  'BUSAN-002': commonsImage('Haeundae Beach Busan (45698772312).jpg'),
   'BUSAN-003': commonsImage('Gwangalli Beach in Busan.jpg'),
   'BUSAN-004': commonsImage('Gukje Market.jpg'),
   'BUSAN-005': commonsImage('Seomyeon Street.jpg'),
@@ -267,6 +267,7 @@ function normalizePlan(raw, index = 0) {
     destinationName: destinationName || 'Selected destination',
     destinationRegion: pickString(plan.destinationRegion, plan.region, plan.destination?.region),
     summary: pickString(plan.summary, plan.description, plan.overview) || 'Day-by-day local route generated for the selected travel style.',
+    markdown: pickString(plan.markdown, plan.markdownContent, plan.content),
     startDate: pickString(plan.startDate, plan.start_date),
     days: pickNumber(plan.daysCount, plan.durationDays, plan.duration_days, plan.days) || Math.max(itinerary.length, 1),
     travelers: pickString(plan.travelers, plan.party, plan.travelerType, plan.traveler_type) || 'Flexible',
@@ -975,7 +976,7 @@ function PlannerPage({ path, navigate }) {
           {generatedPlan ? (
             <div className="ltGeneratedPreview">
               <h2>{generatedPlan.title}</h2>
-              <ItineraryTimeline itinerary={generatedPlan.itinerary} />
+              <MarkdownPlanBlocks plan={generatedPlan} />
             </div>
           ) : null}
         </aside>
@@ -1019,8 +1020,67 @@ function PlansPage({ navigate }) {
   );
 }
 
-function ItineraryTimeline({ itinerary }) {
-  if (!itinerary || !itinerary.length) {
+function parseMarkdownPlan(markdown) {
+  const lines = `${markdown || ''}`.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const days = [];
+  let currentDay = null;
+  let currentItem = null;
+
+  for (const line of lines) {
+    if (line.startsWith('# ') || line.startsWith('>')) {
+      continue;
+    }
+    if (line.startsWith('- 지역:') || line.startsWith('- 기간:') || line.startsWith('- 동행:') || line.startsWith('- 속도:') || line.startsWith('- 취향:')) {
+      continue;
+    }
+    if (line.startsWith('## ')) {
+      currentDay = { day: line.slice(3).trim(), items: [] };
+      days.push(currentDay);
+      currentItem = null;
+      continue;
+    }
+    if (line.startsWith('### ')) {
+      if (!currentDay) {
+        currentDay = { day: 'Day 1', items: [] };
+        days.push(currentDay);
+      }
+      currentItem = { title: line.slice(4).trim(), bullets: [], paragraphs: [] };
+      currentDay.items.push(currentItem);
+      continue;
+    }
+    if (line.startsWith('- ')) {
+      if (currentItem) {
+        currentItem.bullets.push(line.slice(2).trim());
+      }
+      continue;
+    }
+    if (currentItem) {
+      currentItem.paragraphs.push(line);
+    }
+  }
+
+  return days;
+}
+
+function markdownBlocksFromItinerary(itinerary) {
+  return itinerary.map((day) => ({
+    day: `Day ${day.day}`,
+    items: day.items.map((item) => ({
+      title: `${item.time || '유동적'} · ${item.title}`,
+      paragraphs: item.note ? [item.note] : [],
+      bullets: [
+        item.place ? `장소: ${item.place}` : '',
+        item.tags && item.tags.length ? `테마: ${item.tags.join(', ')}` : ''
+      ].filter(Boolean)
+    }))
+  }));
+}
+
+function MarkdownPlanBlocks({ plan }) {
+  const itinerary = plan?.itinerary || [];
+  const markdownDays = parseMarkdownPlan(plan?.markdown);
+  const dayBlocks = markdownDays.length ? markdownDays : markdownBlocksFromItinerary(itinerary);
+  if (!dayBlocks.length) {
     return (
       <div className="ltEmptyState" style={{ marginTop: '24px', padding: '60px' }}>
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '16px' }}>
@@ -1033,41 +1093,32 @@ function ItineraryTimeline({ itinerary }) {
     );
   }
   return (
-    <div className="ltTimeline">
-      {itinerary.map((day) => (
-        <section className="ltTimelineDay" key={day.day}>
-          <div className="ltTimelineDayHeader">
-            <span>Day {day.day}</span>
-            <h2>{day.title}</h2>
+    <div className="ltMarkdownPlan" aria-label="Markdown travel plan">
+      {dayBlocks.map((day) => (
+        <section className="ltMarkdownDayBlock" key={day.day}>
+          <div className="ltMarkdownDayHeader">
+            <span>##</span>
+            <h2>{day.day}</h2>
           </div>
-          <div className="ltTimelineItems">
+          <div className="ltMarkdownItems">
             {day.items.map((item, index) => (
-              <article className="ltTimelineItem" key={`${day.day}-${item.title}-${index}`}>
-                <time>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                  </svg>
-                  {item.time || '유동적'}
-                </time>
-                <div className="ltTimelineItemContent">
+              <article className="ltMarkdownBlock" key={`${day.day}-${item.title}-${index}`}>
+                <div className="ltMarkdownHeading">
+                  <span>###</span>
                   <h3>{item.title}</h3>
-                  {item.place ? (
-                    <span className="ltTimelinePlace">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                      </svg>
-                      {item.place}
-                    </span>
-                  ) : null}
-                  {item.note ? <p className="ltTimelineNote">{item.note}</p> : null}
-                  {item.tags && item.tags.length ? (
-                    <div className="ltTagRow small">
-                      {item.tags.map((tag) => <span key={tag}>{tag}</span>)}
-                    </div>
-                  ) : null}
                 </div>
+                {item.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+                <ul>
+                  {item.bullets.map((bullet) => {
+                    const [label, ...rest] = bullet.split(':');
+                    const value = rest.join(':').trim();
+                    return (
+                      <li key={bullet}>
+                        {value ? <><strong>{label.trim()}</strong> {value}</> : bullet}
+                      </li>
+                    );
+                  })}
+                </ul>
               </article>
             ))}
           </div>
@@ -1153,9 +1204,9 @@ function PlanDetailPage({ planId, navigate }) {
           </section>
           
           <div className="ltSectionHeader" style={{ marginTop: '48px', marginBottom: '24px' }}>
-            <h2>상세 일정</h2>
+            <h2>Markdown 일정</h2>
           </div>
-          <ItineraryTimeline itinerary={plan.itinerary} />
+          <MarkdownPlanBlocks plan={plan} />
         </div>
       ) : null}
     </main>

@@ -4531,6 +4531,83 @@ body {
   line-height: 1.62;
 }
 
+.ltMarkdownPlan {
+  display: grid;
+  gap: 16px;
+}
+
+.ltMarkdownDayBlock {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.ltMarkdownDayHeader,
+.ltMarkdownHeading {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px;
+  align-items: baseline;
+}
+
+.ltMarkdownDayHeader span,
+.ltMarkdownHeading span {
+  color: #94a3b8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-weight: 800;
+}
+
+.ltMarkdownDayHeader h2 {
+  color: #111827;
+  font-size: 1.45rem;
+  line-height: 1.22;
+  font-weight: 900;
+}
+
+.ltMarkdownItems {
+  display: grid;
+  gap: 10px;
+}
+
+.ltMarkdownBlock {
+  display: grid;
+  gap: 8px;
+  padding: 14px 0 14px 54px;
+  border-top: 1px solid #edf2f7;
+}
+
+.ltMarkdownBlock:first-child {
+  border-top: 0;
+}
+
+.ltMarkdownHeading h3 {
+  color: #1f2937;
+  font-size: 1rem;
+  line-height: 1.35;
+  font-weight: 900;
+}
+
+.ltMarkdownBlock p,
+.ltMarkdownBlock li {
+  color: #526071;
+  line-height: 1.62;
+}
+
+.ltMarkdownBlock ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.ltMarkdownBlock strong {
+  color: #334155;
+  font-weight: 900;
+}
+
 .ltFooter {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
@@ -4620,7 +4697,13 @@ body {
   .ltFormGrid,
   .ltTimelineDay,
   .ltTimelineItem,
+  .ltMarkdownDayHeader,
+  .ltMarkdownHeading,
   .ltPlanFacts {
     grid-template-columns: 1fr;
+  }
+
+  .ltMarkdownBlock {
+    padding-left: 0;
   }
 }
