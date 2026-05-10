@@ -37,7 +37,7 @@ services:
     env_file:
       - infra/web/docker/web.env
     ports:
-      - "5173:5173"
+      - "80:5173"
     depends_on:
       - api
       

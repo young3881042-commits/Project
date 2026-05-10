@@ -94,10 +94,10 @@ public class TravelPlanService {
 
     private List<TravelPlanItem> generateItineraryWithLocalGpt(TravelPlan plan, TravelPlanGenerateRequest request, String username) {
         String prompt = buildPrompt(plan, request);
-        String apiKey = chatCredentialService.resolveUserOpenAiApiKey(username)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "OpenAI/Codex API key is not connected for this user."));
+        String apiKey = chatCredentialService.resolveOpenAiApiKey(username).orElse("");
+        if (apiKey.isBlank()) {
+            return fallbackItems(plan);
+        }
         try {
             Map<String, Object> payload = new LinkedHashMap<>();
             payload.put("model", PLAN_MODEL);

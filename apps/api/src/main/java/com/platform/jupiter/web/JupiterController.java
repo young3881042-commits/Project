@@ -184,7 +184,7 @@ public class JupiterController {
 
     @PostMapping("/auth/signup")
     public AuthResponse signup(@Valid @RequestBody AuthSignupRequest request) {
-        return authService.signup(request);
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Signup is disabled.");
     }
 
     @PostMapping("/auth/login")

@@ -790,12 +790,6 @@ function PlannerPage({ path, navigate }) {
     setGenerating(true);
     setGenerateError('');
     setGeneratedPlan(null);
-    const session = readStoredAuth();
-    if (!session?.token) {
-      setGenerateError('로그인 세션이 없습니다. /analysisadmin에서 로그인하고 OpenAI/Codex API key를 저장한 뒤 다시 생성하세요.');
-      setGenerating(false);
-      return;
-    }
 
     const selectedDestObjects = destinations.filter(d => selectedDestinationIds.includes(d.id));
     const regions = [...new Set(selectedDestObjects.map(d => d.region))];

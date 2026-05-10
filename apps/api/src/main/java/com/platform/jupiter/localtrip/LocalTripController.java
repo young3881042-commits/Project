@@ -14,10 +14,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api")
 public class LocalTripController {
+    private static final String DEFAULT_GENERATION_USERNAME = "admin";
+
     private final LocalTripDestinationService destinationService;
     private final TravelPlanService travelPlanService;
     private final AuthService authService;
@@ -56,8 +59,7 @@ public class LocalTripController {
     public TravelPlanResponse generateTravelPlan(
             @Valid @RequestBody TravelPlanGenerateRequest request,
             HttpServletRequest servletRequest) {
-        AuthSession session = authService.requireSession(servletRequest);
-        return travelPlanService.generate(request, session.username());
+        return travelPlanService.generate(request, resolveGenerationUsername(servletRequest));
     }
 
     @GetMapping("/travel-plans")
@@ -74,5 +76,14 @@ public class LocalTripController {
     public ResponseEntity<Void> deleteTravelPlan(@PathVariable Long id) {
         travelPlanService.deletePlan(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private String resolveGenerationUsername(HttpServletRequest servletRequest) {
+        try {
+            AuthSession session = authService.requireSession(servletRequest);
+            return session.username();
+        } catch (ResponseStatusException ignored) {
+            return DEFAULT_GENERATION_USERNAME;
+        }
     }
 }

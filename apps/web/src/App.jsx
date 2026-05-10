@@ -130,9 +130,7 @@ function validateAuthForm(mode, username, password) {
     return '비밀번호를 입력하세요.';
   }
   if (password.length < 4) {
-    return mode === 'signup'
-      ? '회원가입 비밀번호는 4자 이상이어야 합니다.'
-      : '비밀번호는 4자 이상이어야 합니다.';
+    return '비밀번호는 4자 이상이어야 합니다.';
   }
   if (password.length > 100) {
     return '비밀번호는 100자 이하여야 합니다.';
@@ -158,8 +156,8 @@ function AuthScreen({ mode, setMode, username, setUsername, password, setPasswor
     <main className="loginShell">
       <section className="loginCard">
         <span className="sidebarEyebrow">Workspace Access</span>
-        <h1>간편 회원가입 후 바로 작업공간을 엽니다</h1>
-        <p>일반 사용자는 자기 디렉터리만 보고, 관리자는 전체 디렉터리와 런처 링크를 봅니다.</p>
+        <h1>등록된 계정으로 작업공간을 엽니다</h1>
+        <p>관리자가 발급한 계정으로 로그인하세요.</p>
         <label className="loginField">
           <span>ID</span>
           <input value={username} onChange={(event) => setUsername(event.target.value)} placeholder="my-id" />
@@ -168,12 +166,8 @@ function AuthScreen({ mode, setMode, username, setUsername, password, setPasswor
           <span>Password</span>
           <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="password" />
         </label>
-        <div className="authSwitch">
-          <button type="button" className={mode === 'login' ? 'active' : ''} onClick={() => setMode('login')}>로그인</button>
-          <button type="button" className={mode === 'signup' ? 'active' : ''} onClick={() => setMode('signup')}>회원가입</button>
-        </div>
         <button type="button" className="loginButton" onClick={onSubmit} disabled={disabled}>
-          {loading ? '처리 중...' : mode === 'login' ? 'Login' : 'Sign Up'}
+          {loading ? '처리 중...' : 'Login'}
         </button>
         {error || validationError ? <div className="loginHint">{error || validationError}</div> : null}
       </section>
@@ -1038,8 +1032,7 @@ function WorkspaceApp() {
     setAuthLoading(true);
     setAuthError('');
     try {
-      const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/signup';
-      const session = await requestJson(endpoint, {
+      const session = await requestJson('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
