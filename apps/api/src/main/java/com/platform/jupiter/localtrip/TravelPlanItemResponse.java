@@ -12,10 +12,15 @@ public record TravelPlanItemResponse(
         String region,
         String primaryStyle,
         String note,
+        String imageUrl,
         Integer durationMinutes,
         Instant createdAt,
         Instant updatedAt) {
     public static TravelPlanItemResponse from(TravelPlanItem item) {
+        return from(item, null);
+    }
+
+    public static TravelPlanItemResponse from(TravelPlanItem item, Destination destination) {
         return new TravelPlanItemResponse(
                 item.getId(),
                 item.getDestinationId(),
@@ -26,6 +31,7 @@ public record TravelPlanItemResponse(
                 item.getRegion(),
                 item.getPrimaryStyle(),
                 item.getNote(),
+                destination == null ? null : LocalTripImageCatalog.resolveOrExisting(destination),
                 item.getDurationMinutes(),
                 item.getCreatedAt(),
                 item.getUpdatedAt());

@@ -1,7 +1,12 @@
 package com.platform.jupiter.localtrip;
 
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public record TravelPlanResponse(
         Long id,
@@ -16,8 +21,16 @@ public record TravelPlanResponse(
         String markdown,
         Instant createdAt,
         Instant updatedAt,
+        List<TravelPlanDayResponse> dayCards,
         List<TravelPlanItemResponse> items) {
     public static TravelPlanResponse from(TravelPlan plan, List<TravelPlanItem> items) {
+        return from(plan, items, List.of());
+    }
+
+    public static TravelPlanResponse from(TravelPlan plan, List<TravelPlanItem> items, List<Destination> destinations) {
+        Map<Long, Destination> destinationById = destinations.stream()
+                .filter(destination -> destination.getId() != null)
+                .collect(Collectors.toMap(Destination::getId, Function.identity(), (left, right) -> left));
         return new TravelPlanResponse(
                 plan.getId(),
                 plan.getTitle(),
@@ -31,7 +44,30 @@ public record TravelPlanResponse(
                 toMarkdown(plan, items),
                 plan.getCreatedAt(),
                 plan.getUpdatedAt(),
-                items.stream().map(TravelPlanItemResponse::from).toList());
+                toDayCards(items, destinationById),
+                items.stream()
+                        .map(item -> TravelPlanItemResponse.from(item, destinationById.get(item.getDestinationId())))
+                        .toList());
+    }
+
+    private static List<TravelPlanDayResponse> toDayCards(List<TravelPlanItem> items, Map<Long, Destination> destinationById) {
+        Map<Integer, List<TravelPlanItem>> grouped = items.stream()
+                .filter(item -> item.getDayNumber() != null)
+                .sorted(Comparator.comparing(TravelPlanItem::getDayNumber).thenComparing(TravelPlanItem::getSequenceNumber))
+                .collect(Collectors.groupingBy(TravelPlanItem::getDayNumber, LinkedHashMap::new, Collectors.toList()));
+        return grouped.entrySet().stream()
+                .map(entry -> new TravelPlanDayResponse(
+                        entry.getKey(),
+                        entry.getKey() + "일차",
+                        entry.getValue().stream()
+                                .map(TravelPlanItem::getDestinationName)
+                                .distinct()
+                                .limit(3)
+                                .collect(Collectors.joining(" · ")),
+                        entry.getValue().stream()
+                                .map(item -> TravelPlanItemResponse.from(item, destinationById.get(item.getDestinationId())))
+                                .toList()))
+                .toList();
     }
 
     private static String toMarkdown(TravelPlan plan, List<TravelPlanItem> items) {

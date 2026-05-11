@@ -32,7 +32,7 @@ public record DestinationResponse(
                 LocalTripText.splitCsv(destination.getStyleTags()),
                 destination.getAddress(),
                 destination.getHeadline(),
-                destination.getImageUrl(),
+                LocalTripImageCatalog.resolveOrExisting(destination),
                 destination.getDescription(),
                 destination.getRecommendedMinutes(),
                 destination.getPopularityScore(),

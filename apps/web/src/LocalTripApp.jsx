@@ -20,24 +20,102 @@ const DESTINATION_IMAGES = {
   'SEOUL-004': commonsImage('Mercado Mangwon en Seúl.jpg'),
   'SEOUL-005': commonsImage('Yeouido, Seoul.jpg'),
   'SEOUL-006': commonsImage('N Seoul Tower a4.jpg'),
+  'SEOUL-007': commonsImage('20240601 144028 Dongdaemun Design Plaza, Seoul 08.jpg'),
+  'SEOUL-008': commonsImage('KOCIS Cheonggyecheon (stream) in Seoul (7085882037).jpg'),
   'GYEONGJU-001': commonsImage('Bulguksa temple main building.jpg'),
   'GYEONGJU-002': commonsImage('Donggung Palace and Wolji Pond in Gyeongju.jpg'),
   'GYEONGJU-003': commonsImage('Cheomseongdae, Gyeongju.jpg'),
   'GYEONGJU-004': commonsImage('Street in Gyeongju.jpg'),
   'GYEONGJU-005': commonsImage('Bomun Lake.jpg'),
   'GYEONGJU-006': commonsImage('Gyochon Village 1.jpg'),
+  'GYEONGJU-007': commonsImage('Woljeonggyo Bridge.jpg'),
+  'GYEONGJU-008': commonsImage('Daereungwon Tomb Complex.jpg'),
   'BUSAN-001': commonsImage('Gamcheon culture village.jpg'),
   'BUSAN-002': commonsImage('Haeundae Beach Busan (45698772312).jpg'),
   'BUSAN-003': commonsImage('Gwangalli Beach in Busan.jpg'),
   'BUSAN-004': commonsImage('Gukje Market.jpg'),
   'BUSAN-005': commonsImage('Seomyeon Street.jpg'),
   'BUSAN-006': commonsImage('Taejongdae in Busan.jpg'),
+  'BUSAN-007': commonsImage('Jagalchi Market Busan.jpg'),
+  'BUSAN-008': commonsImage('Oryukdo Skywalk.jpg'),
   'JEJU-001': commonsImage('Seongsan Ilchulbong 01.jpg'),
   'JEJU-002': commonsImage('Udo, Jeju Province, South Korea 01.jpg'),
   'JEJU-003': commonsImage('Hyeop-jae Beach.jpg'),
   'JEJU-004': commonsImage('Jeju dongmun market 1.JPG'),
   'JEJU-005': commonsImage('Aewol in Jeju island.jpg'),
-  'JEJU-006': commonsImage('Bijarim forest, Jeju.jpg')
+  'JEJU-006': commonsImage('Bijarim forest, Jeju.jpg'),
+  'JEJU-007': commonsImage('Hallasan Mountain.jpg'),
+  'JEJU-008': commonsImage('Eco-Pond, Camellia Hill, Jeju (생태연못, 제주 카멜리아힐) - panoramio.jpg'),
+  SEOKGURAM: commonsImage('Front view of Seokguram from front chamber.jpg'),
+  GYEONGJU_MUSEUM: commonsImage('Gyeongju National Museum.jpg'),
+  GYEONGJU_WORLD: commonsImage('Entrance of Gyeongju World and Draken.jpg'),
+  YANGDONG: commonsImage('Yangdong Village 02.jpg'),
+  HUINNYEOUL: commonsImage('Stairway at Huinnyeoul Culture Village in Busan, South Korea.jpg'),
+  DONGBAEKSEOM: commonsImage('Dongbaekseom, Busan (2).jpg'),
+  DADAEPO: commonsImage('Dadaepo Beach, Busan, Korea.jpg'),
+  SONGJEONG: commonsImage('Songjeong Beach.jpg'),
+  CHANGDEOKGUNG: commonsImage('Exterior view of Seongjeonggak with blue sky at Changdeokgung Palace in Seoul.jpg'),
+  GWANGJANG: commonsImage('Gwangjang Market, Seoul 02.jpg'),
+  SEOUL_FOREST: commonsImage('SeoulForest.jpg'),
+  IKSEONDONG: commonsImage('Ikseon-dong 익선동 October 1 2020 6.jpg'),
+  GYEONGUI_FOREST: commonsImage('Gyeonguiseon Forest Trail Park and Ttaeng-ttaeng Street in Seoul (near Hongdae, 1).jpg'),
+  DEOKSUGUNG_ROAD: commonsImage('Road of Deoksugung.jpg'),
+  SARYEONI: commonsImage('사려니숲길 외부 모습.jpg'),
+  CHEONJIYEON: commonsImage('Cheonjiyeon Waterfall (14523691134).jpg'),
+  OSULLOC: commonsImage('Osulloc Tea Museum & Fields, Jeju.jpg')
+};
+
+const DESTINATION_NAME_IMAGES = {
+  경복궁: DESTINATION_IMAGES['SEOUL-001'],
+  북촌한옥마을: DESTINATION_IMAGES['SEOUL-002'],
+  '성수 카페거리': DESTINATION_IMAGES['SEOUL-003'],
+  망원시장: DESTINATION_IMAGES['SEOUL-004'],
+  여의도한강공원: DESTINATION_IMAGES['SEOUL-005'],
+  여의도: DESTINATION_IMAGES['SEOUL-005'],
+  남산서울타워: DESTINATION_IMAGES['SEOUL-006'],
+  동대문디자인플라자: DESTINATION_IMAGES['SEOUL-007'],
+  청계천: DESTINATION_IMAGES['SEOUL-008'],
+  불국사: DESTINATION_IMAGES['GYEONGJU-001'],
+  동궁과월지: DESTINATION_IMAGES['GYEONGJU-002'],
+  첨성대: DESTINATION_IMAGES['GYEONGJU-003'],
+  황리단길: DESTINATION_IMAGES['GYEONGJU-004'],
+  보문호수: DESTINATION_IMAGES['GYEONGJU-005'],
+  교촌마을: DESTINATION_IMAGES['GYEONGJU-006'],
+  월정교: DESTINATION_IMAGES['GYEONGJU-007'],
+  대릉원: DESTINATION_IMAGES['GYEONGJU-008'],
+  감천문화마을: DESTINATION_IMAGES['BUSAN-001'],
+  해운대해수욕장: DESTINATION_IMAGES['BUSAN-002'],
+  광안리해변: DESTINATION_IMAGES['BUSAN-003'],
+  국제시장: DESTINATION_IMAGES['BUSAN-004'],
+  전포카페거리: DESTINATION_IMAGES['BUSAN-005'],
+  태종대: DESTINATION_IMAGES['BUSAN-006'],
+  자갈치시장: DESTINATION_IMAGES['BUSAN-007'],
+  오륙도스카이워크: DESTINATION_IMAGES['BUSAN-008'],
+  성산일출봉: DESTINATION_IMAGES['JEJU-001'],
+  우도: DESTINATION_IMAGES['JEJU-002'],
+  협재해변: DESTINATION_IMAGES['JEJU-003'],
+  동문시장: DESTINATION_IMAGES['JEJU-004'],
+  애월카페거리: DESTINATION_IMAGES['JEJU-005'],
+  절물자연휴양림: DESTINATION_IMAGES['JEJU-006'],
+  한라산성판악: DESTINATION_IMAGES['JEJU-007'],
+  카멜리아힐: DESTINATION_IMAGES['JEJU-008'],
+  석굴암: DESTINATION_IMAGES.SEOKGURAM,
+  국립경주박물관: DESTINATION_IMAGES.GYEONGJU_MUSEUM,
+  경주월드: DESTINATION_IMAGES.GYEONGJU_WORLD,
+  양동마을: DESTINATION_IMAGES.YANGDONG,
+  흰여울문화마을: DESTINATION_IMAGES.HUINNYEOUL,
+  동백섬: DESTINATION_IMAGES.DONGBAEKSEOM,
+  다대포해수욕장: DESTINATION_IMAGES.DADAEPO,
+  송정해변: DESTINATION_IMAGES.SONGJEONG,
+  창덕궁: DESTINATION_IMAGES.CHANGDEOKGUNG,
+  광장시장: DESTINATION_IMAGES.GWANGJANG,
+  서울숲: DESTINATION_IMAGES.SEOUL_FOREST,
+  익선동한옥거리: DESTINATION_IMAGES.IKSEONDONG,
+  연남동경의선숲길: DESTINATION_IMAGES.GYEONGUI_FOREST,
+  덕수궁돌담길: DESTINATION_IMAGES.DEOKSUGUNG_ROAD,
+  사려니숲길: DESTINATION_IMAGES.SARYEONI,
+  천지연폭포: DESTINATION_IMAGES.CHEONJIYEON,
+  오설록티뮤지엄: DESTINATION_IMAGES.OSULLOC
 };
 
 const FALLBACK_DESTINATIONS = [
@@ -165,11 +243,24 @@ function regionImage(region, index = 0) {
 }
 
 function destinationImage(row, index = 0) {
+  const sourceRef = pickString(row.sourceRef, row.source_ref, row.code);
+  if (sourceRef && DESTINATION_IMAGES[sourceRef]) return DESTINATION_IMAGES[sourceRef];
+  const name = pickString(row.name, row.title, row.destinationName, row.destination_name, row.placeName, row.place_name).replace(/\s/g, '');
+  if (name && DESTINATION_NAME_IMAGES[name]) return DESTINATION_NAME_IMAGES[name];
+  return pickString(row.imageUrl, row.image_url, row.photoUrl, row.thumbnailUrl);
+}
+
+function exactDestinationImage(row) {
   const explicit = pickString(row.imageUrl, row.image_url, row.photoUrl, row.thumbnailUrl);
   if (explicit) return explicit;
   const sourceRef = pickString(row.sourceRef, row.source_ref, row.code);
   if (sourceRef && DESTINATION_IMAGES[sourceRef]) return DESTINATION_IMAGES[sourceRef];
-  return regionImage(pickString(row.region, row.regionName, row.region_name, row.area), index);
+  const name = pickString(row.name, row.title, row.destinationName, row.destination_name, row.placeName, row.place_name).replace(/\s/g, '');
+  return name ? DESTINATION_NAME_IMAGES[name] || '' : '';
+}
+
+function imageFallback(event, region, index = 0) {
+  event.currentTarget.closest('.ltDestinationPhoto, .ltHeroImage, .ltMiniDestCard')?.classList.add('noPhoto');
 }
 
 function normalizeDestination(raw, index = 0) {
@@ -203,15 +294,20 @@ function normalizeDestinations(payload) {
 
 function normalizeItineraryItem(raw, index = 0) {
   if (typeof raw === 'string') {
-    return { time: '', title: raw, place: '', note: '', tags: [] };
+    return { time: '', title: raw, place: '', note: '', tags: [], imageUrl: regionImage('', index) };
   }
   const item = raw || {};
+  const title = pickString(item.title, item.name, item.destinationName, item.destination_name, item.activity) || `Stop ${index + 1}`;
+  const place = pickString(item.place, item.location, item.region, item.address);
   return {
     time: pickString(item.time, item.timeSlot, item.time_slot, item.startTime, item.hour),
-    title: pickString(item.title, item.name, item.destinationName, item.destination_name, item.activity) || `Stop ${index + 1}`,
-    place: pickString(item.place, item.location, item.region, item.address),
+    title,
+    place,
     note: pickString(item.note, item.notes, item.description, item.reason),
-    tags: normalizeTags(item.tags, item.keywords, item.primaryStyle)
+    tags: normalizeTags(item.tags, item.keywords, item.primaryStyle, item.primary_style),
+    durationMinutes: pickNumber(item.durationMinutes, item.duration_minutes),
+    sequenceNumber: pickNumber(item.sequenceNumber, item.sequence_number),
+    imageUrl: exactDestinationImage({ ...item, name: title, region: place })
   };
 }
 
@@ -229,7 +325,8 @@ function normalizeItinerary(raw) {
   if (hasDayContainers) {
     return source.map((day, index) => ({
       day: pickNumber(day.day, day.dayNumber, day.day_number) || index + 1,
-      title: pickString(day.title, day.summary) || `Day ${index + 1}`,
+      title: pickString(day.title) || `${index + 1}일차`,
+      summary: pickString(day.summary),
       items: readArray(day, ['items', 'activities', 'stops', 'schedule']).map(normalizeItineraryItem)
     }));
   }
@@ -248,14 +345,15 @@ function normalizeItinerary(raw) {
     .sort(([a], [b]) => a - b)
     .map(([day, items]) => ({
       day,
-      title: `Day ${day}`,
+      title: `${day}일차`,
+      summary: items.map((item) => item.title).slice(0, 3).join(' · '),
       items
     }));
 }
 
 function normalizePlan(raw, index = 0) {
   const plan = raw?.plan || raw?.travelPlan || raw || {};
-  const itinerary = normalizeItinerary(plan.itinerary || plan.days || plan.dailyPlans || plan.daily_itinerary || plan.schedule || plan.items);
+  const itinerary = normalizeItinerary(plan.dayCards || plan.days || plan.dailyPlans || plan.daily_itinerary || plan.itinerary || plan.schedule || plan.items);
   const id = pickString(plan.id, plan.planId, plan.plan_id);
   const destinationValue = typeof plan.destination === 'string' ? plan.destination : '';
   const destinationName = pickString(plan.destinationName, plan.destination_name, plan.destination?.name, destinationValue);
@@ -433,7 +531,7 @@ function LocalTripNav({ path, navigate }) {
           <strong>LT</strong>
           <span>LocalTrip AI</span>
         </a>
-        <nav className="ltNavLinks" aria-label="LocalTrip navigation">
+        <nav className="ltNavLinks" aria-label="LocalTrip 메뉴">
           {items.map((item) => (
             <a
               key={item.to}
@@ -450,7 +548,7 @@ function LocalTripNav({ path, navigate }) {
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
-          New Plan
+          새 일정
         </a>
       </div>
     </header>
@@ -460,7 +558,18 @@ function LocalTripNav({ path, navigate }) {
 function DestinationCard({ destination, compact = false, navigate }) {
   return (
     <article className={`ltDestinationCard ${compact ? 'compact' : ''}`}>
-      <div className="ltDestinationPhoto" style={{ backgroundImage: `url("${destination.imageUrl}")` }}>
+      <div className="ltDestinationPhoto">
+        {destination.imageUrl ? (
+          <img
+            src={destination.imageUrl}
+            alt={destination.name}
+            loading="lazy"
+            decoding="async"
+            onError={(event) => imageFallback(event, destination.region)}
+          />
+        ) : (
+          <div className="ltPhotoPlaceholder" aria-hidden="true">{destination.region}</div>
+        )}
         <span>{destination.category}</span>
       </div>
       <div className="ltDestinationBody">
@@ -483,7 +592,7 @@ function DestinationCard({ destination, compact = false, navigate }) {
         </div>
         {!compact ? (
           <button type="button" className="ltTextButton" onClick={() => navigate(`/planner?destination=${encodeURIComponent(destination.id)}`)} style={{ marginTop: '12px', color: '#0f766e', fontWeight: '700', cursor: 'pointer', border: 'none', background: 'none', padding: '0', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            Plan this trip
+            이 장소로 일정 만들기
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
@@ -550,40 +659,40 @@ function HomePage({ navigate }) {
       <section className="ltHero">
         <div className="ltHeroCopy">
           <span className="ltEyebrow">LocalTrip AI</span>
-          <h1>Experience Local Like Never Before.</h1>
-          <p>Discover hidden gems, plan customized routes, and explore the best of local destinations with our AI-powered travel companion.</p>
+          <h1>내 일정에 맞는 국내 여행 코스</h1>
+          <p>장소 사진, 시간대별 동선, 식사와 휴식 포인트까지 한 번에 확인하고 바로 수정할 수 있습니다.</p>
           <div className="ltHeroActions">
             <a href="/planner" onClick={(event) => routeClick(event, '/planner', navigate)}>
-              Get Started
+              일정 만들기
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px' }}>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
                 <polyline points="12 5 19 12 12 19"></polyline>
               </svg>
             </a>
-            <a href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)}>Browse Places</a>
+            <a href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)}>장소 둘러보기</a>
           </div>
         </div>
         <div className="ltHeroVisual">
-          <div className="ltHeroImage main" style={{ backgroundImage: `url("${heroImages[0]?.imageUrl || DEFAULT_IMAGES[0]}")` }}>
+          <div className="ltHeroImage main" style={{ backgroundImage: heroImages[0]?.imageUrl ? `url("${heroImages[0].imageUrl}")` : 'none' }}>
             <span>{heroImages[0]?.region || 'Local'}</span>
           </div>
-          <div className="ltHeroImage" style={{ backgroundImage: `url("${heroImages[1]?.imageUrl || DEFAULT_IMAGES[1]}")` }}>
+          <div className="ltHeroImage" style={{ backgroundImage: heroImages[1]?.imageUrl ? `url("${heroImages[1].imageUrl}")` : 'none' }}>
             <span>{heroImages[1]?.region || 'Local'}</span>
           </div>
-          <div className="ltHeroImage" style={{ backgroundImage: `url("${heroImages[2]?.imageUrl || DEFAULT_IMAGES[2]}")` }}>
+          <div className="ltHeroImage" style={{ backgroundImage: heroImages[2]?.imageUrl ? `url("${heroImages[2].imageUrl}")` : 'none' }}>
             <span>{heroImages[2]?.region || 'Local'}</span>
           </div>
           <div className="ltHeroPanel">
             <div>
-              <span>Active Destinations</span>
+              <span>추천 장소</span>
               <strong>{loading ? '-' : formatNumber(destinations.length)}</strong>
             </div>
             <div>
-              <span>Saved Plans</span>
+              <span>저장된 일정</span>
               <strong>{plansLoading ? '-' : formatNumber(plans.length)}</strong>
             </div>
             <div>
-              <span>Top Region</span>
+              <span>대표 지역</span>
               <strong>{heroImages[0]?.region || '-'}</strong>
             </div>
           </div>
@@ -594,11 +703,11 @@ function HomePage({ navigate }) {
 
       <section className="ltSectionHeader">
         <div>
-          <h2>Featured Destinations</h2>
-          <p style={{ color: '#64748b', marginTop: '4px' }}>Hand-picked locations for your next adventure</p>
+          <h2>지금 바로 담기 좋은 장소</h2>
+          <p style={{ color: '#64748b', marginTop: '4px' }}>사진과 후기 흐름을 기준으로 고른 국내 여행지</p>
         </div>
         <a href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)} className="ltTextButton" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          View all
+          전체 보기
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"></line>
             <polyline points="12 5 19 12 12 19"></polyline>
@@ -613,10 +722,10 @@ function HomePage({ navigate }) {
 
       <section className="ltSplitSection" style={{ marginTop: '80px', gap: '32px' }}>
         <div className="ltPlannerTeaser">
-          <h2>Ready to plan your next journey?</h2>
-          <p>Our AI analyzes thousands of data points to create the perfect itinerary tailored just for you.</p>
+          <h2>하루 동선까지 바로 확인하세요</h2>
+          <p>선택한 지역과 취향을 기준으로 09~10, 10~11처럼 시간대별 일정을 구성합니다.</p>
           <button type="button" onClick={() => navigate('/planner')}>
-            Try AI Planner
+            AI 일정 만들기
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px' }}>
               <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline>
             </svg>
@@ -625,11 +734,11 @@ function HomePage({ navigate }) {
         <div className="ltRecentPlans">
           <div className="ltSectionHeader compact">
             <div>
-              <h2>Recent Itineraries</h2>
+              <h2>최근 만든 일정</h2>
             </div>
           </div>
           {plans.length ? plans.map((plan) => <PlanCard key={plan.key} plan={plan} navigate={navigate} />) : (
-            <div className="ltEmptyState">No travel plans yet. Be the first!</div>
+            <div className="ltEmptyState">아직 만든 일정이 없습니다.</div>
           )}
         </div>
       </section>
@@ -686,20 +795,20 @@ function DestinationsPage({ navigate }) {
     <main className="ltPage">
       <section className="ltPageTitle">
         <div>
-          <span className="ltEyebrow">Destinations</span>
-          <h1>Find a local fit</h1>
+          <span className="ltEyebrow">장소 찾기</span>
+          <h1>내 취향에 맞는 장소</h1>
         </div>
         <button type="button" className="ltSecondaryButton" onClick={syncMock} disabled={syncing}>
-          {syncing ? 'Syncing' : 'Sync mock data'}
+          {syncing ? '동기화 중' : '장소 데이터 채우기'}
         </button>
       </section>
 
       <InlineNotice error={error} fallback={usingFallback} />
-      {syncError ? <div className="ltInlineNotice error"><strong>Sync failed</strong><span>{syncError}</span></div> : null}
+      {syncError ? <div className="ltInlineNotice error"><strong>동기화 실패</strong><span>{syncError}</span></div> : null}
 
       <section className="ltFilterBar">
         <label>
-          <span>Search</span>
+          <span>검색</span>
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="지역, 장소, 테마 검색" />
         </label>
         <div className="ltSegmented" aria-label="지역 필터">
@@ -718,8 +827,8 @@ function DestinationsPage({ navigate }) {
         </div>
       </section>
 
-      {loading ? <div className="ltEmptyState">Loading destinations.</div> : null}
-      {!loading && !filtered.length ? <div className="ltEmptyState">No destinations match the current filters.</div> : null}
+      {loading ? <div className="ltEmptyState">장소를 불러오는 중입니다.</div> : null}
+      {!loading && !filtered.length ? <div className="ltEmptyState">현재 조건에 맞는 장소가 없습니다.</div> : null}
       <div className="ltDestinationGrid">
         {filtered.map((destination) => (
           <DestinationCard key={destination.id} destination={destination} navigate={navigate} />
@@ -826,8 +935,8 @@ function PlannerPage({ path, navigate }) {
     <main className="ltPage">
       <section className="ltPageTitle">
         <div>
-          <span className="ltEyebrow">Planner</span>
-          <h1>Build a multi-stop route</h1>
+          <span className="ltEyebrow">일정 만들기</span>
+          <h1>지역과 취향으로 코스 구성</h1>
         </div>
       </section>
 
@@ -837,7 +946,7 @@ function PlannerPage({ path, navigate }) {
         <form className="ltPlannerForm" onSubmit={submit}>
           <div className="ltAutocompleteGroup">
             <label>
-              <span>Destinations Search</span>
+              <span>장소 검색</span>
               <div className="ltAutocompleteContainer">
                 <input 
                   value={destSearch} 
@@ -846,7 +955,7 @@ function PlannerPage({ path, navigate }) {
                     setShowDestSuggestions(true);
                   }}
                   onFocus={() => setShowDestSuggestions(true)}
-                  placeholder="지역 또는 장소 검색 (예: 경주, 서울, 제주...)" 
+                  placeholder="지역 또는 장소 검색 (예: 경주, 서울, 제주...)"
                 />
                 {showSuggestions && filteredSuggestions.length > 0 && (
                   <div className="ltAutocompleteDropdown">
@@ -872,7 +981,7 @@ function PlannerPage({ path, navigate }) {
               {destinations.filter(d => selectedDestinationIds.includes(d.id)).map(d => (
                 <span key={d.id} className="ltSelectedTag">
                   {d.name} ({d.region})
-                  <button type="button" onClick={() => toggleDestination(d.id)} aria-label="Remove">×</button>
+                  <button type="button" onClick={() => toggleDestination(d.id)} aria-label="삭제">×</button>
                 </span>
               ))}
             </div>
@@ -880,17 +989,17 @@ function PlannerPage({ path, navigate }) {
 
           <div className="ltFormGrid">
             <label>
-              <span>Start date</span>
+              <span>출발일</span>
               <input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} />
             </label>
             <label>
-              <span>Days</span>
+              <span>여행 일수</span>
               <input type="number" min="1" max="10" value={days} onChange={(event) => setDays(event.target.value)} />
             </label>
           </div>
           <div className="ltFormGrid">
             <label>
-              <span>Travelers</span>
+              <span>동행</span>
               <select value={travelers} onChange={(event) => setTravelers(event.target.value)}>
                 <option value="혼자">혼자</option>
                 <option value="커플">커플</option>
@@ -899,7 +1008,7 @@ function PlannerPage({ path, navigate }) {
               </select>
             </label>
             <label>
-              <span>Pace</span>
+              <span>여행 속도</span>
               <select value={pace} onChange={(event) => setPace(event.target.value)}>
                 <option value="여유">여유</option>
                 <option value="보통">보통</option>
@@ -909,7 +1018,7 @@ function PlannerPage({ path, navigate }) {
           </div>
           <div className="ltFormGrid">
             <label>
-              <span>Transport</span>
+              <span>이동수단</span>
               <select value={transportType} onChange={(event) => setTransportType(event.target.value)}>
                 <option value="대중교통">대중교통</option>
                 <option value="자동차">자동차</option>
@@ -917,7 +1026,7 @@ function PlannerPage({ path, navigate }) {
               </select>
             </label>
             <label>
-              <span>Export Format</span>
+              <span>내보내기 형식</span>
               <select value={exportFormat} onChange={(event) => setExportFormat(event.target.value)}>
                 <option value="텍스트">텍스트</option>
                 <option value="엑셀">엑셀</option>
@@ -926,7 +1035,7 @@ function PlannerPage({ path, navigate }) {
             </label>
           </div>
           <label>
-            <span>Budget</span>
+            <span>예산</span>
             <select value={budget} onChange={(event) => setBudget(event.target.value)}>
               <option value="절약">절약</option>
               <option value="보통">보통</option>
@@ -934,7 +1043,7 @@ function PlannerPage({ path, navigate }) {
             </select>
           </label>
           <div className="ltInterestGroup">
-            <span>Interests</span>
+            <span>관심사</span>
             <div>
               {INTERESTS.map((interest) => (
                 <button
@@ -949,22 +1058,33 @@ function PlannerPage({ path, navigate }) {
             </div>
           </div>
           <label>
-            <span>Notes</span>
-            <textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Arrival time, mobility needs, must-see stops" />
+            <span>요청사항</span>
+            <textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="도착 시간, 꼭 가고 싶은 곳, 아이 동반 여부 등을 적어주세요" />
           </label>
-          {generateError ? <div className="ltInlineNotice error"><strong>Generation failed</strong><span>{generateError}</span></div> : null}
+          {generateError ? <div className="ltInlineNotice error"><strong>생성 실패</strong><span>{generateError}</span></div> : null}
           <button type="submit" className="ltPrimaryButton" disabled={generating || selectedDestinationIds.length === 0}>
-            {generating ? 'Generating' : 'Generate plan'}
+            {generating ? '일정 생성 중' : '시간대별 일정 만들기'}
           </button>
         </form>
 
         <aside className="ltPlannerPreview">
           <div className="ltSelectedSummary">
-            <h3>Selected ({selectedDestinationIds.length})</h3>
+            <h3>선택한 장소 ({selectedDestinationIds.length})</h3>
             <div className="ltMiniDestList">
               {destinations.filter(d => selectedDestinationIds.includes(d.id)).map(d => (
                 <div key={d.id} className="ltMiniDestCard">
-                  <div className="ltMiniDestPhoto" style={{ backgroundImage: `url("${d.imageUrl}")` }} />
+                  {d.imageUrl ? (
+                    <img
+                      className="ltMiniDestPhoto"
+                      src={d.imageUrl}
+                      alt={d.name}
+                      loading="lazy"
+                      decoding="async"
+                      onError={(event) => imageFallback(event, d.region)}
+                    />
+                  ) : (
+                    <div className="ltMiniDestPhoto placeholder" aria-hidden="true">{d.region}</div>
+                  )}
                   <div>
                     <strong>{d.name}</strong>
                     <span>{d.region}</span>
@@ -976,7 +1096,7 @@ function PlannerPage({ path, navigate }) {
           {generatedPlan ? (
             <div className="ltGeneratedPreview">
               <h2>{generatedPlan.title}</h2>
-              <MarkdownPlanBlocks plan={generatedPlan} />
+              <PlanDayCards plan={generatedPlan} />
             </div>
           ) : null}
         </aside>
@@ -996,8 +1116,8 @@ function PlansPage({ navigate }) {
     <main className="ltPage">
       <section className="ltPageTitle">
         <div>
-          <span className="ltEyebrow">Plans</span>
-          <h1>Saved itineraries</h1>
+          <span className="ltEyebrow">저장된 일정</span>
+          <h1>내 여행 일정</h1>
         </div>
         <div className="ltPageActions">
           <div className="ltSegmented compact" aria-label="일정 정렬">
@@ -1006,13 +1126,13 @@ function PlansPage({ navigate }) {
             <button type="button" className={sortMode === 'reviews' ? 'active' : ''} onClick={() => setSortMode('reviews')}>후기순</button>
             <button type="button" className={sortMode === 'latest' ? 'active' : ''} onClick={() => setSortMode('latest')}>최신순</button>
           </div>
-          <button type="button" className="ltSecondaryButton" onClick={reload}>Refresh</button>
+          <button type="button" className="ltSecondaryButton" onClick={reload}>새로고침</button>
         </div>
       </section>
 
-      {error ? <div className="ltInlineNotice error"><strong>Request failed</strong><span>{error}</span></div> : null}
-      {loading ? <div className="ltEmptyState">Loading travel plans.</div> : null}
-      {!loading && !plans.length ? <div className="ltEmptyState">No saved travel plans yet.</div> : null}
+      {error ? <div className="ltInlineNotice error"><strong>요청 실패</strong><span>{error}</span></div> : null}
+      {loading ? <div className="ltEmptyState">일정을 불러오는 중입니다.</div> : null}
+      {!loading && !plans.length ? <div className="ltEmptyState">아직 저장된 일정이 없습니다.</div> : null}
       <div className="ltPlansGrid">
         {sortedPlans.map(({ plan, stats }) => <PlanCard key={plan.key} plan={plan} stats={stats} navigate={navigate} />)}
       </div>
@@ -1093,7 +1213,7 @@ function MarkdownPlanBlocks({ plan }) {
     );
   }
   return (
-    <div className="ltMarkdownPlan" aria-label="Markdown travel plan">
+    <div className="ltMarkdownPlan" aria-label="여행 일정">
       {dayBlocks.map((day) => (
         <section className="ltMarkdownDayBlock" key={day.day}>
           <div className="ltMarkdownDayHeader">
@@ -1119,6 +1239,58 @@ function MarkdownPlanBlocks({ plan }) {
                     );
                   })}
                 </ul>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function PlanDayCards({ plan }) {
+  const itinerary = plan?.itinerary || [];
+  if (!itinerary.length) {
+    return <MarkdownPlanBlocks plan={plan} />;
+  }
+
+  return (
+    <div className="ltDayCards" aria-label="일자별 여행 일정">
+      {itinerary.map((day) => (
+        <section className="ltDayCard" key={day.day}>
+          <div className="ltDayCardHeader">
+            {day.items.find((item) => item.imageUrl)?.imageUrl ? (
+              <img
+                className="ltDayCover"
+                src={day.items.find((item) => item.imageUrl).imageUrl}
+                alt={day.title || `${day.day}일차`}
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <div className="ltDayCover placeholder" aria-hidden="true">{day.day}일차</div>
+            )}
+            <div>
+              <span>{day.day}일차</span>
+              <h2>{day.title || `${day.day}일차`}</h2>
+              {day.summary ? <p>{day.summary}</p> : null}
+            </div>
+          </div>
+          <div className="ltDaySlots">
+            {day.items.map((item, index) => (
+              <article className="ltDaySlot" key={`${day.day}-${item.time}-${item.title}-${index}`}>
+                <time>{item.time || '유동적'}</time>
+                <div className="ltDaySlotBody">
+                  <div>
+                    <h3>{item.title}</h3>
+                    {item.place ? <span>{item.place}</span> : null}
+                  </div>
+                  {item.note ? <p>{item.note}</p> : null}
+                  <div className="ltTagRow small">
+                    {item.durationMinutes ? <span>{item.durationMinutes}분</span> : null}
+                    {item.tags.map((tag) => <span key={tag}>{tag}</span>)}
+                  </div>
+                </div>
               </article>
             ))}
           </div>
@@ -1204,9 +1376,9 @@ function PlanDetailPage({ planId, navigate }) {
           </section>
           
           <div className="ltSectionHeader" style={{ marginTop: '48px', marginBottom: '24px' }}>
-            <h2>Markdown 일정</h2>
+            <h2>일자별 일정</h2>
           </div>
-          <MarkdownPlanBlocks plan={plan} />
+          <PlanDayCards plan={plan} />
         </div>
       ) : null}
     </main>
@@ -1217,8 +1389,8 @@ function NotFoundPage({ navigate }) {
   return (
     <main className="ltPage">
       <section className="ltEmptyState large">
-        <h1>Page not found</h1>
-        <button type="button" className="ltPrimaryButton" onClick={() => navigate('/')}>Go home</button>
+        <h1>페이지를 찾을 수 없습니다</h1>
+        <button type="button" className="ltPrimaryButton" onClick={() => navigate('/')}>홈으로 이동</button>
       </section>
     </main>
   );
@@ -1252,7 +1424,7 @@ export default function LocalTripApp({ path, navigate }) {
       {page}
       <footer className="ltFooter">
         <span>LocalTrip AI</span>
-        <span>Route planning for local travel</span>
+        <span>국내 여행 동선 계획</span>
       </footer>
     </div>
   );
