@@ -7,6 +7,7 @@ import java.util.List;
 public record TravelPlanGenerateRequest(
         String region,
         List<String> regions,
+        List<Long> destinationIds,
         String style,
         List<String> styles,
         List<String> travelStyle,

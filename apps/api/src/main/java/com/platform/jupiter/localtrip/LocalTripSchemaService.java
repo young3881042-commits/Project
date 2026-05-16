@@ -53,6 +53,7 @@ public class LocalTripSchemaService {
         jdbcTemplate.execute("""
                 CREATE TABLE IF NOT EXISTS localtrip_travel_plan (
                     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    username VARCHAR(40) NOT NULL DEFAULT 'admin',
                     title VARCHAR(160) NOT NULL,
                     region VARCHAR(120) NOT NULL,
                     styles VARCHAR(255) NOT NULL,
@@ -65,6 +66,7 @@ public class LocalTripSchemaService {
                     updated_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)
                 )
                 """);
+        jdbcTemplate.execute("ALTER TABLE localtrip_travel_plan ADD COLUMN IF NOT EXISTS username VARCHAR(40) NOT NULL DEFAULT 'admin'");
         jdbcTemplate.execute("""
                 CREATE TABLE IF NOT EXISTS localtrip_travel_plan_item (
                     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -101,6 +103,7 @@ public class LocalTripSchemaService {
                 )
                 """);
         jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_localtrip_destination_region_style ON localtrip_destination(region, primary_style)");
+        jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_localtrip_plan_username_created_at ON localtrip_travel_plan(username, created_at DESC)");
         jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_localtrip_plan_created_at ON localtrip_travel_plan(created_at DESC)");
         jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_localtrip_plan_item_plan ON localtrip_travel_plan_item(travel_plan_id, day_number, sequence_number)");
         jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_localtrip_sync_log_created_at ON localtrip_api_sync_log(created_at DESC)");

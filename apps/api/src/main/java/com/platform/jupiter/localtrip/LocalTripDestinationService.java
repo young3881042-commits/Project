@@ -1,9 +1,12 @@
 package com.platform.jupiter.localtrip;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -119,6 +122,26 @@ public class LocalTripDestinationService {
         return all.stream()
                 .sorted(Comparator.comparing(Destination::getPopularityScore).reversed().thenComparing(Destination::getName))
                 .toList();
+    }
+
+    @Transactional
+    public List<Destination> findCandidatesForPlan(List<Long> destinationIds, List<String> regions, List<String> styles) {
+        schemaService.ensureSchema();
+        List<Destination> baseCandidates = findCandidates(regions, styles);
+        if (destinationIds == null || destinationIds.isEmpty()) {
+            return baseCandidates;
+        }
+
+        Map<Long, Destination> merged = new LinkedHashMap<>();
+        destinationRepository.findAllById(destinationIds).stream()
+                .sorted(Comparator.comparing(destination -> destinationIds.indexOf(destination.getId())))
+                .forEach(destination -> merged.put(destination.getId(), destination));
+        baseCandidates.forEach(destination -> {
+            if (destination.getId() != null) {
+                merged.putIfAbsent(destination.getId(), destination);
+            }
+        });
+        return new ArrayList<>(merged.values());
     }
 
     private List<Destination> filter(List<Destination> destinations, List<String> regions, List<String> styles) {

@@ -22,6 +22,8 @@ public class AuthService {
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final String ADMIN_ROLE = "ADMIN";
     private static final String USER_ROLE = "USER";
+    private static final String GUEST_USERNAME = "guestuser";
+    private static final String GUEST_PASSWORD = "guest1234";
 
     private final AppUserAccountRepository repository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -61,6 +63,14 @@ public class AuthService {
             admin.setPasswordHash(passwordEncoder.encode("admin123"));
             admin.setRole(ADMIN_ROLE);
             repository.save(admin);
+        }
+        if (!repository.existsByUsername(GUEST_USERNAME)) {
+            AppUserAccount guest = new AppUserAccount();
+            guest.setUsername(GUEST_USERNAME);
+            guest.setPasswordHash(passwordEncoder.encode(GUEST_PASSWORD));
+            guest.setRole(USER_ROLE);
+            repository.save(guest);
+            fileService.ensureUserWorkspace(GUEST_USERNAME);
         }
     }
 

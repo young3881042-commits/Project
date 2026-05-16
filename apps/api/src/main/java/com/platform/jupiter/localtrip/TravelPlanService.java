@@ -26,7 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class TravelPlanService {
-    private static final List<String> TIME_SLOTS = List.of("09~10", "10~11", "11~12", "12~13", "13~14", "14~15", "15~16", "16~17", "18~19");
+    private static final List<String> DEFAULT_TIME_BLOCKS = List.of("오전", "점심·휴식", "오후", "늦은 오후", "저녁");
     private static final String PLAN_PROVIDER = "openai";
     private static final String CODEX_CLI_PATH = "/opt/jupiter-cli/bin/codex";
     private static final int MAX_OUTPUT_TOKENS = 3000;
@@ -83,6 +83,7 @@ public class TravelPlanService {
         String stylesLabel = styles.isEmpty() ? "추천" : String.join(",", styles);
 
         TravelPlan plan = new TravelPlan();
+        plan.setUsername(username);
         plan.setTitle(regionLabel + " " + days + "일 LocalTrip AI 일정");
         plan.setRegion(regionLabel);
         plan.setStyles(stylesLabel);
@@ -93,25 +94,25 @@ public class TravelPlanService {
         plan.setSummary(regionLabel + "의 " + stylesLabel + " 취향을 반영한 " + travelerType + "용 "
                 + pace + " 속도 추천 일정입니다.");
         TravelPlan savedPlan = travelPlanRepository.save(plan);
+        List<Destination> destinations = destinationService.findCandidatesForPlan(request.destinationIds(), regions, styles);
 
-        List<TravelPlanItem> items = generateItineraryWithLocalGpt(savedPlan, request, username);
+        List<TravelPlanItem> items = generateItineraryWithLocalGpt(savedPlan, request, username, destinations);
         travelPlanItemRepository.saveAll(items);
 
-        List<Destination> destinations = destinationService.findCandidates(regions, styles);
         return TravelPlanResponse.from(savedPlan, travelPlanItemRepository.findByTravelPlanIdOrderByDayNumberAscSequenceNumberAsc(savedPlan.getId()), destinations);
     }
 
-    private List<TravelPlanItem> generateItineraryWithLocalGpt(TravelPlan plan, TravelPlanGenerateRequest request, String username) {
-        String prompt = buildPrompt(plan, request);
+    private List<TravelPlanItem> generateItineraryWithLocalGpt(TravelPlan plan, TravelPlanGenerateRequest request, String username, List<Destination> candidates) {
+        String prompt = buildPrompt(plan, request, candidates);
         if (Boolean.TRUE.equals(appProperties.enableCodexCliMode())) {
-            List<TravelPlanItem> codexItems = generateItineraryWithCodexCli(plan, prompt);
+            List<TravelPlanItem> codexItems = generateItineraryWithCodexCli(plan, prompt, candidates);
             if (!codexItems.isEmpty()) {
                 return codexItems;
             }
         }
         String apiKey = chatCredentialService.resolveOpenAiApiKey(username).orElse("");
         if (apiKey.isBlank()) {
-            return fallbackItems(plan);
+            return fallbackItems(plan, candidates);
         }
         try {
             String model = codexModel();
@@ -137,7 +138,7 @@ public class TravelPlanService {
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                return fallbackItems(plan);
+                return fallbackItems(plan, candidates);
             }
 
             JsonNode root = objectMapper.readTree(response.body());
@@ -152,17 +153,17 @@ public class TravelPlanService {
                 content = content.substring(0, content.lastIndexOf("```"));
             }
 
-            List<TravelPlanItem> items = parseGeneratedItems(plan, content);
-            return items.isEmpty() ? fallbackItems(plan) : items;
+            List<TravelPlanItem> items = parseGeneratedItems(plan, content, candidates);
+            return items.isEmpty() ? fallbackItems(plan, candidates) : items;
 
         } catch (ResponseStatusException e) {
             throw e;
         } catch (Exception e) {
-            return fallbackItems(plan);
+            return fallbackItems(plan, candidates);
         }
     }
 
-    private List<TravelPlanItem> generateItineraryWithCodexCli(TravelPlan plan, String prompt) {
+    private List<TravelPlanItem> generateItineraryWithCodexCli(TravelPlan plan, String prompt, List<Destination> candidates) {
         try {
             Path outputPath = Files.createTempFile("localtrip-codex-", ".json");
             ProcessBuilder builder = new ProcessBuilder(
@@ -200,19 +201,17 @@ public class TravelPlanService {
                     ? Files.readString(outputPath, StandardCharsets.UTF_8)
                     : "";
             Files.deleteIfExists(outputPath);
-            return parseGeneratedItems(plan, lastMessage.isBlank() ? output : lastMessage);
+            return parseGeneratedItems(plan, lastMessage.isBlank() ? output : lastMessage, candidates);
         } catch (Exception ignored) {
             return List.of();
         }
     }
 
-    private String buildPrompt(TravelPlan plan, TravelPlanGenerateRequest request) {
-        String candidateNames = destinationService.findCandidates(
-                        List.of(plan.getRegion().split("·")),
-                        LocalTripText.splitCsv(plan.getStyles()))
-                .stream()
+    private String buildPrompt(TravelPlan plan, TravelPlanGenerateRequest request, List<Destination> candidates) {
+        String candidateNames = candidates.stream()
                 .limit(16)
-                .map(destination -> destination.getName() + "(" + destination.getRegion() + "/" + destination.getPrimaryStyle() + ")")
+                .map(destination -> destination.getName() + "(" + destination.getRegion() + " " + destination.getDistrict()
+                        + "/" + destination.getPrimaryStyle() + "/" + destination.getRecommendedMinutes() + "분)")
                 .collect(java.util.stream.Collectors.joining(", "));
         return String.format(
             "한국 여행 일정을 JSON 배열로 생성해줘.\n" +
@@ -225,11 +224,12 @@ public class TravelPlanService {
             "- 예산: %s\n" +
             "- 메모: %s\n" +
             "- 우선 사용할 장소 후보: %s\n\n" +
-            "각 날짜마다 시간대별 세부 일정을 만들어줘. timeSlot은 반드시 09~10, 10~11, 11~12, 12~13, 13~14, 14~15, 15~16, 16~17, 18~19 중 하나로만 써.\n" +
-            "하루에 최소 6개 이상 만들고, 12~13은 점심/휴식, 18~19는 저녁/야경/마무리 성격으로 배치해.\n" +
-            "destinationName은 실제 한국 장소명으로 쓰고 note는 이동 팁, 체류 포인트, 주의사항을 포함해 70자 이하로 구체적으로 써.\n" +
+            "각 날짜는 여행자가 읽기 쉬운 4~5개 블록으로 구성해. 1시간 단위로 쪼개지 말고 timeSlot은 오전, 점심·휴식, 오후, 늦은 오후, 저녁 또는 10:00-12:00 같은 큰 범위로 써.\n" +
+            "점심과 휴식 시간을 반드시 포함하고, 이동수단과 여행 속도에 맞춰 무리한 왕복 동선을 피해야 해.\n" +
+            "destinationName은 실제 한국 장소명으로 쓰고 note는 추천 이유, 이동 팁, 체류 포인트를 포함해 90자 이하로 구체적으로 써.\n" +
+            "durationMinutes는 해당 블록의 권장 체류 시간을 분 단위 숫자로 써.\n" +
             "API 키, 토큰, 서버 주소, 내부 설정 같은 민감정보는 절대 포함하지 마.\n" +
-            "형식: [{\"dayNumber\": 1, \"timeSlot\": \"09~10\", \"destinationName\": \"장소\", \"note\": \"설명\", \"primaryStyle\": \"테마\"}, ...]",
+            "형식: [{\"dayNumber\": 1, \"timeSlot\": \"오전\", \"destinationName\": \"장소\", \"note\": \"설명\", \"primaryStyle\": \"테마\", \"durationMinutes\": 120}, ...]",
             plan.getRegion(),
             plan.getDays(),
             plan.getTravelerType(),
@@ -263,11 +263,8 @@ public class TravelPlanService {
         return Math.max(0, fallback);
     }
 
-    private List<TravelPlanItem> parseGeneratedItems(TravelPlan plan, String content) throws java.io.IOException {
+    private List<TravelPlanItem> parseGeneratedItems(TravelPlan plan, String content, List<Destination> candidates) throws java.io.IOException {
         JsonNode itineraryNode = objectMapper.readTree(extractJsonArray(content));
-        List<Destination> candidates = destinationService.findCandidates(
-                List.of(plan.getRegion().split("·")),
-                LocalTripText.splitCsv(plan.getStyles()));
         List<TravelPlanItem> items = new ArrayList<>();
         int seq = 1;
         if (itineraryNode.isArray()) {
@@ -313,35 +310,32 @@ public class TravelPlanService {
         item.setTravelPlanId(plan.getId());
         item.setDayNumber(node.path("dayNumber").asInt(1));
         item.setSequenceNumber(sequence);
-        item.setTimeSlot(normalizeTimeSlot(node.path("timeSlot").asText("09~10"), sequence));
+        item.setTimeSlot(normalizeTimeSlot(node.path("timeSlot").asText(""), sequence));
         item.setDestinationName(destination == null ? destinationName : destination.getName());
         item.setDestinationId(destination == null ? null : destination.getId());
         item.setRegion(destination == null ? plan.getRegion() : destination.getRegion());
         item.setNote(limitText(node.path("note").asText(""), 240));
         item.setPrimaryStyle(limitText(node.path("primaryStyle").asText("관광"), 36));
-        item.setDurationMinutes(60);
+        item.setDurationMinutes(normalizeDuration(node.path("durationMinutes").asInt(defaultDurationMinutes(item.getTimeSlot()))));
         return item;
     }
 
-    private List<TravelPlanItem> fallbackItems(TravelPlan plan) {
+    private List<TravelPlanItem> fallbackItems(TravelPlan plan, List<Destination> candidates) {
         List<TravelPlanItem> items = new ArrayList<>();
-        List<Destination> candidates = destinationService.findCandidates(
-                List.of(plan.getRegion().split("·")),
-                LocalTripText.splitCsv(plan.getStyles()));
         for (int day = 1; day <= plan.getDays(); day++) {
-            for (int slotIndex = 0; slotIndex < TIME_SLOTS.size(); slotIndex++) {
+            for (int slotIndex = 0; slotIndex < DEFAULT_TIME_BLOCKS.size(); slotIndex++) {
                 Destination destination = candidates.isEmpty() ? null : candidates.get((day + slotIndex - 1) % candidates.size());
                 TravelPlanItem item = new TravelPlanItem();
                 item.setTravelPlanId(plan.getId());
                 item.setDayNumber(day);
-                item.setSequenceNumber(((day - 1) * TIME_SLOTS.size()) + slotIndex + 1);
-                item.setTimeSlot(TIME_SLOTS.get(slotIndex));
+                item.setSequenceNumber(((day - 1) * DEFAULT_TIME_BLOCKS.size()) + slotIndex + 1);
+                item.setTimeSlot(DEFAULT_TIME_BLOCKS.get(slotIndex));
                 item.setDestinationId(destination == null ? null : destination.getId());
                 item.setDestinationName(destination == null ? plan.getRegion() + " 자유 여행" : destination.getName());
                 item.setRegion(destination == null ? plan.getRegion() : destination.getRegion());
                 item.setNote(limitText(fallbackNote(slotIndex, destination), 240));
                 item.setPrimaryStyle(destination == null ? "자유" : destination.getPrimaryStyle());
-                item.setDurationMinutes(60);
+                item.setDurationMinutes(defaultDurationMinutes(item.getTimeSlot()));
                 items.add(item);
             }
         }
@@ -350,8 +344,13 @@ public class TravelPlanService {
 
     @Transactional
     public List<TravelPlanResponse> listPlans() {
+        return listPlans("admin");
+    }
+
+    @Transactional
+    public List<TravelPlanResponse> listPlans(String username) {
         schemaService.ensureSchema();
-        return travelPlanRepository.findAllByOrderByCreatedAtDesc().stream()
+        return travelPlanRepository.findAllByUsernameOrderByCreatedAtDesc(username).stream()
                 .map(p -> TravelPlanResponse.from(
                         p,
                         travelPlanItemRepository.findByTravelPlanIdOrderByDayNumberAscSequenceNumberAsc(p.getId()),
@@ -361,9 +360,17 @@ public class TravelPlanService {
 
     @Transactional
     public TravelPlanResponse getPlan(Long id) {
+        return getPlan(id, "admin");
+    }
+
+    @Transactional
+    public TravelPlanResponse getPlan(Long id, String username) {
         schemaService.ensureSchema();
         TravelPlan plan = travelPlanRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Travel plan not found"));
+        if (!username.equals(plan.getUsername())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Travel plan not found");
+        }
         return TravelPlanResponse.from(
                 plan,
                 travelPlanItemRepository.findByTravelPlanIdOrderByDayNumberAscSequenceNumberAsc(id),
@@ -372,8 +379,15 @@ public class TravelPlanService {
 
     @Transactional
     public void deletePlan(Long id) {
+        deletePlan(id, "admin");
+    }
+
+    @Transactional
+    public void deletePlan(Long id, String username) {
         schemaService.ensureSchema();
-        if (!travelPlanRepository.existsById(id)) {
+        TravelPlan plan = travelPlanRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Travel plan not found"));
+        if (!username.equals(plan.getUsername())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Travel plan not found");
         }
         travelPlanItemRepository.deleteByTravelPlanId(id);
@@ -438,10 +452,28 @@ public class TravelPlanService {
 
     private String normalizeTimeSlot(String value, int sequence) {
         String normalized = LocalTripText.normalize(value).replace("–", "~").replace("-", "~");
-        if (TIME_SLOTS.contains(normalized)) {
-            return normalized;
+        if (!normalized.isBlank()) {
+            return limitText(normalized, 40);
         }
-        return TIME_SLOTS.get(Math.floorMod(sequence - 1, TIME_SLOTS.size()));
+        return DEFAULT_TIME_BLOCKS.get(Math.floorMod(sequence - 1, DEFAULT_TIME_BLOCKS.size()));
+    }
+
+    private int normalizeDuration(int durationMinutes) {
+        if (durationMinutes <= 0) {
+            return 120;
+        }
+        return Math.min(240, Math.max(45, durationMinutes));
+    }
+
+    private int defaultDurationMinutes(String timeSlot) {
+        String normalized = LocalTripText.normalize(timeSlot);
+        if (normalized.contains("점심") || normalized.contains("휴식")) {
+            return 90;
+        }
+        if (normalized.contains("저녁")) {
+            return 120;
+        }
+        return 140;
     }
 
     private String fallbackNote(int slotIndex, Destination destination) {
@@ -450,10 +482,9 @@ public class TravelPlanService {
         }
         return switch (slotIndex) {
             case 0 -> destination.getDistrict() + " 도착 후 혼잡 전 핵심 포인트부터 둘러보세요.";
-            case 1, 2 -> destination.getHeadline();
-            case 3 -> destination.getName() + " 근처에서 식사와 짧은 휴식을 잡으세요.";
-            case 4, 5, 6 -> destination.getDescription();
-            case 7 -> "다음 장소 이동 전 사진 포인트와 기념품 구매 시간을 확보하세요.";
+            case 1 -> destination.getName() + " 근처에서 식사와 짧은 휴식을 잡으세요.";
+            case 2 -> destination.getHeadline();
+            case 3 -> destination.getDescription();
             default -> destination.getName() + " 주변 저녁 동선으로 하루를 마무리하세요.";
         };
     }

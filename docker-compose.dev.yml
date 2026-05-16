@@ -47,6 +47,7 @@ services:
       - infra/web/docker/web.env
     ports:
       - "80:5173"
+      - "443:5443"
     depends_on:
       - api
       

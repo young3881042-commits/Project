@@ -20,6 +20,9 @@ public class TravelPlan {
     @Column(nullable = false, length = 160)
     private String title;
 
+    @Column(nullable = false, length = 40)
+    private String username;
+
     @Column(nullable = false, length = 120)
     private String region;
 
@@ -69,6 +72,14 @@ public class TravelPlan {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getRegion() {

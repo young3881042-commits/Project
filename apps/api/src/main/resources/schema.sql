@@ -253,6 +253,7 @@ CREATE TABLE IF NOT EXISTS localtrip_destination (
 
 CREATE TABLE IF NOT EXISTS localtrip_travel_plan (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(40) NOT NULL DEFAULT 'admin',
     title VARCHAR(160) NOT NULL,
     region VARCHAR(120) NOT NULL,
     styles VARCHAR(255) NOT NULL,
@@ -299,6 +300,7 @@ CREATE TABLE IF NOT EXISTS localtrip_api_sync_log (
 );
 
 CREATE INDEX IF NOT EXISTS idx_localtrip_destination_region_style ON localtrip_destination(region, primary_style);
+CREATE INDEX IF NOT EXISTS idx_localtrip_plan_username_created_at ON localtrip_travel_plan(username, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_localtrip_plan_created_at ON localtrip_travel_plan(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_localtrip_plan_item_plan ON localtrip_travel_plan_item(travel_plan_id, day_number, sequence_number);
 CREATE INDEX IF NOT EXISTS idx_localtrip_sync_log_created_at ON localtrip_api_sync_log(created_at DESC);

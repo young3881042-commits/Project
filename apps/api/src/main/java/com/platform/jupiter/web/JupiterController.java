@@ -184,12 +184,22 @@ public class JupiterController {
 
     @PostMapping("/auth/signup")
     public AuthResponse signup(@Valid @RequestBody AuthSignupRequest request) {
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Signup is disabled.");
+        return authService.signup(request);
     }
 
     @PostMapping("/auth/login")
     public AuthResponse login(@Valid @RequestBody AuthLoginRequest request) {
         return authService.login(request);
+    }
+
+    @GetMapping("/auth/session")
+    public AuthResponse session(HttpServletRequest servletRequest) {
+        AuthSession session = authService.requireSession(servletRequest);
+        return new AuthResponse(
+                session.username(),
+                session.role(),
+                session.token(),
+                session.admin() ? appProperties.launcherUrl() : "");
     }
 
     @PostMapping("/auth/account/password")

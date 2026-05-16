@@ -14,13 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api")
 public class LocalTripController {
-    private static final String DEFAULT_GENERATION_USERNAME = "admin";
-
     private final LocalTripDestinationService destinationService;
     private final TravelPlanService travelPlanService;
     private final AuthService authService;
@@ -59,31 +56,26 @@ public class LocalTripController {
     public TravelPlanResponse generateTravelPlan(
             @Valid @RequestBody TravelPlanGenerateRequest request,
             HttpServletRequest servletRequest) {
-        return travelPlanService.generate(request, resolveGenerationUsername(servletRequest));
+        AuthSession session = authService.requireSession(servletRequest);
+        return travelPlanService.generate(request, session.username());
     }
 
     @GetMapping("/travel-plans")
-    public List<TravelPlanResponse> travelPlans() {
-        return travelPlanService.listPlans();
+    public List<TravelPlanResponse> travelPlans(HttpServletRequest servletRequest) {
+        AuthSession session = authService.requireSession(servletRequest);
+        return travelPlanService.listPlans(session.username());
     }
 
     @GetMapping("/travel-plans/{id}")
-    public TravelPlanResponse travelPlan(@PathVariable Long id) {
-        return travelPlanService.getPlan(id);
+    public TravelPlanResponse travelPlan(@PathVariable Long id, HttpServletRequest servletRequest) {
+        AuthSession session = authService.requireSession(servletRequest);
+        return travelPlanService.getPlan(id, session.username());
     }
 
     @DeleteMapping("/travel-plans/{id}")
-    public ResponseEntity<Void> deleteTravelPlan(@PathVariable Long id) {
-        travelPlanService.deletePlan(id);
+    public ResponseEntity<Void> deleteTravelPlan(@PathVariable Long id, HttpServletRequest servletRequest) {
+        AuthSession session = authService.requireSession(servletRequest);
+        travelPlanService.deletePlan(id, session.username());
         return ResponseEntity.noContent().build();
-    }
-
-    private String resolveGenerationUsername(HttpServletRequest servletRequest) {
-        try {
-            AuthSession session = authService.requireSession(servletRequest);
-            return session.username();
-        } catch (ResponseStatusException ignored) {
-            return DEFAULT_GENERATION_USERNAME;
-        }
     }
 }

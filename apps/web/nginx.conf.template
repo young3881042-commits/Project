@@ -1,10 +1,26 @@
 server {
   listen ${WEB_PORT};
+  listen ${WEB_HTTPS_PORT} ssl;
   server_name _;
   root /usr/share/nginx/html;
   index index.html;
 
   client_max_body_size 200m;
+
+  ssl_certificate /etc/nginx/ssl/localtrip.crt;
+  ssl_certificate_key /etc/nginx/ssl/localtrip.key;
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_prefer_server_ciphers off;
+
+  location = /healthz {
+    access_log off;
+    default_type text/plain;
+    return 200 "ok\n";
+  }
+
+  location ~ (^|/)\.(?!well-known/) {
+    return 404;
+  }
 
   location /api/ {
     proxy_pass ${VITE_API_PROXY};
