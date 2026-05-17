@@ -23,7 +23,6 @@ public class AuthService {
     private static final String ADMIN_ROLE = "ADMIN";
     private static final String USER_ROLE = "USER";
     private static final String GUEST_USERNAME = "guestuser";
-    private static final String GUEST_PASSWORD = "guest1234";
 
     private final AppUserAccountRepository repository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -57,19 +56,22 @@ public class AuthService {
                     updated_at TIMESTAMP(6) NOT NULL
                 )
                 """);
-        AppUserAccount admin = repository.findByUsername("admin1").orElseGet(AppUserAccount::new);
-        admin.setUsername("admin1");
-        admin.setPasswordHash(passwordEncoder.encode("admin123"));
-        admin.setRole(ADMIN_ROLE);
-        repository.save(admin);
-        if (!repository.existsByUsername(GUEST_USERNAME)) {
-            AppUserAccount guest = new AppUserAccount();
-            guest.setUsername(GUEST_USERNAME);
-            guest.setPasswordHash(passwordEncoder.encode(GUEST_PASSWORD));
-            guest.setRole(USER_ROLE);
-            repository.save(guest);
-            fileService.ensureUserWorkspace(GUEST_USERNAME);
+        String adminUsername = Optional.ofNullable(System.getenv("JUPITER_ADMIN_USERNAME")).orElse("").trim();
+        String adminPassword = Optional.ofNullable(System.getenv("JUPITER_ADMIN_PASSWORD")).orElse("").trim();
+        if (!adminUsername.isBlank() && !adminPassword.isBlank()) {
+            AppUserAccount admin = repository.findByUsername(adminUsername).orElseGet(AppUserAccount::new);
+            admin.setUsername(adminUsername);
+            admin.setPasswordHash(passwordEncoder.encode(adminPassword));
+            admin.setRole(ADMIN_ROLE);
+            repository.save(admin);
+            fileService.ensureUserWorkspace(adminUsername);
         }
+        AppUserAccount guest = repository.findByUsername(GUEST_USERNAME).orElseGet(AppUserAccount::new);
+        guest.setUsername(GUEST_USERNAME);
+        guest.setPasswordHash(passwordEncoder.encode(newToken()));
+        guest.setRole(USER_ROLE);
+        repository.save(guest);
+        fileService.ensureUserWorkspace(GUEST_USERNAME);
     }
 
     @Transactional
@@ -96,7 +98,18 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
         }
 
-        String role = account.getRole() == null ? USER_ROLE : account.getRole().toUpperCase(Locale.ROOT);
+        if (GUEST_USERNAME.equals(account.getUsername())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
+        }
+        return createResponse(account.getUsername(), account.getRole());
+    }
+
+    public AuthResponse guestSession() {
+        return createResponse(GUEST_USERNAME, USER_ROLE);
+    }
+
+    private AuthResponse createResponse(String username, String accountRole) {
+        String role = accountRole == null ? USER_ROLE : accountRole.toUpperCase(Locale.ROOT);
         String token = newToken();
         AuthSession session = new AuthSession(username, role, ADMIN_ROLE.equals(role), token);
         sessions.put(token, session);

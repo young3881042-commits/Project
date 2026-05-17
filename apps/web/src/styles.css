@@ -14698,8 +14698,13 @@ body:has(.ltShell) {
 }
 
 .schedulerQuickAdd {
-  grid-template-columns: minmax(220px, 1.25fr) repeat(3, minmax(120px, 0.6fr)) auto;
+  grid-template-columns: minmax(190px, 1.1fr) minmax(210px, 0.9fr) minmax(210px, 0.9fr) minmax(110px, 0.48fr) minmax(170px, 0.72fr) auto;
   align-items: end;
+}
+
+.schedulerDatabase {
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+  align-items: start;
 }
 
 .schedulerQuickAdd label {
@@ -14750,6 +14755,134 @@ body:has(.ltShell) {
   gap: 10px;
   padding-bottom: 14px;
   border-bottom: 1px solid #ededeb;
+}
+
+.schedulerTodayPanel {
+  display: grid;
+  gap: 14px;
+  min-height: 100%;
+  padding: 16px;
+  border: 1px solid #ededeb;
+  border-radius: 10px;
+  background: #fbfbfa;
+}
+
+.schedulerTodayHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.schedulerTodayHeader span {
+  color: #9b9a97;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.schedulerTodayHeader h2 {
+  margin: 3px 0 0;
+  color: #2f3437;
+  font-size: 1.35rem;
+}
+
+.schedulerTodayHeader p {
+  margin: 5px 0 0;
+  color: #787774;
+  font-size: 0.86rem;
+}
+
+.schedulerTodayHeader button {
+  min-height: 32px;
+  border: 1px solid #ededeb;
+  border-radius: 999px;
+  background: #fff;
+  color: #37352f;
+  padding: 0 12px;
+  font: inherit;
+  font-weight: 750;
+}
+
+.schedulerTodayTimeline {
+  display: grid;
+  gap: 12px;
+}
+
+.schedulerTodaySlot {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #ededeb;
+}
+
+.schedulerTodaySlot:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.schedulerTodayTime {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+}
+
+.schedulerTodayTime strong {
+  color: #2f3437;
+  font-size: 0.92rem;
+}
+
+.schedulerTodayTime span {
+  color: #9b9a97;
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.schedulerTodayEvents {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.schedulerTodayEvents button {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  border: 1px solid #ededeb;
+  border-radius: 8px;
+  background: #fff;
+  color: #37352f;
+  padding: 10px;
+  text-align: left;
+  font: inherit;
+}
+
+.schedulerTodayEvents button.done {
+  opacity: 0.58;
+}
+
+.schedulerTodayEvents button.done strong {
+  text-decoration: line-through;
+}
+
+.schedulerTodayEvents time {
+  color: #fb7185;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.schedulerTodayEvents strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #2f3437;
+  font-size: 0.98rem;
+}
+
+.schedulerTodayEvents span,
+.schedulerTodayEvents em {
+  color: #787774;
+  font-size: 0.78rem;
+  font-style: normal;
 }
 
 .schedulerCalendarHeader {
@@ -16390,14 +16523,13 @@ body:has(.ltShell) {
 
 /* Goal repair: soft scheduler UI and non-overlapping AI Trip mobile chrome. */
 .schedulerShell {
-  background:
-    linear-gradient(180deg, #fff7ed 0%, #f8fafc 42%, #eefdf8 100%) !important;
-  color: #263238 !important;
+  background: #f6f8fb !important;
+  color: #1f2937 !important;
 }
 
 .schedulerSidebar {
-  border-right: 1px solid #f0dfd4 !important;
-  background: rgba(255, 251, 247, 0.92) !important;
+  border-right: 1px solid #dbe3ee !important;
+  background: rgba(255, 255, 255, 0.94) !important;
 }
 
 .schedulerHomeButton,
@@ -16410,8 +16542,8 @@ body:has(.ltShell) {
 .schedulerSideGroup button.active,
 .schedulerSideGroup a:hover,
 .schedulerSideGroup button:hover {
-  background: #ffe8d6 !important;
-  color: #9a3412 !important;
+  background: #e8f1ff !important;
+  color: #1d4ed8 !important;
 }
 
 .schedulerPage {
@@ -16425,8 +16557,8 @@ body:has(.ltShell) {
 
 .schedulerPageIcon {
   border-radius: 18px !important;
-  background: #dcfce7 !important;
-  color: #047857 !important;
+  background: #e8f1ff !important;
+  color: #2563eb !important;
 }
 
 .schedulerHero h1 {
@@ -16443,64 +16575,88 @@ body:has(.ltShell) {
 .schedulerStats article,
 .schedulerQuickAdd,
 .schedulerDatabase {
-  border: 1px solid #f0dfd4 !important;
+  border: 1px solid #dbe3ee !important;
   border-radius: 18px !important;
-  background: rgba(255, 255, 255, 0.88) !important;
-  box-shadow: 0 18px 44px rgba(148, 163, 184, 0.16) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  box-shadow: 0 18px 42px rgba(31, 41, 55, 0.08) !important;
 }
 
 .schedulerQuickAdd {
-  grid-template-columns: minmax(210px, 1.2fr) minmax(230px, 0.95fr) minmax(120px, 0.55fr) minmax(180px, 0.8fr) auto !important;
+  grid-template-columns: minmax(190px, 1.1fr) minmax(210px, 0.9fr) minmax(210px, 0.9fr) minmax(120px, 0.55fr) minmax(180px, 0.8fr) auto !important;
   gap: 10px !important;
+}
+
+.schedulerDatabase {
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr) !important;
+}
+
+.schedulerBoardHeader,
+.schedulerList {
+  grid-column: 1 / -1 !important;
+}
+
+.schedulerTodayPanel {
+  border-color: #dbe3ee !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+}
+
+.schedulerTodayHeader button,
+.schedulerTodayEvents button {
+  border-color: #dbe3ee !important;
+}
+
+.schedulerTodayEvents time {
+  color: #2563eb !important;
 }
 
 .schedulerQuickAdd input,
 .schedulerQuickAdd select,
 .schedulerQuickAdd textarea {
-  border-color: #eadfd6 !important;
+  border-color: #dbe3ee !important;
   border-radius: 12px !important;
-  background: #fffaf5 !important;
+  background: #f8fafc !important;
 }
 
 .schedulerQuickAdd > button {
   border: 0 !important;
   border-radius: 999px !important;
-  background: #fb7185 !important;
+  background: #2563eb !important;
   color: #fff !important;
-  box-shadow: 0 10px 24px rgba(251, 113, 133, 0.24) !important;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.24) !important;
 }
 
 .schedulerCalendarControls button,
 .schedulerFilters button {
-  border-color: #eadfd6 !important;
+  border-color: #dbe3ee !important;
   border-radius: 999px !important;
-  background: #fffaf5 !important;
+  background: #f8fafc !important;
 }
 
 .schedulerCalendarGrid button {
   min-height: 68px !important;
-  border-color: #efe4dc !important;
+  border-color: #e2e8f0 !important;
   border-radius: 14px !important;
   background: #fff !important;
 }
 
 .schedulerCalendarGrid button.selected {
-  border-color: #fb7185 !important;
-  background: #fff1f2 !important;
+  border-color: #2563eb !important;
+  background: #eff6ff !important;
 }
 
 .schedulerCalendarGrid button.today {
-  border-color: #34d399 !important;
+  border-color: #10b981 !important;
 }
 
 .schedulerCalendarGrid button small,
 .schedulerTypePill {
-  background: #d1fae5 !important;
-  color: #047857 !important;
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
 }
 
 .schedulerLinkedSchedule {
-  border-top-color: #f0dfd4 !important;
+  border-top-color: #dbe3ee !important;
 }
 
 .schedulerLinkedHeader p {
@@ -16508,43 +16664,43 @@ body:has(.ltShell) {
 }
 
 .schedulerViewSwitch {
-  border-color: #eadfd6 !important;
-  background: #fffaf5 !important;
+  border-color: #dbe3ee !important;
+  background: #f8fafc !important;
 }
 
 .schedulerViewSwitch button.active {
-  background: #fb7185 !important;
+  background: #2563eb !important;
   color: #fff !important;
 }
 
 .schedulerWeekSlots button,
 .schedulerMonthSlots button {
-  border-color: #efe4dc !important;
+  border-color: #e2e8f0 !important;
   border-radius: 14px !important;
   background: #fff !important;
 }
 
 .schedulerWeekSlots button.selected,
 .schedulerMonthSlots button.selected {
-  border-color: #fb7185 !important;
-  background: #fff1f2 !important;
+  border-color: #2563eb !important;
+  background: #eff6ff !important;
 }
 
 .schedulerWeekSlots button.today,
 .schedulerMonthSlots button.today {
-  border-color: #34d399 !important;
+  border-color: #10b981 !important;
 }
 
 .schedulerWeekSlots button > small,
 .schedulerMonthSlots button > small {
-  background: #d1fae5 !important;
+  background: #ecfdf5 !important;
   color: #047857 !important;
 }
 
 .schedulerTableHead,
 .schedulerItem {
   min-width: 0 !important;
-  grid-template-columns: minmax(180px, 1.1fr) 92px 142px minmax(140px, 1fr) 58px !important;
+  grid-template-columns: minmax(180px, 1.1fr) 92px 142px minmax(140px, 1fr) 76px !important;
 }
 
 .schedulerItem {
@@ -16588,7 +16744,21 @@ body:has(.ltShell) {
   }
 
   .schedulerDatabase {
+    grid-template-columns: 1fr !important;
     padding: 12px !important;
+  }
+
+  .schedulerTodayPanel {
+    min-height: auto !important;
+    padding: 14px !important;
+  }
+
+  .schedulerTodaySlot {
+    grid-template-columns: 82px minmax(0, 1fr) !important;
+  }
+
+  .schedulerTodayEvents button {
+    min-width: 0 !important;
   }
 
   .schedulerBoardHeader,
@@ -16628,13 +16798,20 @@ body:has(.ltShell) {
     gap: 8px 10px !important;
     padding: 12px !important;
     border: 1px solid #efe4dc !important;
+    border-color: #e2e8f0 !important;
     border-radius: 16px !important;
     background: #fff !important;
   }
 
   .schedulerNameCell,
+  .schedulerItem time,
   .schedulerItem small {
     grid-column: 1 / -1 !important;
+  }
+
+  .schedulerDelete {
+    justify-self: end !important;
+    min-width: max-content !important;
   }
 }
 
@@ -16677,6 +16854,29 @@ body:has(.ltShell) {
   .schedulerMonthSlots button > small {
     grid-column: 1 / -1 !important;
     justify-self: start !important;
+  }
+
+  .schedulerTodayHeader {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .schedulerTodayHeader button,
+  .schedulerQuickAdd > button {
+    width: 100% !important;
+  }
+
+  .schedulerTodaySlot {
+    grid-template-columns: 1fr !important;
+  }
+
+  .schedulerTodayTime {
+    grid-template-columns: auto 1fr !important;
+    align-items: center !important;
+  }
+
+  .schedulerTodayEvents button {
+    padding: 12px !important;
   }
 }
 

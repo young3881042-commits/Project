@@ -192,6 +192,11 @@ public class JupiterController {
         return authService.login(request);
     }
 
+    @PostMapping("/auth/guest")
+    public AuthResponse guest() {
+        return authService.guestSession();
+    }
+
     @GetMapping("/auth/session")
     public AuthResponse session(HttpServletRequest servletRequest) {
         AuthSession session = authService.requireSession(servletRequest);

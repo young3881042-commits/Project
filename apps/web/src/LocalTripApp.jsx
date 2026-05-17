@@ -324,7 +324,7 @@ function OptionGroup({ label, value, options, onChange }) {
 }
 
 async function localTripRequest(path, { method = 'GET', body } = {}) {
-  const session = readStoredAuth();
+  const session = await ensureLocalTripSession();
   const headers = {
     Accept: 'application/json',
     ...(session?.token ? { Authorization: `Bearer ${session.token}` } : {})
@@ -344,6 +344,21 @@ async function localTripRequest(path, { method = 'GET', body } = {}) {
   }
   const text = await response.text();
   return text ? JSON.parse(text) : null;
+}
+
+async function ensureLocalTripSession() {
+  const session = readStoredAuth();
+  if (session?.token) return session;
+  const response = await fetch('/api/auth/guest', {
+    method: 'POST',
+    headers: { Accept: 'application/json' }
+  });
+  if (!response.ok) {
+    throw new Error((await response.text()) || '게스트 세션을 만들 수 없습니다.');
+  }
+  const guestSession = await response.json();
+  localStorage.setItem(AUTH_KEY, JSON.stringify({ ...guestSession, isGuest: true }));
+  return { ...guestSession, isGuest: true };
 }
 
 function readStoredAuth() {
@@ -1297,7 +1312,7 @@ function InlineNotice({ error, fallback }) {
   return (
     <div className="ltInlineNotice">
       <strong>{fallback ? '실데이터 대기' : '요청 실패'}</strong>
-      <span>{error || 'AI Trip API 데이터가 아직 준비되지 않았습니다. admin1 실데이터 시드를 먼저 적용해 주세요.'}</span>
+      <span>{error || 'AI Trip API 데이터가 아직 준비되지 않았습니다. 실데이터 시드를 먼저 적용해 주세요.'}</span>
     </div>
   );
 }

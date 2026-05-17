@@ -6,6 +6,12 @@ const LazyCodeEditor = lazy(() => import('./CodeEditor.jsx'));
 const LazyGeminiApp = lazy(() => import('./GeminiApp.jsx'));
 const LazyRagApp = lazy(() => import('./RagApp.jsx'));
 const SCHEDULER_KEY = 'codex-personal-scheduler-items';
+const RECURRENCE_LABELS = {
+  none: '반복 없음',
+  daily: '매일',
+  weekly: '매주',
+  monthly: '매월'
+};
 const DEFAULT_SCHEDULER_ITEMS = [
   {
     id: 'schedule-demo-1',
@@ -14,6 +20,8 @@ const DEFAULT_SCHEDULER_ITEMS = [
     time: '10:00',
     type: '작업',
     memo: '메인 화면과 서비스 이동 동선을 점검합니다.',
+    recurrence: 'none',
+    recurrenceEnd: '',
     done: false
   },
   {
@@ -23,6 +31,8 @@ const DEFAULT_SCHEDULER_ITEMS = [
     time: '14:00',
     type: '검토',
     memo: '생성된 파일과 프롬프트 결과를 workspace에서 확인합니다.',
+    recurrence: 'none',
+    recurrenceEnd: '',
     done: false
   }
 ];
@@ -43,6 +53,9 @@ export function addSchedulerItem(item) {
     time: item?.time || '09:00',
     type: item?.type || '작업',
     memo: item?.memo || item?.note || '',
+    recurrence: Object.keys(RECURRENCE_LABELS).includes(item?.recurrence) ? item.recurrence : 'none',
+    recurrenceEnd: item?.recurrenceEnd || '',
+    doneOverrides: item?.doneOverrides || {},
     done: Boolean(item?.done)
   };
   const current = readSchedulerItems();
@@ -132,10 +145,19 @@ function readSchedulerItems() {
       return DEFAULT_SCHEDULER_ITEMS;
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : DEFAULT_SCHEDULER_ITEMS;
+    return Array.isArray(parsed) ? parsed.map(normalizeSchedulerItem) : DEFAULT_SCHEDULER_ITEMS;
   } catch {
     return DEFAULT_SCHEDULER_ITEMS;
   }
+}
+
+function normalizeSchedulerItem(item) {
+  return {
+    ...item,
+    recurrence: Object.keys(RECURRENCE_LABELS).includes(item?.recurrence) ? item.recurrence : 'none',
+    recurrenceEnd: item?.recurrenceEnd || '',
+    doneOverrides: item?.doneOverrides && typeof item.doneOverrides === 'object' ? item.doneOverrides : {}
+  };
 }
 
 function toDateKey(date) {
@@ -170,6 +192,42 @@ function addDays(date, amount) {
   const next = new Date(date);
   next.setDate(date.getDate() + amount);
   return next;
+}
+
+function diffDays(fromDateKey, toDateKey) {
+  const from = parseDateKey(fromDateKey);
+  const to = parseDateKey(toDateKey);
+  return Math.round((to.getTime() - from.getTime()) / 86400000);
+}
+
+function isScheduledOnDate(item, dateKey) {
+  if (!item?.date || dateKey < item.date) return false;
+  if (item.recurrenceEnd && dateKey > item.recurrenceEnd) return false;
+  if (item.recurrence === 'daily') return true;
+  if (item.recurrence === 'weekly') return diffDays(item.date, dateKey) % 7 === 0;
+  if (item.recurrence === 'monthly') {
+    return parseDateKey(item.date).getDate() === parseDateKey(dateKey).getDate();
+  }
+  return item.date === dateKey;
+}
+
+function expandSchedulerItemsForDates(items, dateKeys) {
+  const uniqueDateKeys = [...new Set(dateKeys)].sort();
+  return uniqueDateKeys.flatMap((dateKey) => items
+    .filter((item) => isScheduledOnDate(item, dateKey))
+    .map((item) => {
+      const recurring = item.recurrence && item.recurrence !== 'none';
+      return {
+        ...item,
+        id: recurring ? `${item.id}:${dateKey}` : item.id,
+        sourceId: item.id,
+        date: dateKey,
+        originalDate: item.date,
+        recurring,
+        recurrenceLabel: RECURRENCE_LABELS[item.recurrence] || RECURRENCE_LABELS.none,
+        done: recurring ? Boolean(item.doneOverrides?.[dateKey]) : Boolean(item.done)
+      };
+    }));
 }
 
 function startOfMondayWeek(dateKey) {
@@ -1178,7 +1236,7 @@ function WorkspaceApp({ navigate }) {
       if (session.role !== 'ADMIN') {
         localStorage.removeItem(AUTH_KEY);
         setAuth(null);
-        setAuthError('Workspace는 관리자 계정만 접근할 수 있습니다. admin1 계정으로 로그인하세요.');
+        setAuthError('접근 권한이 없습니다.');
         return;
       }
       setAuth(session);
@@ -1575,7 +1633,7 @@ function WorkspaceApp({ navigate }) {
         setPassword={setPassword}
         onSubmit={handleAuth}
         loading={authLoading}
-        error={authError || 'Workspace는 관리자 전용입니다. admin1 계정으로 로그인하세요.'}
+        error={authError}
       />
     );
   }
@@ -1592,7 +1650,7 @@ function WorkspaceApp({ navigate }) {
         setPassword={setPassword}
         onSubmit={handleAuth}
         loading={authLoading}
-        error="Workspace는 관리자 계정만 접근할 수 있습니다. admin1 계정으로 로그인하세요."
+        error="접근 권한이 없습니다."
       />
     );
   }
@@ -1825,7 +1883,6 @@ function SchedulerPage({ navigate }) {
   const session = readStoredAuth();
   const [items, setItems] = useState(readSchedulerItems);
   const [filter, setFilter] = useState('전체');
-  const [calendarView, setCalendarView] = useState('금주');
   const [selectedDate, setSelectedDate] = useState(toDateKey(new Date()));
   const [calendarMonth, setCalendarMonth] = useState(toDateKey(new Date()).slice(0, 7));
   const [draft, setDraft] = useState({
@@ -1833,6 +1890,8 @@ function SchedulerPage({ navigate }) {
     date: toDateKey(new Date()),
     time: '09:00',
     type: '작업',
+    recurrence: 'none',
+    recurrenceEnd: '',
     memo: ''
   });
 
@@ -1860,20 +1919,10 @@ function SchedulerPage({ navigate }) {
   }, []);
 
   const today = toDateKey(new Date());
-  const todayItems = items.filter((item) => item.date === today);
-  const pendingItems = items.filter((item) => !item.done);
   const monthDays = useMemo(() => buildMonthDays(calendarMonth), [calendarMonth]);
-  const itemCountByDate = useMemo(() => items.reduce((counts, item) => {
-    counts[item.date] = (counts[item.date] || 0) + 1;
-    return counts;
-  }, {}), [items]);
   const currentMonth = today.slice(0, 7);
   const weekDays = useMemo(() => buildWeekDays(today), [today]);
   const weekRangeLabel = `${formatDateLabel(weekDays[0].key)} - ${formatDateLabel(weekDays[6].key)}`;
-  const itemsByDate = useMemo(() => items.reduce((groups, item) => {
-    groups[item.date] = [...(groups[item.date] || []), item];
-    return groups;
-  }, {}), [items]);
   const monthScheduleDays = useMemo(() => {
     const [year, month] = currentMonth.split('-').map(Number);
     const lastDate = new Date(year, month, 0).getDate();
@@ -1886,12 +1935,39 @@ function SchedulerPage({ navigate }) {
       };
     });
   }, [currentMonth]);
-  const visibleItems = items
+  const scheduleDateKeys = useMemo(() => [
+    selectedDate,
+    today,
+    ...monthDays.map((day) => day.key),
+    ...weekDays.map((day) => day.key),
+    ...monthScheduleDays.map((day) => day.key)
+  ], [selectedDate, today, monthDays, weekDays, monthScheduleDays]);
+  const expandedItems = useMemo(() => expandSchedulerItemsForDates(items, scheduleDateKeys), [items, scheduleDateKeys]);
+  const todayItems = expandedItems
+    .filter((item) => item.date === today)
+    .slice()
+    .sort((left, right) => left.time.localeCompare(right.time));
+  const pendingItems = expandedItems.filter((item) => !item.done);
+  const itemCountByDate = useMemo(() => expandedItems.reduce((counts, item) => {
+    counts[item.date] = (counts[item.date] || 0) + 1;
+    return counts;
+  }, {}), [expandedItems]);
+  const itemsByDate = useMemo(() => expandedItems.reduce((groups, item) => {
+    groups[item.date] = [...(groups[item.date] || []), item];
+    return groups;
+  }, {}), [expandedItems]);
+  const todayTimeline = useMemo(() => [
+    { key: 'morning', label: '오전', range: '06:00 - 11:59', items: todayItems.filter((item) => Number(item.time.slice(0, 2)) >= 6 && Number(item.time.slice(0, 2)) < 12) },
+    { key: 'afternoon', label: '오후', range: '12:00 - 17:59', items: todayItems.filter((item) => Number(item.time.slice(0, 2)) >= 12 && Number(item.time.slice(0, 2)) < 18) },
+    { key: 'evening', label: '저녁', range: '18:00 - 23:59', items: todayItems.filter((item) => Number(item.time.slice(0, 2)) >= 18) },
+    { key: 'early', label: '새벽', range: '00:00 - 05:59', items: todayItems.filter((item) => Number(item.time.slice(0, 2)) < 6) }
+  ], [todayItems]);
+  const visibleItems = expandedItems
     .filter((item) => item.date === selectedDate)
     .filter((item) => filter === '전체' || item.type === filter || (filter === '완료' && item.done))
     .slice()
     .sort((left, right) => `${left.date} ${left.time}`.localeCompare(`${right.date} ${right.time}`));
-  const selectedDateItems = items.filter((item) => item.date === selectedDate);
+  const selectedDateItems = expandedItems.filter((item) => item.date === selectedDate);
 
   const moveCalendarMonth = (offset) => {
     const [year, month] = calendarMonth.split('-').map(Number);
@@ -1911,6 +1987,9 @@ function SchedulerPage({ navigate }) {
         date: draft.date,
         time: draft.time,
         type: draft.type,
+        recurrence: draft.recurrence,
+        recurrenceEnd: draft.recurrence === 'none' ? '' : draft.recurrenceEnd,
+        doneOverrides: {},
         memo: draft.memo.trim(),
         done: false
       }
@@ -1926,6 +2005,27 @@ function SchedulerPage({ navigate }) {
 
   const deleteItem = (id) => {
     setItems((current) => current.filter((item) => item.id !== id));
+  };
+
+  const updateVisibleItem = (item, patch) => {
+    if (item.recurring && Object.prototype.hasOwnProperty.call(patch, 'done')) {
+      setItems((current) => current.map((source) => {
+        if (source.id !== item.sourceId) return source;
+        return {
+          ...source,
+          doneOverrides: {
+            ...(source.doneOverrides || {}),
+            [item.date]: patch.done
+          }
+        };
+      }));
+      return;
+    }
+    updateItem(item.sourceId || item.id, patch);
+  };
+
+  const deleteVisibleItem = (item) => {
+    deleteItem(item.sourceId || item.id);
   };
 
   return (
@@ -1956,7 +2056,7 @@ function SchedulerPage({ navigate }) {
           <div className="schedulerStats">
             <article><span>오늘</span><strong>{todayItems.length}</strong></article>
             <article><span>미완료</span><strong>{pendingItems.length}</strong></article>
-            <article><span>전체</span><strong>{items.length}</strong></article>
+            <article><span>전체</span><strong>{expandedItems.length}</strong></article>
           </div>
         </header>
         <form className="schedulerQuickAdd" onSubmit={submitDraft}>
@@ -1972,6 +2072,24 @@ function SchedulerPage({ navigate }) {
             <label>
               <span>시간</span>
               <input type="time" value={draft.time} onChange={(event) => setDraft((current) => ({ ...current, time: event.target.value }))} />
+            </label>
+          </div>
+          <div className="schedulerFormGrid">
+            <label>
+              <span>반복</span>
+              <select value={draft.recurrence} onChange={(event) => setDraft((current) => ({ ...current, recurrence: event.target.value }))}>
+                {Object.entries(RECURRENCE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+              </select>
+            </label>
+            <label>
+              <span>반복 종료</span>
+              <input
+                type="date"
+                value={draft.recurrenceEnd}
+                disabled={draft.recurrence === 'none'}
+                min={draft.date}
+                onChange={(event) => setDraft((current) => ({ ...current, recurrenceEnd: event.target.value }))}
+              />
             </label>
           </div>
           <label>
@@ -2033,75 +2151,85 @@ function SchedulerPage({ navigate }) {
             <div className="schedulerLinkedSchedule">
               <div className="schedulerLinkedHeader">
                 <div>
-                  <h3>{calendarView} 일정</h3>
-                  <p>{calendarView === '금주' ? `${today} 기준 · ${weekRangeLabel}` : `${today} 기준 · ${currentMonth}`} 일정</p>
-                </div>
-                <div className="schedulerViewSwitch" aria-label="일정 보기">
-                  {['금주', '이번달'].map((view) => (
-                    <button key={view} type="button" className={calendarView === view ? 'active' : ''} onClick={() => setCalendarView(view)}>
-                      {view}
-                    </button>
-                  ))}
+                  <h3>금주 일정</h3>
+                  <p>{today} 기준 · {weekRangeLabel} 일정</p>
                 </div>
               </div>
-              {calendarView === '금주' ? (
-                <div className="schedulerWeekSlots">
-                  {weekDays.map((day) => {
-                    const dayItems = (itemsByDate[day.key] || []).slice().sort((left, right) => left.time.localeCompare(right.time));
-                    return (
-                      <button
-                        key={day.key}
-                        type="button"
-                        className={[
-                          day.key === selectedDate ? 'selected' : '',
-                          day.key === today ? 'today' : ''
-                        ].filter(Boolean).join(' ')}
-                        onClick={() => {
-                          setSelectedDate(day.key);
-                          setCalendarMonth(day.key.slice(0, 7));
-                          setDraft((current) => ({ ...current, date: day.key }));
-                        }}
-                      >
-                        <strong>{day.weekday}</strong>
-                        <span>{formatDateLabel(day.key)}</span>
-                        <small>{dayItems.length}개</small>
-                        <div>
-                          {dayItems.slice(0, 3).map((item) => <em key={item.id}>{item.time} {item.title}</em>)}
-                          {dayItems.length > 3 ? <em>+{dayItems.length - 3}개 더</em> : null}
-                          {dayItems.length ? null : <em>일정 없음</em>}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="schedulerMonthSlots">
-                  {monthScheduleDays.map((day) => {
-                    const dayItems = (itemsByDate[day.key] || []).slice().sort((left, right) => left.time.localeCompare(right.time));
-                    return (
-                      <button
-                        key={day.key}
-                        type="button"
-                        className={[
-                          day.key === selectedDate ? 'selected' : '',
-                          day.key === today ? 'today' : '',
-                          dayItems.length ? 'hasItems' : ''
-                        ].filter(Boolean).join(' ')}
-                        onClick={() => {
-                          setSelectedDate(day.key);
-                          setDraft((current) => ({ ...current, date: day.key }));
-                        }}
-                      >
-                        <strong>{day.dayNumber}</strong>
-                        <span>{day.weekday}</span>
-                        {dayItems.length ? <small>{dayItems.length}</small> : null}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+              <div className="schedulerWeekSlots">
+                {weekDays.map((day) => {
+                  const dayItems = (itemsByDate[day.key] || []).slice().sort((left, right) => left.time.localeCompare(right.time));
+                  return (
+                    <button
+                      key={day.key}
+                      type="button"
+                      className={[
+                        day.key === selectedDate ? 'selected' : '',
+                        day.key === today ? 'today' : ''
+                      ].filter(Boolean).join(' ')}
+                      onClick={() => {
+                        setSelectedDate(day.key);
+                        setCalendarMonth(day.key.slice(0, 7));
+                        setDraft((current) => ({ ...current, date: day.key }));
+                      }}
+                    >
+                      <strong>{day.weekday}</strong>
+                      <span>{formatDateLabel(day.key)}</span>
+                      <small>{dayItems.length}개</small>
+                      <div>
+                        {dayItems.slice(0, 3).map((item) => <em key={item.id}>{item.time} {item.title}{item.recurring ? ' · 반복' : ''}</em>)}
+                        {dayItems.length > 3 ? <em>+{dayItems.length - 3}개 더</em> : null}
+                        {dayItems.length ? null : <em>일정 없음</em>}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
+          <aside className="schedulerTodayPanel">
+            <div className="schedulerTodayHeader">
+              <div>
+                <span>Today</span>
+                <h2>오늘 일정</h2>
+                <p>{today} · {todayItems.length}개</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedDate(today);
+                  setCalendarMonth(today.slice(0, 7));
+                  setDraft((current) => ({ ...current, date: today }));
+                }}
+              >
+                보기
+              </button>
+            </div>
+            <div className="schedulerTodayTimeline">
+              {todayTimeline.map((slot) => (
+                <section key={slot.key} className="schedulerTodaySlot">
+                  <div className="schedulerTodayTime">
+                    <strong>{slot.label}</strong>
+                    <span>{slot.range}</span>
+                  </div>
+                  <div className="schedulerTodayEvents">
+                    {slot.items.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={item.done ? 'done' : ''}
+                        onClick={() => updateVisibleItem(item, { done: !item.done })}
+                      >
+                        <time>{item.time}</time>
+                        <strong>{item.title}</strong>
+                        <span>{item.type}{item.recurring ? ` · ${item.recurrenceLabel}` : ''}</span>
+                      </button>
+                    ))}
+                    {slot.items.length ? null : <em>일정 없음</em>}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </aside>
           <div className="schedulerBoardHeader">
             <div>
               <h2>일정</h2>
@@ -2126,13 +2254,13 @@ function SchedulerPage({ navigate }) {
             {visibleItems.map((item) => (
               <article className={`schedulerItem ${item.done ? 'done' : ''}`} key={item.id}>
                 <div className="schedulerNameCell">
-                  <button type="button" className="schedulerCheck" onClick={() => updateItem(item.id, { done: !item.done })}>{item.done ? '✓' : ''}</button>
+                  <button type="button" className="schedulerCheck" onClick={() => updateVisibleItem(item, { done: !item.done })}>{item.done ? '✓' : ''}</button>
                   <strong>{item.title}</strong>
                 </div>
                 <span className="schedulerTypePill">{item.type}</span>
                 <time>{item.date} · {item.time}</time>
-                <small>{item.memo || '메모 없음'}</small>
-                <button type="button" className="schedulerDelete" onClick={() => deleteItem(item.id)}>삭제</button>
+                <small>{[item.memo || '메모 없음', item.recurring ? item.recurrenceLabel : ''].filter(Boolean).join(' · ')}</small>
+                <button type="button" className="schedulerDelete" onClick={() => deleteVisibleItem(item)}>{item.recurring ? '반복삭제' : '삭제'}</button>
               </article>
             ))}
             {visibleItems.length ? null : <p className="schedulerEmpty">표시할 일정이 없습니다.</p>}

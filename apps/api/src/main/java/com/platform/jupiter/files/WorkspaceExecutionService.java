@@ -567,7 +567,6 @@ public class WorkspaceExecutionService {
                 }
                 """.formatted(home);
         return "mkdir -p \"$HOME/.gemini\""
-                + " && if [ -d /workspace-data/users/admin1/.gemini ]; then cp -f /workspace-data/users/admin1/.gemini/* \"$HOME/.gemini/\" 2>/dev/null || true; fi"
                 + " && printf %s " + shellQuote(settingsJson) + " > \"$HOME/.gemini/settings.json\""
                 + " && printf %s " + shellQuote(trustedFoldersJson) + " > \"$HOME/.gemini/trustedFolders.json\"";
     }

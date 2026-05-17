@@ -211,7 +211,6 @@ public class TerminalWebSocketHandler extends TextWebSocketHandler {
         String home = workspaceHome.toString();
         StringBuilder bootstrap = new StringBuilder();
         bootstrap.append("mkdir -p \"$HOME/.gemini\"\n");
-        bootstrap.append("if [ -d /workspace-data/users/admin1/.gemini ]; then cp -f /workspace-data/users/admin1/.gemini/* \"$HOME/.gemini/\" 2>/dev/null || true; fi\n");
         String profile = """
                 export PATH="$PATH:/usr/local/bin:/usr/bin:/opt/jupiter-cli/bin"
                 export TERM="${TERM:-xterm-256color}"

@@ -110,7 +110,7 @@ final class LocalTripImageCatalog {
         if (verified != null) {
             return verified;
         }
-        if ("admin1-batch".equals(destination.getSource())) {
+        if ("batch".equals(destination.getSource())) {
             return null;
         }
         return destination.getImageUrl();
