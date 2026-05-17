@@ -2325,6 +2325,10 @@ function AiNotePage({ navigate }) {
                     setDraggingBlockId('');
                   }}
                   onDragEnd={() => setDraggingBlockId('')}
+                  onDoubleClick={(event) => {
+                    if (event.target.closest('textarea, select, button')) return;
+                    openBlockFile(block);
+                  }}
                 >
                   <div className="aiNoteBlockHandle">
                     <select value={block.type} onChange={(event) => updateBlock(block.id, { type: event.target.value })}>

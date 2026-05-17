@@ -16496,6 +16496,7 @@ body:has(.ltShell) {
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   background: #fff;
+  cursor: grab;
 }
 
 .aiNoteBlock.active {
@@ -16506,6 +16507,10 @@ body:has(.ltShell) {
 .aiNoteBlock.dragging {
   opacity: 0.58;
   border-style: dashed;
+}
+
+.aiNoteBlock:active {
+  cursor: grabbing;
 }
 
 .aiNoteBlockHandle {
