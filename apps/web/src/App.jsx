@@ -290,7 +290,8 @@ function normalizeNoteBlock(block) {
   return {
     id: block?.id || `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     type: ['heading', 'text', 'check', 'schedule'].includes(block?.type) ? block.type : 'text',
-    content: typeof block?.content === 'string' ? block.content : ''
+    content: typeof block?.content === 'string' ? block.content : '',
+    filePath: typeof block?.filePath === 'string' ? block.filePath : ''
   };
 }
 
@@ -1396,6 +1397,18 @@ function WorkspaceApp({ navigate }) {
     }
   };
 
+  useEffect(() => {
+    if (!auth?.token) return;
+    const filePath = new URLSearchParams(window.location.search).get('file');
+    if (!filePath) return;
+    const parentPath = parentPathOf(filePath);
+    setSelectedPath(parentPath);
+    loadTree(parentPath, true)
+      .then(() => handleOpenFile(filePath))
+      .catch((loadError) => setError(loadError.message));
+    window.history.replaceState({}, '', '/analysisadmin');
+  }, [auth?.token]);
+
   const handleRename = async (path, nextName) => {
     setContextMenu(null);
     const currentName = labelForPath(path);
@@ -1954,94 +1967,129 @@ function BoardIcon({ type }) {
   );
 }
 
+function noteBlockFilePath(block) {
+  if (block.filePath) return block.filePath;
+  return `ai-notes/${block.id}.md`;
+}
+
+function noteBlockFileContent(block) {
+  const title = plainMarkdownText(block.content).split('\n').find(Boolean) || labelForPath(noteBlockFilePath(block));
+  return [`# ${title}`, '', block.content.trim()].filter(Boolean).join('\n');
+}
+
 function SpaceHomePage({ navigate }) {
+  const [accessMode, setAccessMode] = useState('guest');
+  const [memberFlow, setMemberFlow] = useState('login');
+  const [memberId, setMemberId] = useState('');
+  const [memberPassword, setMemberPassword] = useState('');
+  const [memberLoading, setMemberLoading] = useState(false);
+  const [memberError, setMemberError] = useState('');
+  const [memberSession, setMemberSession] = useState(null);
+
   useEffect(() => {
-    document.title = 'OpenAI HQ';
+    document.title = 'Universe';
   }, []);
 
+  const submitMember = async (event) => {
+    event.preventDefault();
+    if (memberLoading) return;
+    const username = memberId.trim();
+    if (!username || !memberPassword.trim()) {
+      setMemberError('아이디와 비밀번호를 입력하세요.');
+      return;
+    }
+    setMemberLoading(true);
+    setMemberError('');
+    try {
+      const session = await requestJson(memberFlow === 'signup' ? '/api/auth/signup' : '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password: memberPassword })
+      });
+      localStorage.setItem(AUTH_KEY, JSON.stringify(session));
+      setMemberSession(session);
+      setMemberPassword('');
+    } catch (error) {
+      setMemberError(error.message);
+    } finally {
+      setMemberLoading(false);
+    }
+  };
+
+  const logoutMember = () => {
+    localStorage.removeItem(AUTH_KEY);
+    setMemberSession(null);
+    setMemberPassword('');
+  };
+
   return (
-    <main className="projectBoardShell">
-      <aside className="projectSidebar" aria-label="workspace navigation">
-        <div className="projectWorkspaceMark">
-          <span>O</span>
-          <div>
-            <strong>OpenAI HQ</strong>
-            <small>Project OS</small>
-          </div>
-        </div>
-        <button type="button" className="projectSidebarSearch">검색 또는 바로가기</button>
-        {PROJECT_BOARD_SIDEBAR.map((group) => (
-          <section className="projectSidebarGroup" key={group.title}>
-            <span>{group.title}</span>
-            {group.items.map((item) => (
-              <button type="button" key={item}>
-                <em aria-hidden="true" />
-                {item}
+    <main className="spaceHome">
+      <section className="spaceHero">
+        <div className="spaceHeroCopy">
+          <span className="spaceEyebrow">UNIVERSE</span>
+          <h1>Personal Universe</h1>
+          <strong className="spaceHeroLead">나만의 서비스 공간</strong>
+          <p>작업, 여행, 일정을 하나의 개인 서비스 공간으로 연결합니다.</p>
+          <section className="spaceAuthCard" aria-label="access mode">
+            <div className="spaceAuthSwitch">
+              <button type="button" className={accessMode === 'guest' ? 'active' : ''} onClick={() => setAccessMode('guest')}>
+                Guest
               </button>
-            ))}
-          </section>
-        ))}
-        <div className="projectSidebarFooter">
-          <button type="button" onClick={() => navigate('/scheduler')}>Scheduler</button>
-          <button type="button" onClick={() => navigate('/notes')}>AI Note</button>
-        </div>
-      </aside>
-
-      <section className="projectBoardPage">
-        <header className="projectTopbar">
-          <div>
-            <span className="projectBreadcrumb">Workspace / Product</span>
-            <h1>OpenAI HQ</h1>
-          </div>
-          <div className="projectTopActions" aria-label="workspace actions">
-            <button type="button" title="공유"><BoardIcon type="share" /></button>
-            <button type="button" title="댓글"><BoardIcon type="comments" /></button>
-            <button type="button" title="즐겨찾기"><BoardIcon type="star" /></button>
-          </div>
-        </header>
-
-        <section className="projectBoardHero">
-          <div>
-            <div className="projectViewTabs" aria-label="board views">
-              {PROJECT_BOARD_TABS.map((tab, index) => (
-                <button type="button" className={index === 0 ? 'active' : ''} key={tab}>
-                  {tab}
-                </button>
-              ))}
+              <button type="button" className={accessMode === 'member' ? 'active' : ''} onClick={() => setAccessMode('member')}>
+                Member
+              </button>
             </div>
-            <h2>프로젝트 보드</h2>
-          </div>
-          <button type="button" className="projectNewItemButton">+ 새 항목</button>
-        </section>
-
-        <aside className="projectFloatingNote" aria-label="recent comment">
-          <span><BoardIcon type="bell" /></span>
-          <div>
-            <strong>이은지</strong>
-            <p>다음 스프린트 목표 정리</p>
-          </div>
-        </aside>
-
-        <section className="projectKanban" aria-label="kanban board">
-          {PROJECT_BOARD_COLUMNS.map((column) => (
-            <article className="projectKanbanColumn" key={column.id}>
-              <header>
-                <div>
-                  <span className="projectStatusIcon" style={{ '--status-color': column.color }}>{column.icon}</span>
-                  <strong>{column.title}</strong>
-                </div>
-                <small>{column.tasks.length}</small>
-              </header>
-              <div className="projectTaskList">
-                {column.tasks.map((task) => (
-                  <button type="button" className="projectTaskCard" key={task}>
-                    {task}
-                  </button>
-                ))}
+            {accessMode === 'guest' ? (
+              <div className="spaceAuthBody">
+                <span>Guest mode</span>
+                <p>샘플 서비스 공간을 둘러보세요.</p>
               </div>
-            </article>
-          ))}
-        </section>
+            ) : (
+              <div className="spaceAuthBody">
+                {memberSession?.username ? (
+                  <>
+                    <span>Member mode</span>
+                    <p>{memberSession.username} 계정으로 연결되었습니다.</p>
+                    <button type="button" className="spaceSignupLink" onClick={logoutMember}>로그아웃</button>
+                  </>
+                ) : (
+                  <form className="spaceMemberForm" onSubmit={submitMember}>
+                    <div className="spaceAuthTitle">
+                      <span>Member mode</span>
+                    </div>
+                    <label>
+                      <span>이메일/아이디</span>
+                      <input value={memberId} onChange={(event) => setMemberId(event.target.value)} placeholder="my-id" autoComplete="username" />
+                    </label>
+                    <label>
+                      <span>비밀번호</span>
+                      <input type="password" value={memberPassword} onChange={(event) => setMemberPassword(event.target.value)} placeholder="password" autoComplete={memberFlow === 'signup' ? 'new-password' : 'current-password'} />
+                    </label>
+                    <button type="submit" className="spaceAuthSubmit" disabled={memberLoading}>
+                      {memberLoading ? '처리 중...' : memberFlow === 'signup' ? '회원가입' : 'Login'}
+                    </button>
+                    {memberError ? <p className="spaceAuthError">{memberError}</p> : null}
+                    <button
+                      type="button"
+                      className="spaceSignupLink"
+                      onClick={() => {
+                        setMemberFlow((current) => (current === 'signup' ? 'login' : 'signup'));
+                        setMemberError('');
+                      }}
+                    >
+                      {memberFlow === 'signup' ? '로그인으로 돌아가기' : '회원가입'}
+                    </button>
+                  </form>
+                )}
+              </div>
+            )}
+          </section>
+          <div className="spaceHeroActions">
+            <button type="button" onClick={() => navigate('/scheduler')}>Scheduler</button>
+            <button type="button" onClick={() => navigate('/notes')}>AI Note</button>
+            <button type="button" onClick={() => navigate('/destinations')}>AI Trip</button>
+          </div>
+        </div>
       </section>
     </main>
   );
@@ -2051,6 +2099,7 @@ function AiNotePage({ navigate }) {
   const [blocks, setBlocks] = useState(readNoteBlocks);
   const [activeId, setActiveId] = useState('');
   const [syncCount, setSyncCount] = useState(0);
+  const [fileStatus, setFileStatus] = useState('');
 
   useEffect(() => {
     document.title = 'AI Note';
@@ -2071,7 +2120,8 @@ function AiNotePage({ navigate }) {
           ? '- [ ] 체크할 일'
           : type === 'schedule'
             ? `${new Date().getHours().toString().padStart(2, '0')}:00 새 일정`
-            : ''
+            : '',
+      filePath: ''
     };
     setBlocks((current) => [...current, nextBlock]);
     setActiveId(nextBlock.id);
@@ -2097,6 +2147,38 @@ function AiNotePage({ navigate }) {
     setBlocks((current) => current.length > 1 ? current.filter((block) => block.id !== id) : current);
   };
 
+  const openBlockFile = async (block) => {
+    const filePath = noteBlockFilePath(block);
+    setActiveId(block.id);
+    setFileStatus('파일을 준비하는 중...');
+    setBlocks((current) => current.map((item) => (item.id === block.id ? { ...item, filePath } : item)));
+    const session = readStoredAuth();
+    if (!session?.token) {
+      setFileStatus('워크스페이스 로그인 후 파일이 열립니다.');
+      navigate(`/analysisadmin?file=${encodeURIComponent(filePath)}`);
+      return;
+    }
+    try {
+      await requestJson('/api/workspace/folder?path=ai-notes', {
+        method: 'POST',
+        headers: authHeaders(session.token)
+      }).catch(() => null);
+      try {
+        await requestText(`/api/workspace/file?path=${encodeURIComponent(filePath)}`, session.token);
+      } catch {
+        await requestJson('/api/workspace/file', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeaders(session.token) },
+          body: JSON.stringify({ path: filePath, content: noteBlockFileContent(block) })
+        });
+      }
+      setFileStatus(`${filePath} 파일을 엽니다.`);
+      navigate(`/analysisadmin?file=${encodeURIComponent(filePath)}`);
+    } catch (error) {
+      setFileStatus(error.message);
+    }
+  };
+
   const noteMarkdown = blocks.map((block) => block.content.trim()).filter(Boolean).join('\n\n');
 
   return (
@@ -2117,11 +2199,66 @@ function AiNotePage({ navigate }) {
         </div>
       </aside>
       <section className="aiNotePage">
+        <section className="aiNoteBoardPanel">
+          <header className="projectTopbar">
+            <div>
+              <span className="projectBreadcrumb">Workspace / Product</span>
+              <h1>OpenAI HQ</h1>
+            </div>
+            <div className="projectTopActions" aria-label="workspace actions">
+              <button type="button" title="공유"><BoardIcon type="share" /></button>
+              <button type="button" title="댓글"><BoardIcon type="comments" /></button>
+              <button type="button" title="즐겨찾기"><BoardIcon type="star" /></button>
+            </div>
+          </header>
+          <section className="projectBoardHero">
+            <div>
+              <div className="projectViewTabs" aria-label="board views">
+                {PROJECT_BOARD_TABS.map((tab, index) => (
+                  <button type="button" className={index === 0 ? 'active' : ''} key={tab}>
+                    {tab}
+                  </button>
+                ))}
+              </div>
+              <h2>프로젝트 보드</h2>
+            </div>
+            <button type="button" className="projectNewItemButton" onClick={() => addBlock('text')}>+ 새 항목</button>
+          </section>
+          <aside className="projectFloatingNote" aria-label="recent comment">
+            <span><BoardIcon type="bell" /></span>
+            <div>
+              <strong>이은지</strong>
+              <p>다음 스프린트 목표 정리</p>
+            </div>
+          </aside>
+          <section className="projectKanban" aria-label="kanban board">
+            {PROJECT_BOARD_COLUMNS.map((column) => (
+              <article className="projectKanbanColumn" key={column.id}>
+                <header>
+                  <div>
+                    <span className="projectStatusIcon" style={{ '--status-color': column.color }}>{column.icon}</span>
+                    <strong>{column.title}</strong>
+                  </div>
+                  <small>{column.tasks.length}</small>
+                </header>
+                <div className="projectTaskList">
+                  {column.tasks.map((task) => (
+                    <button type="button" className="projectTaskCard" key={task} onClick={() => addBlock('text')}>
+                      {task}
+                    </button>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </section>
+        </section>
+
         <header className="aiNoteHero">
           <div>
             <span className="aiNotePageIcon">md</span>
             <h1>AI Note</h1>
-            <p>블록 단위로 생각을 적고, 일정 블록은 스케줄러에 바로 연결합니다.</p>
+            <p>블록 단위로 생각을 적고, 일정 블록은 스케줄러에 연결합니다. 블록의 파일 열기를 누르면 워크스페이스 편집기에서 실제 파일이 열립니다.</p>
+            {fileStatus ? <p className="aiNoteFileStatus">{fileStatus}</p> : null}
           </div>
           <div className="aiNoteStats">
             <article><span>블록</span><strong>{blocks.length}</strong></article>
@@ -2151,6 +2288,7 @@ function AiNotePage({ navigate }) {
                     </select>
                     <button type="button" onClick={() => moveBlock(block.id, -1)} disabled={index === 0}>↑</button>
                     <button type="button" onClick={() => moveBlock(block.id, 1)} disabled={index === blocks.length - 1}>↓</button>
+                    <button type="button" onClick={() => openBlockFile(block)}>파일 열기</button>
                     <button type="button" onClick={() => deleteBlock(block.id)}>삭제</button>
                   </div>
                   <textarea
@@ -2172,10 +2310,11 @@ function AiNotePage({ navigate }) {
             </div>
             <div className="aiNotePreviewBody">
               {blocks.map((block) => (
-                <section className={`aiNotePreviewBlock ${block.type}`} key={block.id}>
+                <button type="button" className={`aiNotePreviewBlock ${block.type}`} key={block.id} onClick={() => openBlockFile(block)}>
                   {block.type === 'schedule' ? <span className="aiNoteScheduleBadge">Scheduler</span> : null}
                   {markdownPreviewLines(block.content)}
-                </section>
+                  <small>{noteBlockFilePath(block)}</small>
+                </button>
               ))}
             </div>
           </aside>
