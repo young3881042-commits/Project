@@ -15866,6 +15866,391 @@ body:has(.ltShell) {
   }
 }
 
+.aiNoteShell,
+.aiNoteShell * {
+  box-sizing: border-box;
+}
+
+.aiNoteShell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  background: #f6f8fb;
+  color: #1f2937;
+}
+
+.aiNoteSidebar {
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 18px;
+  border-right: 1px solid #dbe3ee;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.aiNoteHomeButton,
+.aiNoteSideGroup a,
+.aiNoteSideGroup button {
+  min-height: 38px;
+  border: 1px solid #dbe3ee;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #334155;
+  padding: 0 12px;
+  font: inherit;
+  font-weight: 800;
+  text-align: left;
+}
+
+.aiNoteHomeButton,
+.aiNoteSideGroup a:hover,
+.aiNoteSideGroup button:hover {
+  background: #e8f1ff;
+  color: #1d4ed8;
+}
+
+.aiNoteSideGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.aiNoteSideGroup span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.aiNoteSideGroup a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.aiNotePage {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 32px 0 48px;
+}
+
+.aiNoteHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+  align-items: center;
+  gap: 18px;
+}
+
+.aiNotePageIcon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #e8f1ff;
+  color: #2563eb;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.aiNoteHero h1 {
+  margin-top: 10px;
+  color: #0f172a;
+  font-size: clamp(2.15rem, 5vw, 4rem);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.aiNoteHero p {
+  max-width: 640px;
+  margin-top: 10px;
+  color: #64748b;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.aiNoteStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.aiNoteStats article,
+.aiNoteEditor,
+.aiNotePreview {
+  border: 1px solid #dbe3ee;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 42px rgba(31, 41, 55, 0.08);
+}
+
+.aiNoteStats article {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+}
+
+.aiNoteStats span {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.aiNoteStats strong {
+  color: #0f172a;
+  font-size: 1.25rem;
+}
+
+.aiNoteWorkspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+  align-items: start;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.aiNoteEditor,
+.aiNotePreview {
+  min-width: 0;
+  padding: 16px;
+}
+
+.aiNoteToolbar,
+.aiNotePreviewHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.aiNoteToolbar strong,
+.aiNotePreviewHeader span {
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.aiNoteToolbar div {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.aiNoteToolbar button,
+.aiNotePreviewHeader button {
+  min-height: 34px;
+  border: 1px solid #dbe3ee;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #334155;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.aiNoteBlocks {
+  display: grid;
+  gap: 12px;
+}
+
+.aiNoteBlock {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.aiNoteBlock.active {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.aiNoteBlockHandle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.aiNoteBlockHandle select,
+.aiNoteBlockHandle button {
+  min-height: 30px;
+  border: 1px solid #dbe3ee;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #334155;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.aiNoteBlockHandle button:disabled {
+  opacity: 0.42;
+}
+
+.aiNoteBlock textarea {
+  width: 100%;
+  min-height: 92px;
+  border: 0;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #1f2937;
+  padding: 12px;
+  font: inherit;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+}
+
+.aiNoteBlock textarea:focus {
+  box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.32);
+}
+
+.aiNoteScheduleHint {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.aiNotePreview {
+  position: sticky;
+  top: 18px;
+}
+
+.aiNotePreviewBody {
+  display: grid;
+  gap: 12px;
+}
+
+.aiNotePreviewBlock {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.aiNotePreviewBlock.schedule {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.aiNotePreviewBlock h3,
+.aiNotePreviewBlock h4,
+.aiNotePreviewBlock p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+
+.aiNotePreviewBlock h3 {
+  color: #0f172a;
+  font-size: 1.2rem;
+}
+
+.aiNotePreviewBlock h4 {
+  color: #1f2937;
+  font-size: 1.05rem;
+}
+
+.aiNotePreviewBlock p {
+  color: #334155;
+  line-height: 1.55;
+}
+
+.aiNotePreviewBlock p.checked {
+  color: #64748b;
+  text-decoration: line-through;
+}
+
+.aiNoteScheduleBadge {
+  width: fit-content;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 0 9px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+@media (max-width: 980px) {
+  .aiNoteShell {
+    grid-template-columns: 1fr;
+  }
+
+  .aiNoteSidebar {
+    position: sticky;
+    z-index: 20;
+    min-height: auto;
+    padding: 10px 12px;
+    border-right: 0;
+    border-bottom: 1px solid #dbe3ee;
+  }
+
+  .aiNoteSideGroup {
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .aiNotePage {
+    width: min(100% - 24px, 720px);
+    padding: 24px 0 34px;
+  }
+
+  .aiNoteHero,
+  .aiNoteWorkspace {
+    grid-template-columns: 1fr;
+  }
+
+  .aiNotePreview {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .aiNoteStats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .aiNoteStats article,
+  .aiNoteEditor,
+  .aiNotePreview {
+    border-radius: 14px;
+  }
+
+  .aiNoteToolbar,
+  .aiNotePreviewHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .aiNoteToolbar div,
+  .aiNoteToolbar button,
+  .aiNotePreviewHeader button {
+    width: 100%;
+  }
+
+  .aiNoteBlockHandle {
+    display: grid;
+    grid-template-columns: 1fr repeat(3, auto);
+  }
+}
+
 /* Hard repair for LocalTrip desktop sidebar */
 @media (min-width: 901px) {
   .ltShell {

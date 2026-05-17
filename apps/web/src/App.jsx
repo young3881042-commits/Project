@@ -6,6 +6,7 @@ const LazyCodeEditor = lazy(() => import('./CodeEditor.jsx'));
 const LazyGeminiApp = lazy(() => import('./GeminiApp.jsx'));
 const LazyRagApp = lazy(() => import('./RagApp.jsx'));
 const SCHEDULER_KEY = 'codex-personal-scheduler-items';
+const AI_NOTE_KEY = 'codex-ai-note-blocks';
 const RECURRENCE_LABELS = {
   none: '반복 없음',
   daily: '매일',
@@ -56,6 +57,7 @@ export function addSchedulerItem(item) {
     recurrence: Object.keys(RECURRENCE_LABELS).includes(item?.recurrence) ? item.recurrence : 'none',
     recurrenceEnd: item?.recurrenceEnd || '',
     doneOverrides: item?.doneOverrides || {},
+    source: item?.source || '',
     done: Boolean(item?.done)
   };
   const current = readSchedulerItems();
@@ -156,7 +158,8 @@ function normalizeSchedulerItem(item) {
     ...item,
     recurrence: Object.keys(RECURRENCE_LABELS).includes(item?.recurrence) ? item.recurrence : 'none',
     recurrenceEnd: item?.recurrenceEnd || '',
-    doneOverrides: item?.doneOverrides && typeof item.doneOverrides === 'object' ? item.doneOverrides : {}
+    doneOverrides: item?.doneOverrides && typeof item.doneOverrides === 'object' ? item.doneOverrides : {},
+    source: item?.source || ''
   };
 }
 
@@ -251,6 +254,115 @@ function buildWeekDays(dateKey) {
 function formatDateLabel(dateKey) {
   const date = parseDateKey(dateKey);
   return `${date.getMonth() + 1}.${date.getDate()}`;
+}
+
+function defaultNoteBlocks() {
+  return [
+    {
+      id: `note-${Date.now()}-title`,
+      type: 'heading',
+      content: '# 오늘 정리'
+    },
+    {
+      id: `note-${Date.now()}-text`,
+      type: 'text',
+      content: '생각나는 내용을 블록으로 나눠 적어두세요.'
+    },
+    {
+      id: `note-${Date.now()}-schedule`,
+      type: 'schedule',
+      content: '09:00 오늘 할 일 정리'
+    }
+  ];
+}
+
+function readNoteBlocks() {
+  try {
+    const raw = localStorage.getItem(AI_NOTE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return Array.isArray(parsed) && parsed.length ? parsed.map(normalizeNoteBlock) : defaultNoteBlocks();
+  } catch {
+    return defaultNoteBlocks();
+  }
+}
+
+function normalizeNoteBlock(block) {
+  return {
+    id: block?.id || `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    type: ['heading', 'text', 'check', 'schedule'].includes(block?.type) ? block.type : 'text',
+    content: typeof block?.content === 'string' ? block.content : ''
+  };
+}
+
+function plainMarkdownText(markdown) {
+  return markdown
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^\s*[-*]\s+\[[ xX]\]\s+/gm, '')
+    .replace(/^\s*[-*]\s+/gm, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .trim();
+}
+
+function parseNoteScheduleBlock(block) {
+  const content = plainMarkdownText(block.content);
+  if (!content) return null;
+  const dateMatch = content.match(/#(\d{4}-\d{2}-\d{2})/);
+  const timeMatch = content.match(/\b([01]\d|2[0-3]):([0-5]\d)\b/);
+  const date = dateMatch?.[1] || toDateKey(new Date());
+  const time = timeMatch ? timeMatch[0] : '09:00';
+  const title = content
+    .replace(/#\d{4}-\d{2}-\d{2}/g, '')
+    .replace(/\b([01]\d|2[0-3]):([0-5]\d)\b/, '')
+    .replace(/^일정\s*[:：-]?/i, '')
+    .trim();
+  if (!title) return null;
+  return {
+    id: `ai-note-${block.id}`,
+    title,
+    date,
+    time,
+    type: 'AI Note',
+    memo: block.content.trim(),
+    recurrence: 'none',
+    recurrenceEnd: '',
+    source: 'AI Note',
+    done: false
+  };
+}
+
+function syncNoteSchedules(blocks) {
+  const schedules = blocks
+    .filter((block) => block.type === 'schedule')
+    .map(parseNoteScheduleBlock)
+    .filter(Boolean);
+  const scheduleIds = new Set(schedules.map((item) => item.id));
+  const current = readSchedulerItems();
+  const withoutStaleNoteItems = current.filter((item) => item.source !== 'AI Note' || scheduleIds.has(item.id));
+  const merged = [
+    ...withoutStaleNoteItems.filter((item) => item.source !== 'AI Note'),
+    ...schedules.map((schedule) => {
+      const existing = current.find((item) => item.id === schedule.id);
+      return { ...schedule, done: Boolean(existing?.done), doneOverrides: existing?.doneOverrides || {} };
+    })
+  ];
+  localStorage.setItem(SCHEDULER_KEY, JSON.stringify(merged));
+  window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { items: merged } }));
+  return schedules.length;
+}
+
+function markdownPreviewLines(markdown) {
+  return markdown.split('\n').map((line, index) => {
+    const key = `${index}-${line}`;
+    if (line.startsWith('# ')) return <h3 key={key}>{line.slice(2)}</h3>;
+    if (line.startsWith('## ')) return <h4 key={key}>{line.slice(3)}</h4>;
+    if (/^\s*[-*]\s+\[[ xX]\]\s+/.test(line)) {
+      const checked = /^\s*[-*]\s+\[[xX]\]\s+/.test(line);
+      return <p key={key} className={checked ? 'checked' : ''}>{checked ? '✓ ' : '□ '}{line.replace(/^\s*[-*]\s+\[[ xX]\]\s+/, '')}</p>;
+    }
+    if (/^\s*[-*]\s+/.test(line)) return <p key={key}>• {line.replace(/^\s*[-*]\s+/, '')}</p>;
+    return line.trim() ? <p key={key}>{line}</p> : <br key={key} />;
+  });
 }
 
 if (typeof window !== 'undefined') {
@@ -1871,9 +1983,148 @@ function SpaceHomePage({ navigate }) {
           </section>
           <div className="spaceHeroActions">
             <button type="button" onClick={() => navigate('/scheduler')}>Scheduler</button>
+            <button type="button" onClick={() => navigate('/notes')}>AI Note</button>
             <button type="button" onClick={() => navigate('/destinations')}>AI Trip</button>
           </div>
         </div>
+      </section>
+    </main>
+  );
+}
+
+function AiNotePage({ navigate }) {
+  const [blocks, setBlocks] = useState(readNoteBlocks);
+  const [activeId, setActiveId] = useState('');
+  const [syncCount, setSyncCount] = useState(0);
+
+  useEffect(() => {
+    document.title = 'AI Note';
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(AI_NOTE_KEY, JSON.stringify(blocks));
+    setSyncCount(syncNoteSchedules(blocks));
+  }, [blocks]);
+
+  const addBlock = (type) => {
+    const nextBlock = {
+      id: `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      type,
+      content: type === 'heading'
+        ? '# 새 제목'
+        : type === 'check'
+          ? '- [ ] 체크할 일'
+          : type === 'schedule'
+            ? `${new Date().getHours().toString().padStart(2, '0')}:00 새 일정`
+            : ''
+    };
+    setBlocks((current) => [...current, nextBlock]);
+    setActiveId(nextBlock.id);
+  };
+
+  const updateBlock = (id, patch) => {
+    setBlocks((current) => current.map((block) => (block.id === id ? { ...block, ...patch } : block)));
+  };
+
+  const moveBlock = (id, offset) => {
+    setBlocks((current) => {
+      const index = current.findIndex((block) => block.id === id);
+      const nextIndex = index + offset;
+      if (index < 0 || nextIndex < 0 || nextIndex >= current.length) return current;
+      const next = [...current];
+      const [block] = next.splice(index, 1);
+      next.splice(nextIndex, 0, block);
+      return next;
+    });
+  };
+
+  const deleteBlock = (id) => {
+    setBlocks((current) => current.length > 1 ? current.filter((block) => block.id !== id) : current);
+  };
+
+  const noteMarkdown = blocks.map((block) => block.content.trim()).filter(Boolean).join('\n\n');
+
+  return (
+    <main className="aiNoteShell">
+      <aside className="aiNoteSidebar">
+        <button type="button" className="aiNoteHomeButton" onClick={() => navigate('/')}>Universe Home</button>
+        <div className="aiNoteSideGroup">
+          <span>Services</span>
+          <a href="/scheduler" onClick={(event) => { event.preventDefault(); navigate('/scheduler'); }}>Scheduler</a>
+          <a href="/destinations" onClick={(event) => { event.preventDefault(); navigate('/destinations'); }}>AI Trip</a>
+        </div>
+        <div className="aiNoteSideGroup">
+          <span>Blocks</span>
+          <button type="button" onClick={() => addBlock('heading')}>제목</button>
+          <button type="button" onClick={() => addBlock('text')}>텍스트</button>
+          <button type="button" onClick={() => addBlock('check')}>체크</button>
+          <button type="button" onClick={() => addBlock('schedule')}>일정</button>
+        </div>
+      </aside>
+      <section className="aiNotePage">
+        <header className="aiNoteHero">
+          <div>
+            <span className="aiNotePageIcon">md</span>
+            <h1>AI Note</h1>
+            <p>블록 단위로 생각을 적고, 일정 블록은 스케줄러에 바로 연결합니다.</p>
+          </div>
+          <div className="aiNoteStats">
+            <article><span>블록</span><strong>{blocks.length}</strong></article>
+            <article><span>일정 연동</span><strong>{syncCount}</strong></article>
+            <article><span>Markdown</span><strong>{noteMarkdown.length}</strong></article>
+          </div>
+        </header>
+
+        <section className="aiNoteWorkspace">
+          <div className="aiNoteEditor">
+            <div className="aiNoteToolbar">
+              <strong>Blocks</strong>
+              <div>
+                <button type="button" onClick={() => addBlock('text')}>+ 텍스트</button>
+                <button type="button" onClick={() => addBlock('schedule')}>+ 일정</button>
+              </div>
+            </div>
+            <div className="aiNoteBlocks">
+              {blocks.map((block, index) => (
+                <article className={`aiNoteBlock ${activeId === block.id ? 'active' : ''}`} key={block.id}>
+                  <div className="aiNoteBlockHandle">
+                    <select value={block.type} onChange={(event) => updateBlock(block.id, { type: event.target.value })}>
+                      <option value="heading">제목</option>
+                      <option value="text">텍스트</option>
+                      <option value="check">체크</option>
+                      <option value="schedule">일정</option>
+                    </select>
+                    <button type="button" onClick={() => moveBlock(block.id, -1)} disabled={index === 0}>↑</button>
+                    <button type="button" onClick={() => moveBlock(block.id, 1)} disabled={index === blocks.length - 1}>↓</button>
+                    <button type="button" onClick={() => deleteBlock(block.id)}>삭제</button>
+                  </div>
+                  <textarea
+                    value={block.content}
+                    onFocus={() => setActiveId(block.id)}
+                    onChange={(event) => updateBlock(block.id, { content: event.target.value })}
+                    placeholder={block.type === 'schedule' ? '09:00 일정 제목 #2026-05-17' : 'Markdown으로 작성'}
+                  />
+                  {block.type === 'schedule' ? <p className="aiNoteScheduleHint">예: 14:30 회의 준비 또는 14:30 회의 준비 #2026-05-17</p> : null}
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <aside className="aiNotePreview">
+            <div className="aiNotePreviewHeader">
+              <span>Preview</span>
+              <button type="button" onClick={() => navigate('/scheduler')}>스케줄러 보기</button>
+            </div>
+            <div className="aiNotePreviewBody">
+              {blocks.map((block) => (
+                <section className={`aiNotePreviewBlock ${block.type}`} key={block.id}>
+                  {block.type === 'schedule' ? <span className="aiNoteScheduleBadge">Scheduler</span> : null}
+                  {markdownPreviewLines(block.content)}
+                </section>
+              ))}
+            </div>
+          </aside>
+        </section>
       </section>
     </main>
   );
@@ -2035,11 +2286,12 @@ function SchedulerPage({ navigate }) {
         <div className="schedulerSideGroup">
           <span>Services</span>
           <a href="/" onClick={(event) => { event.preventDefault(); navigate('/'); }}>Home</a>
+          <a href="/notes" onClick={(event) => { event.preventDefault(); navigate('/notes'); }}>AI Note</a>
           <a href="/destinations" onClick={(event) => { event.preventDefault(); navigate('/destinations'); }}>AI Trip</a>
         </div>
         <div className="schedulerSideGroup">
           <span>Views</span>
-          {['전체', '작업', '회의', '검토', '개인', '완료'].map((item) => (
+          {['전체', '작업', '회의', '검토', '개인', 'AI Note', '완료'].map((item) => (
             <button key={item} type="button" className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>
               {item}
             </button>
@@ -2236,7 +2488,7 @@ function SchedulerPage({ navigate }) {
               <p>{selectedDate} · {filter} 보기 · {visibleItems.length}개</p>
             </div>
             <div className="schedulerFilters">
-              {['전체', '작업', '회의', '검토', '개인', '완료'].map((item) => (
+              {['전체', '작업', '회의', '검토', '개인', 'AI Note', '완료'].map((item) => (
                 <button key={item} type="button" className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>
                   {item}
                 </button>
@@ -2313,6 +2565,10 @@ export default function App() {
 
   if (routePath === '/scheduler') {
     return <SchedulerPage navigate={navigate} />;
+  }
+
+  if (routePath === '/notes') {
+    return <AiNotePage navigate={navigate} />;
   }
 
   return <LocalTripApp path={path} navigate={navigate} />;
