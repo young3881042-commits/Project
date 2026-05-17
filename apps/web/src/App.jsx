@@ -313,17 +313,19 @@ function readNoteBlocks() {
 
 function normalizeNoteBlock(block) {
   const sector = ['project', 'memo'].includes(block?.sector) ? block.sector : 'project';
+  const boardId = typeof block?.boardId === 'string' && block.boardId ? block.boardId : sector;
+  const projectBlock = boardId === 'project';
   return {
     id: block?.id || `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     type: block?.type === 'file' ? 'file' : 'text',
     content: typeof block?.content === 'string' ? block.content : '',
     sector,
-    boardId: typeof block?.boardId === 'string' && block.boardId ? block.boardId : sector,
+    boardId,
     status: ['todo', 'progress', 'review', 'done'].includes(block?.status) ? block.status : 'todo',
     parentId: typeof block?.parentId === 'string' ? block.parentId : '',
     filePath: typeof block?.filePath === 'string' ? block.filePath : '',
-    width: Math.max(160, Math.min(520, Number(block?.width) || 220)),
-    height: Math.max(96, Math.min(360, Number(block?.height) || 120))
+    width: projectBlock ? Math.max(160, Math.min(520, Number(block?.width) || 220)) : Math.max(260, Math.min(920, Number(block?.width) || 760)),
+    height: projectBlock ? Math.max(96, Math.min(360, Number(block?.height) || 120)) : Math.max(48, Math.min(180, Number(block?.height) || 58))
   };
 }
 
@@ -401,6 +403,30 @@ function markdownPreviewLines(markdown) {
     }
     if (/^\s*[-*]\s+/.test(line)) return <p key={key}>• {line.replace(/^\s*[-*]\s+/, '')}</p>;
     return line.trim() ? <p key={key}>{line}</p> : <br key={key} />;
+  });
+}
+
+function markdownPreviewBlocks(markdown) {
+  return markdown.split('\n').map((line, index) => {
+    const key = `${index}-${line}`;
+    const inline = (text) => text
+      .split(/(`[^`]+`|\*\*[^*]+\*\*)/g)
+      .filter(Boolean)
+      .map((part, partIndex) => {
+        if (part.startsWith('`') && part.endsWith('`')) return <code key={partIndex}>{part.slice(1, -1)}</code>;
+        if (part.startsWith('**') && part.endsWith('**')) return <strong key={partIndex}>{part.slice(2, -2)}</strong>;
+        return part;
+      });
+    if (line.startsWith('# ')) return <h1 key={key}>{inline(line.slice(2))}</h1>;
+    if (line.startsWith('## ')) return <h2 key={key}>{inline(line.slice(3))}</h2>;
+    if (line.startsWith('### ')) return <h3 key={key}>{inline(line.slice(4))}</h3>;
+    if (/^\s*[-*]\s+\[[ xX]\]\s+/.test(line)) {
+      const checked = /^\s*[-*]\s+\[[xX]\]\s+/.test(line);
+      return <label key={key} className="analysisMarkdownCheck"><input type="checkbox" checked={checked} readOnly />{inline(line.replace(/^\s*[-*]\s+\[[ xX]\]\s+/, ''))}</label>;
+    }
+    if (/^\s*[-*]\s+/.test(line)) return <li key={key}>{inline(line.replace(/^\s*[-*]\s+/, ''))}</li>;
+    if (/^\s*>\s+/.test(line)) return <blockquote key={key}>{inline(line.replace(/^\s*>\s+/, ''))}</blockquote>;
+    return line.trim() ? <p key={key}>{inline(line)}</p> : <br key={key} />;
   });
 }
 
@@ -1967,6 +1993,7 @@ function AnalysisFileEditorPage({ navigate }) {
   const [error, setError] = useState('');
   const [saveStatus, setSaveStatus] = useState('');
   const [loadedFile, setLoadedFile] = useState('');
+  const isMarkdownFile = ['md', 'markdown'].includes(extensionForPath(selectedFile));
 
   useEffect(() => {
     document.title = '파일 편집';
@@ -2133,15 +2160,34 @@ function AnalysisFileEditorPage({ navigate }) {
         {loadingFile ? <p className="previewState">파일을 불러오는 중입니다.</p> : null}
         {error ? <p className="previewError">{error}</p> : null}
         {saveStatus ? <p className="analysisSaveStatus">{saveStatus}</p> : null}
-        <div className="analysisCodeWrap">
-          <Suspense fallback={<div className="editorLoading">편집기를 불러오는 중입니다.</div>}>
-            <LazyCodeEditor
-              path={selectedFile}
-              value={content}
-              onChange={(value) => setContent(value)}
-              onSave={saveFile}
-            />
-          </Suspense>
+        <div className={`analysisEditorGrid ${isMarkdownFile ? 'markdown' : ''}`}>
+          <section className="analysisEditSurface">
+            <div className="analysisPaneHeader">
+              <strong>작성</strong>
+              <span>Markdown</span>
+            </div>
+            <div className="analysisCodeWrap">
+              <Suspense fallback={<div className="editorLoading">편집기를 불러오는 중입니다.</div>}>
+                <LazyCodeEditor
+                  path={selectedFile}
+                  value={content}
+                  onChange={(value) => setContent(value)}
+                  onSave={saveFile}
+                />
+              </Suspense>
+            </div>
+          </section>
+          {isMarkdownFile ? (
+            <section className="analysisMarkdownPreview">
+              <div className="analysisPaneHeader">
+                <strong>미리보기</strong>
+                <span>Rendered</span>
+              </div>
+              <article className="analysisMarkdownBody">
+                {content.trim() ? markdownPreviewBlocks(content) : <p>Markdown 내용을 작성하면 여기에 적용된 결과가 표시됩니다.</p>}
+              </article>
+            </section>
+          ) : null}
         </div>
       </section>
     </main>
@@ -2235,6 +2281,50 @@ function BoardIcon({ type }) {
     <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       {paths[type]}
     </svg>
+  );
+}
+
+function MemoNavIcon({ type }) {
+  const paths = {
+    home: <path d="M4 11.5 12 5l8 6.5V20H5v-8.5z" />,
+    calendar: (
+      <>
+        <path d="M5 5h14v15H5z" />
+        <path d="M8 3v4M16 3v4M5 10h14" />
+      </>
+    ),
+    trip: (
+      <>
+        <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z" />
+        <path d="M9 3v15M15 6v15" />
+      </>
+    ),
+    plus: (
+      <>
+        <path d="M12 5v14" />
+        <path d="M5 12h14" />
+      </>
+    ),
+    board: (
+      <>
+        <path d="M4 5h7v6H4z" />
+        <path d="M13 5h7v14h-7z" />
+        <path d="M4 13h7v6H4z" />
+      </>
+    ),
+    file: (
+      <>
+        <path d="M7 3h7l4 4v14H7z" />
+        <path d="M14 3v5h5" />
+      </>
+    )
+  };
+  return (
+    <span className="memoNavIcon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+        {paths[type] || paths.file}
+      </svg>
+    </span>
   );
 }
 
@@ -2433,8 +2523,8 @@ function AiNotePage({ navigate }) {
       status,
       parentId,
       filePath: `memo-files/${boardId}/${nextId}.${extension}`,
-      width: 220,
-      height: 120
+      width: boardId === 'project' ? 220 : 760,
+      height: boardId === 'project' ? 120 : 58
     };
     setBlocks((current) => [...current, nextBlock]);
     setActiveId(nextBlock.id);
@@ -2452,8 +2542,8 @@ function AiNotePage({ navigate }) {
       status: 'todo',
       parentId: '',
       filePath: `memo-files/${activeBoardId}/${nextId}.md`,
-      width: 220,
-      height: 120
+      width: activeBoardId === 'project' ? 220 : 760,
+      height: activeBoardId === 'project' ? 120 : 58
     };
     setBlocks((current) => [...current, nextBlock]);
     setActiveId(nextBlock.id);
@@ -2510,9 +2600,19 @@ function AiNotePage({ navigate }) {
   const rootBlocks = blocks.filter((block) => !block.parentId);
   const activeBoard = boards.find((board) => board.id === activeBoardId) || boards[0];
   const boardBlocks = rootBlocks.filter((block) => (block.boardId || block.sector) === activeBoardId);
+  const projectBlocksByStatus = PROJECT_BOARD_COLUMNS.reduce((grouped, column) => ({
+    ...grouped,
+    [column.id]: rootBlocks.filter((block) => (block.boardId || block.sector) === 'project' && block.status === column.id)
+  }), {});
   const openContextMenu = (event, status = 'todo') => {
     event.preventDefault();
     setContextMenu({ x: event.clientX, y: event.clientY, status, boardId: activeBoardId });
+  };
+  const openBlockContextMenu = (event, block) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setActiveId(block.id);
+    setContextMenu({ x: event.clientX, y: event.clientY, blockId: block.id, boardId: block.boardId || block.sector });
   };
   const createTextFileBlock = (status = 'todo', boardId = activeBoardId) => {
     addBlock('file', '', status, boardId);
@@ -2530,6 +2630,28 @@ function AiNotePage({ navigate }) {
           updateBlock(block.id, { width, height });
         }
       }}
+      onContextMenu={(event) => openBlockContextMenu(event, block)}
+      onClick={() => openBlockFile(block)}
+    >
+      <input
+        className="memoCardName"
+        value={noteBlockTitle(block)}
+        onClick={(event) => event.stopPropagation()}
+        onChange={(event) => updateBlock(block.id, { content: event.target.value })}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            event.currentTarget.blur();
+          }
+        }}
+      />
+    </article>
+  );
+  const renderProjectCard = (block) => (
+    <article
+      className={`projectTaskCard memoProjectCard ${activeId === block.id ? 'active' : ''}`}
+      key={block.id}
+      onContextMenu={(event) => openBlockContextMenu(event, block)}
       onClick={() => openBlockFile(block)}
     >
       <input
@@ -2550,32 +2672,27 @@ function AiNotePage({ navigate }) {
   return (
     <main className="aiNoteShell">
       <aside className="aiNoteSidebar">
-        <button type="button" className="aiNoteHomeButton" onClick={() => navigate('/')}>AI 일정 홈</button>
-        <div className="aiNoteSideGroup">
-          <span>Services</span>
-          <a href="/scheduler" onClick={(event) => { event.preventDefault(); navigate('/scheduler'); }}>개인 스케줄러</a>
-          <a href="/destinations" onClick={(event) => { event.preventDefault(); navigate('/destinations'); }}>여행 일정</a>
-        </div>
-        <div className="aiNoteSideGroup">
-          <span>블록 만들기</span>
-          <button type="button" onClick={addBoard}>보드 추가</button>
-          <button type="button" onClick={() => addBlock('text')}>Markdown 글</button>
-          <button type="button" onClick={() => addBlock('file')}>텍스트 파일</button>
+        <div className="aiNoteSideGroup memoNavPrimary">
+          <span>이동</span>
+          <button type="button" onClick={() => navigate('/')}><MemoNavIcon type="home" />AI 일정 홈</button>
+          <a href="/scheduler" onClick={(event) => { event.preventDefault(); navigate('/scheduler'); }}><MemoNavIcon type="calendar" />개인 스케줄러</a>
+          <a href="/destinations" onClick={(event) => { event.preventDefault(); navigate('/destinations'); }}><MemoNavIcon type="trip" />여행 일정</a>
+          <button type="button" onClick={addBoard}><MemoNavIcon type="plus" />보드 추가</button>
         </div>
         <nav className="memoBoardNav" aria-label="memo boards">
-          <span>Boards</span>
+          <span>보드</span>
           {boards.map((board) => {
             const files = rootBlocks.filter((block) => (block.boardId || block.sector) === board.id);
             return (
               <section className={`memoBoardNavSection ${activeBoardId === board.id ? 'active' : ''}`} key={board.id}>
-                <button type="button" onClick={() => setActiveBoardId(board.id)}>{board.title}</button>
+                <button type="button" onClick={() => setActiveBoardId(board.id)}><MemoNavIcon type="board" />{board.title}</button>
                 {activeBoardId === board.id ? (
                   <input value={board.title} onChange={(event) => renameBoard(board.id, event.target.value)} aria-label="보드 이름" />
                 ) : null}
                 <div>
                   {files.map((block) => (
                     <button type="button" key={block.id} onClick={() => openBlockFile(block)}>
-                      {noteBlockTitle(block)}
+                      <MemoNavIcon type="file" />{noteBlockTitle(block)}
                     </button>
                   ))}
                 </div>
@@ -2586,7 +2703,7 @@ function AiNotePage({ navigate }) {
         <div className="aiNoteSideGroup">
           <span>현재 보드 파일</span>
           {boardBlocks.map((block) => (
-            <button type="button" key={block.id} onClick={() => openBlockFile(block)}>{noteBlockTitle(block)}</button>
+            <button type="button" key={block.id} onClick={() => openBlockFile(block)}><MemoNavIcon type="file" />{noteBlockTitle(block)}</button>
           ))}
         </div>
       </aside>
@@ -2623,12 +2740,48 @@ function AiNotePage({ navigate }) {
               <p>{fileStatus || '메모 보드 작업 중'}</p>
             </div>
           </aside>
-          <section className="memoFreeformBoard" aria-label="freeform memo board" onContextMenu={(event) => openContextMenu(event, 'todo')}>
-            {boardBlocks.map(renderBoardCard)}
-          </section>
+          {activeBoardId === 'project' ? (
+            <section className="projectKanban" aria-label="project kanban board">
+              {PROJECT_BOARD_COLUMNS.map((column) => (
+                <article
+                  className="projectKanbanColumn"
+                  key={column.id}
+                  onContextMenu={(event) => openContextMenu(event, column.id)}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    moveBlockToStatus(event.dataTransfer.getData('text/plain') || draggingBlockId, column.id);
+                    setDraggingBlockId('');
+                  }}
+                >
+                  <header>
+                    <div>
+                      <span className="projectStatusIcon" style={{ '--status-color': column.color }}>{column.icon}</span>
+                      <strong>{column.title}</strong>
+                    </div>
+                    <small>{projectBlocksByStatus[column.id]?.length || 0}</small>
+                  </header>
+                  <div className="projectTaskList">
+                    {(projectBlocksByStatus[column.id] || []).map(renderProjectCard)}
+                  </div>
+                </article>
+              ))}
+            </section>
+          ) : (
+            <section className="memoFreeformBoard" aria-label="freeform memo board" onContextMenu={(event) => openContextMenu(event, 'todo')}>
+              {boardBlocks.map(renderBoardCard)}
+            </section>
+          )}
           {contextMenu ? (
             <div className="memoContextMenu" style={{ left: contextMenu.x, top: contextMenu.y }} onClick={(event) => event.stopPropagation()}>
-              <button type="button" onClick={() => createTextFileBlock(contextMenu.status, contextMenu.boardId)}>텍스트 파일 생성</button>
+              {contextMenu.blockId ? (
+                <button type="button" className="dangerMenuAction" onClick={() => { deleteBlock(contextMenu.blockId); setContextMenu(null); }}>삭제</button>
+              ) : (
+                <button type="button" onClick={() => createTextFileBlock(contextMenu.status, contextMenu.boardId)}>텍스트 파일 생성</button>
+              )}
             </div>
           ) : null}
         </section>
