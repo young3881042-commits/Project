@@ -16503,6 +16503,11 @@ body:has(.ltShell) {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
+.aiNoteBlock.dragging {
+  opacity: 0.58;
+  border-style: dashed;
+}
+
 .aiNoteBlockHandle {
   display: flex;
   align-items: center;
@@ -16525,6 +16530,17 @@ body:has(.ltShell) {
 
 .aiNoteBlockHandle button:disabled {
   opacity: 0.42;
+}
+
+.aiNoteBlockHandle span {
+  min-width: 0;
+  flex: 1;
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .aiNoteBlock textarea {
@@ -16710,6 +16726,10 @@ body:has(.ltShell) {
   .aiNoteBlockHandle {
     display: grid;
     grid-template-columns: 1fr repeat(4, auto);
+  }
+
+  .aiNoteBlockHandle span {
+    grid-column: 1 / -1;
   }
 }
 

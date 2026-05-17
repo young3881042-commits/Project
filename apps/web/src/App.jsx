@@ -2100,6 +2100,7 @@ function AiNotePage({ navigate }) {
   const [activeId, setActiveId] = useState('');
   const [syncCount, setSyncCount] = useState(0);
   const [fileStatus, setFileStatus] = useState('');
+  const [draggingBlockId, setDraggingBlockId] = useState('');
 
   useEffect(() => {
     document.title = 'AI Note';
@@ -2111,8 +2112,9 @@ function AiNotePage({ navigate }) {
   }, [blocks]);
 
   const addBlock = (type) => {
+    const nextId = `note-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const nextBlock = {
-      id: `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      id: nextId,
       type,
       content: type === 'heading'
         ? '# 새 제목'
@@ -2121,10 +2123,23 @@ function AiNotePage({ navigate }) {
           : type === 'schedule'
             ? `${new Date().getHours().toString().padStart(2, '0')}:00 새 일정`
             : '',
-      filePath: ''
+      filePath: `ai-notes/${nextId}.md`
     };
     setBlocks((current) => [...current, nextBlock]);
     setActiveId(nextBlock.id);
+  };
+
+  const addTaskBlock = (title) => {
+    const nextId = `note-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const nextBlock = {
+      id: nextId,
+      type: 'check',
+      content: `- [ ] ${title}`,
+      filePath: `ai-notes/${nextId}.md`
+    };
+    setBlocks((current) => [...current, nextBlock]);
+    setActiveId(nextBlock.id);
+    setFileStatus(`'${title}' 블록을 추가했습니다.`);
   };
 
   const updateBlock = (id, patch) => {
@@ -2145,6 +2160,19 @@ function AiNotePage({ navigate }) {
 
   const deleteBlock = (id) => {
     setBlocks((current) => current.length > 1 ? current.filter((block) => block.id !== id) : current);
+  };
+
+  const moveBlockToIndex = (id, targetIndex) => {
+    setBlocks((current) => {
+      const currentIndex = current.findIndex((block) => block.id === id);
+      if (currentIndex < 0 || targetIndex < 0 || targetIndex >= current.length || currentIndex === targetIndex) {
+        return current;
+      }
+      const next = [...current];
+      const [block] = next.splice(currentIndex, 1);
+      next.splice(targetIndex, 0, block);
+      return next;
+    });
   };
 
   const openBlockFile = async (block) => {
@@ -2222,7 +2250,7 @@ function AiNotePage({ navigate }) {
               </div>
               <h2>프로젝트 보드</h2>
             </div>
-            <button type="button" className="projectNewItemButton" onClick={() => addBlock('text')}>+ 새 항목</button>
+            <button type="button" className="projectNewItemButton" onClick={() => addTaskBlock('새 업무 항목')}>+ 새 항목</button>
           </section>
           <aside className="projectFloatingNote" aria-label="recent comment">
             <span><BoardIcon type="bell" /></span>
@@ -2243,7 +2271,7 @@ function AiNotePage({ navigate }) {
                 </header>
                 <div className="projectTaskList">
                   {column.tasks.map((task) => (
-                    <button type="button" className="projectTaskCard" key={task} onClick={() => addBlock('text')}>
+                    <button type="button" className="projectTaskCard" key={task} onClick={() => addTaskBlock(task)}>
                       {task}
                     </button>
                   ))}
@@ -2278,7 +2306,26 @@ function AiNotePage({ navigate }) {
             </div>
             <div className="aiNoteBlocks">
               {blocks.map((block, index) => (
-                <article className={`aiNoteBlock ${activeId === block.id ? 'active' : ''}`} key={block.id}>
+                <article
+                  className={`aiNoteBlock ${activeId === block.id ? 'active' : ''} ${draggingBlockId === block.id ? 'dragging' : ''}`}
+                  key={block.id}
+                  draggable
+                  onDragStart={(event) => {
+                    setDraggingBlockId(block.id);
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/plain', block.id);
+                  }}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    moveBlockToIndex(event.dataTransfer.getData('text/plain') || draggingBlockId, index);
+                    setDraggingBlockId('');
+                  }}
+                  onDragEnd={() => setDraggingBlockId('')}
+                >
                   <div className="aiNoteBlockHandle">
                     <select value={block.type} onChange={(event) => updateBlock(block.id, { type: event.target.value })}>
                       <option value="heading">제목</option>
@@ -2290,6 +2337,7 @@ function AiNotePage({ navigate }) {
                     <button type="button" onClick={() => moveBlock(block.id, 1)} disabled={index === blocks.length - 1}>↓</button>
                     <button type="button" onClick={() => openBlockFile(block)}>파일 열기</button>
                     <button type="button" onClick={() => deleteBlock(block.id)}>삭제</button>
+                    <span>{noteBlockFilePath(block)}</span>
                   </div>
                   <textarea
                     value={block.content}
