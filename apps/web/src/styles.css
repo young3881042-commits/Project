@@ -16496,7 +16496,7 @@ body:has(.ltShell) {
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   background: #fff;
-  cursor: grab;
+  cursor: default;
 }
 
 .aiNoteBlock.active {
@@ -16507,10 +16507,6 @@ body:has(.ltShell) {
 .aiNoteBlock.dragging {
   opacity: 0.58;
   border-style: dashed;
-}
-
-.aiNoteBlock:active {
-  cursor: grabbing;
 }
 
 .aiNoteBlockHandle {
@@ -16535,6 +16531,16 @@ body:has(.ltShell) {
 
 .aiNoteBlockHandle button:disabled {
   opacity: 0.42;
+}
+
+.aiNoteBlockHandle .aiNoteDragHandle {
+  width: 32px;
+  padding: 0;
+  cursor: grab;
+}
+
+.aiNoteBlockHandle .aiNoteDragHandle:active {
+  cursor: grabbing;
 }
 
 .aiNoteBlockHandle span {
@@ -16636,6 +16642,66 @@ body:has(.ltShell) {
 .aiNotePreviewBlock small {
   color: #64748b;
   font-size: 0.76rem;
+}
+
+.aiNoteDetailMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.aiNoteDetailMeta span {
+  width: fit-content;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #e8f1ff;
+  color: #1d4ed8;
+  padding: 0 9px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.aiNoteScheduleDetail {
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  background: #eff6ff;
+}
+
+.aiNoteScheduleDetail strong {
+  color: #0f172a;
+}
+
+.aiNoteScheduleDetail time {
+  color: #1d4ed8;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.aiNoteScheduleDetail button {
+  width: fit-content;
+  min-height: 30px;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #fff;
+  color: #1d4ed8;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.aiNotePreviewEmpty {
+  padding: 18px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  color: #64748b;
+  background: #f8fafc;
 }
 
 .aiNotePreviewBlock p.checked {

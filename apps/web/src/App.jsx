@@ -2111,6 +2111,13 @@ function AiNotePage({ navigate }) {
     setSyncCount(syncNoteSchedules(blocks));
   }, [blocks]);
 
+  useEffect(() => {
+    if (!blocks.length) return;
+    if (!activeId || !blocks.some((block) => block.id === activeId)) {
+      setActiveId(blocks[0].id);
+    }
+  }, [activeId, blocks]);
+
   const addBlock = (type) => {
     const nextId = `note-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const nextBlock = {
@@ -2156,6 +2163,7 @@ function AiNotePage({ navigate }) {
       next.splice(nextIndex, 0, block);
       return next;
     });
+    setActiveId(id);
   };
 
   const deleteBlock = (id) => {
@@ -2173,6 +2181,7 @@ function AiNotePage({ navigate }) {
       next.splice(targetIndex, 0, block);
       return next;
     });
+    setActiveId(id);
   };
 
   const openBlockFile = async (block) => {
@@ -2208,6 +2217,8 @@ function AiNotePage({ navigate }) {
   };
 
   const noteMarkdown = blocks.map((block) => block.content.trim()).filter(Boolean).join('\n\n');
+  const activeBlock = blocks.find((block) => block.id === activeId) || blocks[0];
+  const activeSchedule = activeBlock?.type === 'schedule' ? parseNoteScheduleBlock(activeBlock) : null;
 
   return (
     <main className="aiNoteShell">
@@ -2298,9 +2309,10 @@ function AiNotePage({ navigate }) {
         <section className="aiNoteWorkspace">
           <div className="aiNoteEditor">
             <div className="aiNoteToolbar">
-              <strong>Blocks</strong>
+              <strong>노트 블록</strong>
               <div>
                 <button type="button" onClick={() => addBlock('text')}>+ 텍스트</button>
+                <button type="button" onClick={() => addBlock('check')}>+ 체크</button>
                 <button type="button" onClick={() => addBlock('schedule')}>+ 일정</button>
               </div>
             </div>
@@ -2309,12 +2321,6 @@ function AiNotePage({ navigate }) {
                 <article
                   className={`aiNoteBlock ${activeId === block.id ? 'active' : ''} ${draggingBlockId === block.id ? 'dragging' : ''}`}
                   key={block.id}
-                  draggable
-                  onDragStart={(event) => {
-                    setDraggingBlockId(block.id);
-                    event.dataTransfer.effectAllowed = 'move';
-                    event.dataTransfer.setData('text/plain', block.id);
-                  }}
                   onDragOver={(event) => {
                     event.preventDefault();
                     event.dataTransfer.dropEffect = 'move';
@@ -2324,13 +2330,23 @@ function AiNotePage({ navigate }) {
                     moveBlockToIndex(event.dataTransfer.getData('text/plain') || draggingBlockId, index);
                     setDraggingBlockId('');
                   }}
-                  onDragEnd={() => setDraggingBlockId('')}
-                  onDoubleClick={(event) => {
-                    if (event.target.closest('textarea, select, button')) return;
-                    openBlockFile(block);
-                  }}
+                  onClick={() => setActiveId(block.id)}
                 >
                   <div className="aiNoteBlockHandle">
+                    <button
+                      type="button"
+                      className="aiNoteDragHandle"
+                      draggable
+                      onDragStart={(event) => {
+                        setDraggingBlockId(block.id);
+                        event.dataTransfer.effectAllowed = 'move';
+                        event.dataTransfer.setData('text/plain', block.id);
+                      }}
+                      onDragEnd={() => setDraggingBlockId('')}
+                      title="드래그해서 이동"
+                    >
+                      ↕
+                    </button>
                     <select value={block.type} onChange={(event) => updateBlock(block.id, { type: event.target.value })}>
                       <option value="heading">제목</option>
                       <option value="text">텍스트</option>
@@ -2339,9 +2355,8 @@ function AiNotePage({ navigate }) {
                     </select>
                     <button type="button" onClick={() => moveBlock(block.id, -1)} disabled={index === 0}>↑</button>
                     <button type="button" onClick={() => moveBlock(block.id, 1)} disabled={index === blocks.length - 1}>↓</button>
-                    <button type="button" onClick={() => openBlockFile(block)}>파일 열기</button>
+                    <button type="button" onClick={() => openBlockFile(block)}>파일</button>
                     <button type="button" onClick={() => deleteBlock(block.id)}>삭제</button>
-                    <span>{noteBlockFilePath(block)}</span>
                   </div>
                   <textarea
                     value={block.content}
@@ -2357,18 +2372,30 @@ function AiNotePage({ navigate }) {
 
           <aside className="aiNotePreview">
             <div className="aiNotePreviewHeader">
-              <span>Preview</span>
-              <button type="button" onClick={() => navigate('/scheduler')}>스케줄러 보기</button>
+              <span>선택한 블록</span>
+              <button type="button" onClick={() => activeBlock && openBlockFile(activeBlock)} disabled={!activeBlock}>파일 열기</button>
             </div>
-            <div className="aiNotePreviewBody">
-              {blocks.map((block) => (
-                <button type="button" className={`aiNotePreviewBlock ${block.type}`} key={block.id} onClick={() => openBlockFile(block)}>
-                  {block.type === 'schedule' ? <span className="aiNoteScheduleBadge">Scheduler</span> : null}
-                  {markdownPreviewLines(block.content)}
-                  <small>{noteBlockFilePath(block)}</small>
-                </button>
-              ))}
-            </div>
+            {activeBlock ? (
+              <div className="aiNotePreviewBody">
+                <section className={`aiNotePreviewBlock ${activeBlock.type}`}>
+                  <div className="aiNoteDetailMeta">
+                    <span>{activeBlock.type === 'schedule' ? '일정' : activeBlock.type === 'check' ? '체크' : activeBlock.type === 'heading' ? '제목' : '텍스트'}</span>
+                    {activeBlock.type === 'schedule' ? <span>Scheduler</span> : null}
+                  </div>
+                  {markdownPreviewLines(activeBlock.content)}
+                  {activeSchedule ? (
+                    <div className="aiNoteScheduleDetail">
+                      <strong>{activeSchedule.title}</strong>
+                      <time>{activeSchedule.date} · {activeSchedule.time}</time>
+                      <button type="button" onClick={() => navigate('/scheduler')}>스케줄러에서 보기</button>
+                    </div>
+                  ) : null}
+                  <small>{noteBlockFilePath(activeBlock)}</small>
+                </section>
+              </div>
+            ) : (
+              <div className="aiNotePreviewEmpty">선택한 블록이 없습니다.</div>
+            )}
           </aside>
         </section>
       </section>
