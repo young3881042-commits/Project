@@ -5,5 +5,6 @@ public record TourApiDestination(
         String title,
         String areaName,
         String address,
-        String category) {
+        String category,
+        String imageUrl) {
 }

@@ -26,7 +26,15 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class TravelPlanService {
-    private static final List<String> DEFAULT_TIME_BLOCKS = List.of("오전", "점심·휴식", "오후", "늦은 오후", "저녁");
+    private static final List<FallbackSlot> FALLBACK_SLOTS = List.of(
+            new FallbackSlot("09:30-10:40", "관광지", 70),
+            new FallbackSlot("11:00-12:00", "관광지", 60),
+            new FallbackSlot("12:10-13:20", "식당", 70),
+            new FallbackSlot("14:00-15:20", "관광지", 80),
+            new FallbackSlot("15:40-16:30", "카페", 50),
+            new FallbackSlot("17:00-18:00", "산책", 60),
+            new FallbackSlot("18:20-19:30", "식당", 70),
+            new FallbackSlot("20:00-20:50", "야경", 50));
     private static final String PLAN_PROVIDER = "openai";
     private static final String CODEX_CLI_PATH = "/opt/jupiter-cli/bin/codex";
     private static final int MAX_OUTPUT_TOKENS = 3000;
@@ -96,7 +104,7 @@ public class TravelPlanService {
         TravelPlan savedPlan = travelPlanRepository.save(plan);
         List<Destination> destinations = destinationService.findCandidatesForPlan(request.destinationIds(), regions, styles);
 
-        List<TravelPlanItem> items = generateItineraryWithLocalGpt(savedPlan, request, username, destinations);
+        List<TravelPlanItem> items = applyVerifiedFoodPlaces(savedPlan, generateItineraryWithLocalGpt(savedPlan, request, username, destinations));
         travelPlanItemRepository.saveAll(items);
 
         return TravelPlanResponse.from(savedPlan, travelPlanItemRepository.findByTravelPlanIdOrderByDayNumberAscSequenceNumberAsc(savedPlan.getId()), destinations);
@@ -123,7 +131,7 @@ public class TravelPlanService {
             payload.put(
                 "messages",
                 List.of(
-                    Map.of("role", "system", "content", "너는 한국 전문 여행 가이드 AI다. 반드시 요청받은 JSON 형식으로만 답변해라."),
+                    Map.of("role", "system", "content", "너는 한국과 일본 현지 여행 전문 가이드 AI다. 반드시 요청받은 JSON 형식으로만 답변해라."),
                     Map.of("role", "user", "content", prompt)
                 )
             );
@@ -214,7 +222,7 @@ public class TravelPlanService {
                         + "/" + destination.getPrimaryStyle() + "/" + destination.getRecommendedMinutes() + "분)")
                 .collect(java.util.stream.Collectors.joining(", "));
         return String.format(
-            "한국 여행 일정을 JSON 배열로 생성해줘.\n" +
+            "한국 또는 일본 여행 일정을 JSON 배열로 생성해줘.\n" +
             "- 지역: %s\n" +
             "- 기간: %d일\n" +
             "- 동행: %s\n" +
@@ -224,12 +232,15 @@ public class TravelPlanService {
             "- 예산: %s\n" +
             "- 메모: %s\n" +
             "- 우선 사용할 장소 후보: %s\n\n" +
-            "각 날짜는 여행자가 읽기 쉬운 4~5개 블록으로 구성해. 1시간 단위로 쪼개지 말고 timeSlot은 오전, 점심·휴식, 오후, 늦은 오후, 저녁 또는 10:00-12:00 같은 큰 범위로 써.\n" +
-            "점심과 휴식 시간을 반드시 포함하고, 이동수단과 여행 속도에 맞춰 무리한 왕복 동선을 피해야 해.\n" +
-            "destinationName은 실제 한국 장소명으로 쓰고 note는 추천 이유, 이동 팁, 체류 포인트를 포함해 90자 이하로 구체적으로 써.\n" +
+            "각 날짜는 아침/오전 관광, 점심 식당, 오후 관광, 카페/휴식, 저녁 식당, 야경/산책 중 필요한 6~8개 블록으로 구성해.\n" +
+            "timeSlot은 09:30-10:50 같은 시간 범위로 쓰고, 같은 날 시간이 겹치면 안 돼.\n" +
+            "점심 식당과 카페/휴식은 매일 반드시 포함하고, 이름이 확인 가능한 실제 영업 장소명만 써. '로컬 식당', '카페 추천' 같은 일반명은 금지야.\n" +
+            "각 블록 note에는 이전 장소에서 출발하는 시간, 이번 장소 도착 시간, 이동 팁을 포함해. 식당/카페는 추천 메뉴도 함께 써.\n" +
+            "destinationName은 실제 한국 장소명으로 쓰고 note는 추천 이유, 이동 팁, 체류 포인트 또는 추천 메뉴를 포함해 120자 이하로 구체적으로 써.\n" +
             "durationMinutes는 해당 블록의 권장 체류 시간을 분 단위 숫자로 써.\n" +
+            "primaryStyle은 관광지, 식당, 카페, 야경, 산책, 이동 중 가장 가까운 값을 써.\n" +
             "API 키, 토큰, 서버 주소, 내부 설정 같은 민감정보는 절대 포함하지 마.\n" +
-            "형식: [{\"dayNumber\": 1, \"timeSlot\": \"오전\", \"destinationName\": \"장소\", \"note\": \"설명\", \"primaryStyle\": \"테마\", \"durationMinutes\": 120}, ...]",
+            "형식: [{\"dayNumber\": 1, \"timeSlot\": \"09:30-10:50\", \"destinationName\": \"장소\", \"note\": \"설명\", \"primaryStyle\": \"관광지\", \"durationMinutes\": 80}, ...]",
             plan.getRegion(),
             plan.getDays(),
             plan.getTravelerType(),
@@ -264,19 +275,69 @@ public class TravelPlanService {
     }
 
     private List<TravelPlanItem> parseGeneratedItems(TravelPlan plan, String content, List<Destination> candidates) throws java.io.IOException {
-        JsonNode itineraryNode = objectMapper.readTree(extractJsonArray(content));
+        JsonNode itineraryNode = objectMapper.readTree(extractJsonPayload(content));
         List<TravelPlanItem> items = new ArrayList<>();
         int seq = 1;
         if (itineraryNode.isArray()) {
             for (JsonNode node : itineraryNode) {
-                TravelPlanItem item = parseItem(plan, node, seq++, candidates);
-                items.add(item);
+                if (isDayContainer(node)) {
+                    int dayNumber = firstInt(node, 1, "dayNumber", "day", "day_number");
+                    JsonNode dayItems = firstArray(node, "items", "activities", "stops", "schedule");
+                    for (JsonNode itemNode : dayItems) {
+                        items.add(parseItem(plan, itemNode, seq++, dayNumber, candidates));
+                    }
+                } else {
+                    items.add(parseItem(plan, node, seq++, null, candidates));
+                }
+            }
+        } else if (itineraryNode.isObject()) {
+            JsonNode dayItems = firstArray(itineraryNode, "items", "days", "itinerary", "dailyPlans", "daily_itinerary", "schedule");
+            for (JsonNode node : dayItems) {
+                if (isDayContainer(node)) {
+                    int dayNumber = firstInt(node, 1, "dayNumber", "day", "day_number");
+                    for (JsonNode itemNode : firstArray(node, "items", "activities", "stops", "schedule")) {
+                        items.add(parseItem(plan, itemNode, seq++, dayNumber, candidates));
+                    }
+                } else {
+                    items.add(parseItem(plan, node, seq++, null, candidates));
+                }
             }
         }
         return items;
     }
 
-    private String extractJsonArray(String content) {
+    private List<TravelPlanItem> applyVerifiedFoodPlaces(TravelPlan plan, List<TravelPlanItem> items) {
+        for (TravelPlanItem item : items) {
+            if (!isFoodOrCafe(item)) {
+                continue;
+            }
+            VerifiedLocalPlaceCatalog.VerifiedPlace place = VerifiedLocalPlaceCatalog.pick(
+                    plan.getRegion(),
+                    item.getPrimaryStyle(),
+                    item.getDayNumber(),
+                    item.getSequenceNumber());
+            if (place == null) {
+                continue;
+            }
+            item.setDestinationId(null);
+            item.setDestinationName(place.name());
+            item.setRegion(place.region());
+            item.setPrimaryStyle(place.category());
+            item.setNote(limitText(place.address()
+                    + " · 추천 메뉴: " + place.recommendedMenu()
+                    + " · " + place.verificationNote()
+                    + " · 검증: " + place.sourceLabel(), 240));
+            item.setDurationMinutes(normalizeDuration(item.getDurationMinutes()));
+        }
+        return items;
+    }
+
+    private boolean isFoodOrCafe(TravelPlanItem item) {
+        String text = (item.getPrimaryStyle() + " " + item.getDestinationName() + " " + item.getNote()).toLowerCase();
+        return text.matches(".*(식당|맛집|점심|저녁|한식|분식|레스토랑|restaurant|meal|카페|커피|디저트|브런치|cafe|coffee|bakery).*");
+    }
+
+    private String extractJsonPayload(String content) {
         String normalized = content == null ? "" : content.trim();
         if (normalized.contains("```json")) {
             normalized = normalized.substring(normalized.indexOf("```json") + 7);
@@ -285,10 +346,15 @@ public class TravelPlanService {
             normalized = normalized.substring(normalized.indexOf("```") + 3);
             normalized = normalized.substring(0, normalized.lastIndexOf("```"));
         }
-        int start = normalized.indexOf('[');
-        int end = normalized.lastIndexOf(']');
-        if (start >= 0 && end > start) {
-            return normalized.substring(start, end + 1);
+        int arrayStart = normalized.indexOf('[');
+        int arrayEnd = normalized.lastIndexOf(']');
+        int objectStart = normalized.indexOf('{');
+        int objectEnd = normalized.lastIndexOf('}');
+        if (arrayStart >= 0 && arrayEnd > arrayStart && (objectStart < 0 || arrayStart < objectStart)) {
+            return normalized.substring(arrayStart, arrayEnd + 1);
+        }
+        if (objectStart >= 0 && objectEnd > objectStart) {
+            return normalized.substring(objectStart, objectEnd + 1);
         }
         return normalized;
     }
@@ -303,39 +369,87 @@ public class TravelPlanService {
         return baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
     }
 
-    private TravelPlanItem parseItem(TravelPlan plan, JsonNode node, int sequence, List<Destination> candidates) {
-        String destinationName = node.path("destinationName").asText("미정");
+    private boolean isDayContainer(JsonNode node) {
+        return node != null
+                && node.isObject()
+                && (node.has("items") || node.has("activities") || node.has("stops") || node.has("schedule"));
+    }
+
+    private JsonNode firstArray(JsonNode node, String... fields) {
+        if (node == null) {
+            return objectMapper.createArrayNode();
+        }
+        for (String field : fields) {
+            JsonNode value = node.path(field);
+            if (value.isArray()) {
+                return value;
+            }
+        }
+        return objectMapper.createArrayNode();
+    }
+
+    private String firstText(JsonNode node, String fallback, String... fields) {
+        if (node == null) {
+            return fallback;
+        }
+        for (String field : fields) {
+            String value = LocalTripText.normalize(node.path(field).asText(""));
+            if (!value.isBlank()) {
+                return value;
+            }
+        }
+        return fallback;
+    }
+
+    private int firstInt(JsonNode node, int fallback, String... fields) {
+        if (node == null) {
+            return fallback;
+        }
+        for (String field : fields) {
+            JsonNode value = node.path(field);
+            if (value.canConvertToInt()) {
+                return value.asInt();
+            }
+        }
+        return fallback;
+    }
+
+    private TravelPlanItem parseItem(TravelPlan plan, JsonNode node, int sequence, Integer dayNumber, List<Destination> candidates) {
+        String destinationName = firstText(node, "미정", "destinationName", "destination_name", "title", "name", "place", "activity");
         Destination destination = matchDestination(destinationName, candidates);
+        String timeSlot = normalizeTimeSlot(firstText(node, "", "timeSlot", "time_slot", "time", "scheduleTime", "schedule_time"), sequence);
+        String primaryStyle = firstText(node, "관광", "primaryStyle", "primary_style", "category", "type", "kind");
         TravelPlanItem item = new TravelPlanItem();
         item.setTravelPlanId(plan.getId());
-        item.setDayNumber(node.path("dayNumber").asInt(1));
+        item.setDayNumber(dayNumber == null ? firstInt(node, 1, "dayNumber", "day", "day_number") : dayNumber);
         item.setSequenceNumber(sequence);
-        item.setTimeSlot(normalizeTimeSlot(node.path("timeSlot").asText(""), sequence));
+        item.setTimeSlot(timeSlot);
         item.setDestinationName(destination == null ? destinationName : destination.getName());
         item.setDestinationId(destination == null ? null : destination.getId());
         item.setRegion(destination == null ? plan.getRegion() : destination.getRegion());
-        item.setNote(limitText(node.path("note").asText(""), 240));
-        item.setPrimaryStyle(limitText(node.path("primaryStyle").asText("관광"), 36));
-        item.setDurationMinutes(normalizeDuration(node.path("durationMinutes").asInt(defaultDurationMinutes(item.getTimeSlot()))));
+        item.setNote(limitText(firstText(node, "", "note", "notes", "description", "summary", "reason"), 240));
+        item.setPrimaryStyle(limitText(primaryStyle, 36));
+        item.setDurationMinutes(normalizeDuration(firstInt(node, defaultDurationMinutes(item.getTimeSlot()), "durationMinutes", "duration_minutes")));
         return item;
     }
 
     private List<TravelPlanItem> fallbackItems(TravelPlan plan, List<Destination> candidates) {
         List<TravelPlanItem> items = new ArrayList<>();
         for (int day = 1; day <= plan.getDays(); day++) {
-            for (int slotIndex = 0; slotIndex < DEFAULT_TIME_BLOCKS.size(); slotIndex++) {
+            for (int slotIndex = 0; slotIndex < FALLBACK_SLOTS.size(); slotIndex++) {
+                FallbackSlot slot = FALLBACK_SLOTS.get(slotIndex);
                 Destination destination = candidates.isEmpty() ? null : candidates.get((day + slotIndex - 1) % candidates.size());
                 TravelPlanItem item = new TravelPlanItem();
                 item.setTravelPlanId(plan.getId());
                 item.setDayNumber(day);
-                item.setSequenceNumber(((day - 1) * DEFAULT_TIME_BLOCKS.size()) + slotIndex + 1);
-                item.setTimeSlot(DEFAULT_TIME_BLOCKS.get(slotIndex));
+                item.setSequenceNumber(((day - 1) * FALLBACK_SLOTS.size()) + slotIndex + 1);
+                item.setTimeSlot(slot.timeSlot());
                 item.setDestinationId(destination == null ? null : destination.getId());
-                item.setDestinationName(destination == null ? plan.getRegion() + " 자유 여행" : destination.getName());
+                item.setDestinationName(fallbackDestinationName(plan, destination, slot));
                 item.setRegion(destination == null ? plan.getRegion() : destination.getRegion());
-                item.setNote(limitText(fallbackNote(slotIndex, destination), 240));
-                item.setPrimaryStyle(destination == null ? "자유" : destination.getPrimaryStyle());
-                item.setDurationMinutes(defaultDurationMinutes(item.getTimeSlot()));
+                item.setNote(limitText(fallbackNote(slotIndex, destination, slot), 240));
+                item.setPrimaryStyle(slot.primaryStyle());
+                item.setDurationMinutes(slot.durationMinutes());
                 items.add(item);
             }
         }
@@ -455,7 +569,7 @@ public class TravelPlanService {
         if (!normalized.isBlank()) {
             return limitText(normalized, 40);
         }
-        return DEFAULT_TIME_BLOCKS.get(Math.floorMod(sequence - 1, DEFAULT_TIME_BLOCKS.size()));
+        return FALLBACK_SLOTS.get(Math.floorMod(sequence - 1, FALLBACK_SLOTS.size())).timeSlot();
     }
 
     private int normalizeDuration(int durationMinutes) {
@@ -476,16 +590,38 @@ public class TravelPlanService {
         return 140;
     }
 
-    private String fallbackNote(int slotIndex, Destination destination) {
+    private String fallbackDestinationName(TravelPlan plan, Destination destination, FallbackSlot slot) {
+        if (destination != null && !slot.primaryStyle().matches("식당|카페")) {
+            return destination.getName();
+        }
+        if ("식당".equals(slot.primaryStyle())) {
+            return plan.getRegion() + " 로컬 식당";
+        }
+        if ("카페".equals(slot.primaryStyle())) {
+            return plan.getRegion() + " 카페 휴식";
+        }
+        return destination == null ? plan.getRegion() + " 자유 여행" : destination.getName();
+    }
+
+    private String fallbackNote(int slotIndex, Destination destination, FallbackSlot slot) {
         if (destination == null) {
+            if ("식당".equals(slot.primaryStyle())) {
+                return "방문 동선 근처에서 지역 대표 메뉴로 식사 시간을 확보하세요.";
+            }
+            if ("카페".equals(slot.primaryStyle())) {
+                return "오후 이동 전후로 쉬어갈 수 있는 카페를 배치하세요.";
+            }
             return "동선을 여유 있게 조정하며 주변 식사와 휴식 시간을 확보하세요.";
         }
         return switch (slotIndex) {
             case 0 -> destination.getDistrict() + " 도착 후 혼잡 전 핵심 포인트부터 둘러보세요.";
-            case 1 -> destination.getName() + " 근처에서 식사와 짧은 휴식을 잡으세요.";
-            case 2 -> destination.getHeadline();
+            case 1 -> destination.getHeadline();
+            case 2 -> destination.getName() + " 근처에서 점심 식사와 짧은 휴식을 잡으세요.";
             case 3 -> destination.getDescription();
-            default -> destination.getName() + " 주변 저녁 동선으로 하루를 마무리하세요.";
+            case 4 -> destination.getName() + " 이동 동선의 카페에서 쉬어가세요.";
+            case 5 -> destination.getName() + " 주변을 가볍게 걸으며 다음 장소로 이동하세요.";
+            case 6 -> destination.getName() + " 근처 저녁 식사 후보를 잡고 대기 시간을 줄이세요.";
+            default -> destination.getName() + " 주변 야경이나 산책 동선으로 하루를 마무리하세요.";
         };
     }
 
@@ -495,5 +631,8 @@ public class TravelPlanService {
             return normalized;
         }
         return normalized.substring(0, maxLength);
+    }
+
+    private record FallbackSlot(String timeSlot, String primaryStyle, int durationMinutes) {
     }
 }

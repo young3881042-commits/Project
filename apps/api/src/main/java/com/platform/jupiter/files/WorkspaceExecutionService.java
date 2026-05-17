@@ -37,7 +37,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class WorkspaceExecutionService {
     private static final Logger log = LoggerFactory.getLogger(WorkspaceExecutionService.class);
-    private static final long PYTHON_TIMEOUT_SECONDS = 20L;
+    private static final long DEFAULT_PYTHON_TIMEOUT_SECONDS = 120L;
     private static final long GEMINI_TIMEOUT_SECONDS = 180L;
     private static final long CODEX_TIMEOUT_SECONDS = 180L;
     private static final int MAX_LOGS_PER_USER = 100;
@@ -98,7 +98,8 @@ public class WorkspaceExecutionService {
                 + " TERM=xterm-256color"
                 + " && " + command;
 
-        PythonExecutionResult firstRun = executeShellCommandWithStreams(shellCommand, PYTHON_TIMEOUT_SECONDS);
+        long pythonTimeoutSeconds = pythonTimeoutSeconds();
+        PythonExecutionResult firstRun = executeShellCommandWithStreams(shellCommand, pythonTimeoutSeconds);
         List<String> autoFixNotes = new ArrayList<>();
         boolean autoFixApplied = false;
 
@@ -139,7 +140,7 @@ public class WorkspaceExecutionService {
 
             if (!autoFixResult.timedOut()) {
                 autoFixApplied = true;
-                finalRun = executeShellCommandWithStreams(shellCommand, PYTHON_TIMEOUT_SECONDS);
+                finalRun = executeShellCommandWithStreams(shellCommand, pythonTimeoutSeconds);
                 addLog(
                         username,
                         "python-retry",
@@ -165,12 +166,12 @@ public class WorkspaceExecutionService {
     }
 
     private PythonExecutionResult executeShellCommandWithStreams(String shellCommand, long timeoutSeconds) {
-        Pod pod = resolveCliPod();
         ByteArrayOutputStream stdout = new ByteArrayOutputStream();
         ByteArrayOutputStream stderr = new ByteArrayOutputStream();
         CountDownLatch done = new CountDownLatch(1);
         ExecWatch watch = null;
         try {
+            Pod pod = resolveCliPod();
             watch = kubernetesClient.pods()
                     .inNamespace(appProperties.namespace())
                     .withName(pod.getMetadata().getName())
@@ -211,7 +212,8 @@ public class WorkspaceExecutionService {
             Thread.currentThread().interrupt();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Python execution interrupted", e);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to execute Python file", e);
+            log.warn("Kubernetes Python execution unavailable, running locally in API container: {}", e.getMessage());
+            return executeLocalShellCommandWithStreams(shellCommand, timeoutSeconds);
         } finally {
             if (watch != null) {
                 try {
@@ -219,6 +221,55 @@ public class WorkspaceExecutionService {
                 } catch (Exception ignored) {
                 }
             }
+        }
+    }
+
+    private long pythonTimeoutSeconds() {
+        Long configured = appProperties.pythonTimeoutSeconds();
+        if (configured == null || configured < 10L) {
+            return DEFAULT_PYTHON_TIMEOUT_SECONDS;
+        }
+        return Math.min(configured, 900L);
+    }
+
+    private PythonExecutionResult executeLocalShellCommandWithStreams(String shellCommand, long timeoutSeconds) {
+        Process process = null;
+        ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+        ByteArrayOutputStream stderr = new ByteArrayOutputStream();
+        try {
+            process = new ProcessBuilder("sh", "-lc", shellCommand).start();
+            Process runningProcess = process;
+            Thread stdoutReader = new Thread(() -> copyProcessStream(runningProcess.getInputStream(), stdout), "python-stdout-reader");
+            Thread stderrReader = new Thread(() -> copyProcessStream(runningProcess.getErrorStream(), stderr), "python-stderr-reader");
+            stdoutReader.start();
+            stderrReader.start();
+
+            boolean finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
+            if (!finished) {
+                process.destroyForcibly();
+            }
+            stdoutReader.join(TimeUnit.SECONDS.toMillis(1));
+            stderrReader.join(TimeUnit.SECONDS.toMillis(1));
+            return new PythonExecutionResult(
+                    stdout.toString(StandardCharsets.UTF_8),
+                    stderr.toString(StandardCharsets.UTF_8),
+                    finished ? process.exitValue() : -1,
+                    !finished);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            if (process != null) {
+                process.destroyForcibly();
+            }
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Python execution interrupted", e);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to execute Python file locally", e);
+        }
+    }
+
+    private void copyProcessStream(java.io.InputStream input, ByteArrayOutputStream output) {
+        try (input) {
+            input.transferTo(output);
+        } catch (IOException ignored) {
         }
     }
 
@@ -544,11 +595,11 @@ public class WorkspaceExecutionService {
     }
 
     private ExecutionResult executeCommand(String shellCommand, long timeoutSeconds) {
-        Pod pod = resolveCliPod();
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         CountDownLatch done = new CountDownLatch(1);
         ExecWatch watch = null;
         try {
+            Pod pod = resolveCliPod();
             watch = kubernetesClient.pods()
                     .inNamespace(appProperties.namespace())
                     .withName(pod.getMetadata().getName())

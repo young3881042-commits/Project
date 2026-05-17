@@ -32,10 +32,15 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.5}
       ENABLE_CODEX_CLI_MODE: ${ENABLE_CODEX_CLI_MODE:-true}
+      APP_PYTHON_TIMEOUT_SECONDS: ${APP_PYTHON_TIMEOUT_SECONDS:-180}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=75.0}
     ports:
       - "8080:8080"
     volumes:
       - /data/codex:/root/.codex
+    cpus: "2.0"
+    mem_limit: 6g
+    mem_reservation: 2g
     depends_on:
       - db
 

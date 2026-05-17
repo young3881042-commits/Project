@@ -5,6 +5,52 @@ const AUTH_KEY = 'codex-workspace-auth';
 const LazyCodeEditor = lazy(() => import('./CodeEditor.jsx'));
 const LazyGeminiApp = lazy(() => import('./GeminiApp.jsx'));
 const LazyRagApp = lazy(() => import('./RagApp.jsx'));
+const SCHEDULER_KEY = 'codex-personal-scheduler-items';
+const DEFAULT_SCHEDULER_ITEMS = [
+  {
+    id: 'schedule-demo-1',
+    title: '홈페이지 MVP 문구 정리',
+    date: toDateKey(new Date()),
+    time: '10:00',
+    type: '작업',
+    memo: '메인 화면과 서비스 이동 동선을 점검합니다.',
+    done: false
+  },
+  {
+    id: 'schedule-demo-2',
+    title: 'AI Workspace에서 초안 확인',
+    date: toDateKey(new Date()),
+    time: '14:00',
+    type: '검토',
+    memo: '생성된 파일과 프롬프트 결과를 workspace에서 확인합니다.',
+    done: false
+  }
+];
+
+function normalizeAuthSession(session) {
+  if (!session) return null;
+  return session.username === 'guestuser' && !session.isGuest ? { ...session, isGuest: true } : session;
+}
+
+export function addSchedulerItem(item) {
+  const title = String(item?.title || item?.name || '').trim();
+  if (!title) return null;
+  const now = new Date();
+  const nextItem = {
+    id: item?.id || `schedule-${now.getTime()}`,
+    title,
+    date: item?.date || toDateKey(now),
+    time: item?.time || '09:00',
+    type: item?.type || '작업',
+    memo: item?.memo || item?.note || '',
+    done: Boolean(item?.done)
+  };
+  const current = readSchedulerItems();
+  const next = [...current, nextItem];
+  localStorage.setItem(SCHEDULER_KEY, JSON.stringify(next));
+  window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { item: nextItem, items: next } }));
+  return nextItem;
+}
 
 function authHeaders(token) {
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -73,10 +119,87 @@ function formatSize(size) {
 function readStoredAuth() {
   try {
     const raw = localStorage.getItem(AUTH_KEY);
-    return raw ? JSON.parse(raw) : null;
+    return raw ? normalizeAuthSession(JSON.parse(raw)) : null;
   } catch {
     return null;
   }
+}
+
+function readSchedulerItems() {
+  try {
+    const raw = localStorage.getItem(SCHEDULER_KEY);
+    if (raw === null) {
+      return DEFAULT_SCHEDULER_ITEMS;
+    }
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : DEFAULT_SCHEDULER_ITEMS;
+  } catch {
+    return DEFAULT_SCHEDULER_ITEMS;
+  }
+}
+
+function toDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function buildMonthDays(monthKey) {
+  const [year, month] = monthKey.split('-').map(Number);
+  const firstDay = new Date(year, month - 1, 1);
+  const start = new Date(firstDay);
+  start.setDate(firstDay.getDate() - firstDay.getDay());
+  return Array.from({ length: 42 }, (_, index) => {
+    const day = new Date(start);
+    day.setDate(start.getDate() + index);
+    return {
+      key: toDateKey(day),
+      dayNumber: day.getDate(),
+      currentMonth: day.getMonth() === month - 1
+    };
+  });
+}
+
+function parseDateKey(dateKey) {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function addDays(date, amount) {
+  const next = new Date(date);
+  next.setDate(date.getDate() + amount);
+  return next;
+}
+
+function startOfMondayWeek(dateKey) {
+  const date = parseDateKey(dateKey);
+  const mondayOffset = (date.getDay() + 6) % 7;
+  return addDays(date, -mondayOffset);
+}
+
+function buildWeekDays(dateKey) {
+  const monday = startOfMondayWeek(dateKey);
+  return Array.from({ length: 7 }, (_, index) => {
+    const day = addDays(monday, index);
+    return {
+      key: toDateKey(day),
+      dayNumber: day.getDate(),
+      weekday: ['월', '화', '수', '목', '금', '토', '일'][index]
+    };
+  });
+}
+
+function formatDateLabel(dateKey) {
+  const date = parseDateKey(dateKey);
+  return `${date.getMonth() + 1}.${date.getDate()}`;
+}
+
+if (typeof window !== 'undefined') {
+  window.codexScheduler = {
+    ...(window.codexScheduler || {}),
+    addItem: addSchedulerItem
+  };
 }
 
 function parentPathOf(path) {
@@ -336,6 +459,7 @@ function AccountEditDialog({
 
 function WorkspaceHeader({
   auth,
+  navigate,
   selectedPath,
   rightPanel,
   setRightPanel,
@@ -345,6 +469,8 @@ function WorkspaceHeader({
   onOpenAccountEdit,
   onLogout
 }) {
+  const isGuest = Boolean(auth.isGuest);
+
   return (
     <header className="workspaceTopbar">
       <section className="workspacePathCard">
@@ -352,6 +478,11 @@ function WorkspaceHeader({
         <code className="workspacePathCode">{workspacePathFor(selectedPath)}</code>
       </section>
       <div className="workspaceUserTray">
+        <div className="workspaceTopTabs">
+          <button type="button" className="ghostButton compact" onClick={() => navigate('/')}>Universe</button>
+          <button type="button" className="ghostButton compact" onClick={() => navigate('/scheduler')}>Scheduler</button>
+          <button type="button" className="ghostButton compact" onClick={() => navigate('/destinations')}>AI Trip</button>
+        </div>
         <div className="workspaceTopTabs">
           <button type="button" className={`ghostButton compact ${rightPanel === 'rag' ? 'active' : ''}`} onClick={() => setRightPanel('rag')}>RAG</button>
           <button type="button" className={`ghostButton compact ${rightPanel === 'gemini' ? 'active' : ''}`} onClick={() => setRightPanel('gemini')}>LLM</button>
@@ -365,25 +496,32 @@ function WorkspaceHeader({
             분석 환경
           </button>
         ) : null}
-        <div className="userMenuWrap">
-          <button
-            type="button"
-            className={`workspaceUserButton ${userMenuOpen ? 'open' : ''}`}
-            onClick={(event) => {
-              event.stopPropagation();
-              setUserMenuOpen((current) => !current);
-            }}
-          >
-            <span>{auth.role}</span>
+        {isGuest ? (
+          <div className="workspaceUserButton guestLabel" aria-label="Guest session">
+            <span>Guest</span>
             <strong>{auth.username}</strong>
-          </button>
-          {userMenuOpen ? (
-            <div className="userMenuDropdown" onClick={(event) => event.stopPropagation()}>
-              <button type="button" onClick={onOpenAccountEdit}>계정 설정</button>
-              <button type="button" onClick={onLogout}>로그아웃</button>
-            </div>
-          ) : null}
-        </div>
+          </div>
+        ) : (
+          <div className="userMenuWrap">
+            <button
+              type="button"
+              className={`workspaceUserButton ${userMenuOpen ? 'open' : ''}`}
+              onClick={(event) => {
+                event.stopPropagation();
+                setUserMenuOpen((current) => !current);
+              }}
+            >
+              <span>{auth.role}</span>
+              <strong>{auth.username}</strong>
+            </button>
+            {userMenuOpen ? (
+              <div className="userMenuDropdown" onClick={(event) => event.stopPropagation()}>
+                <button type="button" onClick={onOpenAccountEdit}>계정 설정</button>
+                <button type="button" onClick={onLogout}>로그아웃</button>
+              </div>
+            ) : null}
+          </div>
+        )}
       </div>
     </header>
   );
@@ -918,7 +1056,7 @@ function AdminMonitorPanel({ authToken, activeMonitor, setActiveMonitor }) {
   );
 }
 
-function WorkspaceApp() {
+function WorkspaceApp({ navigate }) {
   const [authMode, setAuthMode] = useState('login');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -1037,6 +1175,12 @@ function WorkspaceApp() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
+      if (session.role !== 'ADMIN') {
+        localStorage.removeItem(AUTH_KEY);
+        setAuth(null);
+        setAuthError('Workspace는 관리자 계정만 접근할 수 있습니다. admin1 계정으로 로그인하세요.');
+        return;
+      }
       setAuth(session);
       setUsername('');
       setPassword('');
@@ -1431,7 +1575,24 @@ function WorkspaceApp() {
         setPassword={setPassword}
         onSubmit={handleAuth}
         loading={authLoading}
-        error={authError}
+        error={authError || 'Workspace는 관리자 전용입니다. admin1 계정으로 로그인하세요.'}
+      />
+    );
+  }
+
+  if (auth.role !== 'ADMIN') {
+    localStorage.removeItem(AUTH_KEY);
+    return (
+      <AuthScreen
+        mode={authMode}
+        setMode={setAuthMode}
+        username={username}
+        setUsername={setUsername}
+        password={password}
+        setPassword={setPassword}
+        onSubmit={handleAuth}
+        loading={authLoading}
+        error="Workspace는 관리자 계정만 접근할 수 있습니다. admin1 계정으로 로그인하세요."
       />
     );
   }
@@ -1441,6 +1602,7 @@ function WorkspaceApp() {
       <input ref={uploadRef} type="file" hidden onChange={handleUpload} />
       <WorkspaceHeader
         auth={auth}
+        navigate={navigate}
         selectedPath={selectedPath}
         rightPanel={rightPanel}
         setRightPanel={setRightPanel}
@@ -1516,20 +1678,22 @@ function WorkspaceApp() {
           </div>
         ) : null}
       </div>
-      <AccountEditDialog
-        auth={auth}
-        open={accountEditOpen}
-        loading={accountEditLoading}
-        error={accountEditError}
-        currentPassword={currentPassword}
-        newPassword={newPassword}
-        confirmPassword={confirmPassword}
-        onCurrentPassword={setCurrentPassword}
-        onNewPassword={setNewPassword}
-        onConfirmPassword={setConfirmPassword}
-        onClose={closeAccountEdit}
-        onSubmit={submitAccountEdit}
-      />
+      {auth.isGuest ? null : (
+        <AccountEditDialog
+          auth={auth}
+          open={accountEditOpen}
+          loading={accountEditLoading}
+          error={accountEditError}
+          currentPassword={currentPassword}
+          newPassword={newPassword}
+          confirmPassword={confirmPassword}
+          onCurrentPassword={setCurrentPassword}
+          onNewPassword={setNewPassword}
+          onConfirmPassword={setConfirmPassword}
+          onClose={closeAccountEdit}
+          onSubmit={submitAccountEdit}
+        />
+      )}
     </main>
   );
 }
@@ -1538,6 +1702,445 @@ function currentPath() {
   const pathname = window.location.pathname || '/';
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
   return `${path}${window.location.search || ''}`;
+}
+
+function SpaceHomePage({ navigate }) {
+  const [accessMode, setAccessMode] = useState('guest');
+  const [memberFlow, setMemberFlow] = useState('login');
+  const [memberId, setMemberId] = useState('');
+  const [memberPassword, setMemberPassword] = useState('');
+  const [memberLoading, setMemberLoading] = useState(false);
+  const [memberError, setMemberError] = useState('');
+  const [memberSession, setMemberSession] = useState(null);
+
+  useEffect(() => {
+    document.title = 'Universe';
+  }, []);
+
+  const submitMember = async (event) => {
+    event.preventDefault();
+    if (memberLoading) return;
+    const username = memberId.trim();
+    if (!username || !memberPassword.trim()) {
+      setMemberError('아이디와 비밀번호를 입력하세요.');
+      return;
+    }
+    setMemberLoading(true);
+    setMemberError('');
+    try {
+      const session = await requestJson(memberFlow === 'signup' ? '/api/auth/signup' : '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password: memberPassword })
+      });
+      localStorage.setItem(AUTH_KEY, JSON.stringify(session));
+      setMemberSession(session);
+      setMemberPassword('');
+    } catch (error) {
+      setMemberError(error.message);
+    } finally {
+      setMemberLoading(false);
+    }
+  };
+
+  const logoutMember = () => {
+    localStorage.removeItem(AUTH_KEY);
+    setMemberSession(null);
+    setMemberPassword('');
+  };
+
+  return (
+    <main className="spaceHome">
+      <section className="spaceHero">
+        <div className="spaceHeroCopy">
+          <span className="spaceEyebrow">UNIVERSE</span>
+          <h1>Personal Universe</h1>
+          <strong className="spaceHeroLead">나만의 서비스 공간</strong>
+          <p>작업, 여행, 일정을 하나의 개인 서비스 공간으로 연결합니다.</p>
+          <section className="spaceAuthCard" aria-label="access mode">
+            <div className="spaceAuthSwitch">
+              <button type="button" className={accessMode === 'guest' ? 'active' : ''} onClick={() => setAccessMode('guest')}>
+                Guest
+              </button>
+              <button type="button" className={accessMode === 'member' ? 'active' : ''} onClick={() => setAccessMode('member')}>
+                Member
+              </button>
+            </div>
+            {accessMode === 'guest' ? (
+              <div className="spaceAuthBody">
+                <span>Guest mode</span>
+                <p>샘플 서비스 공간을 둘러보세요.</p>
+              </div>
+            ) : (
+              <div className="spaceAuthBody">
+                {memberSession?.username ? (
+                  <>
+                    <span>Member mode</span>
+                    <p>{memberSession.username} 계정으로 연결되었습니다.</p>
+                    <button type="button" className="spaceSignupLink" onClick={logoutMember}>로그아웃</button>
+                  </>
+                ) : (
+                  <form className="spaceMemberForm" onSubmit={submitMember}>
+                    <div className="spaceAuthTitle">
+                      <span>Member mode</span>
+                    </div>
+                    <label>
+                      <span>이메일/아이디</span>
+                      <input value={memberId} onChange={(event) => setMemberId(event.target.value)} placeholder="my-id" autoComplete="username" />
+                    </label>
+                    <label>
+                      <span>비밀번호</span>
+                      <input type="password" value={memberPassword} onChange={(event) => setMemberPassword(event.target.value)} placeholder="password" autoComplete={memberFlow === 'signup' ? 'new-password' : 'current-password'} />
+                    </label>
+                    <button type="submit" className="spaceAuthSubmit" disabled={memberLoading}>
+                      {memberLoading ? '처리 중...' : memberFlow === 'signup' ? '회원가입' : 'Login'}
+                    </button>
+                    {memberError ? <p className="spaceAuthError">{memberError}</p> : null}
+                    <button
+                      type="button"
+                      className="spaceSignupLink"
+                      onClick={() => {
+                        setMemberFlow((current) => (current === 'signup' ? 'login' : 'signup'));
+                        setMemberError('');
+                      }}
+                    >
+                      {memberFlow === 'signup' ? '로그인으로 돌아가기' : '회원가입'}
+                    </button>
+                  </form>
+                )}
+              </div>
+            )}
+          </section>
+          <div className="spaceHeroActions">
+            <button type="button" onClick={() => navigate('/scheduler')}>Scheduler</button>
+            <button type="button" onClick={() => navigate('/destinations')}>AI Trip</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function SchedulerPage({ navigate }) {
+  const session = readStoredAuth();
+  const [items, setItems] = useState(readSchedulerItems);
+  const [filter, setFilter] = useState('전체');
+  const [calendarView, setCalendarView] = useState('금주');
+  const [selectedDate, setSelectedDate] = useState(toDateKey(new Date()));
+  const [calendarMonth, setCalendarMonth] = useState(toDateKey(new Date()).slice(0, 7));
+  const [draft, setDraft] = useState({
+    title: '',
+    date: toDateKey(new Date()),
+    time: '09:00',
+    type: '작업',
+    memo: ''
+  });
+
+  useEffect(() => {
+    document.title = 'Personal Scheduler';
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(SCHEDULER_KEY, JSON.stringify(items));
+  }, [items]);
+
+  useEffect(() => {
+    const syncItems = () => setItems(readSchedulerItems());
+    const handleStorage = (event) => {
+      if (event.key === SCHEDULER_KEY) {
+        syncItems();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('codex:scheduler-items-updated', syncItems);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('codex:scheduler-items-updated', syncItems);
+    };
+  }, []);
+
+  const today = toDateKey(new Date());
+  const todayItems = items.filter((item) => item.date === today);
+  const pendingItems = items.filter((item) => !item.done);
+  const monthDays = useMemo(() => buildMonthDays(calendarMonth), [calendarMonth]);
+  const itemCountByDate = useMemo(() => items.reduce((counts, item) => {
+    counts[item.date] = (counts[item.date] || 0) + 1;
+    return counts;
+  }, {}), [items]);
+  const currentMonth = today.slice(0, 7);
+  const weekDays = useMemo(() => buildWeekDays(today), [today]);
+  const weekRangeLabel = `${formatDateLabel(weekDays[0].key)} - ${formatDateLabel(weekDays[6].key)}`;
+  const itemsByDate = useMemo(() => items.reduce((groups, item) => {
+    groups[item.date] = [...(groups[item.date] || []), item];
+    return groups;
+  }, {}), [items]);
+  const monthScheduleDays = useMemo(() => {
+    const [year, month] = currentMonth.split('-').map(Number);
+    const lastDate = new Date(year, month, 0).getDate();
+    return Array.from({ length: lastDate }, (_, index) => {
+      const date = new Date(year, month - 1, index + 1);
+      return {
+        key: toDateKey(date),
+        dayNumber: index + 1,
+        weekday: ['일', '월', '화', '수', '목', '금', '토'][date.getDay()]
+      };
+    });
+  }, [currentMonth]);
+  const visibleItems = items
+    .filter((item) => item.date === selectedDate)
+    .filter((item) => filter === '전체' || item.type === filter || (filter === '완료' && item.done))
+    .slice()
+    .sort((left, right) => `${left.date} ${left.time}`.localeCompare(`${right.date} ${right.time}`));
+  const selectedDateItems = items.filter((item) => item.date === selectedDate);
+
+  const moveCalendarMonth = (offset) => {
+    const [year, month] = calendarMonth.split('-').map(Number);
+    const next = new Date(year, month - 1 + offset, 1);
+    setCalendarMonth(toDateKey(next).slice(0, 7));
+  };
+
+  const submitDraft = (event) => {
+    event.preventDefault();
+    const title = draft.title.trim();
+    if (!title) return;
+    setItems((current) => [
+      ...current,
+      {
+        id: `schedule-${Date.now()}`,
+        title,
+        date: draft.date,
+        time: draft.time,
+        type: draft.type,
+        memo: draft.memo.trim(),
+        done: false
+      }
+    ]);
+    setDraft((current) => ({ ...current, title: '', memo: '' }));
+    setSelectedDate(draft.date);
+    setCalendarMonth(draft.date.slice(0, 7));
+  };
+
+  const updateItem = (id, patch) => {
+    setItems((current) => current.map((item) => (item.id === id ? { ...item, ...patch } : item)));
+  };
+
+  const deleteItem = (id) => {
+    setItems((current) => current.filter((item) => item.id !== id));
+  };
+
+  return (
+    <main className="schedulerShell">
+      <aside className="schedulerSidebar">
+        <button type="button" className="schedulerHomeButton" onClick={() => navigate('/')}>Universe Home</button>
+        <div className="schedulerSideGroup">
+          <span>Services</span>
+          <a href="/" onClick={(event) => { event.preventDefault(); navigate('/'); }}>Home</a>
+          <a href="/destinations" onClick={(event) => { event.preventDefault(); navigate('/destinations'); }}>AI Trip</a>
+        </div>
+        <div className="schedulerSideGroup">
+          <span>Views</span>
+          {['전체', '작업', '회의', '검토', '개인', '완료'].map((item) => (
+            <button key={item} type="button" className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>
+              {item}
+            </button>
+          ))}
+        </div>
+      </aside>
+      <section className="schedulerPage">
+        <header className="schedulerHero">
+          <div>
+            <span className="schedulerPageIcon">#</span>
+            <h1>{session?.username || 'Guest'} 스케줄러</h1>
+            <p>오늘 할 일과 여행 준비를 가볍게 정리합니다.</p>
+          </div>
+          <div className="schedulerStats">
+            <article><span>오늘</span><strong>{todayItems.length}</strong></article>
+            <article><span>미완료</span><strong>{pendingItems.length}</strong></article>
+            <article><span>전체</span><strong>{items.length}</strong></article>
+          </div>
+        </header>
+        <form className="schedulerQuickAdd" onSubmit={submitDraft}>
+          <label>
+            <span>할 일</span>
+            <input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="예: 경주 일정 확인" />
+          </label>
+          <div className="schedulerFormGrid">
+            <label>
+              <span>날짜</span>
+              <input type="date" value={draft.date} onChange={(event) => setDraft((current) => ({ ...current, date: event.target.value }))} />
+            </label>
+            <label>
+              <span>시간</span>
+              <input type="time" value={draft.time} onChange={(event) => setDraft((current) => ({ ...current, time: event.target.value }))} />
+            </label>
+          </div>
+          <label>
+            <span>분류</span>
+            <select value={draft.type} onChange={(event) => setDraft((current) => ({ ...current, type: event.target.value }))}>
+              <option>작업</option>
+              <option>회의</option>
+              <option>검토</option>
+              <option>개인</option>
+            </select>
+          </label>
+          <label>
+            <span>노트</span>
+            <textarea value={draft.memo} onChange={(event) => setDraft((current) => ({ ...current, memo: event.target.value }))} placeholder="필요한 내용을 짧게 적어주세요." />
+          </label>
+          <button type="submit">추가</button>
+        </form>
+        <section className="schedulerDatabase">
+          <div className="schedulerCalendarPanel">
+            <div className="schedulerCalendarHeader">
+              <div>
+                <h2>달력</h2>
+                <p>{selectedDate} · {selectedDateItems.length}개 일정</p>
+              </div>
+              <div className="schedulerCalendarControls">
+                <button type="button" onClick={() => moveCalendarMonth(-1)}>{'<'}</button>
+                <strong>{calendarMonth}</strong>
+                <button type="button" onClick={() => moveCalendarMonth(1)}>{'>'}</button>
+                <button type="button" onClick={() => {
+                  setSelectedDate(today);
+                  setCalendarMonth(today.slice(0, 7));
+                }}>Today</button>
+              </div>
+            </div>
+            <div className="schedulerCalendarWeekdays">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => <span key={day}>{day}</span>)}
+            </div>
+            <div className="schedulerCalendarGrid">
+              {monthDays.map((day) => (
+                <button
+                  key={day.key}
+                  type="button"
+                  className={[
+                    day.currentMonth ? '' : 'muted',
+                    day.key === selectedDate ? 'selected' : '',
+                    day.key === today ? 'today' : ''
+                  ].filter(Boolean).join(' ')}
+                  onClick={() => {
+                    setSelectedDate(day.key);
+                    setCalendarMonth(day.key.slice(0, 7));
+                    setDraft((current) => ({ ...current, date: day.key }));
+                  }}
+                >
+                  <span>{day.dayNumber}</span>
+                  {itemCountByDate[day.key] ? <small>{itemCountByDate[day.key]}</small> : null}
+                </button>
+              ))}
+            </div>
+            <div className="schedulerLinkedSchedule">
+              <div className="schedulerLinkedHeader">
+                <div>
+                  <h3>{calendarView} 일정</h3>
+                  <p>{calendarView === '금주' ? `${today} 기준 · ${weekRangeLabel}` : `${today} 기준 · ${currentMonth}`} 일정</p>
+                </div>
+                <div className="schedulerViewSwitch" aria-label="일정 보기">
+                  {['금주', '이번달'].map((view) => (
+                    <button key={view} type="button" className={calendarView === view ? 'active' : ''} onClick={() => setCalendarView(view)}>
+                      {view}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {calendarView === '금주' ? (
+                <div className="schedulerWeekSlots">
+                  {weekDays.map((day) => {
+                    const dayItems = (itemsByDate[day.key] || []).slice().sort((left, right) => left.time.localeCompare(right.time));
+                    return (
+                      <button
+                        key={day.key}
+                        type="button"
+                        className={[
+                          day.key === selectedDate ? 'selected' : '',
+                          day.key === today ? 'today' : ''
+                        ].filter(Boolean).join(' ')}
+                        onClick={() => {
+                          setSelectedDate(day.key);
+                          setCalendarMonth(day.key.slice(0, 7));
+                          setDraft((current) => ({ ...current, date: day.key }));
+                        }}
+                      >
+                        <strong>{day.weekday}</strong>
+                        <span>{formatDateLabel(day.key)}</span>
+                        <small>{dayItems.length}개</small>
+                        <div>
+                          {dayItems.slice(0, 3).map((item) => <em key={item.id}>{item.time} {item.title}</em>)}
+                          {dayItems.length > 3 ? <em>+{dayItems.length - 3}개 더</em> : null}
+                          {dayItems.length ? null : <em>일정 없음</em>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="schedulerMonthSlots">
+                  {monthScheduleDays.map((day) => {
+                    const dayItems = (itemsByDate[day.key] || []).slice().sort((left, right) => left.time.localeCompare(right.time));
+                    return (
+                      <button
+                        key={day.key}
+                        type="button"
+                        className={[
+                          day.key === selectedDate ? 'selected' : '',
+                          day.key === today ? 'today' : '',
+                          dayItems.length ? 'hasItems' : ''
+                        ].filter(Boolean).join(' ')}
+                        onClick={() => {
+                          setSelectedDate(day.key);
+                          setDraft((current) => ({ ...current, date: day.key }));
+                        }}
+                      >
+                        <strong>{day.dayNumber}</strong>
+                        <span>{day.weekday}</span>
+                        {dayItems.length ? <small>{dayItems.length}</small> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="schedulerBoardHeader">
+            <div>
+              <h2>일정</h2>
+              <p>{selectedDate} · {filter} 보기 · {visibleItems.length}개</p>
+            </div>
+            <div className="schedulerFilters">
+              {['전체', '작업', '회의', '검토', '개인', '완료'].map((item) => (
+                <button key={item} type="button" className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="schedulerList">
+            <div className="schedulerTableHead">
+              <span>이름</span>
+              <span>분류</span>
+              <span>날짜</span>
+              <span>노트</span>
+              <span />
+            </div>
+            {visibleItems.map((item) => (
+              <article className={`schedulerItem ${item.done ? 'done' : ''}`} key={item.id}>
+                <div className="schedulerNameCell">
+                  <button type="button" className="schedulerCheck" onClick={() => updateItem(item.id, { done: !item.done })}>{item.done ? '✓' : ''}</button>
+                  <strong>{item.title}</strong>
+                </div>
+                <span className="schedulerTypePill">{item.type}</span>
+                <time>{item.date} · {item.time}</time>
+                <small>{item.memo || '메모 없음'}</small>
+                <button type="button" className="schedulerDelete" onClick={() => deleteItem(item.id)}>삭제</button>
+              </article>
+            ))}
+            {visibleItems.length ? null : <p className="schedulerEmpty">표시할 일정이 없습니다.</p>}
+          </div>
+        </section>
+      </section>
+    </main>
+  );
 }
 
 export default function App() {
@@ -1573,7 +2176,15 @@ export default function App() {
   }
 
   if (routePath === '/analysisadmin' || routePath.startsWith('/analysisadmin/')) {
-    return <WorkspaceApp />;
+    return <WorkspaceApp navigate={navigate} />;
+  }
+
+  if (routePath === '/') {
+    return <SpaceHomePage navigate={navigate} />;
+  }
+
+  if (routePath === '/scheduler') {
+    return <SchedulerPage navigate={navigate} />;
   }
 
   return <LocalTripApp path={path} navigate={navigate} />;

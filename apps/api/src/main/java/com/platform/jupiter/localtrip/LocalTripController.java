@@ -19,14 +19,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class LocalTripController {
     private final LocalTripDestinationService destinationService;
+    private final TourApiSyncService tourApiSyncService;
     private final TravelPlanService travelPlanService;
     private final AuthService authService;
 
     public LocalTripController(
             LocalTripDestinationService destinationService,
+            TourApiSyncService tourApiSyncService,
             TravelPlanService travelPlanService,
             AuthService authService) {
         this.destinationService = destinationService;
+        this.tourApiSyncService = tourApiSyncService;
         this.travelPlanService = travelPlanService;
         this.authService = authService;
     }
@@ -50,6 +53,11 @@ public class LocalTripController {
     @PostMapping("/destinations/sync/mock")
     public ApiSyncLogResponse syncMockDestinations() {
         return destinationService.syncMockDestinations();
+    }
+
+    @PostMapping("/destinations/sync/tour-api")
+    public ApiSyncLogResponse syncTourApiDestinations() {
+        return tourApiSyncService.syncDestinations();
     }
 
     @PostMapping("/travel-plans/generate")

@@ -396,3 +396,34 @@ codex exec \"hello\"
 주의:
 - `~/.codex/auth.json`을 웹 서비스 코드에서 읽거나 프론트엔드로 전달하면 안 됩니다.
 - 컨테이너/쿠버네티스에서 Codex CLI 모드를 쓸 때는 해당 런타임 계정의 로그인 세션/홈 디렉터리 마운트 정책을 별도로 설계해야 합니다.
+
+## 보안 하드닝 기록
+
+이번 배포에는 서버 고의 장애, 대용량 업로드, 키 탈취, 서버 정보 노출을 줄이기 위한 1차 방어선을 추가했습니다.
+
+- 업로드 크기 제한
+  - Nginx `client_max_body_size`를 `6m`으로 제한합니다.
+  - Spring multipart `max-file-size`는 `5MB`, `max-request-size`는 `6MB`입니다.
+  - Workspace 업로드 코드에서도 5MB 초과 파일을 거부합니다.
+
+- 민감 파일명 차단
+  - 일반 사용자 워크스페이스에서 `.env`, 개인키, credential 파일, `*.pem`, `*.key`, `*.p12`, `*.pfx` 파일을 읽기/쓰기/업로드하지 못하게 차단합니다.
+  - 파일명에 `secret`, `api_key`, `apikey`, `access_token`, `refresh_token`, `client_secret`, `private_key` 등이 포함된 경우도 차단합니다.
+
+- 큰 파일 미리보기 제한
+  - 워크스페이스 파일 미리보기는 1MB 초과 텍스트 파일을 거부합니다.
+
+- 서버 정보 노출 축소
+  - Nginx `server_tokens off`를 설정했습니다.
+  - API 예외 응답은 내부 스택트레이스 대신 사용자용 메시지를 반환하는 방향을 유지합니다.
+
+- Python 실행 환경
+  - API 이미지에 `python3`, `python3-pip`를 포함합니다.
+  - 크롤링/데이터 처리 기본 패키지로 `requests`, `beautifulsoup4`, `lxml`, `pandas`, `openpyxl`, `httpx`를 설치합니다.
+  - 기본 `main.py` 샘플은 실행 시 `sample_output.txt`를 실제로 생성합니다.
+
+남은 보완 사항:
+- 사용자 Python 실행은 별도 sandbox 컨테이너로 분리하고 CPU, 메모리, 네트워크, 파일시스템 제한을 적용해야 합니다.
+- 파일명 기반 민감정보 차단은 1차 방어입니다. 운영 환경에서는 secret을 사용자 워크스페이스 밖에 두고 Secret Manager 또는 Kubernetes Secret으로 주입해야 합니다.
+- 인증, 업로드, LLM 엔드포인트에는 rate limit을 추가해야 합니다.
+- 임의 업로드를 운영에서 허용할 경우 실제 백신/콘텐츠 스캐너 연동이 필요합니다.

@@ -104,11 +104,6 @@ public class LocalTripDestinationService {
                 .toList();
 
         List<Destination> all = destinationRepository.findAllByOrderByRegionAscPopularityScoreDescNameAsc();
-        if (all.isEmpty()) {
-            syncMockDestinations();
-            all = destinationRepository.findAllByOrderByRegionAscPopularityScoreDescNameAsc();
-        }
-
         List<Destination> strict = filter(all, normalizedRegions, normalizedStyles);
         if (!strict.isEmpty()) {
             return strict;
@@ -185,6 +180,10 @@ public class LocalTripDestinationService {
             case "6", "부산" -> "부산".equals(destination.getRegion());
             case "35", "경주" -> "경주".equals(destination.getRegion());
             case "39", "제주" -> "제주".equals(destination.getRegion());
+            case "도쿄", "tokyo" -> "도쿄".equalsIgnoreCase(destination.getRegion());
+            case "교토", "kyoto" -> "교토".equalsIgnoreCase(destination.getRegion());
+            case "오사카", "osaka" -> "오사카".equalsIgnoreCase(destination.getRegion());
+            case "후쿠오카", "fukuoka" -> "후쿠오카".equalsIgnoreCase(destination.getRegion());
             default -> destination.getRegion().equalsIgnoreCase(areaCode);
         };
     }
@@ -239,7 +238,17 @@ public class LocalTripDestinationService {
                 new MockDestination("JEJU-005", "애월카페거리", "제주", "애월읍", "카페", "카페", List.of("카페", "커플", "사진"), "제주 제주시 애월읍 애월해안로", "해안 드라이브와 카페 체류가 이어지는 감성 코스", "서부권 드라이브 일정 중 쉬어가는 포인트로 적합합니다.", 110, 91),
                 new MockDestination("JEJU-006", "절물자연휴양림", "제주", "봉개동", "휴양림", "자연", List.of("자연", "가족", "사진"), "제주 제주시 명림로 584", "삼나무 숲길과 완만한 산책로가 있는 휴양림", "더운 날에도 숲 그늘이 있어 가족 일정에 안정적입니다.", 100, 84),
                 new MockDestination("JEJU-007", "한라산 성판악", "제주", "조천읍", "등산", "자연", List.of("자연", "사진", "혼자"), "제주 제주시 조천읍 516로 1865", "한라산 정상 탐방의 대표 출발 지점", "체력과 예약 여부를 확인하고 이른 오전 단독 일정으로 잡는 편이 안전합니다.", 240, 92),
-                new MockDestination("JEJU-008", "카멜리아힐", "제주", "안덕면", "수목원", "사진", List.of("사진", "커플", "가족"), "제주 서귀포시 안덕면 병악로 166", "계절 꽃과 산책로가 잘 정리된 서귀포 정원 명소", "비교적 완만해 가족, 커플 일정의 오후 휴식 코스로 쓰기 좋습니다.", 100, 86));
+                new MockDestination("JEJU-008", "카멜리아힐", "제주", "안덕면", "수목원", "사진", List.of("사진", "커플", "가족"), "제주 서귀포시 안덕면 병악로 166", "계절 꽃과 산책로가 잘 정리된 서귀포 정원 명소", "비교적 완만해 가족, 커플 일정의 오후 휴식 코스로 쓰기 좋습니다.", 100, 86),
+                new MockDestination("TOKYO-001", "센소지", "도쿄", "아사쿠사", "사찰", "역사", List.of("역사", "사진", "가족"), "東京都台東区浅草2-3-1", "아사쿠사 중심의 도쿄 대표 사찰과 상점가 동선", "나카미세 거리와 묶어 오전 산책 일정으로 쓰기 좋습니다.", 100, 95),
+                new MockDestination("TOKYO-002", "시부야 스카이", "도쿄", "시부야", "전망대", "사진", List.of("사진", "커플", "야경"), "東京都渋谷区渋谷2-24-12", "도쿄 도심 전망과 야경을 보는 고층 전망 명소", "해질녘 예약 동선으로 배치하면 만족도가 높습니다.", 90, 93),
+                new MockDestination("TOKYO-003", "츠키지 장외시장", "도쿄", "주오구", "시장", "맛집", List.of("맛집", "가족", "사진"), "東京都中央区築地4丁目", "해산물과 전통 식재료를 만나는 도쿄 식도락 시장", "아침 식사나 이른 점심 동선으로 적합합니다.", 90, 91),
+                new MockDestination("KYOTO-001", "기요미즈데라", "교토", "히가시야마", "사찰", "역사", List.of("역사", "사진", "가족"), "京都府京都市東山区清水1丁目294", "교토 동쪽 산기슭의 대표 사찰과 전망 동선", "니넨자카·산넨자카와 도보로 묶기 좋습니다.", 120, 96),
+                new MockDestination("KYOTO-002", "후시미이나리 타이샤", "교토", "후시미", "신사", "사진", List.of("사진", "역사", "자연"), "京都府京都市伏見区深草藪之内町68", "붉은 도리이 터널로 유명한 교토 대표 신사", "이른 오전에 배치하면 혼잡을 줄일 수 있습니다.", 120, 95),
+                new MockDestination("KYOTO-003", "니시키시장", "교토", "나카교구", "시장", "맛집", List.of("맛집", "가족", "쇼핑"), "京都府京都市中京区錦小路通", "교토 식재료와 간식을 촘촘히 둘러보는 시장", "점심 전후 간식과 쇼핑을 함께 넣기 좋습니다.", 80, 88),
+                new MockDestination("OSAKA-001", "도톤보리", "오사카", "주오구", "거리", "맛집", List.of("맛집", "야경", "사진"), "大阪府大阪市中央区道頓堀", "간판 야경과 오사카 먹거리가 집중된 대표 거리", "저녁 식사와 야경 산책을 함께 구성하기 좋습니다.", 110, 95),
+                new MockDestination("OSAKA-002", "오사카성 공원", "오사카", "주오구", "성곽", "역사", List.of("역사", "가족", "사진"), "大阪府大阪市中央区大阪城1-1", "성곽과 공원 산책을 함께 보는 오사카 대표 명소", "오전 산책과 박물관 관람을 묶기 좋습니다.", 120, 91),
+                new MockDestination("FUKUOKA-001", "오호리공원", "후쿠오카", "주오구", "공원", "자연", List.of("자연", "가족", "산책"), "福岡県福岡市中央区大濠公園", "호수 산책과 도심 휴식이 쉬운 후쿠오카 대표 공원", "카페 휴식과 함께 느린 오후 일정으로 좋습니다.", 90, 88),
+                new MockDestination("FUKUOKA-002", "나카스 포장마차 거리", "후쿠오카", "하카타구", "거리", "맛집", List.of("맛집", "야경", "로컬"), "福岡県福岡市博多区中洲", "야타이 문화와 하카타 라멘을 경험하는 저녁 동선", "저녁 이후 짧은 식도락 산책으로 배치하기 좋습니다.", 90, 90));
     }
 
     private record MockDestination(

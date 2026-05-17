@@ -12,6 +12,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -26,9 +27,42 @@ public class FileService {
     private static final String LOCALTRIP_PROFILE_DIR = "localtrip";
     private static final String LOCALTRIP_PREFERENCES_FILE = "preferences.json";
     private static final String LOCALTRIP_HISTORY_FILE = "history.jsonl";
+    private static final long MAX_UPLOAD_BYTES = 5L * 1024L * 1024L;
+    private static final long MAX_TEXT_READ_BYTES = 1024L * 1024L;
+    private static final List<String> BLOCKED_EXACT_FILENAMES = List.of(
+            ".env",
+            ".env.local",
+            ".env.production",
+            "id_rsa",
+            "id_dsa",
+            "id_ecdsa",
+            "id_ed25519",
+            "authorized_keys",
+            "known_hosts",
+            "credentials",
+            "credentials.json",
+            "service-account.json");
+    private static final List<String> BLOCKED_FILENAME_TOKENS = List.of(
+            "secret",
+            "private_key",
+            "apikey",
+            "api_key",
+            "access_token",
+            "refresh_token",
+            "client_secret");
     private static final String DEFAULT_TEST_PY = """
+            from pathlib import Path
+            from datetime import datetime
+
+
             def main():
-                print("workspace is ready")
+                output = Path("sample_output.txt")
+                output.write_text(
+                    "Python sample executed successfully.\\n"
+                    f"Created at: {datetime.now().isoformat(timespec='seconds')}\\n",
+                    encoding="utf-8",
+                )
+                print(f"created {output.resolve()}")
 
 
             if __name__ == "__main__":
@@ -69,16 +103,23 @@ public class FileService {
     }
 
     public Resource readWorkspaceFile(String relativePath) {
+        rejectSensitivePath(relativePath);
         return openFile(resolvePath(Path.of(appProperties.workspaceRoot()), relativePath));
     }
 
     public Resource readWorkspaceFile(String relativePath, String username, boolean admin) {
+        if (!admin) {
+            rejectSensitivePath(relativePath);
+        }
         Path root = workspaceRoot(username, admin);
         ensureWorkspaceRoot(root, admin ? null : username);
-        return openFile(resolvePath(root, relativePath));
+        Path file = resolvePath(root, relativePath);
+        rejectOversizedTextRead(file);
+        return openFile(file);
     }
 
     public void writeWorkspaceFile(String relativePath, String content) {
+        rejectSensitivePath(relativePath);
         Path file = resolvePath(Path.of(appProperties.workspaceRoot()), relativePath);
         try {
             Path parent = file.getParent();
@@ -97,6 +138,9 @@ public class FileService {
     }
 
     public void writeWorkspaceFile(String relativePath, String content, String username, boolean admin) {
+        if (!admin) {
+            rejectSensitivePath(relativePath);
+        }
         Path file = resolvePath(workspaceRoot(username, admin), relativePath);
         try {
             Path parent = file.getParent();
@@ -218,6 +262,12 @@ public class FileService {
             String filename = Path.of(file.getOriginalFilename() == null ? "upload.bin" : file.getOriginalFilename())
                     .getFileName()
                     .toString();
+            if (file.getSize() > MAX_UPLOAD_BYTES) {
+                throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "업로드 파일은 5MB 이하만 허용됩니다.");
+            }
+            if (!admin) {
+                rejectSensitivePath(filename);
+            }
             Path destination = directory.resolve(filename).normalize();
             if (!destination.startsWith(directory.normalize())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid upload path");
@@ -315,6 +365,36 @@ public class FileService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found");
         }
         return new FileSystemResource(file);
+    }
+
+    private void rejectOversizedTextRead(Path file) {
+        try {
+            if (Files.isRegularFile(file) && Files.size(file) > MAX_TEXT_READ_BYTES) {
+                throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "파일이 너무 커서 미리보기로 열 수 없습니다. 다운로드 또는 파일 크기를 줄여주세요.");
+            }
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "파일 크기를 확인할 수 없습니다.", e);
+        }
+    }
+
+    private void rejectSensitivePath(String relativePath) {
+        if (relativePath == null || relativePath.isBlank()) {
+            return;
+        }
+        for (String part : relativePath.replace('\\', '/').split("/")) {
+            String filename = part.trim().toLowerCase(Locale.ROOT);
+            if (filename.isBlank()) {
+                continue;
+            }
+            if (BLOCKED_EXACT_FILENAMES.contains(filename) || filename.endsWith(".pem") || filename.endsWith(".key") || filename.endsWith(".p12") || filename.endsWith(".pfx")) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "민감 파일명은 워크스페이스에서 열거나 업로드할 수 없습니다.");
+            }
+            for (String token : BLOCKED_FILENAME_TOKENS) {
+                if (filename.contains(token)) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "민감 정보가 포함된 파일명은 허용되지 않습니다.");
+                }
+            }
+        }
     }
 
     private Path workspaceRoot(String username, boolean admin) {

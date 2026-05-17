@@ -57,13 +57,11 @@ public class AuthService {
                     updated_at TIMESTAMP(6) NOT NULL
                 )
                 """);
-        if (!repository.existsByUsername("admin")) {
-            AppUserAccount admin = new AppUserAccount();
-            admin.setUsername("admin");
-            admin.setPasswordHash(passwordEncoder.encode("admin123"));
-            admin.setRole(ADMIN_ROLE);
-            repository.save(admin);
-        }
+        AppUserAccount admin = repository.findByUsername("admin1").orElseGet(AppUserAccount::new);
+        admin.setUsername("admin1");
+        admin.setPasswordHash(passwordEncoder.encode("admin123"));
+        admin.setRole(ADMIN_ROLE);
+        repository.save(admin);
         if (!repository.existsByUsername(GUEST_USERNAME)) {
             AppUserAccount guest = new AppUserAccount();
             guest.setUsername(GUEST_USERNAME);

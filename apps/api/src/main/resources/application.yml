@@ -16,6 +16,10 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
 
 app:
   namespace: ${APP_NAMESPACE:jupiter}
@@ -59,6 +63,7 @@ app:
   open-ai-api-key: ${APP_OPENAI_API_KEY:${OPENAI_API_KEY:}}
   open-ai-model: ${APP_OPENAI_MODEL:${OPENAI_MODEL:gpt-5.2-codex}}
   grok-api-key: ${APP_GROK_API_KEY:}
+  python-timeout-seconds: ${APP_PYTHON_TIMEOUT_SECONDS:120}
   enable-codex-cli-mode: ${ENABLE_CODEX_CLI_MODE:false}
   gemini-oauth-client-id: ${APP_GEMINI_OAUTH_CLIENT_ID:}
   gemini-oauth-client-secret: ${APP_GEMINI_OAUTH_CLIENT_SECRET:}

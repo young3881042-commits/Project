@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 
 const AUTH_KEY = 'codex-workspace-auth';
+const SCHEDULER_KEY = 'codex-personal-scheduler-items';
+const LOCALTRIP_DAY_CHECK_KEY = 'localtrip-day-route-checks';
 
 function commonsImage(fileName, width = 1200) {
   return `https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(fileName)}?width=${width}`;
@@ -200,6 +202,63 @@ const SERVICE_CATEGORIES = [
   }
 ];
 
+const GYEONGJU_FALLBACK_ITINERARY = [
+  {
+    day: 1,
+    title: '1일차 · 불국사와 황리단길',
+    summary: '세계유산 관광, 경주 디저트, 야경 산책을 자연스럽게 잇는 첫날 코스입니다.',
+    items: [
+      { startTime: '09:00', endTime: '10:30', title: '불국사', category: '관광지', location: '토함산 서쪽', description: '경주 대표 세계문화유산으로 여행 첫 코스에 어울리는 고즈넉한 사찰입니다.', travelTimeFromPrevious: '' },
+      { startTime: '10:50', endTime: '11:40', title: '석굴암', category: '관광지', location: '불국사에서 차량 이동', description: '토함산 전망과 함께 석굴암 본존불을 둘러보는 오전 핵심 코스입니다.', travelTimeFromPrevious: '이동 20분' },
+      { startTime: '12:10', endTime: '13:20', title: '함양집 보불로점', category: '식당', location: '불국사·보문단지 이동 동선', description: '경주식 한우물회와 전통 한식 메뉴로 점심 식사 만족도가 높은 곳입니다.', recommendedMenu: '한우물회, 육회비빔밥', travelTimeFromPrevious: '이동 30분' },
+      { startTime: '14:00', endTime: '15:30', title: '황리단길', category: '관광지', location: '대릉원 서쪽 골목', description: '한옥 골목, 편집숍, 간식거리를 함께 둘러보기 좋은 경주 도심 산책지입니다.', travelTimeFromPrevious: '이동 40분' },
+      { startTime: '15:30', endTime: '16:20', title: '황남빵 본점', category: '디저트, 카페', location: '황리단길·대릉원 근처', description: '경주 대표 디저트로 여행 중 간단히 들르기 좋습니다.', recommendedMenu: '황남빵, 찰보리빵', travelTimeFromPrevious: '도보 5분' },
+      { startTime: '16:40', endTime: '17:40', title: '대릉원', category: '관광지', location: '황리단길 인근', description: '왕릉 산책로와 포토 스폿을 여유 있게 둘러보는 오후 코스입니다.', travelTimeFromPrevious: '도보 15분' },
+      { startTime: '18:10', endTime: '19:20', title: '도솔마을', category: '식당, 한식', location: '대릉원·첨성대 근처', description: '정갈한 한정식 구성으로 하루 관광 후 저녁 식사에 부담이 적습니다.', recommendedMenu: '한정식, 떡갈비 정식', travelTimeFromPrevious: '이동 20분' },
+      { startTime: '19:40', endTime: '20:30', title: '월정교 야경', category: '야경, 산책', location: '교촌마을 남쪽', description: '조명이 켜진 목조 교량과 물가 산책로를 함께 즐기는 야간 마무리 코스입니다.', travelTimeFromPrevious: '이동 20분' }
+    ]
+  },
+  {
+    day: 2,
+    title: '2일차 · 첨성대와 동궁과 월지',
+    summary: '도심 유적과 박물관, 교촌마을, 동궁과 월지 야경을 연결한 하루입니다.',
+    items: [
+      { startTime: '09:30', endTime: '10:40', title: '첨성대', category: '관광지', location: '경주 역사유적지구', description: '경주 도심 여행의 중심이 되는 신라 천문대와 주변 산책로입니다.', travelTimeFromPrevious: '' },
+      { startTime: '11:00', endTime: '12:00', title: '동궁과 월지 근처 산책', category: '산책, 관광지', location: '첨성대 동쪽', description: '동궁과 월지 주변 녹지와 유적 동선을 가볍게 걸어보는 코스입니다.', travelTimeFromPrevious: '도보 20분' },
+      { startTime: '12:10', endTime: '13:20', title: '별채반 교동쌈밥', category: '식당, 한식', location: '교촌마을·첨성대 근처', description: '쌈밥과 경주 한식 구성이 좋아 여러 명이 함께 먹기 편한 점심 후보입니다.', recommendedMenu: '교동쌈밥, 불고기 정식', travelTimeFromPrevious: '이동 10분' },
+      { startTime: '14:00', endTime: '15:20', title: '국립경주박물관', category: '관광지, 박물관', location: '월성 동쪽', description: '신라 유물과 역사 흐름을 실내에서 차분히 볼 수 있는 오후 코스입니다.', travelTimeFromPrevious: '이동 25분' },
+      { startTime: '15:40', endTime: '16:30', title: '카페 능', category: '카페, 디저트', location: '교촌마을·월정교 근처', description: '한옥 분위기에서 쉬어가기 좋은 카페로 도보 여행 중 휴식 포인트가 됩니다.', recommendedMenu: '아메리카노, 계절 디저트', travelTimeFromPrevious: '이동 20분' },
+      { startTime: '17:00', endTime: '18:00', title: '교촌마을', category: '관광지, 산책', location: '월정교 북쪽', description: '한옥 마을과 전통문화 거리 분위기를 함께 느끼는 저녁 전 산책 코스입니다.', travelTimeFromPrevious: '도보 15분' },
+      { startTime: '18:20', endTime: '19:30', title: '교리김밥 본점', category: '식당, 분식', location: '교촌마을 인근', description: '가볍지만 경주 로컬 감성이 있는 저녁 후보로 이동 부담이 적습니다.', recommendedMenu: '교리김밥, 잔치국수', travelTimeFromPrevious: '이동 10분' },
+      { startTime: '20:00', endTime: '20:50', title: '동궁과 월지 야경', category: '야경, 산책', location: '월성 동쪽', description: '수면에 비치는 야경이 좋아 경주 밤 산책의 대표 마무리 코스입니다.', travelTimeFromPrevious: '이동 20분' }
+    ]
+  },
+  {
+    day: 3,
+    title: '3일차 · 보문호와 여행 마무리',
+    summary: '호수 산책, 카페, 보문단지 체험을 거쳐 여유 있게 마무리하는 일정입니다.',
+    items: [
+      { startTime: '09:30', endTime: '10:30', title: '보문호 산책', category: '산책, 관광지', location: '보문관광단지', description: '호수 둘레를 따라 걷기 좋은 아침 산책 코스입니다.', travelTimeFromPrevious: '' },
+      { startTime: '10:50', endTime: '11:40', title: '엘로우 카페', category: '카페, 브런치', location: '보문호 근처', description: '보문호 주변에서 가볍게 쉬어가기 좋은 카페 후보입니다.', recommendedMenu: '라떼, 브런치 플레이트', travelTimeFromPrevious: '이동 15분' },
+      { startTime: '12:00', endTime: '13:10', title: '맷돌순두부', category: '식당, 한식', location: '보문단지 근처', description: '따뜻한 순두부 메뉴로 마지막 날 점심을 편하게 해결하기 좋습니다.', recommendedMenu: '순두부찌개, 해물파전', travelTimeFromPrevious: '이동 10분' },
+      { startTime: '13:40', endTime: '15:00', title: '경주월드 또는 보문단지', category: '관광지, 액티비티', location: '보문관광단지', description: '동행 성향에 따라 놀이공원 또는 보문단지 산책으로 선택할 수 있는 코스입니다.', travelTimeFromPrevious: '이동 20분' },
+      { startTime: '15:20', endTime: '16:00', title: '기념품/로컬샵', category: '쇼핑, 로컬샵', location: '보문단지·황리단길 이동 동선', description: '찰보리빵, 지역 소품, 여행 기념품을 챙기는 마무리 쇼핑 시간입니다.', travelTimeFromPrevious: '이동 20분' },
+      { startTime: '16:00', endTime: '17:00', title: '이동 및 여행 마무리', category: '이동', location: '터미널 또는 역 방향', description: '짐 정리와 귀가 이동을 고려한 완충 시간입니다.', travelTimeFromPrevious: '여유 이동' }
+    ]
+  }
+];
+
+const GENERIC_DAY_SLOTS = [
+  { startTime: '09:30', endTime: '10:30', category: '브런치', title: '브런치 식당 추천', recommendedMenu: '브런치 플레이트, 커피', travelTimeFromPrevious: '' },
+  { startTime: '10:50', endTime: '12:00', category: '관광지', travelTimeFromPrevious: '이동 20분' },
+  { startTime: '12:10', endTime: '13:20', category: '식당', title: '점심 식당 추천', recommendedMenu: '지역 대표 메뉴', travelTimeFromPrevious: '이동 10분' },
+  { startTime: '14:00', endTime: '15:20', category: '관광지', travelTimeFromPrevious: '이동 30분' },
+  { startTime: '15:40', endTime: '16:30', category: '카페', title: '카페 추천', recommendedMenu: '시그니처 음료, 디저트', travelTimeFromPrevious: '이동 20분' },
+  { startTime: '17:00', endTime: '18:00', category: '관광지', travelTimeFromPrevious: '이동 20분' },
+  { startTime: '18:20', endTime: '19:30', category: '식당', title: '저녁 식당 추천', recommendedMenu: '저녁 추천 메뉴', travelTimeFromPrevious: '이동 20분' },
+  { startTime: '20:00', endTime: '20:50', category: '야경, 산책', title: '야경/산책 코스', travelTimeFromPrevious: '이동 20분' }
+];
+
 const REQUEST_STEPS = [
   {
     title: '취향 입력',
@@ -215,7 +274,7 @@ const REQUEST_STEPS = [
   }
 ];
 
-const REGION_LINKS = ['서울', '부산', '제주', '경주', '강릉', '전주', '여수', '속초', '인천', '대구', '광주', '대전'];
+const REGION_LINKS = ['서울', '부산', '제주', '경주', '도쿄', '오사카', '교토', '후쿠오카', '강릉', '전주', '여수', '속초', '인천', '대구', '광주', '대전'];
 
 const USER_ROLES = [
   {
@@ -296,6 +355,10 @@ function readStoredAuth() {
   }
 }
 
+function isGuestSession(session) {
+  return Boolean(session?.isGuest) || session?.username === 'guestuser';
+}
+
 function pickString(...values) {
   const value = values.find((item) => item !== undefined && item !== null && `${item}`.trim());
   return value === undefined ? '' : `${value}`.trim();
@@ -348,6 +411,10 @@ function regionImage(region, index = 0) {
   if (normalized.includes('부산') || normalized.includes('busan')) return DEFAULT_IMAGES[1];
   if (normalized.includes('제주') || normalized.includes('jeju')) return DEFAULT_IMAGES[2];
   if (normalized.includes('경주') || normalized.includes('gyeongju')) return DEFAULT_IMAGES[3];
+  if (normalized.includes('도쿄') || normalized.includes('tokyo')) return DEFAULT_IMAGES[0];
+  if (normalized.includes('오사카') || normalized.includes('osaka')) return DEFAULT_IMAGES[1];
+  if (normalized.includes('교토') || normalized.includes('kyoto')) return DEFAULT_IMAGES[3];
+  if (normalized.includes('후쿠오카') || normalized.includes('fukuoka')) return DEFAULT_IMAGES[2];
   return DEFAULT_IMAGES[index % DEFAULT_IMAGES.length];
 }
 
@@ -401,23 +468,195 @@ function normalizeDestinations(payload) {
   return rows.map(normalizeDestination);
 }
 
+function parseTimeRange(...values) {
+  const text = pickString(...values);
+  const match = text.match(/(\d{1,2}:\d{2})\s*(?:-|~|–|—|to)\s*(\d{1,2}:\d{2})/i);
+  if (match) {
+    return { startTime: match[1], endTime: match[2] };
+  }
+  return { startTime: '', endTime: '' };
+}
+
+function inferScheduleCategory(title, explicitCategory, tags = []) {
+  const text = `${title} ${explicitCategory} ${tags.join(' ')}`.toLowerCase();
+  if (/카페|커피|디저트|빵|브런치|cafe|coffee|dessert|bakery/.test(text)) return explicitCategory || '카페';
+  if (/식당|맛집|점심|저녁|한식|분식|레스토랑|restaurant|lunch|dinner|meal/.test(text)) return explicitCategory || '식당';
+  if (/야경|산책|night|walk/.test(text)) return explicitCategory || '야경, 산책';
+  if (/이동|마무리/.test(text)) return explicitCategory || '이동';
+  return explicitCategory || '관광지';
+}
+
+function scheduleTagsFor(category, tags = []) {
+  const next = new Set(tags.filter(Boolean));
+  `${category || ''}`.split(',').map((item) => item.trim()).filter(Boolean).forEach((item) => next.add(item));
+  if (/식당|한식|분식|브런치/.test(category || '')) next.add('식당');
+  if (/카페|디저트|브런치/.test(category || '')) next.add('카페');
+  return Array.from(next).slice(0, 5);
+}
+
+function extractRecommendedMenu(text = '') {
+  const match = String(text).match(/추천\s*메뉴\s*[:：]\s*([^·\n]+)/);
+  return match ? match[1].trim() : '';
+}
+
 function normalizeItineraryItem(raw, index = 0) {
   if (typeof raw === 'string') {
-    return { time: '', title: raw, place: '', note: '', tags: [], imageUrl: regionImage('', index) };
+    return {
+      time: '',
+      startTime: '',
+      endTime: '',
+      title: raw,
+      place: '',
+      location: '',
+      note: '',
+      description: '',
+      category: '관광지',
+      recommendedMenu: '',
+      travelTimeFromPrevious: '',
+      tags: ['관광지'],
+      imageUrl: regionImage('', index)
+    };
   }
   const item = raw || {};
   const title = pickString(item.title, item.name, item.destinationName, item.destination_name, item.activity) || `Stop ${index + 1}`;
   const place = pickString(item.place, item.location, item.region, item.address);
+  const parsedTime = parseTimeRange(item.time, item.timeSlot, item.time_slot, item.scheduleTime);
+  const startTime = pickString(item.startTime, item.start_time, parsedTime.startTime);
+  const endTime = pickString(item.endTime, item.end_time, parsedTime.endTime);
+  const baseTags = normalizeTags(item.tags, item.keywords, item.primaryStyle, item.primary_style);
+  const category = inferScheduleCategory(title, pickString(item.category, item.type, item.kind), baseTags);
+  const description = pickString(item.description, item.summary, item.note, item.notes, item.reason);
+  const recommendedMenu = pickString(item.recommendedMenu, item.recommended_menu, item.menu, item.signatureMenu)
+    || extractRecommendedMenu(description);
   return {
-    time: pickString(item.time, item.timeSlot, item.time_slot, item.startTime, item.hour),
+    time: startTime && endTime ? `${startTime} - ${endTime}` : pickString(item.time, item.timeSlot, item.time_slot, item.hour, startTime),
+    startTime,
+    endTime,
     title,
     place,
-    note: pickString(item.note, item.notes, item.description, item.reason),
-    tags: normalizeTags(item.tags, item.keywords, item.primaryStyle, item.primary_style),
+    location: pickString(item.locationHint, item.location_hint, item.location, item.place, item.address, place),
+    note: description,
+    description,
+    category,
+    recommendedMenu,
+    travelTimeFromPrevious: pickString(item.travelTimeFromPrevious, item.travel_time_from_previous, item.transferTime, item.moveTime),
+    tags: scheduleTagsFor(category, baseTags),
     durationMinutes: pickNumber(item.durationMinutes, item.duration_minutes),
     sequenceNumber: pickNumber(item.sequenceNumber, item.sequence_number),
     imageUrl: exactDestinationImage({ ...item, name: title, region: place })
   };
+}
+
+function readDayRouteChecks() {
+  try {
+    const raw = localStorage.getItem(LOCALTRIP_DAY_CHECK_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function routeCheckKey(plan, day, type) {
+  return `${plan?.id || plan?.title || 'localtrip-plan'}:${day?.day || 1}:${type}`;
+}
+
+function PlanDayRouteCheck({ plan, day }) {
+  const [checks, setChecks] = useState(readDayRouteChecks);
+  const firstItem = (day.items || []).find((item) => item.startTime || item.time || item.title);
+  const lastItem = (day.items || []).slice().reverse().find((item) => item.endTime || item.time || item.title);
+  if (!firstItem && !lastItem) {
+    return null;
+  }
+
+  const startKey = routeCheckKey(plan, day, 'start');
+  const endKey = routeCheckKey(plan, day, 'end');
+  const updateCheck = (key) => {
+    setChecks((current) => {
+      const next = { ...current, [key]: !current[key] };
+      localStorage.setItem(LOCALTRIP_DAY_CHECK_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+  const startTime = firstItem?.startTime || parseTimeRange(firstItem?.time).startTime || scheduleBlockLabel(firstItem?.time, 0);
+  const endTime = lastItem?.endTime || parseTimeRange(lastItem?.time).endTime || scheduleBlockLabel(lastItem?.time, (day.items || []).length - 1);
+
+  return (
+    <div className="ltDayRouteCheck" aria-label={`${day.day}일차 출발 도착 체크`}>
+      <label>
+        <input type="checkbox" checked={Boolean(checks[startKey])} onChange={() => updateCheck(startKey)} />
+        <span>출발</span>
+        <strong>{firstItem?.location || firstItem?.place || firstItem?.title}</strong>
+        <time>{startTime}</time>
+      </label>
+      <label>
+        <input type="checkbox" checked={Boolean(checks[endKey])} onChange={() => updateCheck(endKey)} />
+        <span>도착</span>
+        <strong>{lastItem?.location || lastItem?.place || lastItem?.title}</strong>
+        <time>{endTime}</time>
+      </label>
+    </div>
+  );
+}
+
+function cloneFallbackDay(day) {
+  return {
+    ...day,
+    items: day.items.map((item, index) => normalizeItineraryItem({
+      ...item,
+      durationMinutes: item.durationMinutes || 0
+    }, index))
+  };
+}
+
+function isGyeongjuPlan(context) {
+  return /경주|gyeongju/i.test(`${context.title || ''} ${context.destinationName || ''} ${context.destinationRegion || ''}`);
+}
+
+function hasFoodAndCafe(items) {
+  const text = items.map((item) => `${item.category} ${item.title} ${item.tags?.join(' ') || ''}`).join(' ');
+  return /식당|점심|저녁|한식|분식/.test(text) && /카페|디저트|브런치/.test(text);
+}
+
+function applyScheduleFallback(itinerary, context = {}) {
+  if (isGyeongjuPlan(context) && (!itinerary.length || !itinerary.some((day) => hasFoodAndCafe(day.items || [])))) {
+    return GYEONGJU_FALLBACK_ITINERARY.map(cloneFallbackDay);
+  }
+
+  if (!itinerary.length) {
+    return GYEONGJU_FALLBACK_ITINERARY.slice(0, Math.max(1, Math.min(3, Number(context.days || 1)))).map(cloneFallbackDay);
+  }
+
+  return itinerary.map((day, dayIndex) => {
+    const rawItems = (day.items || []).map((item, itemIndex) => normalizeItineraryItem(item, itemIndex));
+    const baseItems = rawItems.length ? rawItems : [];
+    const slots = GENERIC_DAY_SLOTS;
+    const timelineItems = slots.map((slot, index) => {
+      const source = baseItems[index] || {};
+      const slotIsFood = /식당|브런치|카페/.test(slot.category);
+      const sourceIsFood = /식당|브런치|카페/.test(source.category || '');
+      const item = slotIsFood && !sourceIsFood ? slot : { ...slot, ...source };
+      const category = inferScheduleCategory(item.title || slot.title, item.category, item.tags || []);
+      return normalizeItineraryItem({
+        ...item,
+        title: item.title || slot.title || `코스 ${index + 1}`,
+        category,
+        startTime: item.startTime || slot.startTime,
+        endTime: item.endTime || slot.endTime,
+        location: item.location || item.place || (slotIsFood ? '주요 동선 근처' : ''),
+        description: item.description || item.note || (slotIsFood ? '여행 동선 중간에 들르기 좋은 추천 장소입니다.' : '여행 흐름에 맞춰 배치한 방문 코스입니다.'),
+        recommendedMenu: item.recommendedMenu || slot.recommendedMenu || '',
+        travelTimeFromPrevious: item.travelTimeFromPrevious || slot.travelTimeFromPrevious || ''
+      }, index);
+    });
+
+    return {
+      ...day,
+      title: day.title || `${day.day || dayIndex + 1}일차`,
+      summary: day.summary || timelineItems.map((item) => item.title).slice(0, 3).join(' · '),
+      items: timelineItems
+    };
+  });
 }
 
 function normalizeItinerary(raw) {
@@ -462,13 +701,20 @@ function normalizeItinerary(raw) {
 
 function normalizePlan(raw, index = 0) {
   const plan = raw?.plan || raw?.travelPlan || raw || {};
-  const itinerary = normalizeItinerary(plan.dayCards || plan.days || plan.dailyPlans || plan.daily_itinerary || plan.itinerary || plan.schedule || plan.items);
+  const rawItinerary = normalizeItinerary(plan.dayCards || plan.days || plan.dailyPlans || plan.daily_itinerary || plan.itinerary || plan.schedule || plan.items);
   const id = pickString(plan.id, plan.planId, plan.plan_id);
   const destinationValue = typeof plan.destination === 'string' ? plan.destination : '';
   const destinationName = pickString(plan.destinationName, plan.destination_name, plan.destination?.name, destinationValue);
   const title = pickString(plan.title, plan.name) || (destinationName ? `${destinationName} trip` : `Travel plan ${index + 1}`);
   const explicitDays = pickNumber(plan.daysCount, plan.durationDays, plan.duration_days, plan.days);
   const titleDays = extractDayCount(title, plan.summary, plan.description, plan.overview, plan.markdown, plan.markdownContent, plan.content);
+  const plannedDays = explicitDays || titleDays || Math.max(rawItinerary.length, 1);
+  const itinerary = applyScheduleFallback(rawItinerary, {
+    title,
+    destinationName,
+    destinationRegion: pickString(plan.destinationRegion, plan.region, plan.destination?.region),
+    days: plannedDays
+  });
   return {
     id,
     key: id || `plan-${index}`,
@@ -478,7 +724,7 @@ function normalizePlan(raw, index = 0) {
     summary: pickString(plan.summary, plan.description, plan.overview) || 'Day-by-day local route generated for the selected travel style.',
     markdown: pickString(plan.markdown, plan.markdownContent, plan.content),
     startDate: pickString(plan.startDate, plan.start_date),
-    days: explicitDays || titleDays || Math.max(itinerary.length, 1),
+    days: plannedDays,
     travelers: pickString(plan.travelers, plan.party, plan.travelerType, plan.traveler_type) || 'Flexible',
     pace: pickString(plan.pace, plan.travelPace) || 'Balanced',
     interests: normalizeTags(plan.interests, plan.tags),
@@ -491,6 +737,35 @@ function normalizePlan(raw, index = 0) {
 function normalizePlans(payload) {
   const rows = readArray(payload, ['plans', 'travelPlans', 'items', 'content', 'results']);
   return rows.map(normalizePlan);
+}
+
+function addPlanToScheduler(plan) {
+  if (!plan) return;
+  try {
+    const raw = localStorage.getItem(SCHEDULER_KEY);
+    const current = raw ? JSON.parse(raw) : [];
+    const items = Array.isArray(current) ? current : [];
+    const id = `travel-plan-${plan.id || plan.key || Date.now()}`;
+    const exists = items.some((item) => item.id === id);
+    if (exists) return;
+    const firstSlot = plan.itinerary?.[0]?.items?.[0];
+    const nextItem = {
+      id,
+      title: plan.title || `${plan.destinationName || '여행'} 일정`,
+      date: plan.startDate || new Date().toISOString().slice(0, 10),
+      time: firstSlot?.startTime || '09:00',
+      type: '여행',
+      memo: `${plan.destinationName || plan.destinationRegion || '여행'} · ${formatDaysLabel(plan.days)} · ${plan.summary || 'AI Trip에서 생성한 여행 계획'}`,
+      done: false,
+      source: 'travel-plan',
+      planId: plan.id || plan.key || ''
+    };
+    const nextItems = [...items, nextItem];
+    localStorage.setItem(SCHEDULER_KEY, JSON.stringify(nextItems));
+    window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { item: nextItem, items: nextItems } }));
+  } catch {
+    // Scheduler sync is a convenience layer; plan creation should not fail because localStorage is unavailable.
+  }
 }
 
 function formatNumber(value) {
@@ -733,24 +1008,17 @@ function useDestinations() {
   const [usingFallback, setUsingFallback] = useState(false);
 
   const load = async () => {
-    if (!readStoredAuth()?.token) {
-      setDestinations(FALLBACK_DESTINATIONS);
-      setUsingFallback(true);
-      setLoading(false);
-      setError('');
-      return;
-    }
     setLoading(true);
     setError('');
     try {
       const payload = await localTripRequest('/api/destinations');
       const normalized = normalizeDestinations(payload);
-      setDestinations(normalized.length ? normalized : FALLBACK_DESTINATIONS);
-      setUsingFallback(!normalized.length);
+      setDestinations(normalized);
+      setUsingFallback(false);
     } catch (loadError) {
       setError(loadError.message);
-      setDestinations(FALLBACK_DESTINATIONS);
-      setUsingFallback(true);
+      setDestinations([]);
+      setUsingFallback(false);
     } finally {
       setLoading(false);
     }
@@ -793,17 +1061,6 @@ function usePlans(limit) {
 function LocalTripNav({ path, navigate }) {
   const travelItems = [
     {
-      label: '홈',
-      to: '/',
-      icon: (
-        <>
-          <path d="M3 11.5 12 4l9 7.5"></path>
-          <path d="M5 10.5V20h14v-9.5"></path>
-          <path d="M9 20v-6h6v6"></path>
-        </>
-      )
-    },
-    {
       label: '추천장소',
       to: '/destinations',
       icon: (
@@ -827,7 +1084,7 @@ function LocalTripNav({ path, navigate }) {
       )
     },
     {
-      label: '내 일정',
+      label: '내일정',
       to: '/plans',
       icon: (
         <>
@@ -849,19 +1106,6 @@ function LocalTripNav({ path, navigate }) {
           <circle cx="12" cy="7" r="4"></circle>
         </>
       )
-    },
-    {
-      label: '운영',
-      to: '/partners',
-      icon: (
-        <>
-          <path d="M3 21h18"></path>
-          <path d="M5 21V7l7-4 7 4v14"></path>
-          <path d="M9 21v-8h6v8"></path>
-          <path d="M9 9h.01"></path>
-          <path d="M15 9h.01"></path>
-        </>
-      )
     }
   ];
   const session = readStoredAuth();
@@ -869,7 +1113,7 @@ function LocalTripNav({ path, navigate }) {
   return (
     <aside className="ltNav">
       <div className="ltNavInner">
-        <a className="ltBrand" href="/" onClick={(event) => routeClick(event, '/', navigate)}>
+        <a className="ltBrand" href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)}>
           <strong aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
               <rect x="4" y="7" width="16" height="10" rx="3"></rect>
@@ -887,6 +1131,13 @@ function LocalTripNav({ path, navigate }) {
             <small>개인 맞춤 관광지 추천</small>
           </span>
         </a>
+        <div className="ltServiceSwitch" aria-label="서비스 이동">
+          <span className="ltServiceSwitchTitle">서비스 이동</span>
+          <div className="ltServiceSwitchLinks">
+            <a href="/" onClick={(event) => routeClick(event, '/', navigate)}>Universe</a>
+            <a href="/scheduler" onClick={(event) => routeClick(event, '/scheduler', navigate)}>Scheduler</a>
+          </div>
+        </div>
         <nav className="ltNavLinks" aria-label="AI Trip 메뉴">
           <div className="ltNavGroup">
             <span className="ltNavGroupTitle">여행</span>
@@ -907,7 +1158,7 @@ function LocalTripNav({ path, navigate }) {
             ))}
           </div>
           <div className="ltNavGroup">
-            <span className="ltNavGroupTitle">계정/운영</span>
+            <span className="ltNavGroupTitle">계정</span>
             {accountItems.map((item) => (
               <a
                 key={item.to}
@@ -928,8 +1179,8 @@ function LocalTripNav({ path, navigate }) {
         <a className="ltNavUserCard" href="/mypage" onClick={(event) => routeClick(event, '/mypage', navigate)}>
           <span>{(session?.username || 'G').slice(0, 1).toUpperCase()}</span>
           <div>
-            <strong>{session?.username || '게스트'}</strong>
-            <small>{session?.token ? `${session?.role || 'USER'} 계정 · 내 일정 관리` : '로그인 후 일정 저장'}</small>
+            <strong>{isGuestSession(session) ? 'Guest' : session?.username || '게스트'}</strong>
+            <small>{isGuestSession(session) ? '샘플 공간 이용 중' : session?.token ? `${session?.role || 'USER'} 계정 · 내 일정 관리` : '로그인 후 일정 저장'}</small>
           </div>
         </a>
       </div>
@@ -987,6 +1238,7 @@ function DestinationCard({ destination, compact = false, navigate }) {
 }
 
 function PlanCard({ plan, navigate, stats }) {
+  const previewItems = plan.itinerary?.[0]?.items?.slice(0, 4) || [];
   const content = (
     <>
       <div className="ltPlanBadges">
@@ -1002,6 +1254,17 @@ function PlanCard({ plan, navigate, stats }) {
         {stats?.rating ? <span>★ {stats.rating.toFixed(1)}</span> : null}
         {stats?.reviewCount ? <span>후기 {formatNumber(stats.reviewCount)}</span> : null}
       </div>
+      {previewItems.length ? (
+        <div className="ltPlanTimelinePreview" aria-label="일정 미리보기">
+          {previewItems.map((item, index) => (
+            <div key={`${item.title}-${item.startTime}-${index}`}>
+              <time>{item.startTime && item.endTime ? `${item.startTime} - ${item.endTime}` : scheduleBlockLabel(item.time, index)}</time>
+              <span>{item.title}</span>
+              <em>{item.category}</em>
+            </div>
+          ))}
+        </div>
+      ) : null}
       {plan.id ? (
         <span className="ltPlanOpenHint" aria-hidden="true">
           자세히 보기
@@ -1033,8 +1296,8 @@ function InlineNotice({ error, fallback }) {
   if (!error && !fallback) return null;
   return (
     <div className="ltInlineNotice">
-      <strong>{fallback ? '샘플 데이터' : '요청 실패'}</strong>
-      <span>{error || 'AI Trip API 데이터가 비어 있어 기본 추천 장소를 보여주고 있습니다.'}</span>
+      <strong>{fallback ? '실데이터 대기' : '요청 실패'}</strong>
+      <span>{error || 'AI Trip API 데이터가 아직 준비되지 않았습니다. admin1 실데이터 시드를 먼저 적용해 주세요.'}</span>
     </div>
   );
 }
@@ -1058,14 +1321,14 @@ function HeroSearch({ query, setQuery, navigate }) {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="예: 제주 가족 여행, 부산 맛집, 경주 역사 코스"
+            placeholder="예: 제주 가족 여행, 도쿄 맛집, 교토 역사 코스"
           />
           <button type="submit">찾기</button>
         </div>
       </label>
       <div className="ltHeroFilters" aria-label="빠른 필터">
         <button type="button" onClick={() => navigate('/destinations?query=서울')}>서울</button>
-        <button type="button" onClick={() => navigate('/destinations?query=제주')}>제주</button>
+        <button type="button" onClick={() => navigate('/destinations?query=도쿄')}>도쿄</button>
         <button type="button" onClick={() => navigate('/destinations?query=가족')}>가족 여행</button>
         <button type="button" onClick={() => navigate('/planner')}>AI 일정 만들기</button>
       </div>
@@ -1195,111 +1458,33 @@ function PartnerCta({ navigate }) {
 }
 
 function HomePage({ navigate }) {
-  const { destinations, loading, error, usingFallback } = useDestinations();
-  const { plans, loading: plansLoading } = usePlans(3);
-  const [heroQuery, setHeroQuery] = useState('');
-  const topDestinations = destinations.slice(0, 3);
-  const heroImages = topDestinations.length ? topDestinations : FALLBACK_DESTINATIONS;
-
   return (
-    <main className="ltPage">
-      <section className="ltHero">
-        <div className="ltHeroCopy">
-          <span className="ltEyebrow">AI Trip</span>
-          <h1>나에게 맞는 관광지를 추천받으세요</h1>
-          <p>지역, 날짜, 인원, 취향을 입력하면 방문하기 좋은 장소와 무리 없는 여행 동선을 한 번에 정리합니다.</p>
-          <HeroSearch query={heroQuery} setQuery={setHeroQuery} navigate={navigate} />
-          <div className="ltHeroActions">
-            <a href="/planner" onClick={(event) => routeClick(event, '/planner', navigate)}>
-              AI 일정 만들기
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px' }}>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-            </a>
-            <a href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)}>추천장소 보기</a>
+    <main className="spaceHome">
+      <section className="spaceHero">
+        <div className="spaceHeroCopy">
+          <span className="spaceEyebrow">Deep Space Console</span>
+          <h1>우주를 배경으로 시작하는 AI Trip</h1>
+          <p>별빛 아래에서 목적지를 탐색하고, 여행 동선을 행성 궤도처럼 깔끔하게 설계하세요.</p>
+          <div className="spaceHeroActions">
+            <button type="button" onClick={() => navigate('/planner')}>AI 일정 만들기</button>
+            <button type="button" onClick={() => navigate('/destinations')}>추천장소 보기</button>
           </div>
         </div>
-        <div className="ltHeroVisual">
-          <div className="ltHeroImage main" style={{ backgroundImage: heroImages[0]?.imageUrl ? `url("${heroImages[0].imageUrl}")` : 'none' }}>
-            <span>{heroImages[0]?.region || 'Local'}</span>
+        <div className="spaceMissionPanel" aria-label="mission status">
+          <div>
+            <span>Orbit</span>
+            <strong>Travel Route</strong>
           </div>
-          <div className="ltHeroImage" style={{ backgroundImage: heroImages[1]?.imageUrl ? `url("${heroImages[1].imageUrl}")` : 'none' }}>
-            <span>{heroImages[1]?.region || 'Local'}</span>
+          <div>
+            <span>Signal</span>
+            <strong>AI Ready</strong>
           </div>
-          <div className="ltHeroImage" style={{ backgroundImage: heroImages[2]?.imageUrl ? `url("${heroImages[2].imageUrl}")` : 'none' }}>
-            <span>{heroImages[2]?.region || 'Local'}</span>
-          </div>
-          <div className="ltHeroPanel">
-            <div>
-              <span>추천 장소</span>
-              <strong>{loading ? '-' : formatNumber(destinations.length)}</strong>
-            </div>
-            <div>
-              <span>저장 일정</span>
-              <strong>{plansLoading ? '-' : formatNumber(plans.length)}</strong>
-            </div>
-            <div>
-              <span>추천 지역</span>
-              <strong>{heroImages[0]?.region || '-'}</strong>
-            </div>
+          <div>
+            <span>Mode</span>
+            <strong>Explore</strong>
           </div>
         </div>
       </section>
-
-      <InlineNotice error={error} fallback={usingFallback} />
-
-      <PurposeRail navigate={navigate} />
-      <ServiceCategoryGrid navigate={navigate} />
-      <RoleBand navigate={navigate} />
-
-      <section className="ltSectionHeader">
-        <div>
-          <span className="ltSectionEyebrow">맞춤 추천</span>
-          <h2>지금 둘러보기 좋은 관광지</h2>
-          <p style={{ color: '#64748b', marginTop: '4px' }}>사진, 후기 흐름, 지역별 관심도를 기준으로 고른 추천 장소</p>
-        </div>
-        <a href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)} className="ltTextButton" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          전체 보기
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
-        </a>
-      </section>
-      <div className="ltDestinationGrid">
-        {topDestinations.map((destination) => (
-          <DestinationCard key={destination.id} destination={destination} navigate={navigate} />
-        ))}
-      </div>
-
-      <RequestFlowSection navigate={navigate} />
-
-      <section className="ltSplitSection" style={{ marginTop: '80px', gap: '32px' }}>
-        <div className="ltPlannerTeaser">
-          <h2>선택한 관광지를 읽기 쉬운 일정으로 묶어보세요</h2>
-          <p>오전, 점심·휴식, 오후, 저녁처럼 큰 시간 블록으로 실제 여행 동선을 구성합니다.</p>
-          <button type="button" onClick={() => navigate('/planner')}>
-            AI 일정 만들기
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px' }}>
-              <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline>
-            </svg>
-          </button>
-        </div>
-        <div className="ltRecentPlans">
-          <div className="ltSectionHeader compact">
-            <div>
-              <h2>최근 만든 일정</h2>
-            </div>
-          </div>
-          {plans.length ? plans.map((plan) => <PlanCard key={plan.key} plan={plan} navigate={navigate} />) : (
-            <div className="ltEmptyState">아직 만든 일정이 없습니다.</div>
-          )}
-        </div>
-      </section>
-
-      <RegionLinks navigate={navigate} />
-      <PartnerCta navigate={navigate} />
     </main>
   );
 }
@@ -1311,7 +1496,7 @@ function DestinationsPage({ path, navigate }) {
   const [query, setQuery] = useState(initialQuery);
   const [region, setRegion] = useState('all');
   const [tag, setTag] = useState('all');
-  const [syncing, setSyncing] = useState(false);
+  const [tourSyncing, setTourSyncing] = useState(false);
   const [syncError, setSyncError] = useState('');
 
   useEffect(() => {
@@ -1342,16 +1527,16 @@ function DestinationsPage({ path, navigate }) {
     });
   }, [destinations, query, region, tag]);
 
-  const syncMock = async () => {
-    setSyncing(true);
+  const syncTourApi = async () => {
+    setTourSyncing(true);
     setSyncError('');
     try {
-      await localTripRequest('/api/destinations/sync/mock', { method: 'POST' });
+      await localTripRequest('/api/destinations/sync/tour-api', { method: 'POST' });
       await reload();
     } catch (syncFailure) {
       setSyncError(syncFailure.message);
     } finally {
-      setSyncing(false);
+      setTourSyncing(false);
     }
   };
 
@@ -1362,9 +1547,11 @@ function DestinationsPage({ path, navigate }) {
         title="내 여행에 맞는 관광지"
         description="지역과 여행 스타일을 고르면 지금 방문하기 좋은 국내 관광지를 모아 보여드립니다."
         actions={(
-          <button type="button" className="ltGhostButton ltAdminButton" onClick={syncMock} disabled={syncing}>
-            {syncing ? '동기화 중' : '관리자 데이터 동기화'}
-          </button>
+          <>
+            <button type="button" className="ltGhostButton ltAdminButton" onClick={syncTourApi} disabled={tourSyncing}>
+              {tourSyncing ? 'Tour API 동기화 중' : 'Tour API 동기화'}
+            </button>
+          </>
         )}
       />
 
@@ -1496,6 +1683,7 @@ function PlannerPage({ path, navigate }) {
       const response = await localTripRequest('/api/travel-plans/generate', { method: 'POST', body: payload });
       const plan = normalizePlan(response);
       setGeneratedPlan(plan);
+      addPlanToScheduler(plan);
       if (plan.id) {
         navigate(`/plans/${encodeURIComponent(plan.id)}`);
       }
@@ -1540,7 +1728,7 @@ function PlannerPage({ path, navigate }) {
                     setShowDestSuggestions(true);
                   }}
                   onFocus={() => setShowDestSuggestions(true)}
-                  placeholder="지역 또는 장소 검색 (예: 경주, 서울, 제주...)"
+                  placeholder="지역 또는 장소 검색 (예: 경주, 도쿄, 교토...)"
                 />
                 {showSuggestions && filteredSuggestions.length > 0 && (
                   <div className="ltAutocompleteDropdown">
@@ -1915,6 +2103,14 @@ function MarkdownPlanBlocks({ plan }) {
   );
 }
 
+function categoryIcon(category = '') {
+  if (/식당|한식|분식|브런치/.test(category)) return '식';
+  if (/카페|디저트/.test(category)) return '카';
+  if (/야경|산책/.test(category)) return '길';
+  if (/이동/.test(category)) return '이';
+  return '관';
+}
+
 function PlanDayCards({ plan }) {
   const itinerary = plan?.itinerary || [];
   if (!itinerary.length) {
@@ -1943,21 +2139,35 @@ function PlanDayCards({ plan }) {
               {day.summary ? <p>{day.summary}</p> : null}
             </div>
           </div>
-          <div className="ltDaySlots">
+          <PlanDayRouteCheck plan={plan} day={day} />
+          <div className="ltDayTimeline">
             {day.items.map((item, index) => (
-              <article className="ltDaySlot" key={`${day.day}-${item.time}-${item.title}-${index}`}>
-                <time>
-                  <span>{scheduleBlockLabel(item.time, index)}</span>
-                </time>
+              <article className={`ltDaySlot ${/식당|카페|디저트|브런치|한식|분식/.test(item.category) ? 'food' : ''}`} key={`${day.day}-${item.startTime || item.time}-${item.title}-${index}`}>
+                <div className="ltTimelineRail">
+                  <time>
+                    <span>{item.startTime && item.endTime ? `${item.startTime} - ${item.endTime}` : scheduleBlockLabel(item.time, index)}</span>
+                  </time>
+                  <i aria-hidden="true">{categoryIcon(item.category)}</i>
+                </div>
                 <div className="ltDaySlotBody">
                   <div>
-                    <h3>{item.title}</h3>
+                    <div className="ltSlotTitleRow">
+                      <h3>{item.title}</h3>
+                      <span>{item.category}</span>
+                    </div>
                     <div className="ltDaySlotMeta">
-                      {item.place ? <span>{item.place}</span> : null}
+                      {item.location || item.place ? <span>위치: {item.location || item.place}</span> : null}
                       {item.durationMinutes ? <span>{item.durationMinutes}분</span> : null}
+                      {item.travelTimeFromPrevious ? <span>{item.travelTimeFromPrevious}</span> : null}
                     </div>
                   </div>
-                  {item.note ? <p>{item.note}</p> : null}
+                  {item.description || item.note ? <p>{item.description || item.note}</p> : null}
+                  {item.recommendedMenu ? (
+                    <div className="ltRecommendedMenu">
+                      <strong>추천 메뉴</strong>
+                      <span>{item.recommendedMenu}</span>
+                    </div>
+                  ) : null}
                   <div className="ltTagRow small">
                     {item.tags.map((tag) => <span key={tag}>{tag}</span>)}
                   </div>
@@ -2069,6 +2279,7 @@ function NotFoundPage({ navigate }) {
 
 function MyPage({ navigate }) {
   const session = readStoredAuth();
+  const guest = isGuestSession(session);
   const { destinations, loading: destinationsLoading } = useDestinations();
   const { plans, loading: plansLoading } = usePlans();
   const recentPlans = plans.slice(0, 3);
@@ -2086,24 +2297,28 @@ function MyPage({ navigate }) {
         </div>
         <div className="ltMyHeroText">
           <span className="ltEyebrow">My Page</span>
-          <h1>{session?.username || '여행자'}님의 여행 공간</h1>
-          <p>저장한 일정과 여행 준비 상태를 한 곳에서 확인하고 다음 코스를 바로 이어서 만들 수 있습니다.</p>
+          <h1>{guest ? 'Guest 여행 공간' : `${session?.username || '여행자'}님의 여행 공간`}</h1>
+          <p>{guest ? '로그인 없이 샘플 일정과 추천 장소를 둘러보는 공간입니다.' : '저장한 일정과 여행 준비 상태를 한 곳에서 확인하고 다음 코스를 바로 이어서 만들 수 있습니다.'}</p>
           <div className="ltMyHeroMeta">
-            <span>{session?.role || 'USER'}</span>
-            <span>ID/PW 로그인</span>
+            <span>{guest ? 'GUEST' : session?.role || 'USER'}</span>
+            <span>{guest ? '샘플 모드' : 'ID/PW 로그인'}</span>
           </div>
         </div>
         <div className="ltMyActions">
           <button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>새 일정 만들기</button>
-          <button type="button" className="ltGhostButton" onClick={logout}>로그아웃</button>
+          {guest ? (
+            <button type="button" className="ltGhostButton" onClick={() => navigate('/')}>Personal Universe</button>
+          ) : (
+            <button type="button" className="ltGhostButton" onClick={logout}>로그아웃</button>
+          )}
         </div>
       </section>
 
       <section className="ltMyStats" aria-label="내 여행 요약">
-        <StatCard label="계정 등급" value={session?.role || 'USER'} hint="여행 공간 권한" />
+        <StatCard label="계정 등급" value={guest ? 'GUEST' : session?.role || 'USER'} hint="여행 공간 권한" />
         <StatCard label="저장 일정" value={plansLoading ? '-' : `${plans.length}개`} hint="보관함 기준" />
         <StatCard label="추천 장소" value={destinationsLoading ? '-' : `${destinations.length}곳`} hint="현재 노출 가능" />
-        <StatCard label="로그인 방식" value="ID/PW" hint="로컬 계정" />
+        <StatCard label="로그인 방식" value={guest ? 'Guest' : 'ID/PW'} hint={guest ? '샘플 공간' : '로컬 계정'} />
       </section>
 
       <section className="ltMyGrid">
@@ -2131,11 +2346,11 @@ function MyPage({ navigate }) {
           <dl className="ltProfileList">
             <div>
               <dt>아이디</dt>
-              <dd>{session?.username || '-'}</dd>
+              <dd>{guest ? 'Guest' : session?.username || '-'}</dd>
             </div>
             <div>
               <dt>권한</dt>
-              <dd>{session?.role || '-'}</dd>
+              <dd>{guest ? 'GUEST' : session?.role || '-'}</dd>
             </div>
             <div>
               <dt>분석 워크스페이스</dt>

@@ -42,6 +42,7 @@ public record AppProperties(
         String openAiApiKey,
         String openAiModel,
         String grokApiKey,
+        Long pythonTimeoutSeconds,
         Boolean enableCodexCliMode,
         String geminiOauthClientId,
         String geminiOauthClientSecret,
