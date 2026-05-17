@@ -321,7 +321,9 @@ function normalizeNoteBlock(block) {
     boardId: typeof block?.boardId === 'string' && block.boardId ? block.boardId : sector,
     status: ['todo', 'progress', 'review', 'done'].includes(block?.status) ? block.status : 'todo',
     parentId: typeof block?.parentId === 'string' ? block.parentId : '',
-    filePath: typeof block?.filePath === 'string' ? block.filePath : ''
+    filePath: typeof block?.filePath === 'string' ? block.filePath : '',
+    width: Math.max(160, Math.min(520, Number(block?.width) || 220)),
+    height: Math.max(96, Math.min(360, Number(block?.height) || 120))
   };
 }
 
@@ -1949,6 +1951,203 @@ function WorkspaceApp({ navigate }) {
   );
 }
 
+function AnalysisFileEditorPage({ navigate }) {
+  const params = new URLSearchParams(window.location.search);
+  const initialFile = params.get('file') || 'memo-files/새메모.md';
+  const autoSave = params.get('autosave') === '1';
+  const [authMode, setAuthMode] = useState('login');
+  const [auth, setAuth] = useState(readStoredAuth());
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [selectedFile, setSelectedFile] = useState(initialFile);
+  const [content, setContent] = useState('');
+  const [loadingFile, setLoadingFile] = useState(false);
+  const [error, setError] = useState('');
+  const [saveStatus, setSaveStatus] = useState('');
+  const [loadedFile, setLoadedFile] = useState('');
+
+  useEffect(() => {
+    document.title = '파일 편집';
+  }, []);
+
+  useEffect(() => {
+    if (auth?.token || authLoading) return;
+    setAuthLoading(true);
+    fetch('/api/auth/guest', {
+      method: 'POST',
+      headers: { Accept: 'application/json' }
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error((await response.text()) || '게스트 세션을 만들 수 없습니다.');
+        }
+        return response.json();
+      })
+      .then((guestSession) => {
+        const normalized = normalizeAuthSession({ ...guestSession, isGuest: true });
+        localStorage.setItem(AUTH_KEY, JSON.stringify(normalized));
+        setAuth(normalized);
+        setAuthError('');
+      })
+      .catch((guestError) => {
+        setAuthError(guestError.message);
+      })
+      .finally(() => setAuthLoading(false));
+  }, [auth?.token, authLoading]);
+
+  const submitAuth = async () => {
+    const validationError = validateAuthForm(authMode, username, password);
+    if (validationError || authLoading) {
+      setAuthError(validationError);
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const session = await requestJson(authMode === 'signup' ? '/api/auth/signup' : '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim(), password })
+      });
+      const normalized = normalizeAuthSession(session);
+      localStorage.setItem(AUTH_KEY, JSON.stringify(normalized));
+      setAuth(normalized);
+      setUsername('');
+      setPassword('');
+    } catch (loginError) {
+      setAuthError(loginError.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const loadFile = async (path = selectedFile) => {
+    if (!auth?.token || !path.trim()) return;
+    const filePath = path.trim();
+    setLoadingFile(true);
+    setError('');
+    setSaveStatus('');
+    try {
+      const text = await requestText(`/api/workspace/file?path=${encodeURIComponent(filePath)}`, auth.token);
+      setContent(text);
+      setSelectedFile(filePath);
+      setLoadedFile(filePath);
+    } catch {
+      const starter = `# ${labelForPath(filePath)}\n\n`;
+      await requestJson('/api/workspace/file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders(auth.token) },
+        body: JSON.stringify({ path: filePath, content: starter })
+      });
+      setContent(starter);
+      setSelectedFile(filePath);
+      setLoadedFile(filePath);
+      setSaveStatus('새 파일을 만들었습니다.');
+    } finally {
+      setLoadingFile(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!auth?.token) return;
+    loadFile(initialFile).catch((loadError) => setError(loadError.message));
+  }, [auth?.token]);
+
+  const saveFile = async () => {
+    if (!auth?.token || !selectedFile.trim()) return;
+    try {
+      await requestJson('/api/workspace/file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders(auth.token) },
+        body: JSON.stringify({ path: selectedFile.trim(), content })
+      });
+      setSaveStatus('저장됨');
+      setLoadedFile(selectedFile.trim());
+    } catch (saveError) {
+      setError(saveError.message);
+    }
+  };
+
+  useEffect(() => {
+    if (!autoSave || !auth?.token || !selectedFile || selectedFile !== loadedFile || loadingFile) {
+      return undefined;
+    }
+    setSaveStatus('자동 저장 중...');
+    const timer = window.setTimeout(() => {
+      saveFile().catch((saveError) => setError(saveError.message));
+    }, 650);
+    return () => window.clearTimeout(timer);
+  }, [autoSave, auth?.token, selectedFile, loadedFile, content, loadingFile]);
+
+  if (!auth?.token) {
+    if (authLoading && !authError) {
+      return (
+        <main className="analysisEditorShell">
+          <section className="analysisEditorPanel compact">
+            <span>GUEST EDITOR</span>
+            <h1>게스트 편집기를 여는 중입니다</h1>
+            <p>잠시 후 파일 편집 화면으로 이동합니다.</p>
+          </section>
+        </main>
+      );
+    }
+    return (
+      <AuthScreen
+        mode={authMode}
+        setMode={setAuthMode}
+        username={username}
+        setUsername={setUsername}
+        password={password}
+        setPassword={setPassword}
+        onSubmit={submitAuth}
+        loading={authLoading}
+        error={authError}
+      />
+    );
+  }
+
+  return (
+    <main className="analysisEditorShell">
+      <section className="analysisEditorPanel">
+        <header className="analysisEditorHeader">
+          <div>
+            <span>FILE EDITOR</span>
+            <h1>{labelForPath(selectedFile)}</h1>
+            <p>{selectedFile}</p>
+          </div>
+          <div>
+            <button type="button" onClick={() => navigate('/notes')}>AI 메모 보드</button>
+            {auth.role === 'ADMIN' ? <button type="button" onClick={() => navigate('/analysisadmin')}>관리자</button> : null}
+            <button type="button" onClick={saveFile}>{autoSave ? '지금 저장' : '저장'}</button>
+          </div>
+        </header>
+        <form className="analysisPathBar" onSubmit={(event) => { event.preventDefault(); loadFile(selectedFile).catch((loadError) => setError(loadError.message)); }}>
+          <label>
+            <span>파일 경로</span>
+            <input value={selectedFile} onChange={(event) => setSelectedFile(event.target.value)} />
+          </label>
+          <button type="submit">열기</button>
+        </form>
+        {loadingFile ? <p className="previewState">파일을 불러오는 중입니다.</p> : null}
+        {error ? <p className="previewError">{error}</p> : null}
+        {saveStatus ? <p className="analysisSaveStatus">{saveStatus}</p> : null}
+        <div className="analysisCodeWrap">
+          <Suspense fallback={<div className="editorLoading">편집기를 불러오는 중입니다.</div>}>
+            <LazyCodeEditor
+              path={selectedFile}
+              value={content}
+              onChange={(value) => setContent(value)}
+              onSave={saveFile}
+            />
+          </Suspense>
+        </div>
+      </section>
+    </main>
+  );
+}
+
 function currentPath() {
   const pathname = window.location.pathname || '/';
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
@@ -2162,127 +2361,9 @@ function SpaceHomePage({ navigate }) {
           <div className="spaceHeroActions">
             <button type="button" onClick={() => navigate('/scheduler')}>개인 스케줄러</button>
             <button type="button" onClick={() => navigate('/notes')}>AI 메모 보드</button>
-            <button type="button" onClick={() => navigate('/memo')}>메모앱</button>
             <button type="button" onClick={() => navigate('/destinations')}>여행 일정</button>
           </div>
         </div>
-      </section>
-    </main>
-  );
-}
-
-function MemoAppPage({ navigate }) {
-  const [authMode, setAuthMode] = useState('login');
-  const [auth, setAuth] = useState(readStoredAuth());
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [savedMessage, setSavedMessage] = useState('');
-
-  useEffect(() => {
-    document.title = '메모앱';
-  }, []);
-
-  const submitAuth = async () => {
-    const validationError = validateAuthForm(authMode, username, password);
-    if (validationError || loading) {
-      setError(validationError);
-      return;
-    }
-    setLoading(true);
-    setError('');
-    try {
-      const session = await requestJson(authMode === 'signup' ? '/api/auth/signup' : '/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim(), password })
-      });
-      const normalized = normalizeAuthSession(session);
-      localStorage.setItem(AUTH_KEY, JSON.stringify(normalized));
-      setAuth(normalized);
-      setUsername('');
-      setPassword('');
-    } catch (authError) {
-      setError(authError.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const saveMemo = () => {
-    const memoTitle = title.trim() || plainMarkdownText(content).split('\n').find(Boolean) || '새 메모';
-    const body = content.trim() || memoTitle;
-    const id = `memoapp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    const currentBlocks = readNoteBlocks();
-    const nextBlock = {
-      id,
-      type: 'text',
-      content: body.startsWith('#') ? body : `# ${memoTitle}\n\n${body}`,
-      sector: 'memo',
-      boardId: 'memo',
-      status: 'todo',
-      parentId: '',
-      filePath: `memo-files/memo/${id}.md`
-    };
-    const nextBlocks = [...currentBlocks, nextBlock];
-    localStorage.setItem(AI_NOTE_KEY, JSON.stringify(nextBlocks));
-    setSavedMessage(`AI 메모 보드에 '${memoTitle}' 메모를 추가했습니다.`);
-    setTitle('');
-    setContent('');
-  };
-
-  if (!auth?.token) {
-    return (
-      <main className="memoAppShell">
-        <section className="memoAppPanel auth">
-          <button type="button" className="ghostButton compact" onClick={() => navigate('/')}>홈</button>
-          <span>MEMO APP</span>
-          <h1>메모앱 로그인</h1>
-          <div className="memoAuthSwitch">
-            <button type="button" className={authMode === 'login' ? 'active' : ''} onClick={() => setAuthMode('login')}>로그인</button>
-            <button type="button" className={authMode === 'signup' ? 'active' : ''} onClick={() => setAuthMode('signup')}>회원가입</button>
-          </div>
-          <label>
-            <span>아이디</span>
-            <input value={username} onChange={(event) => setUsername(event.target.value)} />
-          </label>
-          <label>
-            <span>비밀번호</span>
-            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
-          </label>
-          {error ? <p>{error}</p> : null}
-          <button type="button" onClick={submitAuth} disabled={loading}>{loading ? '처리 중...' : authMode === 'signup' ? '가입하기' : '로그인'}</button>
-        </section>
-      </main>
-    );
-  }
-
-  return (
-    <main className="memoAppShell">
-      <section className="memoAppPanel">
-        <header>
-          <div>
-            <span>{auth.username}</span>
-            <h1>메모 작성</h1>
-          </div>
-          <div>
-            <button type="button" onClick={() => navigate('/notes')}>AI 메모 보드</button>
-            <button type="button" onClick={() => { localStorage.removeItem(AUTH_KEY); setAuth(null); }}>로그아웃</button>
-          </div>
-        </header>
-        <label>
-          <span>제목</span>
-          <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="메모 제목" />
-        </label>
-        <label>
-          <span>Markdown 메모</span>
-          <textarea value={content} onChange={(event) => setContent(event.target.value)} placeholder="# 오늘 메모&#10;&#10;내용을 작성하세요." />
-        </label>
-        {savedMessage ? <p>{savedMessage}</p> : null}
-        <button type="button" onClick={saveMemo}>AI 메모에 저장</button>
       </section>
     </main>
   );
@@ -2351,7 +2432,9 @@ function AiNotePage({ navigate }) {
       boardId,
       status,
       parentId,
-      filePath: `memo-files/${boardId}/${nextId}.${extension}`
+      filePath: `memo-files/${boardId}/${nextId}.${extension}`,
+      width: 220,
+      height: 120
     };
     setBlocks((current) => [...current, nextBlock]);
     setActiveId(nextBlock.id);
@@ -2368,7 +2451,9 @@ function AiNotePage({ navigate }) {
       boardId: activeBoardId,
       status: 'todo',
       parentId: '',
-      filePath: `memo-files/${activeBoardId}/${nextId}.md`
+      filePath: `memo-files/${activeBoardId}/${nextId}.md`,
+      width: 220,
+      height: 120
     };
     setBlocks((current) => [...current, nextBlock]);
     setActiveId(nextBlock.id);
@@ -2394,18 +2479,10 @@ function AiNotePage({ navigate }) {
     setFileStatus('파일을 준비하는 중...');
     setBlocks((current) => current.map((item) => (item.id === block.id ? { ...item, filePath } : item)));
     const session = readStoredAuth();
-    const editorUrl = `/analysisadmin?file=${encodeURIComponent(filePath)}&autosave=1`;
-    const editorWindow = window.open('', '_blank');
-    if (editorWindow) {
-      editorWindow.opener = null;
-    }
+    const editorUrl = `/analysis?file=${encodeURIComponent(filePath)}&autosave=1`;
     if (!session?.token) {
       setFileStatus('워크스페이스 로그인 후 파일이 열립니다.');
-      if (editorWindow) {
-        editorWindow.location.href = editorUrl;
-      } else {
-        navigate(editorUrl);
-      }
+      navigate(editorUrl);
       return;
     }
     try {
@@ -2423,25 +2500,14 @@ function AiNotePage({ navigate }) {
           body: JSON.stringify({ path: filePath, content: noteBlockFileContent(block) })
         });
       }
-      setFileStatus(`${filePath} 파일을 새 창에서 엽니다.`);
-      if (editorWindow) {
-        editorWindow.location.href = editorUrl;
-      } else {
-        navigate(editorUrl);
-      }
+      setFileStatus(`${filePath} 파일을 엽니다.`);
+      navigate(editorUrl);
     } catch (error) {
-      if (editorWindow) {
-        editorWindow.close();
-      }
       setFileStatus(error.message);
     }
   };
 
   const rootBlocks = blocks.filter((block) => !block.parentId);
-  const blocksByStatus = PROJECT_BOARD_COLUMNS.reduce((grouped, column) => ({
-    ...grouped,
-    [column.id]: rootBlocks.filter((block) => (block.boardId || block.sector) === activeBoardId && block.status === column.id)
-  }), {});
   const activeBoard = boards.find((board) => board.id === activeBoardId) || boards[0];
   const boardBlocks = rootBlocks.filter((block) => (block.boardId || block.sector) === activeBoardId);
   const openContextMenu = (event, status = 'todo') => {
@@ -2456,27 +2522,28 @@ function AiNotePage({ navigate }) {
     <article
       className={`projectTaskCard memoBoardCard ${activeId === block.id ? 'active' : ''} ${draggingBlockId === block.id ? 'dragging' : ''}`}
       key={block.id}
-      draggable
-      onDragStart={(event) => {
-        setDraggingBlockId(block.id);
-        event.dataTransfer.effectAllowed = 'move';
-        event.dataTransfer.setData('text/plain', block.id);
+      style={{ width: `${block.width || 220}px`, height: `${block.height || 120}px` }}
+      onMouseUp={(event) => {
+        const width = Math.round(event.currentTarget.offsetWidth);
+        const height = Math.round(event.currentTarget.offsetHeight);
+        if (width !== block.width || height !== block.height) {
+          updateBlock(block.id, { width, height });
+        }
       }}
-      onDragEnd={() => setDraggingBlockId('')}
       onClick={() => openBlockFile(block)}
     >
-      <div className="memoCardTop">
-        <span>{block.type === 'file' ? '텍스트 파일' : 'Markdown 글'}</span>
-        <button type="button" title="파일 열기" onClick={(event) => { event.stopPropagation(); openBlockFile(block); }}>열기</button>
-        <button type="button" title="삭제" onClick={(event) => { event.stopPropagation(); deleteBlock(block.id); }}>삭제</button>
-      </div>
-      <button type="button" className="memoCardTitle" onClick={(event) => { event.stopPropagation(); openBlockFile(block); }}>
-        {noteBlockTitle(block)}
-      </button>
-      <label className="memoCardPath" onClick={(event) => event.stopPropagation()}>
-        <span>제목</span>
-        <input value={noteBlockTitle(block)} onChange={(event) => updateBlock(block.id, { content: event.target.value })} />
-      </label>
+      <input
+        className="memoCardName"
+        value={noteBlockTitle(block)}
+        onClick={(event) => event.stopPropagation()}
+        onChange={(event) => updateBlock(block.id, { content: event.target.value })}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            event.currentTarget.blur();
+          }
+        }}
+      />
     </article>
   );
 
@@ -2556,34 +2623,8 @@ function AiNotePage({ navigate }) {
               <p>{fileStatus || '메모 보드 작업 중'}</p>
             </div>
           </aside>
-          <section className="projectKanban" aria-label="kanban board">
-            {PROJECT_BOARD_COLUMNS.map((column) => (
-              <article
-                className="projectKanbanColumn"
-                key={column.id}
-                onContextMenu={(event) => openContextMenu(event, column.id)}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                  event.dataTransfer.dropEffect = 'move';
-                }}
-                onDrop={(event) => {
-                  event.preventDefault();
-                  moveBlockToStatus(event.dataTransfer.getData('text/plain') || draggingBlockId, column.id);
-                  setDraggingBlockId('');
-                }}
-              >
-                <header>
-                  <div>
-                    <span className="projectStatusIcon" style={{ '--status-color': column.color }}>{column.icon}</span>
-                    <strong>{column.title}</strong>
-                  </div>
-                  <small>{blocksByStatus[column.id]?.length || 0}</small>
-                </header>
-                <div className="projectTaskList">
-                  {(blocksByStatus[column.id] || []).map(renderBoardCard)}
-                </div>
-              </article>
-            ))}
+          <section className="memoFreeformBoard" aria-label="freeform memo board" onContextMenu={(event) => openContextMenu(event, 'todo')}>
+            {boardBlocks.map(renderBoardCard)}
           </section>
           {contextMenu ? (
             <div className="memoContextMenu" style={{ left: contextMenu.x, top: contextMenu.y }} onClick={(event) => event.stopPropagation()}>
@@ -3009,16 +3050,8 @@ export default function App() {
 
   const routePath = path.split('?')[0];
 
-  useEffect(() => {
-    if (routePath === '/analysis' || routePath.startsWith('/analysis/')) {
-      const nextPath = `/analysisadmin${routePath.slice('/analysis'.length)}${path.includes('?') ? `?${path.split('?').slice(1).join('?')}` : ''}`;
-      window.history.replaceState({}, '', nextPath);
-      setPath(currentPath());
-    }
-  }, [path, routePath]);
-
   if (routePath === '/analysis' || routePath.startsWith('/analysis/')) {
-    return null;
+    return <AnalysisFileEditorPage navigate={navigate} />;
   }
 
   if (routePath === '/analysisadmin' || routePath.startsWith('/analysisadmin/')) {
@@ -3035,10 +3068,6 @@ export default function App() {
 
   if (routePath === '/notes') {
     return <AiNotePage navigate={navigate} />;
-  }
-
-  if (routePath === '/memo') {
-    return <MemoAppPage navigate={navigate} />;
   }
 
   return <LocalTripApp path={path} navigate={navigate} />;

@@ -18384,11 +18384,29 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   box-shadow: none !important;
 }
 
+.memoFreeformBoard {
+  min-height: 520px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 12px;
+  margin-top: 28px;
+  padding: 14px;
+  border: 1px solid var(--memo-line);
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
 .memoBoardCard {
   display: grid !important;
   gap: 9px !important;
   min-height: 112px !important;
+  min-width: 160px !important;
+  max-width: 100% !important;
+  align-content: start !important;
   cursor: pointer !important;
+  overflow: auto !important;
+  resize: both !important;
 }
 
 .memoBoardCard.active {
@@ -18423,6 +18441,24 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
 .memoCardPath span { color: var(--memo-muted) !important; }
 .memoCardPath input:focus { outline: 2px solid rgba(37, 99, 235, 0.2) !important; }
 
+.memoCardName {
+  width: 100%;
+  min-height: 34px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--memo-ink);
+  font: inherit;
+  font-size: 0.98rem;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.memoCardName:focus {
+  outline: 2px solid rgba(37, 99, 235, 0.16);
+  background: #f8fbff;
+}
+
 .memoContextMenu {
   border: 1px solid var(--memo-line) !important;
   background: #fff !important;
@@ -18432,103 +18468,6 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
 .memoContextMenu button:hover {
   background: var(--memo-accent-soft) !important;
   color: var(--memo-accent-dark) !important;
-}
-
-.memoAppShell {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: #f7f8fa;
-  color: #111827;
-}
-
-.memoAppPanel {
-  width: min(760px, 100%);
-  display: grid;
-  gap: 14px;
-  padding: 22px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-}
-
-.memoAppPanel.auth {
-  width: min(420px, 100%);
-}
-
-.memoAppPanel header {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
-}
-
-.memoAppPanel header div:last-child,
-.memoAuthSwitch {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.memoAppPanel h1 {
-  color: #111827;
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  line-height: 1.12;
-}
-
-.memoAppPanel > span,
-.memoAppPanel header span,
-.memoAppPanel label span {
-  color: #6b7280;
-  font-size: 0.78rem;
-  font-weight: 900;
-}
-
-.memoAppPanel label {
-  display: grid;
-  gap: 6px;
-}
-
-.memoAppPanel input,
-.memoAppPanel textarea {
-  width: 100%;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #fff;
-  color: #111827;
-  padding: 11px 12px;
-  font: inherit;
-}
-
-.memoAppPanel textarea {
-  min-height: 260px;
-  resize: vertical;
-  line-height: 1.55;
-}
-
-.memoAppPanel button {
-  min-height: 38px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #fff;
-  color: #4b5563;
-  padding: 0 12px;
-  font: inherit;
-  font-weight: 850;
-}
-
-.memoAppPanel > button:last-child,
-.memoAuthSwitch button.active {
-  border-color: #2563eb;
-  background: #2563eb;
-  color: #fff;
-}
-
-.memoAppPanel p {
-  color: #2563eb;
-  font-weight: 800;
 }
 
 .ltAddressGrid,
