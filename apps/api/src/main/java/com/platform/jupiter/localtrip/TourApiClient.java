@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -12,6 +14,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class TourApiClient {
+    private static final List<String> AREA_CODES = List.of("1", "2", "3", "4", "5", "6", "7", "31", "32", "33", "34", "35", "36", "37", "38", "39");
+    private static final List<String> CONTENT_TYPES = List.of("12", "14", "15", "28", "39");
     private final TourApiProperties properties;
     private final ObjectMapper objectMapper;
     private final RestClient restClient;
@@ -26,13 +30,28 @@ public class TourApiClient {
         if (!properties.hasServiceKey()) {
             return List.of();
         }
+        Map<String, TourApiDestination> destinationsById = new LinkedHashMap<>();
+        for (String areaCode : AREA_CODES) {
+            for (String contentTypeId : CONTENT_TYPES) {
+                for (TourApiDestination destination : fetchAreaBasedDestinations(areaCode, contentTypeId)) {
+                    destinationsById.put(destination.contentId(), destination);
+                }
+            }
+        }
+        return new ArrayList<>(destinationsById.values());
+    }
+
+    private List<TourApiDestination> fetchAreaBasedDestinations(String areaCode, String contentTypeId) {
         URI uri = UriComponentsBuilder.fromHttpUrl(properties.baseUrlOrDefault())
                 .path("/areaBasedList2")
                 .queryParam("MobileOS", "ETC")
                 .queryParam("MobileApp", "JupiterLocalTrip")
                 .queryParam("_type", "json")
-                .queryParam("numOfRows", 20)
-                .queryParam("pageNo", 1)
+                .queryParam("arrange", "Q")
+                .queryParam("numOfRows", "100")
+                .queryParam("pageNo", "1")
+                .queryParam("areaCode", areaCode)
+                .queryParam("contentTypeId", contentTypeId)
                 .queryParam("serviceKey", properties.serviceKey())
                 .build(true)
                 .toUri();
@@ -78,6 +97,7 @@ public class TourApiClient {
         return new TourApiDestination(
                 text(item, "contentid"),
                 text(item, "title"),
+                text(item, "contenttypeid"),
                 areaName(text(item, "areacode")),
                 text(item, "addr1"),
                 defaultText(text(item, "cat3"), defaultText(text(item, "cat2"), text(item, "contenttypeid"))),

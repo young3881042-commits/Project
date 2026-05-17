@@ -7,6 +7,7 @@ const LazyGeminiApp = lazy(() => import('./GeminiApp.jsx'));
 const LazyRagApp = lazy(() => import('./RagApp.jsx'));
 const SCHEDULER_KEY = 'codex-personal-scheduler-items';
 const AI_NOTE_KEY = 'codex-ai-note-blocks';
+const AI_NOTE_BOARDS_KEY = 'codex-ai-note-boards';
 const RECURRENCE_LABELS = {
   none: '반복 없음',
   daily: '매일',
@@ -156,10 +157,11 @@ function readSchedulerItems() {
 function normalizeSchedulerItem(item) {
   return {
     ...item,
+    type: item?.type === 'AI Note' ? '메모' : item?.type,
     recurrence: Object.keys(RECURRENCE_LABELS).includes(item?.recurrence) ? item.recurrence : 'none',
     recurrenceEnd: item?.recurrenceEnd || '',
     doneOverrides: item?.doneOverrides && typeof item.doneOverrides === 'object' ? item.doneOverrides : {},
-    source: item?.source || ''
+    source: item?.source === 'AI Note' ? '메모' : item?.source || ''
   };
 }
 
@@ -257,23 +259,46 @@ function formatDateLabel(dateKey) {
 }
 
 function defaultNoteBlocks() {
+  return PROJECT_BOARD_COLUMNS.flatMap((column) => column.tasks.map((task, index) => ({
+    id: `memo-${column.id}-${index}`,
+    type: 'text',
+    content: `## ${task}\n\n`,
+    sector: 'project',
+    boardId: 'project',
+    status: column.id,
+    parentId: '',
+    filePath: `memo-files/${column.id}-${index}.md`
+  })));
+}
+
+function defaultMemoBoards() {
   return [
-    {
-      id: `note-${Date.now()}-title`,
-      type: 'heading',
-      content: '# 오늘 정리'
-    },
-    {
-      id: `note-${Date.now()}-text`,
-      type: 'text',
-      content: '생각나는 내용을 블록으로 나눠 적어두세요.'
-    },
-    {
-      id: `note-${Date.now()}-schedule`,
-      type: 'schedule',
-      content: '09:00 오늘 할 일 정리'
-    }
+    { id: 'project', title: '프로젝트 보드' },
+    { id: 'memo', title: '메모 보드' }
   ];
+}
+
+function readMemoBoards() {
+  try {
+    const raw = localStorage.getItem(AI_NOTE_BOARDS_KEY);
+    if (raw === null) {
+      return defaultMemoBoards();
+    }
+    const parsed = JSON.parse(raw);
+    const boards = Array.isArray(parsed) ? parsed.map(normalizeMemoBoard).filter(Boolean) : defaultMemoBoards();
+    return boards.length ? boards : defaultMemoBoards();
+  } catch {
+    return defaultMemoBoards();
+  }
+}
+
+function normalizeMemoBoard(board) {
+  const title = typeof board?.title === 'string' ? board.title.trim() : '';
+  if (!title) return null;
+  return {
+    id: board?.id || `board-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    title
+  };
 }
 
 function readNoteBlocks() {
@@ -287,10 +312,15 @@ function readNoteBlocks() {
 }
 
 function normalizeNoteBlock(block) {
+  const sector = ['project', 'memo'].includes(block?.sector) ? block.sector : 'project';
   return {
     id: block?.id || `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-    type: ['heading', 'text', 'check', 'schedule'].includes(block?.type) ? block.type : 'text',
+    type: block?.type === 'file' ? 'file' : 'text',
     content: typeof block?.content === 'string' ? block.content : '',
+    sector,
+    boardId: typeof block?.boardId === 'string' && block.boardId ? block.boardId : sector,
+    status: ['todo', 'progress', 'review', 'done'].includes(block?.status) ? block.status : 'todo',
+    parentId: typeof block?.parentId === 'string' ? block.parentId : '',
     filePath: typeof block?.filePath === 'string' ? block.filePath : ''
   };
 }
@@ -303,6 +333,12 @@ function plainMarkdownText(markdown) {
     .replace(/\*\*([^*]+)\*\*/g, '$1')
     .replace(/`([^`]+)`/g, '$1')
     .trim();
+}
+
+function noteBlockTitle(block) {
+  const plain = plainMarkdownText(block?.content || '');
+  const firstLine = plain.split('\n').map((line) => line.trim()).find(Boolean);
+  return firstLine || labelForPath(noteBlockFilePath(block));
 }
 
 function parseNoteScheduleBlock(block) {
@@ -323,11 +359,11 @@ function parseNoteScheduleBlock(block) {
     title,
     date,
     time,
-    type: 'AI Note',
+    type: '메모',
     memo: block.content.trim(),
     recurrence: 'none',
     recurrenceEnd: '',
-    source: 'AI Note',
+    source: '메모',
     done: false
   };
 }
@@ -339,9 +375,9 @@ function syncNoteSchedules(blocks) {
     .filter(Boolean);
   const scheduleIds = new Set(schedules.map((item) => item.id));
   const current = readSchedulerItems();
-  const withoutStaleNoteItems = current.filter((item) => item.source !== 'AI Note' || scheduleIds.has(item.id));
+  const withoutStaleNoteItems = current.filter((item) => !['AI Note', '메모'].includes(item.source) || scheduleIds.has(item.id));
   const merged = [
-    ...withoutStaleNoteItems.filter((item) => item.source !== 'AI Note'),
+    ...withoutStaleNoteItems.filter((item) => !['AI Note', '메모'].includes(item.source)),
     ...schedules.map((schedule) => {
       const existing = current.find((item) => item.id === schedule.id);
       return { ...schedule, done: Boolean(existing?.done), doneOverrides: existing?.doneOverrides || {} };
@@ -650,9 +686,9 @@ function WorkspaceHeader({
       </section>
       <div className="workspaceUserTray">
         <div className="workspaceTopTabs">
-          <button type="button" className="ghostButton compact" onClick={() => navigate('/')}>Universe</button>
-          <button type="button" className="ghostButton compact" onClick={() => navigate('/scheduler')}>Scheduler</button>
-          <button type="button" className="ghostButton compact" onClick={() => navigate('/destinations')}>AI Trip</button>
+          <button type="button" className="ghostButton compact" onClick={() => navigate('/')}>AI 일정</button>
+          <button type="button" className="ghostButton compact" onClick={() => navigate('/scheduler')}>개인 스케줄러</button>
+          <button type="button" className="ghostButton compact" onClick={() => navigate('/destinations')}>여행 일정</button>
         </div>
         <div className="workspaceTopTabs">
           <button type="button" className={`ghostButton compact ${rightPanel === 'rag' ? 'active' : ''}`} onClick={() => setRightPanel('rag')}>RAG</button>
@@ -945,7 +981,7 @@ function FileList({
   );
 }
 
-function EditorPanel({ selectedFile, content, setContent, loading, error, outputState, onSave, onDelete, onDownload }) {
+function EditorPanel({ selectedFile, content, setContent, loading, error, outputState, onSave, onDelete, onDownload, autoSave, saveStatus }) {
   const hasOutput = outputState.command || outputState.stdout || outputState.stderr;
   return (
     <section className="browserPreviewPanel">
@@ -954,12 +990,13 @@ function EditorPanel({ selectedFile, content, setContent, loading, error, output
           <span className="panelEyebrow">Editor</span>
           <h2>{selectedFile ? labelForPath(selectedFile) : '편집할 파일을 선택하세요'}</h2>
           {selectedFile ? <p className="panelSubcopy">{selectedFile}</p> : null}
+          {autoSave && selectedFile ? <p className="panelSubcopy">{saveStatus || '자동 저장 준비됨'}</p> : null}
         </div>
         {selectedFile ? (
           <div className="chatHeaderActions">
             <button type="button" className="ghostButton compact" onClick={onDownload}>다운로드</button>
             <button type="button" className="ghostButton compact" onClick={onDelete}>삭제</button>
-            <button type="button" className="sendButton" onClick={onSave}>저장</button>
+            <button type="button" className="sendButton" onClick={onSave}>{autoSave ? '지금 저장' : '저장'}</button>
           </div>
         ) : null}
       </div>
@@ -1240,6 +1277,9 @@ function WorkspaceApp({ navigate }) {
   const [content, setContent] = useState('');
   const [filter, setFilter] = useState('');
   const [loadingFile, setLoadingFile] = useState(false);
+  const [autoSave, setAutoSave] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('');
+  const [lastLoadedFile, setLastLoadedFile] = useState('');
   const [loadingPaths, setLoadingPaths] = useState([]);
   const [expandedPaths, setExpandedPaths] = useState([]);
   const [error, setError] = useState('');
@@ -1389,6 +1429,7 @@ function WorkspaceApp({ navigate }) {
     try {
       const text = await requestText(`/api/workspace/file?path=${encodeURIComponent(path)}`, auth.token);
       setContent(text);
+      setLastLoadedFile(path);
     } catch (loadError) {
       setError(loadError.message);
       setContent('');
@@ -1399,7 +1440,9 @@ function WorkspaceApp({ navigate }) {
 
   useEffect(() => {
     if (!auth?.token) return;
-    const filePath = new URLSearchParams(window.location.search).get('file');
+    const params = new URLSearchParams(window.location.search);
+    const filePath = params.get('file');
+    setAutoSave(params.get('autosave') === '1');
     if (!filePath) return;
     const parentPath = parentPathOf(filePath);
     setSelectedPath(parentPath);
@@ -1408,6 +1451,28 @@ function WorkspaceApp({ navigate }) {
       .catch((loadError) => setError(loadError.message));
     window.history.replaceState({}, '', '/analysisadmin');
   }, [auth?.token]);
+
+  useEffect(() => {
+    if (!autoSave || !auth?.token || !selectedFile || loadingFile || selectedFile !== lastLoadedFile) {
+      return undefined;
+    }
+    setSaveStatus('변경 내용을 자동 저장하는 중...');
+    const timer = window.setTimeout(() => {
+      requestJson('/api/workspace/file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders(auth.token) },
+        body: JSON.stringify({ path: selectedFile, content })
+      })
+        .then(() => {
+          setSaveStatus('자동 저장됨');
+          return loadTree(selectedPath, true);
+        })
+        .catch((saveError) => {
+          setSaveStatus(saveError.message);
+        });
+    }, 650);
+    return () => window.clearTimeout(timer);
+  }, [autoSave, auth?.token, selectedFile, content, loadingFile, lastLoadedFile, selectedPath]);
 
   const handleRename = async (path, nextName) => {
     setContextMenu(null);
@@ -1444,6 +1509,7 @@ function WorkspaceApp({ navigate }) {
         headers: { 'Content-Type': 'application/json', ...authHeaders(auth.token) },
         body: JSON.stringify({ path: selectedFile, content })
       });
+      setSaveStatus('저장됨');
       await loadTree(selectedPath, true);
     } catch (saveError) {
       setError(saveError.message);
@@ -1853,6 +1919,8 @@ function WorkspaceApp({ navigate }) {
             onSave={handleSave}
             onDelete={handleDelete}
             onDownload={handleDownload}
+            autoSave={autoSave}
+            saveStatus={saveStatus}
           />
         </div>
         {auth.role === 'ADMIN' ? (
@@ -1888,6 +1956,10 @@ function currentPath() {
 }
 
 const PROJECT_BOARD_TABS = ['회사 작업', '내 작업', '현재 스프린트', '타임라인'];
+const MEMO_BOARD_SECTORS = [
+  { id: 'project', label: '프로젝트 보드' },
+  { id: 'memo', label: '메모 보드' }
+];
 
 const PROJECT_BOARD_SIDEBAR = [
   {
@@ -1969,11 +2041,14 @@ function BoardIcon({ type }) {
 
 function noteBlockFilePath(block) {
   if (block.filePath) return block.filePath;
-  return `ai-notes/${block.id}.md`;
+  return `memo-files/${block.id}.md`;
 }
 
 function noteBlockFileContent(block) {
-  const title = plainMarkdownText(block.content).split('\n').find(Boolean) || labelForPath(noteBlockFilePath(block));
+  const title = noteBlockTitle(block);
+  if (block.type === 'file') {
+    return `# ${title}\n\n`;
+  }
   return [`# ${title}`, '', block.content.trim()].filter(Boolean).join('\n');
 }
 
@@ -1987,7 +2062,7 @@ function SpaceHomePage({ navigate }) {
   const [memberSession, setMemberSession] = useState(null);
 
   useEffect(() => {
-    document.title = 'Universe';
+    document.title = 'AI 개인일정 관리';
   }, []);
 
   const submitMember = async (event) => {
@@ -2026,10 +2101,10 @@ function SpaceHomePage({ navigate }) {
     <main className="spaceHome">
       <section className="spaceHero">
         <div className="spaceHeroCopy">
-          <span className="spaceEyebrow">UNIVERSE</span>
-          <h1>Personal Universe</h1>
-          <strong className="spaceHeroLead">나만의 서비스 공간</strong>
-          <p>작업, 여행, 일정을 하나의 개인 서비스 공간으로 연결합니다.</p>
+          <span className="spaceEyebrow">AI SCHEDULE OS</span>
+          <h1>AI 개인일정 관리</h1>
+          <strong className="spaceHeroLead">메모, 할 일, 여행 일정을 한 화면에서 정리합니다.</strong>
+          <p>글과 텍스트 파일을 블록으로 정리하고 일정 블록은 개인 스케줄러에 자동 연결됩니다.</p>
           <section className="spaceAuthCard" aria-label="access mode">
             <div className="spaceAuthSwitch">
               <button type="button" className={accessMode === 'guest' ? 'active' : ''} onClick={() => setAccessMode('guest')}>
@@ -2042,7 +2117,7 @@ function SpaceHomePage({ navigate }) {
             {accessMode === 'guest' ? (
               <div className="spaceAuthBody">
                 <span>Guest mode</span>
-                <p>샘플 서비스 공간을 둘러보세요.</p>
+                <p>로그인 없이 AI 개인일정 관리 화면을 둘러보세요.</p>
               </div>
             ) : (
               <div className="spaceAuthBody">
@@ -2085,9 +2160,10 @@ function SpaceHomePage({ navigate }) {
             )}
           </section>
           <div className="spaceHeroActions">
-            <button type="button" onClick={() => navigate('/scheduler')}>Scheduler</button>
-            <button type="button" onClick={() => navigate('/notes')}>AI Note</button>
-            <button type="button" onClick={() => navigate('/destinations')}>AI Trip</button>
+            <button type="button" onClick={() => navigate('/scheduler')}>개인 스케줄러</button>
+            <button type="button" onClick={() => navigate('/notes')}>AI 메모 보드</button>
+            <button type="button" onClick={() => navigate('/memo')}>메모앱</button>
+            <button type="button" onClick={() => navigate('/destinations')}>여행 일정</button>
           </div>
         </div>
       </section>
@@ -2095,15 +2171,137 @@ function SpaceHomePage({ navigate }) {
   );
 }
 
+function MemoAppPage({ navigate }) {
+  const [authMode, setAuthMode] = useState('login');
+  const [auth, setAuth] = useState(readStoredAuth());
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [savedMessage, setSavedMessage] = useState('');
+
+  useEffect(() => {
+    document.title = '메모앱';
+  }, []);
+
+  const submitAuth = async () => {
+    const validationError = validateAuthForm(authMode, username, password);
+    if (validationError || loading) {
+      setError(validationError);
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const session = await requestJson(authMode === 'signup' ? '/api/auth/signup' : '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim(), password })
+      });
+      const normalized = normalizeAuthSession(session);
+      localStorage.setItem(AUTH_KEY, JSON.stringify(normalized));
+      setAuth(normalized);
+      setUsername('');
+      setPassword('');
+    } catch (authError) {
+      setError(authError.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveMemo = () => {
+    const memoTitle = title.trim() || plainMarkdownText(content).split('\n').find(Boolean) || '새 메모';
+    const body = content.trim() || memoTitle;
+    const id = `memoapp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const currentBlocks = readNoteBlocks();
+    const nextBlock = {
+      id,
+      type: 'text',
+      content: body.startsWith('#') ? body : `# ${memoTitle}\n\n${body}`,
+      sector: 'memo',
+      boardId: 'memo',
+      status: 'todo',
+      parentId: '',
+      filePath: `memo-files/memo/${id}.md`
+    };
+    const nextBlocks = [...currentBlocks, nextBlock];
+    localStorage.setItem(AI_NOTE_KEY, JSON.stringify(nextBlocks));
+    setSavedMessage(`AI 메모 보드에 '${memoTitle}' 메모를 추가했습니다.`);
+    setTitle('');
+    setContent('');
+  };
+
+  if (!auth?.token) {
+    return (
+      <main className="memoAppShell">
+        <section className="memoAppPanel auth">
+          <button type="button" className="ghostButton compact" onClick={() => navigate('/')}>홈</button>
+          <span>MEMO APP</span>
+          <h1>메모앱 로그인</h1>
+          <div className="memoAuthSwitch">
+            <button type="button" className={authMode === 'login' ? 'active' : ''} onClick={() => setAuthMode('login')}>로그인</button>
+            <button type="button" className={authMode === 'signup' ? 'active' : ''} onClick={() => setAuthMode('signup')}>회원가입</button>
+          </div>
+          <label>
+            <span>아이디</span>
+            <input value={username} onChange={(event) => setUsername(event.target.value)} />
+          </label>
+          <label>
+            <span>비밀번호</span>
+            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+          </label>
+          {error ? <p>{error}</p> : null}
+          <button type="button" onClick={submitAuth} disabled={loading}>{loading ? '처리 중...' : authMode === 'signup' ? '가입하기' : '로그인'}</button>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className="memoAppShell">
+      <section className="memoAppPanel">
+        <header>
+          <div>
+            <span>{auth.username}</span>
+            <h1>메모 작성</h1>
+          </div>
+          <div>
+            <button type="button" onClick={() => navigate('/notes')}>AI 메모 보드</button>
+            <button type="button" onClick={() => { localStorage.removeItem(AUTH_KEY); setAuth(null); }}>로그아웃</button>
+          </div>
+        </header>
+        <label>
+          <span>제목</span>
+          <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="메모 제목" />
+        </label>
+        <label>
+          <span>Markdown 메모</span>
+          <textarea value={content} onChange={(event) => setContent(event.target.value)} placeholder="# 오늘 메모&#10;&#10;내용을 작성하세요." />
+        </label>
+        {savedMessage ? <p>{savedMessage}</p> : null}
+        <button type="button" onClick={saveMemo}>AI 메모에 저장</button>
+      </section>
+    </main>
+  );
+}
+
 function AiNotePage({ navigate }) {
+  const [boards, setBoards] = useState(readMemoBoards);
   const [blocks, setBlocks] = useState(readNoteBlocks);
   const [activeId, setActiveId] = useState('');
   const [syncCount, setSyncCount] = useState(0);
   const [fileStatus, setFileStatus] = useState('');
   const [draggingBlockId, setDraggingBlockId] = useState('');
+  const [contextMenu, setContextMenu] = useState(null);
+  const [activeBoardId, setActiveBoardId] = useState('project');
+  const session = readStoredAuth();
+  const displayName = session?.username && session.username !== 'guestuser' ? session.username : 'Guest';
 
   useEffect(() => {
-    document.title = 'AI Note';
+    document.title = 'AI 메모 보드';
   }, []);
 
   useEffect(() => {
@@ -2112,37 +2310,65 @@ function AiNotePage({ navigate }) {
   }, [blocks]);
 
   useEffect(() => {
+    localStorage.setItem(AI_NOTE_BOARDS_KEY, JSON.stringify(boards));
+  }, [boards]);
+
+  useEffect(() => {
+    if (!boards.some((board) => board.id === activeBoardId)) {
+      setActiveBoardId(boards[0]?.id || 'project');
+    }
+  }, [activeBoardId, boards]);
+
+  useEffect(() => {
     if (!blocks.length) return;
     if (!activeId || !blocks.some((block) => block.id === activeId)) {
       setActiveId(blocks[0].id);
     }
   }, [activeId, blocks]);
 
-  const addBlock = (type) => {
+  const addBoard = () => {
+    const nextIndex = boards.length + 1;
+    const nextBoard = {
+      id: `board-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      title: `새 보드 ${nextIndex}`
+    };
+    setBoards((current) => [...current, nextBoard]);
+    setActiveBoardId(nextBoard.id);
+  };
+
+  const renameBoard = (id, title) => {
+    setBoards((current) => current.map((board) => (board.id === id ? { ...board, title } : board)));
+  };
+
+  const addBlock = (type, parentId = '', status = 'todo', boardId = activeBoardId) => {
     const nextId = `note-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const extension = type === 'file' ? 'txt' : 'md';
     const nextBlock = {
       id: nextId,
-      type,
-      content: type === 'heading'
-        ? '# 새 제목'
-        : type === 'check'
-          ? '- [ ] 체크할 일'
-          : type === 'schedule'
-            ? `${new Date().getHours().toString().padStart(2, '0')}:00 새 일정`
-            : '',
-      filePath: `ai-notes/${nextId}.md`
+      type: type === 'file' ? 'file' : 'text',
+      content: type === 'file' ? '새 텍스트 파일' : '새 Markdown 글',
+      sector: boardId,
+      boardId,
+      status,
+      parentId,
+      filePath: `memo-files/${boardId}/${nextId}.${extension}`
     };
     setBlocks((current) => [...current, nextBlock]);
     setActiveId(nextBlock.id);
+    setFileStatus(`${noteBlockTitle(nextBlock)} 항목을 추가했습니다.`);
   };
 
   const addTaskBlock = (title) => {
     const nextId = `note-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const nextBlock = {
       id: nextId,
-      type: 'check',
-      content: `- [ ] ${title}`,
-      filePath: `ai-notes/${nextId}.md`
+      type: 'text',
+      content: title,
+      sector: activeBoardId,
+      boardId: activeBoardId,
+      status: 'todo',
+      parentId: '',
+      filePath: `memo-files/${activeBoardId}/${nextId}.md`
     };
     setBlocks((current) => [...current, nextBlock]);
     setActiveId(nextBlock.id);
@@ -2153,34 +2379,12 @@ function AiNotePage({ navigate }) {
     setBlocks((current) => current.map((block) => (block.id === id ? { ...block, ...patch } : block)));
   };
 
-  const moveBlock = (id, offset) => {
-    setBlocks((current) => {
-      const index = current.findIndex((block) => block.id === id);
-      const nextIndex = index + offset;
-      if (index < 0 || nextIndex < 0 || nextIndex >= current.length) return current;
-      const next = [...current];
-      const [block] = next.splice(index, 1);
-      next.splice(nextIndex, 0, block);
-      return next;
-    });
-    setActiveId(id);
-  };
-
   const deleteBlock = (id) => {
     setBlocks((current) => current.length > 1 ? current.filter((block) => block.id !== id) : current);
   };
 
-  const moveBlockToIndex = (id, targetIndex) => {
-    setBlocks((current) => {
-      const currentIndex = current.findIndex((block) => block.id === id);
-      if (currentIndex < 0 || targetIndex < 0 || targetIndex >= current.length || currentIndex === targetIndex) {
-        return current;
-      }
-      const next = [...current];
-      const [block] = next.splice(currentIndex, 1);
-      next.splice(targetIndex, 0, block);
-      return next;
-    });
+  const moveBlockToStatus = (id, status) => {
+    setBlocks((current) => current.map((block) => (block.id === id ? { ...block, status, sector: activeBoardId, boardId: activeBoardId, parentId: '' } : block)));
     setActiveId(id);
   };
 
@@ -2190,13 +2394,23 @@ function AiNotePage({ navigate }) {
     setFileStatus('파일을 준비하는 중...');
     setBlocks((current) => current.map((item) => (item.id === block.id ? { ...item, filePath } : item)));
     const session = readStoredAuth();
+    const editorUrl = `/analysisadmin?file=${encodeURIComponent(filePath)}&autosave=1`;
+    const editorWindow = window.open('', '_blank');
+    if (editorWindow) {
+      editorWindow.opener = null;
+    }
     if (!session?.token) {
       setFileStatus('워크스페이스 로그인 후 파일이 열립니다.');
-      navigate(`/analysisadmin?file=${encodeURIComponent(filePath)}`);
+      if (editorWindow) {
+        editorWindow.location.href = editorUrl;
+      } else {
+        navigate(editorUrl);
+      }
       return;
     }
     try {
-      await requestJson('/api/workspace/folder?path=ai-notes', {
+      const folderPath = filePath.includes('/') ? filePath.split('/').slice(0, -1).join('/') : '';
+      await requestJson(`/api/workspace/folder?path=${encodeURIComponent(folderPath || 'memo-files')}`, {
         method: 'POST',
         headers: authHeaders(session.token)
       }).catch(() => null);
@@ -2209,40 +2423,112 @@ function AiNotePage({ navigate }) {
           body: JSON.stringify({ path: filePath, content: noteBlockFileContent(block) })
         });
       }
-      setFileStatus(`${filePath} 파일을 엽니다.`);
-      navigate(`/analysisadmin?file=${encodeURIComponent(filePath)}`);
+      setFileStatus(`${filePath} 파일을 새 창에서 엽니다.`);
+      if (editorWindow) {
+        editorWindow.location.href = editorUrl;
+      } else {
+        navigate(editorUrl);
+      }
     } catch (error) {
+      if (editorWindow) {
+        editorWindow.close();
+      }
       setFileStatus(error.message);
     }
   };
 
-  const noteMarkdown = blocks.map((block) => block.content.trim()).filter(Boolean).join('\n\n');
-  const activeBlock = blocks.find((block) => block.id === activeId) || blocks[0];
-  const activeSchedule = activeBlock?.type === 'schedule' ? parseNoteScheduleBlock(activeBlock) : null;
+  const rootBlocks = blocks.filter((block) => !block.parentId);
+  const blocksByStatus = PROJECT_BOARD_COLUMNS.reduce((grouped, column) => ({
+    ...grouped,
+    [column.id]: rootBlocks.filter((block) => (block.boardId || block.sector) === activeBoardId && block.status === column.id)
+  }), {});
+  const activeBoard = boards.find((board) => board.id === activeBoardId) || boards[0];
+  const boardBlocks = rootBlocks.filter((block) => (block.boardId || block.sector) === activeBoardId);
+  const openContextMenu = (event, status = 'todo') => {
+    event.preventDefault();
+    setContextMenu({ x: event.clientX, y: event.clientY, status, boardId: activeBoardId });
+  };
+  const createTextFileBlock = (status = 'todo', boardId = activeBoardId) => {
+    addBlock('file', '', status, boardId);
+    setContextMenu(null);
+  };
+  const renderBoardCard = (block) => (
+    <article
+      className={`projectTaskCard memoBoardCard ${activeId === block.id ? 'active' : ''} ${draggingBlockId === block.id ? 'dragging' : ''}`}
+      key={block.id}
+      draggable
+      onDragStart={(event) => {
+        setDraggingBlockId(block.id);
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', block.id);
+      }}
+      onDragEnd={() => setDraggingBlockId('')}
+      onClick={() => openBlockFile(block)}
+    >
+      <div className="memoCardTop">
+        <span>{block.type === 'file' ? '텍스트 파일' : 'Markdown 글'}</span>
+        <button type="button" title="파일 열기" onClick={(event) => { event.stopPropagation(); openBlockFile(block); }}>열기</button>
+        <button type="button" title="삭제" onClick={(event) => { event.stopPropagation(); deleteBlock(block.id); }}>삭제</button>
+      </div>
+      <button type="button" className="memoCardTitle" onClick={(event) => { event.stopPropagation(); openBlockFile(block); }}>
+        {noteBlockTitle(block)}
+      </button>
+      <label className="memoCardPath" onClick={(event) => event.stopPropagation()}>
+        <span>제목</span>
+        <input value={noteBlockTitle(block)} onChange={(event) => updateBlock(block.id, { content: event.target.value })} />
+      </label>
+    </article>
+  );
 
   return (
     <main className="aiNoteShell">
       <aside className="aiNoteSidebar">
-        <button type="button" className="aiNoteHomeButton" onClick={() => navigate('/')}>Universe Home</button>
+        <button type="button" className="aiNoteHomeButton" onClick={() => navigate('/')}>AI 일정 홈</button>
         <div className="aiNoteSideGroup">
           <span>Services</span>
-          <a href="/scheduler" onClick={(event) => { event.preventDefault(); navigate('/scheduler'); }}>Scheduler</a>
-          <a href="/destinations" onClick={(event) => { event.preventDefault(); navigate('/destinations'); }}>AI Trip</a>
+          <a href="/scheduler" onClick={(event) => { event.preventDefault(); navigate('/scheduler'); }}>개인 스케줄러</a>
+          <a href="/destinations" onClick={(event) => { event.preventDefault(); navigate('/destinations'); }}>여행 일정</a>
         </div>
         <div className="aiNoteSideGroup">
-          <span>Blocks</span>
-          <button type="button" onClick={() => addBlock('heading')}>제목</button>
-          <button type="button" onClick={() => addBlock('text')}>텍스트</button>
-          <button type="button" onClick={() => addBlock('check')}>체크</button>
-          <button type="button" onClick={() => addBlock('schedule')}>일정</button>
+          <span>블록 만들기</span>
+          <button type="button" onClick={addBoard}>보드 추가</button>
+          <button type="button" onClick={() => addBlock('text')}>Markdown 글</button>
+          <button type="button" onClick={() => addBlock('file')}>텍스트 파일</button>
+        </div>
+        <nav className="memoBoardNav" aria-label="memo boards">
+          <span>Boards</span>
+          {boards.map((board) => {
+            const files = rootBlocks.filter((block) => (block.boardId || block.sector) === board.id);
+            return (
+              <section className={`memoBoardNavSection ${activeBoardId === board.id ? 'active' : ''}`} key={board.id}>
+                <button type="button" onClick={() => setActiveBoardId(board.id)}>{board.title}</button>
+                {activeBoardId === board.id ? (
+                  <input value={board.title} onChange={(event) => renameBoard(board.id, event.target.value)} aria-label="보드 이름" />
+                ) : null}
+                <div>
+                  {files.map((block) => (
+                    <button type="button" key={block.id} onClick={() => openBlockFile(block)}>
+                      {noteBlockTitle(block)}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </nav>
+        <div className="aiNoteSideGroup">
+          <span>현재 보드 파일</span>
+          {boardBlocks.map((block) => (
+            <button type="button" key={block.id} onClick={() => openBlockFile(block)}>{noteBlockTitle(block)}</button>
+          ))}
         </div>
       </aside>
-      <section className="aiNotePage">
-        <section className="aiNoteBoardPanel">
+      <section className="aiNotePage" onClick={() => setContextMenu(null)} onContextMenu={(event) => openContextMenu(event, 'todo')}>
+        <section className="aiNoteBoardPanel" onContextMenu={(event) => openContextMenu(event, 'todo')}>
           <header className="projectTopbar">
             <div>
-              <span className="projectBreadcrumb">Workspace / Product</span>
-              <h1>OpenAI HQ</h1>
+              <span className="projectBreadcrumb">AI Schedule / Goal Board</span>
+              <h1>오늘의 목표 보드</h1>
             </div>
             <div className="projectTopActions" aria-label="workspace actions">
               <button type="button" title="공유"><BoardIcon type="share" /></button>
@@ -2253,150 +2539,57 @@ function AiNotePage({ navigate }) {
           <section className="projectBoardHero">
             <div>
               <div className="projectViewTabs" aria-label="board views">
-                {PROJECT_BOARD_TABS.map((tab, index) => (
-                  <button type="button" className={index === 0 ? 'active' : ''} key={tab}>
-                    {tab}
+                {boards.map((board) => (
+                  <button type="button" className={activeBoardId === board.id ? 'active' : ''} key={board.id} onClick={() => setActiveBoardId(board.id)}>
+                    {board.title}
                   </button>
                 ))}
               </div>
-              <h2>프로젝트 보드</h2>
+              <h2>{activeBoard?.title || '메모 보드'}</h2>
             </div>
-            <button type="button" className="projectNewItemButton" onClick={() => addTaskBlock('새 업무 항목')}>+ 새 항목</button>
+            <button type="button" className="projectNewItemButton" onClick={() => addBlock('text', '', 'todo', activeBoardId)}>+ 새 항목</button>
           </section>
           <aside className="projectFloatingNote" aria-label="recent comment">
             <span><BoardIcon type="bell" /></span>
             <div>
-              <strong>이은지</strong>
-              <p>다음 스프린트 목표 정리</p>
+              <strong>{displayName}</strong>
+              <p>{fileStatus || '메모 보드 작업 중'}</p>
             </div>
           </aside>
           <section className="projectKanban" aria-label="kanban board">
             {PROJECT_BOARD_COLUMNS.map((column) => (
-              <article className="projectKanbanColumn" key={column.id}>
+              <article
+                className="projectKanbanColumn"
+                key={column.id}
+                onContextMenu={(event) => openContextMenu(event, column.id)}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  event.dataTransfer.dropEffect = 'move';
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  moveBlockToStatus(event.dataTransfer.getData('text/plain') || draggingBlockId, column.id);
+                  setDraggingBlockId('');
+                }}
+              >
                 <header>
                   <div>
                     <span className="projectStatusIcon" style={{ '--status-color': column.color }}>{column.icon}</span>
                     <strong>{column.title}</strong>
                   </div>
-                  <small>{column.tasks.length}</small>
+                  <small>{blocksByStatus[column.id]?.length || 0}</small>
                 </header>
                 <div className="projectTaskList">
-                  {column.tasks.map((task) => (
-                    <button type="button" className="projectTaskCard" key={task} onClick={() => addTaskBlock(task)}>
-                      {task}
-                    </button>
-                  ))}
+                  {(blocksByStatus[column.id] || []).map(renderBoardCard)}
                 </div>
               </article>
             ))}
           </section>
-        </section>
-
-        <header className="aiNoteHero">
-          <div>
-            <span className="aiNotePageIcon">md</span>
-            <h1>AI Note</h1>
-            <p>블록 단위로 생각을 적고, 일정 블록은 스케줄러에 연결합니다. 블록의 파일 열기를 누르면 워크스페이스 편집기에서 실제 파일이 열립니다.</p>
-            {fileStatus ? <p className="aiNoteFileStatus">{fileStatus}</p> : null}
-          </div>
-          <div className="aiNoteStats">
-            <article><span>블록</span><strong>{blocks.length}</strong></article>
-            <article><span>일정 연동</span><strong>{syncCount}</strong></article>
-            <article><span>Markdown</span><strong>{noteMarkdown.length}</strong></article>
-          </div>
-        </header>
-
-        <section className="aiNoteWorkspace">
-          <div className="aiNoteEditor">
-            <div className="aiNoteToolbar">
-              <strong>노트 블록</strong>
-              <div>
-                <button type="button" onClick={() => addBlock('text')}>+ 텍스트</button>
-                <button type="button" onClick={() => addBlock('check')}>+ 체크</button>
-                <button type="button" onClick={() => addBlock('schedule')}>+ 일정</button>
-              </div>
+          {contextMenu ? (
+            <div className="memoContextMenu" style={{ left: contextMenu.x, top: contextMenu.y }} onClick={(event) => event.stopPropagation()}>
+              <button type="button" onClick={() => createTextFileBlock(contextMenu.status, contextMenu.boardId)}>텍스트 파일 생성</button>
             </div>
-            <div className="aiNoteBlocks">
-              {blocks.map((block, index) => (
-                <article
-                  className={`aiNoteBlock ${activeId === block.id ? 'active' : ''} ${draggingBlockId === block.id ? 'dragging' : ''}`}
-                  key={block.id}
-                  onDragOver={(event) => {
-                    event.preventDefault();
-                    event.dataTransfer.dropEffect = 'move';
-                  }}
-                  onDrop={(event) => {
-                    event.preventDefault();
-                    moveBlockToIndex(event.dataTransfer.getData('text/plain') || draggingBlockId, index);
-                    setDraggingBlockId('');
-                  }}
-                  onClick={() => setActiveId(block.id)}
-                >
-                  <div className="aiNoteBlockHandle">
-                    <button
-                      type="button"
-                      className="aiNoteDragHandle"
-                      draggable
-                      onDragStart={(event) => {
-                        setDraggingBlockId(block.id);
-                        event.dataTransfer.effectAllowed = 'move';
-                        event.dataTransfer.setData('text/plain', block.id);
-                      }}
-                      onDragEnd={() => setDraggingBlockId('')}
-                      title="드래그해서 이동"
-                    >
-                      ↕
-                    </button>
-                    <select value={block.type} onChange={(event) => updateBlock(block.id, { type: event.target.value })}>
-                      <option value="heading">제목</option>
-                      <option value="text">텍스트</option>
-                      <option value="check">체크</option>
-                      <option value="schedule">일정</option>
-                    </select>
-                    <button type="button" onClick={() => moveBlock(block.id, -1)} disabled={index === 0}>↑</button>
-                    <button type="button" onClick={() => moveBlock(block.id, 1)} disabled={index === blocks.length - 1}>↓</button>
-                    <button type="button" onClick={() => openBlockFile(block)}>파일</button>
-                    <button type="button" onClick={() => deleteBlock(block.id)}>삭제</button>
-                  </div>
-                  <textarea
-                    value={block.content}
-                    onFocus={() => setActiveId(block.id)}
-                    onChange={(event) => updateBlock(block.id, { content: event.target.value })}
-                    placeholder={block.type === 'schedule' ? '09:00 일정 제목 #2026-05-17' : 'Markdown으로 작성'}
-                  />
-                  {block.type === 'schedule' ? <p className="aiNoteScheduleHint">예: 14:30 회의 준비 또는 14:30 회의 준비 #2026-05-17</p> : null}
-                </article>
-              ))}
-            </div>
-          </div>
-
-          <aside className="aiNotePreview">
-            <div className="aiNotePreviewHeader">
-              <span>선택한 블록</span>
-              <button type="button" onClick={() => activeBlock && openBlockFile(activeBlock)} disabled={!activeBlock}>파일 열기</button>
-            </div>
-            {activeBlock ? (
-              <div className="aiNotePreviewBody">
-                <section className={`aiNotePreviewBlock ${activeBlock.type}`}>
-                  <div className="aiNoteDetailMeta">
-                    <span>{activeBlock.type === 'schedule' ? '일정' : activeBlock.type === 'check' ? '체크' : activeBlock.type === 'heading' ? '제목' : '텍스트'}</span>
-                    {activeBlock.type === 'schedule' ? <span>Scheduler</span> : null}
-                  </div>
-                  {markdownPreviewLines(activeBlock.content)}
-                  {activeSchedule ? (
-                    <div className="aiNoteScheduleDetail">
-                      <strong>{activeSchedule.title}</strong>
-                      <time>{activeSchedule.date} · {activeSchedule.time}</time>
-                      <button type="button" onClick={() => navigate('/scheduler')}>스케줄러에서 보기</button>
-                    </div>
-                  ) : null}
-                  <small>{noteBlockFilePath(activeBlock)}</small>
-                </section>
-              </div>
-            ) : (
-              <div className="aiNotePreviewEmpty">선택한 블록이 없습니다.</div>
-            )}
-          </aside>
+          ) : null}
         </section>
       </section>
     </main>
@@ -2420,7 +2613,7 @@ function SchedulerPage({ navigate }) {
   });
 
   useEffect(() => {
-    document.title = 'Personal Scheduler';
+    document.title = 'AI 개인 스케줄러';
   }, []);
 
   useEffect(() => {
@@ -2555,16 +2748,16 @@ function SchedulerPage({ navigate }) {
   return (
     <main className="schedulerShell">
       <aside className="schedulerSidebar">
-        <button type="button" className="schedulerHomeButton" onClick={() => navigate('/')}>Universe Home</button>
+        <button type="button" className="schedulerHomeButton" onClick={() => navigate('/')}>AI 일정 홈</button>
         <div className="schedulerSideGroup">
           <span>Services</span>
           <a href="/" onClick={(event) => { event.preventDefault(); navigate('/'); }}>Home</a>
-          <a href="/notes" onClick={(event) => { event.preventDefault(); navigate('/notes'); }}>AI Note</a>
-          <a href="/destinations" onClick={(event) => { event.preventDefault(); navigate('/destinations'); }}>AI Trip</a>
+          <a href="/notes" onClick={(event) => { event.preventDefault(); navigate('/notes'); }}>AI 메모 보드</a>
+          <a href="/destinations" onClick={(event) => { event.preventDefault(); navigate('/destinations'); }}>여행 일정</a>
         </div>
         <div className="schedulerSideGroup">
           <span>Views</span>
-          {['전체', '작업', '회의', '검토', '개인', 'AI Note', '완료'].map((item) => (
+          {['전체', '작업', '회의', '검토', '개인', '메모', '완료'].map((item) => (
             <button key={item} type="button" className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>
               {item}
             </button>
@@ -2761,7 +2954,7 @@ function SchedulerPage({ navigate }) {
               <p>{selectedDate} · {filter} 보기 · {visibleItems.length}개</p>
             </div>
             <div className="schedulerFilters">
-              {['전체', '작업', '회의', '검토', '개인', 'AI Note', '완료'].map((item) => (
+              {['전체', '작업', '회의', '검토', '개인', '메모', '완료'].map((item) => (
                 <button key={item} type="button" className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>
                   {item}
                 </button>
@@ -2842,6 +3035,10 @@ export default function App() {
 
   if (routePath === '/notes') {
     return <AiNotePage navigate={navigate} />;
+  }
+
+  if (routePath === '/memo') {
+    return <MemoAppPage navigate={navigate} />;
   }
 
   return <LocalTripApp path={path} navigate={navigate} />;

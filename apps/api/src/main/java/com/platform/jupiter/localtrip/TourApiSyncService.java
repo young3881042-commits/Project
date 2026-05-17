@@ -87,20 +87,34 @@ public class TourApiSyncService {
     }
 
     private void applyTourDestination(Destination destination, TourApiDestination tourDestination) {
+        boolean food = "39".equals(tourDestination.contentTypeId());
+        boolean cafe = food && isCafeLike(tourDestination);
+        String placeStyle = cafe ? "카페" : "식당";
         destination.setName(limit(tourDestination.title(), 120));
         destination.setRegion(limit(tourDestination.areaName(), 40));
-        destination.setDistrict("관광지");
-        destination.setCategory(limit(defaultText(tourDestination.category(), "관광지"), 80));
-        destination.setPrimaryStyle("관광");
-        destination.setStyleTags("관광,추천");
+        destination.setDistrict(food ? "위치정보" : "관광지");
+        destination.setCategory(food ? placeStyle : limit(defaultText(tourDestination.category(), "관광지"), 80));
+        destination.setPrimaryStyle(food ? placeStyle : "관광");
+        destination.setStyleTags(food ? placeStyle + ",위치정보,TourAPI" : "관광,추천,TourAPI");
         destination.setAddress(limit(defaultText(tourDestination.address(), tourDestination.areaName()), 255));
-        destination.setHeadline(limit(tourDestination.title() + " 주변 여행 코스 후보", 255));
-        destination.setImageUrl(blankToNull(tourDestination.imageUrl()));
-        destination.setDescription(tourDestination.title() + " 정보를 Tour API에서 가져온 추천 관광지입니다.");
-        destination.setRecommendedMinutes(90);
-        destination.setPopularityScore(70);
+        destination.setHeadline(food
+                ? limit(tourDestination.title() + " 위치 정보", 255)
+                : limit(tourDestination.title() + " 주변 여행 코스 후보", 255));
+        destination.setImageUrl(food ? null : blankToNull(tourDestination.imageUrl()));
+        destination.setDescription(food
+                ? "TourAPI에서 가져온 식당 위치 정보입니다. 추천 판단에는 위치와 동선만 사용합니다."
+                : tourDestination.title() + " 정보를 TourAPI에서 가져온 추천 관광지입니다.");
+        destination.setRecommendedMinutes(food ? 70 : 90);
+        destination.setPopularityScore(food ? 55 : 70);
         destination.setSource(SOURCE);
         destination.setSourceRef(tourDestination.contentId());
+    }
+
+    private boolean isCafeLike(TourApiDestination destination) {
+        String text = defaultText(destination.title(), "") + " "
+                + defaultText(destination.category(), "") + " "
+                + defaultText(destination.address(), "");
+        return text.matches(".*(카페|커피|coffee|cafe|디저트|베이커리|찻집|다방|tea|티하우스).*");
     }
 
     private String defaultText(String value, String fallback) {

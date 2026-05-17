@@ -17,5 +17,11 @@ public record TravelPlanGenerateRequest(
         String transportType,
         String budgetLevel,
         String pace,
+        String startPlace,
+        String startAddress,
+        String endPlace,
+        String endAddress,
+        String departureTime,
+        String arrivalTime,
         String memo) {
 }

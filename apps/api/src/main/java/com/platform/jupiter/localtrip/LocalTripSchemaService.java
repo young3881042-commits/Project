@@ -67,6 +67,13 @@ public class LocalTripSchemaService {
                 )
                 """);
         jdbcTemplate.execute("ALTER TABLE localtrip_travel_plan ADD COLUMN IF NOT EXISTS username VARCHAR(40) NOT NULL DEFAULT 'admin'");
+        jdbcTemplate.execute("ALTER TABLE localtrip_travel_plan ADD COLUMN IF NOT EXISTS start_place VARCHAR(120)");
+        jdbcTemplate.execute("ALTER TABLE localtrip_travel_plan ADD COLUMN IF NOT EXISTS start_address VARCHAR(255)");
+        jdbcTemplate.execute("ALTER TABLE localtrip_travel_plan ADD COLUMN IF NOT EXISTS end_place VARCHAR(120)");
+        jdbcTemplate.execute("ALTER TABLE localtrip_travel_plan ADD COLUMN IF NOT EXISTS end_address VARCHAR(255)");
+        jdbcTemplate.execute("ALTER TABLE localtrip_travel_plan ADD COLUMN IF NOT EXISTS departure_time VARCHAR(20)");
+        jdbcTemplate.execute("ALTER TABLE localtrip_travel_plan ADD COLUMN IF NOT EXISTS arrival_time VARCHAR(20)");
+        jdbcTemplate.execute("ALTER TABLE localtrip_travel_plan ADD COLUMN IF NOT EXISTS estimated_budget VARCHAR(120)");
         jdbcTemplate.execute("""
                 CREATE TABLE IF NOT EXISTS localtrip_travel_plan_item (
                     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,

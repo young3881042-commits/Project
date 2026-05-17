@@ -99,8 +99,15 @@ public class TravelPlanService {
         plan.setTravelerCount(travelerCount);
         plan.setTravelerType(travelerType);
         plan.setPace(pace);
+        plan.setStartPlace(limitText(defaultText(request.startPlace(), ""), 120));
+        plan.setStartAddress(limitText(defaultText(request.startAddress(), ""), 255));
+        plan.setEndPlace(limitText(defaultText(request.endPlace(), ""), 120));
+        plan.setEndAddress(limitText(defaultText(request.endAddress(), ""), 255));
+        plan.setDepartureTime(limitText(defaultText(request.departureTime(), ""), 20));
+        plan.setArrivalTime(limitText(defaultText(request.arrivalTime(), ""), 20));
+        plan.setEstimatedBudget(estimateBudget(days, travelerCount, request.budgetLevel(), request.transportType()));
         plan.setSummary(regionLabel + "의 " + stylesLabel + " 취향을 반영한 " + travelerType + "용 "
-                + pace + " 속도 추천 일정입니다.");
+                + pace + " 속도 추천 일정입니다. 예상 예산은 " + plan.getEstimatedBudget() + "입니다.");
         TravelPlan savedPlan = travelPlanRepository.save(plan);
         List<Destination> destinations = destinationService.findCandidatesForPlan(request.destinationIds(), regions, styles);
 
@@ -230,6 +237,9 @@ public class TravelPlanService {
             "- 속도: %s\n" +
             "- 이동수단: %s\n" +
             "- 예산: %s\n" +
+            "- 전체 출발지: %s / 주소: %s / 출발 시간: %s\n" +
+            "- 최종 목적지: %s / 주소: %s / 도착 시간: %s\n" +
+            "- 예상 예산: %s\n" +
             "- 메모: %s\n" +
             "- 우선 사용할 장소 후보: %s\n\n" +
             "각 날짜는 아침/오전 관광, 점심 식당, 오후 관광, 카페/휴식, 저녁 식당, 야경/산책 중 필요한 6~8개 블록으로 구성해.\n" +
@@ -248,9 +258,34 @@ public class TravelPlanService {
             plan.getPace(),
             defaultText(request.transportType(), "대중교통"),
             defaultText(request.budgetLevel(), "보통"),
+            defaultText(request.startPlace(), "미정"),
+            defaultText(request.startAddress(), "미정"),
+            defaultText(request.departureTime(), "미정"),
+            defaultText(request.endPlace(), "미정"),
+            defaultText(request.endAddress(), "미정"),
+            defaultText(request.arrivalTime(), "미정"),
+            estimateBudget(plan.getDays(), plan.getTravelerCount(), request.budgetLevel(), request.transportType()),
             defaultText(request.memo(), "없음"),
             candidateNames.isBlank() ? "지역 대표 명소" : candidateNames
         );
+    }
+
+    private String estimateBudget(int days, int travelerCount, String budgetLevel, String transportType) {
+        int levelBase = switch (defaultText(budgetLevel, "보통")) {
+            case "절약" -> 85000;
+            case "프리미엄" -> 220000;
+            default -> 140000;
+        };
+        int transportBase = switch (defaultText(transportType, "대중교통")) {
+            case "자동차" -> 45000;
+            case "도보" -> 12000;
+            default -> 25000;
+        };
+        int total = Math.max(1, days) * Math.max(1, travelerCount) * levelBase
+                + Math.max(1, days) * transportBase;
+        int low = Math.max(10000, (int) Math.round(total * 0.9 / 10000.0) * 10000);
+        int high = Math.max(low, (int) Math.round(total * 1.15 / 10000.0) * 10000);
+        return String.format("%,d원 ~ %,d원", low, high);
     }
 
     private ChatUsage extractUsage(JsonNode root) {

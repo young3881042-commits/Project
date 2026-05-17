@@ -221,19 +221,19 @@ public class JupiterController {
 
     @GetMapping("/workspace/tree")
     public FileTreeResponse workspaceTree(@RequestParam(defaultValue = "") String path, HttpServletRequest servletRequest) {
-        AuthSession session = requireAdminSession(servletRequest);
+        AuthSession session = authService.requireSession(servletRequest);
         return fileService.browseWorkspace(path, session.username(), session.admin());
     }
 
     @GetMapping("/workspace/file")
     public ResponseEntity<Resource> workspaceFile(@RequestParam String path, HttpServletRequest servletRequest) {
-        AuthSession session = requireAdminSession(servletRequest);
+        AuthSession session = authService.requireSession(servletRequest);
         return asResponse(fileService.readWorkspaceFile(path, session.username(), session.admin()));
     }
 
     @GetMapping("/workspace/download")
     public ResponseEntity<Resource> workspaceDownload(@RequestParam String path, HttpServletRequest servletRequest) {
-        AuthSession session = requireAdminSession(servletRequest);
+        AuthSession session = authService.requireSession(servletRequest);
         Resource resource = fileService.readWorkspaceFile(path, session.username(), session.admin());
         String filename = resource.getFilename() == null ? "file" : resource.getFilename();
         return ResponseEntity.ok()
@@ -244,28 +244,28 @@ public class JupiterController {
 
     @PostMapping("/workspace/file")
     public ResponseEntity<Void> workspaceSave(@Valid @RequestBody WorkspaceFileRequest request, HttpServletRequest servletRequest) {
-        AuthSession session = requireAdminSession(servletRequest);
+        AuthSession session = authService.requireSession(servletRequest);
         fileService.writeWorkspaceFile(request.path(), request.content() == null ? "" : request.content(), session.username(), session.admin());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/workspace/folder")
     public ResponseEntity<Void> workspaceFolder(@RequestParam String path, HttpServletRequest servletRequest) {
-        AuthSession session = requireAdminSession(servletRequest);
+        AuthSession session = authService.requireSession(servletRequest);
         fileService.createDirectory(path, session.username(), session.admin());
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/workspace/item")
     public ResponseEntity<Void> workspaceDelete(@RequestParam String path, HttpServletRequest servletRequest) {
-        AuthSession session = requireAdminSession(servletRequest);
+        AuthSession session = authService.requireSession(servletRequest);
         fileService.deleteWorkspaceItem(path, session.username(), session.admin());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/workspace/rename")
     public ResponseEntity<WorkspaceRenameResponse> workspaceRename(@Valid @RequestBody WorkspaceRenameRequest request, HttpServletRequest servletRequest) {
-        AuthSession session = requireAdminSession(servletRequest);
+        AuthSession session = authService.requireSession(servletRequest);
         String renamedPath = fileService.renameWorkspaceItem(request.path(), request.newName(), session.username(), session.admin());
         return ResponseEntity.ok(new WorkspaceRenameResponse(renamedPath));
     }
@@ -275,7 +275,7 @@ public class JupiterController {
             @RequestParam(defaultValue = "") String path,
             @RequestParam("file") MultipartFile file,
             HttpServletRequest servletRequest) {
-        AuthSession session = requireAdminSession(servletRequest);
+        AuthSession session = authService.requireSession(servletRequest);
         virusScanService.scan(file);
         fileService.uploadWorkspaceFile(path, file, session.username(), session.admin());
         return ResponseEntity.ok().build();
@@ -287,13 +287,13 @@ public class JupiterController {
             @RequestParam(defaultValue = "false") boolean autoFix,
             @RequestParam(defaultValue = "true") boolean summarize,
             HttpServletRequest servletRequest) {
-        AuthSession session = requireAdminSession(servletRequest);
+        AuthSession session = authService.requireSession(servletRequest);
         return workspaceExecutionService.runPythonFile(path, session.username(), session.admin(), autoFix, summarize);
     }
 
     @PostMapping("/workspace/gemini")
     public WorkspaceGeminiResponse workspaceGemini(@Valid @RequestBody WorkspaceGeminiRequest request, HttpServletRequest servletRequest) {
-        AuthSession session = requireAdminSession(servletRequest);
+        AuthSession session = authService.requireSession(servletRequest);
         return workspaceExecutionService.runGeminiPrompt(request, session.username(), session.admin());
     }
 
@@ -307,7 +307,7 @@ public class JupiterController {
     public List<WorkspaceExecutionLogDto> workspaceExecutions(
             @RequestParam(defaultValue = "20") int limit,
             HttpServletRequest servletRequest) {
-        AuthSession session = requireAdminSession(servletRequest);
+        AuthSession session = authService.requireSession(servletRequest);
         return workspaceExecutionService.listExecutionLogs(session.username(), limit);
     }
 

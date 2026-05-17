@@ -41,6 +41,27 @@ public class TravelPlan {
     @Column(nullable = false, length = 40)
     private String pace;
 
+    @Column(length = 120)
+    private String startPlace;
+
+    @Column(length = 255)
+    private String startAddress;
+
+    @Column(length = 120)
+    private String endPlace;
+
+    @Column(length = 255)
+    private String endAddress;
+
+    @Column(length = 20)
+    private String departureTime;
+
+    @Column(length = 20)
+    private String arrivalTime;
+
+    @Column(length = 120)
+    private String estimatedBudget;
+
     @Column(nullable = false, length = 255)
     private String summary;
 
@@ -128,6 +149,62 @@ public class TravelPlan {
 
     public void setPace(String pace) {
         this.pace = pace;
+    }
+
+    public String getStartPlace() {
+        return startPlace;
+    }
+
+    public void setStartPlace(String startPlace) {
+        this.startPlace = startPlace;
+    }
+
+    public String getStartAddress() {
+        return startAddress;
+    }
+
+    public void setStartAddress(String startAddress) {
+        this.startAddress = startAddress;
+    }
+
+    public String getEndPlace() {
+        return endPlace;
+    }
+
+    public void setEndPlace(String endPlace) {
+        this.endPlace = endPlace;
+    }
+
+    public String getEndAddress() {
+        return endAddress;
+    }
+
+    public void setEndAddress(String endAddress) {
+        this.endAddress = endAddress;
+    }
+
+    public String getDepartureTime() {
+        return departureTime;
+    }
+
+    public void setDepartureTime(String departureTime) {
+        this.departureTime = departureTime;
+    }
+
+    public String getArrivalTime() {
+        return arrivalTime;
+    }
+
+    public void setArrivalTime(String arrivalTime) {
+        this.arrivalTime = arrivalTime;
+    }
+
+    public String getEstimatedBudget() {
+        return estimatedBudget;
+    }
+
+    public void setEstimatedBudget(String estimatedBudget) {
+        this.estimatedBudget = estimatedBudget;
     }
 
     public String getSummary() {

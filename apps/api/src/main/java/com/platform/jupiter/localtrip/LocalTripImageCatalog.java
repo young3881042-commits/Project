@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 final class LocalTripImageCatalog {
+    private static final String COMMON_FOOD_CAFE_IMAGE = image("Cafe storefront in Seongsu-dong.jpg");
     private static final Map<String, String> SOURCE_REF_IMAGES = Map.ofEntries(
             Map.entry("SEOUL-001", image("Gyeongbokgung Palace Main Gate.jpg")),
             Map.entry("SEOUL-002", image("Bukchon Hanok Village 05.jpg")),
@@ -110,10 +111,20 @@ final class LocalTripImageCatalog {
         if (verified != null) {
             return verified;
         }
+        if (isFoodOrCafe(destination)) {
+            return COMMON_FOOD_CAFE_IMAGE;
+        }
         if ("batch".equals(destination.getSource())) {
             return null;
         }
         return destination.getImageUrl();
+    }
+
+    private static boolean isFoodOrCafe(Destination destination) {
+        String text = ((destination.getPrimaryStyle() == null ? "" : destination.getPrimaryStyle()) + " "
+                + (destination.getCategory() == null ? "" : destination.getCategory()) + " "
+                + (destination.getStyleTags() == null ? "" : destination.getStyleTags()));
+        return text.matches(".*(식당|음식|맛집|카페|커피|디저트|브런치).*");
     }
 
     private static String normalizeSourceRef(String value) {

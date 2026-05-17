@@ -14,6 +14,239 @@
   --radius-sm: 14px;
 }
 
+.ltStepBar button {
+  min-height: 40px;
+  padding: 10px 14px;
+  border: 1px solid var(--lt-border, #e5e7eb);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--lt-muted, #64748b);
+  font-size: 0.79rem;
+  font-weight: 800;
+}
+
+.ltStepBar button.active,
+.ltStepBar button.done {
+  border-color: rgba(16, 185, 129, 0.34);
+  background: var(--lt-primary-soft, #dff8ee);
+  color: var(--lt-primary-dark, #047857);
+}
+
+.ltStepBar button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ltDataSyncPanel,
+.ltDailyRouteBuilder fieldset,
+.ltDayRouteCheckWrap {
+  border: 1px solid var(--lt-border, #e5e7eb);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.ltDataSyncPanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+}
+
+.ltDataSyncPanel p,
+.ltDataSyncPanel small {
+  display: block;
+  margin-top: 6px;
+  color: var(--lt-muted, #64748b);
+  line-height: 1.5;
+}
+
+.ltDataSyncPanel button,
+.ltStepActions button {
+  padding: 11px 14px;
+  border-radius: 999px;
+  background: var(--lt-primary, #10b981);
+  color: #fff;
+  font-weight: 800;
+}
+
+.ltStepActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.ltStepActions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ltDailyRouteBuilder {
+  display: grid;
+  gap: 12px;
+}
+
+.ltDailyRouteBuilder fieldset {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: end;
+  margin: 0;
+  padding: 14px;
+}
+
+.ltDailyRouteBuilder legend {
+  padding: 0 6px;
+  color: var(--lt-muted, #64748b);
+}
+
+.ltDayRouteCheckWrap {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.ltDayRouteInputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ltDayRouteInputs label {
+  display: grid;
+  gap: 6px;
+}
+
+.ltDayRouteInputs span {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.82rem;
+}
+
+.ltDayRouteInputs input {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  color: #fff;
+}
+
+.aiNoteBlock.section {
+  background: rgba(124, 198, 255, 0.07);
+}
+
+.aiNoteNestedBlocks {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px dashed rgba(124, 198, 255, 0.24);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.aiNoteNestedActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.aiNoteNestedActions button {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+
+.memoBoardSummary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.memoBoardSummary article,
+.memoBoardSummary p,
+.memoFileBlock {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.memoBoardSummary article {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+}
+
+.memoBoardSummary span {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.82rem;
+}
+
+.memoBoardSummary strong {
+  color: #fff;
+  font-size: 1.35rem;
+}
+
+.memoBoardSummary p {
+  grid-column: 1 / -1;
+  padding: 12px 14px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.memoBoardWorkspace {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.memoFileBlock {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+}
+
+.memoFileBlock label {
+  display: grid;
+  gap: 6px;
+}
+
+.memoFileBlock span {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.82rem;
+}
+
+.memoFileBlock input {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  color: #fff;
+}
+
+.memoFileBlock button {
+  justify-self: start;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(124, 198, 255, 0.16);
+  color: #fff;
+}
+
+@media (max-width: 720px) {
+  .ltDataSyncPanel,
+  .ltDailyRouteBuilder fieldset,
+  .ltDayRouteInputs,
+  .memoBoardSummary {
+    grid-template-columns: 1fr;
+  }
+
+  .ltDataSyncPanel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -15502,12 +15735,12 @@ body:has(.ltShell) {
   min-height: 100vh;
   display: grid;
   place-items: stretch;
-  overflow: hidden;
-  color: #fff;
+  overflow-x: hidden;
+  color: #17202f;
   background:
-    linear-gradient(90deg, rgba(2, 6, 23, 0.9) 0%, rgba(2, 6, 23, 0.6) 48%, rgba(2, 6, 23, 0.22) 100%),
-    linear-gradient(180deg, rgba(2, 6, 23, 0.1) 0%, rgba(2, 6, 23, 0.8) 100%),
-    url("https://science.nasa.gov/wp-content/uploads/2023/09/web-first-images-release.png") center/cover no-repeat;
+    linear-gradient(90deg, rgba(248, 250, 252, 0.96) 0%, rgba(248, 250, 252, 0.88) 48%, rgba(248, 250, 252, 0.28) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(241, 245, 249, 0.92) 100%),
+    url("https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=2200&q=80") center/cover no-repeat;
 }
 
 .spaceHome::before,
@@ -15521,14 +15754,14 @@ body:has(.ltShell) {
 .spaceHome::before {
   inset: 0;
   background:
-    radial-gradient(circle at 18% 20%, rgba(59, 130, 246, 0.24), transparent 25%),
-    radial-gradient(circle at 78% 18%, rgba(251, 191, 36, 0.22), transparent 24%);
+    radial-gradient(circle at 18% 20%, rgba(16, 185, 129, 0.16), transparent 25%),
+    radial-gradient(circle at 78% 18%, rgba(59, 130, 246, 0.14), transparent 24%);
 }
 
 .spaceHome::after {
   inset: auto 0 0;
   height: 34vh;
-  background: linear-gradient(180deg, transparent, rgba(2, 6, 23, 0.82));
+  background: linear-gradient(180deg, transparent, rgba(248, 250, 252, 0.92));
 }
 
 .spaceHero {
@@ -15540,7 +15773,7 @@ body:has(.ltShell) {
   display: grid;
   grid-template-columns: minmax(0, 720px);
   align-items: center;
-  padding: 64px 0;
+  padding: 72px 0;
 }
 
 .spaceHeroCopy {
@@ -15552,10 +15785,10 @@ body:has(.ltShell) {
 .spaceEyebrow {
   width: fit-content;
   padding: 9px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.24);
+  border: 1px solid rgba(16, 185, 129, 0.22);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #bfdbfe;
+  background: rgba(236, 253, 245, 0.86);
+  color: #047857;
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -15565,28 +15798,29 @@ body:has(.ltShell) {
 
 .spaceHeroCopy h1 {
   max-width: 760px;
-  color: #fff;
-  font-size: clamp(2.65rem, 8vw, 6.8rem);
-  line-height: 0.98;
+  color: #0f172a;
+  font-size: clamp(2.45rem, 7vw, 5.8rem);
+  line-height: 1.12;
   font-weight: 900;
   letter-spacing: 0;
-  text-shadow: 0 24px 80px rgba(0, 0, 0, 0.56);
+  text-shadow: none;
+  overflow: visible;
 }
 
 .spaceHeroCopy p {
   max-width: 640px;
-  color: rgba(255, 255, 255, 0.84);
+  color: #475569;
   font-size: clamp(1rem, 2.2vw, 1.28rem);
   line-height: 1.72;
 }
 
 .spaceHeroLead {
   max-width: 640px;
-  color: #ffffff;
+  color: #111827;
   font-size: clamp(1.25rem, 3vw, 2rem);
-  line-height: 1.3;
+  line-height: 1.45;
   font-weight: 900;
-  text-shadow: 0 18px 48px rgba(0, 0, 0, 0.4);
+  text-shadow: none;
 }
 
 .spaceHeroSupport {
@@ -15604,27 +15838,28 @@ body:has(.ltShell) {
 .spaceHeroActions button {
   min-height: 48px;
   padding: 0 18px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid #dbe3ee;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.86);
+  color: #334155;
   font-weight: 800;
   backdrop-filter: blur(16px);
 }
 
 .spaceHeroActions button:first-child {
-  border-color: rgba(147, 197, 253, 0.65);
-  background: rgba(37, 99, 235, 0.72);
-  box-shadow: 0 20px 54px rgba(37, 99, 235, 0.32);
+  border-color: rgba(16, 185, 129, 0.44);
+  background: #10b981;
+  color: #fff;
+  box-shadow: 0 20px 54px rgba(16, 185, 129, 0.22);
 }
 
 .spaceHeroActions button:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.18);
+  background: #fff;
 }
 
 .spaceHeroActions button:first-child:hover {
-  background: rgba(29, 78, 216, 0.82);
+  background: #047857;
 }
 
 .spaceSideStack {
@@ -15817,9 +16052,9 @@ body:has(.ltShell) {
   .spaceHome {
     min-height: 100svh;
     background:
-      linear-gradient(180deg, rgba(2, 6, 23, 0.52) 0%, rgba(2, 6, 23, 0.84) 58%, rgba(2, 6, 23, 0.96) 100%),
-      url("https://science.nasa.gov/wp-content/uploads/2023/09/web-first-images-release.png") 55% top/auto 58vh no-repeat,
-      #030712;
+      linear-gradient(180deg, rgba(248, 250, 252, 0.92) 0%, rgba(248, 250, 252, 0.96) 62%, rgba(241, 245, 249, 1) 100%),
+      url("https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1400&q=80") 55% top/auto 54vh no-repeat,
+      #f8fafc;
   }
 
   .spaceHero {
@@ -15835,6 +16070,7 @@ body:has(.ltShell) {
 
   .spaceHeroCopy h1 {
     font-size: clamp(2.2rem, 13vw, 3.7rem);
+    line-height: 1.14;
   }
 
   .spaceHeroCopy p {
@@ -16212,6 +16448,122 @@ body:has(.ltShell) {
   transform: translateY(-1px);
   border-color: #d1d5db;
   box-shadow: 0 16px 32px rgba(15, 23, 42, 0.09);
+}
+
+.memoBoardCard {
+  display: grid;
+  gap: 10px;
+}
+
+.memoBoardCard.active {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12), 0 16px 32px rgba(15, 23, 42, 0.09);
+}
+
+.memoBoardCard.dragging {
+  opacity: 0.58;
+}
+
+.memoCardTop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.memoCardTop span {
+  flex: 1;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.memoCardTop select,
+.memoCardTop button,
+.memoCardPath input {
+  min-height: 30px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.memoCardTop select {
+  flex: 1;
+  min-width: 92px;
+  padding: 0 8px;
+}
+
+.memoCardTop button {
+  padding: 0 8px;
+}
+
+.memoContextMenu {
+  position: fixed;
+  z-index: 2000;
+  min-width: 170px;
+  padding: 8px;
+  border: 1px solid #dbe3ee;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.16);
+}
+
+.memoContextMenu button {
+  width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  text-align: left;
+  font: inherit;
+  font-weight: 850;
+}
+
+.memoContextMenu button:hover {
+  background: #e8f7f2;
+  color: #047857;
+}
+
+.memoBoardCard textarea {
+  width: 100%;
+  min-height: 86px;
+  border: 0;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #1f2937;
+  padding: 10px;
+  resize: vertical;
+  font: inherit;
+  font-weight: 760;
+  line-height: 1.45;
+}
+
+.memoBoardCard textarea:focus,
+.memoCardPath input:focus {
+  outline: 2px solid rgba(16, 185, 129, 0.24);
+}
+
+.memoCardPath {
+  display: grid;
+  gap: 5px;
+}
+
+.memoCardPath span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.memoCardPath input {
+  width: 100%;
+  padding: 0 8px;
 }
 
 @media (max-width: 980px) {
@@ -17876,5 +18228,418 @@ body:has(.ltShell) {
 
   .ltShell .ltPage {
     padding-top: 16px !important;
+  }
+}
+
+/* Final AI memo board override: keep it aligned with the AI Trip clean UI. */
+body:has(.aiNoteShell) { background: #f7f8fa; }
+
+.aiNoteShell,
+.aiNoteShell * { letter-spacing: 0 !important; }
+
+.aiNoteShell {
+  --memo-accent: #2563eb;
+  --memo-accent-dark: #1d4ed8;
+  --memo-accent-soft: #e8f1ff;
+  --memo-ink: #111827;
+  --memo-body: #4b5563;
+  --memo-muted: #6b7280;
+  --memo-line: #e5e7eb;
+  --memo-soft: #f7f8fa;
+  grid-template-columns: 280px minmax(0, 1fr) !important;
+  background: var(--memo-soft) !important;
+  color: var(--memo-ink) !important;
+}
+
+.aiNoteSidebar {
+  max-height: 100vh !important;
+  gap: 12px !important;
+  padding: 16px !important;
+  border-right: 1px solid var(--memo-line) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  overflow-y: auto !important;
+}
+
+.aiNoteHomeButton,
+.aiNoteSideGroup,
+.memoBoardNav,
+.aiNoteBoardPanel,
+.aiNoteBoardPanel .projectKanbanColumn,
+.memoBoardCard,
+.memoContextMenu,
+.memoBoardNavSection,
+.memoBoardNavSection > button,
+.memoBoardNavSection div button,
+.memoBoardNavSection input,
+.aiNoteSideGroup a,
+.aiNoteSideGroup button,
+.memoCardTop button,
+.memoCardPath input { border-radius: 8px !important; }
+
+.aiNoteSideGroup,
+.memoBoardNav {
+  display: grid !important;
+  gap: 8px !important;
+  padding: 12px !important;
+  border: 1px solid var(--memo-line) !important;
+  background: #fff !important;
+}
+
+.aiNoteHomeButton,
+.aiNoteSideGroup a,
+.aiNoteSideGroup button,
+.memoBoardNavSection > button,
+.memoBoardNavSection div button,
+.memoBoardNavSection input {
+  min-height: 36px !important;
+  border: 1px solid var(--memo-line) !important;
+  background: #fff !important;
+  color: var(--memo-body) !important;
+  padding: 0 10px !important;
+  font: inherit !important;
+  font-size: 0.82rem !important;
+  font-weight: 850 !important;
+  text-align: left !important;
+}
+
+.aiNoteHomeButton:hover,
+.aiNoteSideGroup a:hover,
+.aiNoteSideGroup button:hover,
+.memoBoardNavSection button:hover,
+.memoBoardNavSection input:focus,
+.memoCardTop button:hover {
+  border-color: rgba(37, 99, 235, 0.34) !important;
+  background: var(--memo-accent-soft) !important;
+  color: var(--memo-accent-dark) !important;
+  outline: none !important;
+}
+
+.aiNoteSideGroup span,
+.memoBoardNav > span {
+  color: var(--memo-muted) !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+}
+
+.memoBoardNavSection {
+  display: grid !important;
+  gap: 6px !important;
+  padding: 8px !important;
+  border: 1px solid transparent !important;
+}
+
+.memoBoardNavSection.active {
+  border-color: rgba(37, 99, 235, 0.24) !important;
+  background: #f8fbff !important;
+}
+
+.memoBoardNavSection > button {
+  color: var(--memo-ink) !important;
+  font-weight: 900 !important;
+}
+
+.memoBoardNavSection div {
+  display: grid !important;
+  gap: 5px !important;
+  padding-left: 8px !important;
+}
+
+.memoBoardNavSection div button {
+  min-height: 30px !important;
+  overflow: hidden !important;
+  color: var(--memo-muted) !important;
+  font-size: 0.78rem !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.aiNotePage {
+  width: min(1180px, calc(100% - 32px)) !important;
+  padding: 28px 0 56px !important;
+}
+
+.aiNoteBoardPanel {
+  padding: 22px !important;
+  border: 1px solid var(--memo-line) !important;
+  background: #fff !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05) !important;
+}
+
+.aiNoteBoardPanel .projectTopbar h1 {
+  color: var(--memo-ink) !important;
+  font-size: clamp(1.85rem, 4vw, 2.85rem) !important;
+  line-height: 1.08 !important;
+}
+
+.aiNoteBoardPanel .projectFloatingNote {
+  top: 88px !important;
+  right: 22px !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07) !important;
+}
+
+.aiNoteBoardPanel .projectKanbanColumn {
+  min-height: 360px !important;
+  background: #f9fafb !important;
+  box-shadow: none !important;
+}
+
+.memoBoardCard {
+  display: grid !important;
+  gap: 9px !important;
+  min-height: 112px !important;
+  cursor: pointer !important;
+}
+
+.memoBoardCard.active {
+  border-color: var(--memo-accent) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 10px 24px rgba(15, 23, 42, 0.06) !important;
+}
+
+.memoCardTop span { color: var(--memo-muted) !important; }
+
+.memoCardTop button,
+.memoCardPath input {
+  border: 1px solid var(--memo-line) !important;
+  background: #f8fafc !important;
+  color: var(--memo-body) !important;
+}
+
+.memoCardTitle {
+  width: 100% !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--memo-ink) !important;
+  font: inherit !important;
+  font-size: 0.98rem !important;
+  font-weight: 900 !important;
+  line-height: 1.35 !important;
+  text-align: left !important;
+}
+
+.memoCardTitle:hover { color: var(--memo-accent-dark) !important; }
+.memoCardPath span { color: var(--memo-muted) !important; }
+.memoCardPath input:focus { outline: 2px solid rgba(37, 99, 235, 0.2) !important; }
+
+.memoContextMenu {
+  border: 1px solid var(--memo-line) !important;
+  background: #fff !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14) !important;
+}
+
+.memoContextMenu button:hover {
+  background: var(--memo-accent-soft) !important;
+  color: var(--memo-accent-dark) !important;
+}
+
+.memoAppShell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #f7f8fa;
+  color: #111827;
+}
+
+.memoAppPanel {
+  width: min(760px, 100%);
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.memoAppPanel.auth {
+  width: min(420px, 100%);
+}
+
+.memoAppPanel header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.memoAppPanel header div:last-child,
+.memoAuthSwitch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.memoAppPanel h1 {
+  color: #111827;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1.12;
+}
+
+.memoAppPanel > span,
+.memoAppPanel header span,
+.memoAppPanel label span {
+  color: #6b7280;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.memoAppPanel label {
+  display: grid;
+  gap: 6px;
+}
+
+.memoAppPanel input,
+.memoAppPanel textarea {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #111827;
+  padding: 11px 12px;
+  font: inherit;
+}
+
+.memoAppPanel textarea {
+  min-height: 260px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.memoAppPanel button {
+  min-height: 38px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #4b5563;
+  padding: 0 12px;
+  font: inherit;
+  font-weight: 850;
+}
+
+.memoAppPanel > button:last-child,
+.memoAuthSwitch button.active {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.memoAppPanel p {
+  color: #2563eb;
+  font-weight: 800;
+}
+
+.ltAddressGrid,
+.ltRouteFacts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ltPlannerInfoCard {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 8px 12px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid var(--lt-border, #e5e7eb);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.ltPlannerInfoIcon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--lt-primary-soft, #dff8ee);
+  color: var(--lt-primary-dark, #047857);
+}
+
+.ltPlannerInfoCard strong {
+  color: var(--lt-ink, #111827);
+  font-size: 0.98rem;
+  font-weight: 900;
+}
+
+.ltPlannerInfoCard p {
+  margin-top: 4px;
+  color: var(--lt-muted, #64748b);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.ltPlannerInfoBody {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.ltAddressSearch {
+  position: relative;
+}
+
+.ltAddressSearch input + input {
+  margin-top: 8px;
+}
+
+.ltAddressDropdown {
+  top: calc(100% + 6px);
+}
+
+.ltBudgetPreview,
+.ltRouteFacts article {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.ltRouteFacts article {
+  padding: 14px;
+  border: 1px solid var(--lt-border, #e5e7eb);
+  background: #fff;
+}
+
+.ltBudgetPreview span,
+.ltRouteFacts span {
+  color: var(--lt-muted, #64748b);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.ltBudgetPreview strong,
+.ltRouteFacts strong {
+  color: var(--lt-ink, #111827);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.ltRouteFacts {
+  margin: 18px 0 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 860px) {
+  .aiNoteShell { grid-template-columns: 1fr !important; }
+
+  .aiNoteSidebar {
+    position: static !important;
+    min-height: auto !important;
+    max-height: none !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--memo-line) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .ltAddressGrid,
+  .ltRouteFacts {
+    grid-template-columns: 1fr;
   }
 }

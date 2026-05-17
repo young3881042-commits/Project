@@ -17,6 +17,13 @@ public record TravelPlanResponse(
         Integer travelerCount,
         String travelerType,
         String pace,
+        String startPlace,
+        String startAddress,
+        String endPlace,
+        String endAddress,
+        String departureTime,
+        String arrivalTime,
+        String estimatedBudget,
         String summary,
         String markdown,
         Instant createdAt,
@@ -40,6 +47,13 @@ public record TravelPlanResponse(
                 plan.getTravelerCount(),
                 plan.getTravelerType(),
                 plan.getPace(),
+                plan.getStartPlace(),
+                plan.getStartAddress(),
+                plan.getEndPlace(),
+                plan.getEndAddress(),
+                plan.getDepartureTime(),
+                plan.getArrivalTime(),
+                plan.getEstimatedBudget(),
                 plan.getSummary(),
                 toMarkdown(plan, items),
                 plan.getCreatedAt(),
@@ -78,6 +92,21 @@ public record TravelPlanResponse(
         markdown.append("- 기간: ").append(plan.getDays()).append("일\n");
         markdown.append("- 동행: ").append(plan.getTravelerType()).append(" · ").append(plan.getTravelerCount()).append("명\n");
         markdown.append("- 속도: ").append(plan.getPace()).append("\n");
+        if (hasText(plan.getStartPlace()) || hasText(plan.getStartAddress())) {
+            markdown.append("- 출발: ").append(defaultText(plan.getStartPlace(), "출발지"))
+                    .append(hasText(plan.getStartAddress()) ? " · " + plan.getStartAddress() : "")
+                    .append(hasText(plan.getDepartureTime()) ? " · " + plan.getDepartureTime() : "")
+                    .append("\n");
+        }
+        if (hasText(plan.getEndPlace()) || hasText(plan.getEndAddress())) {
+            markdown.append("- 도착: ").append(defaultText(plan.getEndPlace(), "최종 목적지"))
+                    .append(hasText(plan.getEndAddress()) ? " · " + plan.getEndAddress() : "")
+                    .append(hasText(plan.getArrivalTime()) ? " · " + plan.getArrivalTime() : "")
+                    .append("\n");
+        }
+        if (hasText(plan.getEstimatedBudget())) {
+            markdown.append("- 예상 예산: ").append(plan.getEstimatedBudget()).append("\n");
+        }
         markdown.append("- 취향: ").append(plan.getStyles()).append("\n\n");
 
         int currentDay = -1;
@@ -95,5 +124,13 @@ public record TravelPlanResponse(
             markdown.append("- 메모: ").append(item.getNote()).append("\n\n");
         }
         return markdown.toString().trim();
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private static String defaultText(String value, String fallback) {
+        return hasText(value) ? value : fallback;
     }
 }
