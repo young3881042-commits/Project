@@ -1874,119 +1874,174 @@ function currentPath() {
   return `${path}${window.location.search || ''}`;
 }
 
-function SpaceHomePage({ navigate }) {
-  const [accessMode, setAccessMode] = useState('guest');
-  const [memberFlow, setMemberFlow] = useState('login');
-  const [memberId, setMemberId] = useState('');
-  const [memberPassword, setMemberPassword] = useState('');
-  const [memberLoading, setMemberLoading] = useState(false);
-  const [memberError, setMemberError] = useState('');
-  const [memberSession, setMemberSession] = useState(null);
+const PROJECT_BOARD_TABS = ['회사 작업', '내 작업', '현재 스프린트', '타임라인'];
 
-  useEffect(() => {
-    document.title = 'Universe';
-  }, []);
+const PROJECT_BOARD_SIDEBAR = [
+  {
+    title: '워크스페이스',
+    items: ['프로젝트', '팀 문서', '로드맵', '회의록']
+  },
+  {
+    title: '즐겨찾기',
+    items: ['제품 출시', '디자인 리뷰', '주간 목표']
+  }
+];
 
-  const submitMember = async (event) => {
-    event.preventDefault();
-    if (memberLoading) return;
-    const username = memberId.trim();
-    if (!username || !memberPassword.trim()) {
-      setMemberError('아이디와 비밀번호를 입력하세요.');
-      return;
-    }
-    setMemberLoading(true);
-    setMemberError('');
-    try {
-      const session = await requestJson(memberFlow === 'signup' ? '/api/auth/signup' : '/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password: memberPassword })
-      });
-      localStorage.setItem(AUTH_KEY, JSON.stringify(session));
-      setMemberSession(session);
-      setMemberPassword('');
-    } catch (error) {
-      setMemberError(error.message);
-    } finally {
-      setMemberLoading(false);
-    }
-  };
+const PROJECT_BOARD_COLUMNS = [
+  {
+    id: 'todo',
+    title: '작업 예정',
+    icon: '○',
+    color: '#f59e0b',
+    tasks: ['온보딩 플로우 정리', '랜딩 페이지 문구 초안', '고객 인터뷰 질문 작성']
+  },
+  {
+    id: 'progress',
+    title: '진행 중',
+    icon: '◐',
+    color: '#3b82f6',
+    tasks: ['대시보드 레이아웃 개선', 'API 응답 상태 정리', '스프린트 우선순위 조정']
+  },
+  {
+    id: 'review',
+    title: '검토 중',
+    icon: '◇',
+    color: '#a855f7',
+    tasks: ['권한 설정 QA', '릴리즈 노트 점검']
+  },
+  {
+    id: 'done',
+    title: '완료',
+    icon: '✓',
+    color: '#22c55e',
+    tasks: ['팀 캘린더 연결', '문서 템플릿 정리', '프로젝트 보드 샘플 구성']
+  }
+];
 
-  const logoutMember = () => {
-    localStorage.removeItem(AUTH_KEY);
-    setMemberSession(null);
-    setMemberPassword('');
+function BoardIcon({ type }) {
+  const paths = {
+    share: (
+      <>
+        <path d="M7 12l10-7" />
+        <path d="M7 12l10 7" />
+        <circle cx="5" cy="12" r="2.4" />
+        <circle cx="18" cy="5" r="2.4" />
+        <circle cx="18" cy="19" r="2.4" />
+      </>
+    ),
+    comments: (
+      <>
+        <path d="M5 6.5h14v9H9l-4 3v-12z" />
+        <path d="M8.5 10h7" />
+        <path d="M8.5 13h4.5" />
+      </>
+    ),
+    star: (
+      <path d="M12 4.5l2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7-3.4-3.3 4.7-.7L12 4.5z" />
+    ),
+    bell: (
+      <>
+        <path d="M7 10.8a5 5 0 0110 0c0 3 1.2 4.2 2 5.2H5c.8-1 2-2.2 2-5.2z" />
+        <path d="M10 18.3a2.2 2.2 0 004 0" />
+      </>
+    )
   };
 
   return (
-    <main className="spaceHome">
-      <section className="spaceHero">
-        <div className="spaceHeroCopy">
-          <span className="spaceEyebrow">UNIVERSE</span>
-          <h1>Personal Universe</h1>
-          <strong className="spaceHeroLead">나만의 서비스 공간</strong>
-          <p>작업, 여행, 일정을 하나의 개인 서비스 공간으로 연결합니다.</p>
-          <section className="spaceAuthCard" aria-label="access mode">
-            <div className="spaceAuthSwitch">
-              <button type="button" className={accessMode === 'guest' ? 'active' : ''} onClick={() => setAccessMode('guest')}>
-                Guest
-              </button>
-              <button type="button" className={accessMode === 'member' ? 'active' : ''} onClick={() => setAccessMode('member')}>
-                Member
-              </button>
-            </div>
-            {accessMode === 'guest' ? (
-              <div className="spaceAuthBody">
-                <span>Guest mode</span>
-                <p>샘플 서비스 공간을 둘러보세요.</p>
-              </div>
-            ) : (
-              <div className="spaceAuthBody">
-                {memberSession?.username ? (
-                  <>
-                    <span>Member mode</span>
-                    <p>{memberSession.username} 계정으로 연결되었습니다.</p>
-                    <button type="button" className="spaceSignupLink" onClick={logoutMember}>로그아웃</button>
-                  </>
-                ) : (
-                  <form className="spaceMemberForm" onSubmit={submitMember}>
-                    <div className="spaceAuthTitle">
-                      <span>Member mode</span>
-                    </div>
-                    <label>
-                      <span>이메일/아이디</span>
-                      <input value={memberId} onChange={(event) => setMemberId(event.target.value)} placeholder="my-id" autoComplete="username" />
-                    </label>
-                    <label>
-                      <span>비밀번호</span>
-                      <input type="password" value={memberPassword} onChange={(event) => setMemberPassword(event.target.value)} placeholder="password" autoComplete={memberFlow === 'signup' ? 'new-password' : 'current-password'} />
-                    </label>
-                    <button type="submit" className="spaceAuthSubmit" disabled={memberLoading}>
-                      {memberLoading ? '처리 중...' : memberFlow === 'signup' ? '회원가입' : 'Login'}
-                    </button>
-                    {memberError ? <p className="spaceAuthError">{memberError}</p> : null}
-                    <button
-                      type="button"
-                      className="spaceSignupLink"
-                      onClick={() => {
-                        setMemberFlow((current) => (current === 'signup' ? 'login' : 'signup'));
-                        setMemberError('');
-                      }}
-                    >
-                      {memberFlow === 'signup' ? '로그인으로 돌아가기' : '회원가입'}
-                    </button>
-                  </form>
-                )}
-              </div>
-            )}
-          </section>
-          <div className="spaceHeroActions">
-            <button type="button" onClick={() => navigate('/scheduler')}>Scheduler</button>
-            <button type="button" onClick={() => navigate('/notes')}>AI Note</button>
-            <button type="button" onClick={() => navigate('/destinations')}>AI Trip</button>
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      {paths[type]}
+    </svg>
+  );
+}
+
+function SpaceHomePage({ navigate }) {
+  useEffect(() => {
+    document.title = 'OpenAI HQ';
+  }, []);
+
+  return (
+    <main className="projectBoardShell">
+      <aside className="projectSidebar" aria-label="workspace navigation">
+        <div className="projectWorkspaceMark">
+          <span>O</span>
+          <div>
+            <strong>OpenAI HQ</strong>
+            <small>Project OS</small>
           </div>
         </div>
+        <button type="button" className="projectSidebarSearch">검색 또는 바로가기</button>
+        {PROJECT_BOARD_SIDEBAR.map((group) => (
+          <section className="projectSidebarGroup" key={group.title}>
+            <span>{group.title}</span>
+            {group.items.map((item) => (
+              <button type="button" key={item}>
+                <em aria-hidden="true" />
+                {item}
+              </button>
+            ))}
+          </section>
+        ))}
+        <div className="projectSidebarFooter">
+          <button type="button" onClick={() => navigate('/scheduler')}>Scheduler</button>
+          <button type="button" onClick={() => navigate('/notes')}>AI Note</button>
+        </div>
+      </aside>
+
+      <section className="projectBoardPage">
+        <header className="projectTopbar">
+          <div>
+            <span className="projectBreadcrumb">Workspace / Product</span>
+            <h1>OpenAI HQ</h1>
+          </div>
+          <div className="projectTopActions" aria-label="workspace actions">
+            <button type="button" title="공유"><BoardIcon type="share" /></button>
+            <button type="button" title="댓글"><BoardIcon type="comments" /></button>
+            <button type="button" title="즐겨찾기"><BoardIcon type="star" /></button>
+          </div>
+        </header>
+
+        <section className="projectBoardHero">
+          <div>
+            <div className="projectViewTabs" aria-label="board views">
+              {PROJECT_BOARD_TABS.map((tab, index) => (
+                <button type="button" className={index === 0 ? 'active' : ''} key={tab}>
+                  {tab}
+                </button>
+              ))}
+            </div>
+            <h2>프로젝트 보드</h2>
+          </div>
+          <button type="button" className="projectNewItemButton">+ 새 항목</button>
+        </section>
+
+        <aside className="projectFloatingNote" aria-label="recent comment">
+          <span><BoardIcon type="bell" /></span>
+          <div>
+            <strong>이은지</strong>
+            <p>다음 스프린트 목표 정리</p>
+          </div>
+        </aside>
+
+        <section className="projectKanban" aria-label="kanban board">
+          {PROJECT_BOARD_COLUMNS.map((column) => (
+            <article className="projectKanbanColumn" key={column.id}>
+              <header>
+                <div>
+                  <span className="projectStatusIcon" style={{ '--status-color': column.color }}>{column.icon}</span>
+                  <strong>{column.title}</strong>
+                </div>
+                <small>{column.tasks.length}</small>
+              </header>
+              <div className="projectTaskList">
+                {column.tasks.map((task) => (
+                  <button type="button" className="projectTaskCard" key={task}>
+                    {task}
+                  </button>
+                ))}
+              </div>
+            </article>
+          ))}
+        </section>
       </section>
     </main>
   );
