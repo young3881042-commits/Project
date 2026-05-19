@@ -88,7 +88,7 @@
 
 .ltDailyRouteBuilder fieldset {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   align-items: end;
   margin: 0;
@@ -14894,7 +14894,7 @@ body:has(.ltShell) {
 
 .schedulerStats {
   display: grid;
-  grid-template-columns: repeat(3, 104px);
+  grid-template-columns: repeat(4, 92px);
   gap: 8px;
 }
 
@@ -14911,6 +14911,12 @@ body:has(.ltShell) {
 .schedulerStats article span {
   color: #9b9a97;
   font-size: 0.74rem;
+}
+
+.schedulerStats article small {
+  color: #9b9a97;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .schedulerStats article strong {
@@ -15552,7 +15558,7 @@ body:has(.ltShell) {
   }
 
   .schedulerStats {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -15837,6 +15843,10 @@ body:has(.ltShell) {
 
 .spaceHeroActions button {
   min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 0 18px;
   border: 1px solid #dbe3ee;
   border-radius: 14px;
@@ -15844,6 +15854,19 @@ body:has(.ltShell) {
   color: #334155;
   font-weight: 800;
   backdrop-filter: blur(16px);
+}
+
+.spaceHeroActions .memoNavIcon {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  background: rgba(15, 23, 42, 0.06);
+  color: currentColor;
+}
+
+.spaceHeroActions .memoNavIcon svg {
+  width: 17px;
+  height: 17px;
 }
 
 .spaceHeroActions button:first-child {
@@ -16451,8 +16474,13 @@ body:has(.ltShell) {
 }
 
 .memoBoardCard {
+  position: absolute;
   display: grid;
   gap: 10px;
+  align-content: center;
+  resize: both;
+  overflow: auto;
+  cursor: pointer;
 }
 
 .memoBoardCard.active {
@@ -16462,6 +16490,56 @@ body:has(.ltShell) {
 
 .memoBoardCard.dragging {
   opacity: 0.58;
+  cursor: grabbing;
+  user-select: none;
+}
+
+.memoMoveHandle {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 26px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dbe3ee;
+  border-radius: 7px;
+  background: rgba(248, 250, 252, 0.96);
+  color: #64748b;
+  padding: 0;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.memoMoveHandle:active {
+  cursor: grabbing;
+}
+
+.memoCardName {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #1f2937;
+  font: inherit;
+  font-weight: 760;
+  line-height: 1.35;
+  outline: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.memoBoardCard .memoCardName {
+  padding-left: 24px;
+}
+
+.memoCardName:focus {
+  color: #047857;
 }
 
 .memoCardTop {
@@ -18410,11 +18488,9 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
 }
 
 .memoFreeformBoard {
+  position: relative;
   min-height: 520px;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  gap: 12px;
+  display: block;
   margin-top: 28px;
   padding: 14px;
   border: 1px solid var(--memo-line);
@@ -18423,6 +18499,7 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
 }
 
 .memoBoardCard {
+  position: absolute !important;
   display: grid !important;
   gap: 9px !important;
   min-height: 48px !important;
@@ -18475,6 +18552,7 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
 .memoCardName {
   width: 100%;
   min-height: 30px;
+  min-width: 0;
   border: 0;
   border-radius: 6px;
   background: transparent;
@@ -18483,6 +18561,12 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   font-size: 0.98rem;
   font-weight: 900;
   line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.memoBoardCard .memoCardName {
+  padding-left: 24px;
 }
 
 .memoCardName:focus {
@@ -18511,6 +18595,16 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
 }
 
+.memoEditorPanel {
+  width: min(1180px, 100%);
+  gap: 12px;
+  padding: 18px;
+  border-color: #fed7aa;
+  background:
+    radial-gradient(circle at 18px 18px, rgba(251, 146, 60, 0.14) 0 7px, transparent 8px),
+    linear-gradient(180deg, #fffdf8 0%, #fff7ed 100%);
+}
+
 .analysisEditorPanel.compact {
   width: min(520px, 100%);
   min-height: auto;
@@ -18522,6 +18616,8 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+  padding: 4px 2px 10px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .analysisEditorHeader span,
@@ -18536,13 +18632,18 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
 .analysisEditorHeader h1 {
   margin-top: 4px;
   color: #111827;
-  font-size: clamp(1.65rem, 4vw, 2.6rem);
+  font-size: clamp(1.45rem, 3.2vw, 2.2rem);
   line-height: 1.12;
 }
 
 .analysisEditorHeader p {
   margin-top: 6px;
+  max-width: min(72vw, 680px);
+  overflow: hidden;
   color: #64748b;
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .analysisEditorHeader > div:last-child {
@@ -18555,6 +18656,10 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
 .analysisEditorHeader button,
 .analysisPathBar button {
   min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #fff;
@@ -18564,11 +18669,69 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   font-weight: 850;
 }
 
-.analysisEditorHeader button:last-child,
+.analysisEditorHeader button .memoNavIcon {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  background: #eff6ff;
+  color: currentColor;
+}
+
+.analysisEditorHeader button .memoNavIcon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.analysisEditorHeader .analysisPrimaryAction,
 .analysisPathBar button {
   border-color: #2563eb;
   background: #2563eb;
   color: #fff;
+}
+
+.memoEditorPanel .analysisEditorHeader {
+  border-bottom-color: #fed7aa;
+}
+
+.memoEditorPanel .analysisEditorHeader h1 {
+  color: #7c2d12;
+}
+
+.memoEditorPanel .analysisEditorHeader p {
+  color: #9a3412;
+}
+
+.memoEditorStatusBar {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  background: rgba(255, 247, 237, 0.86);
+  color: #9a3412;
+}
+
+.memoEditorStatusBar strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #7c2d12;
+  font-size: 0.95rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memoEditorStatusBar span {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #fff;
+  color: #c2410c;
+  padding: 6px 10px;
+  font-size: 0.76rem;
+  font-weight: 900;
 }
 
 .analysisPathBar {
@@ -18580,6 +18743,11 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #f9fafb;
+}
+
+.memoEditorPanel .analysisPathBar {
+  border-color: #dbeafe;
+  background: #eff6ff;
 }
 
 .analysisPathBar label {
@@ -18614,6 +18782,18 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
 }
 
+.analysisEditorGrid.autoPreview.showPreview {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.analysisEditorGrid.autoPreview.showPreview .analysisEditSurface {
+  display: none;
+}
+
+.analysisEditorGrid.autoPreview.showPreview .analysisMarkdownPreview {
+  min-height: 60vh;
+}
+
 .analysisEditSurface,
 .analysisMarkdownPreview {
   min-width: 0;
@@ -18642,17 +18822,29 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   font-size: 0.95rem;
 }
 
+.analysisPaneHeader button {
+  min-height: 30px;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #9a3412;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
 .analysisCodeWrap {
-  min-height: 560px;
+  min-height: 520px;
 }
 
 .analysisCodeWrap .cm-editor,
 .analysisCodeWrap .cm-scroller {
-  min-height: 560px;
+  min-height: 520px;
 }
 
 .analysisMarkdownBody {
-  min-height: 560px;
+  min-height: 520px;
   padding: 22px;
   overflow: auto;
   color: #1f2937;
@@ -18699,6 +18891,95 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   align-items: center;
   gap: 8px;
   margin-bottom: 10px;
+}
+
+@media (max-width: 760px) {
+  .analysisEditorShell {
+    min-height: 100svh;
+    padding: 0;
+    background: #fff;
+  }
+
+  .analysisEditorPanel,
+  .memoEditorPanel {
+    width: 100%;
+    min-height: 100svh;
+    gap: 10px;
+    padding: 12px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .analysisEditorHeader {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin: -12px -12px 0;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(14px);
+  }
+
+  .analysisEditorHeader h1 {
+    font-size: 1.35rem;
+  }
+
+  .analysisEditorHeader p {
+    max-width: 100%;
+    font-size: 0.78rem;
+  }
+
+  .analysisEditorHeader > div:last-child {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    justify-content: stretch;
+  }
+
+  .analysisEditorHeader button {
+    min-width: 0;
+    min-height: 42px;
+  }
+
+  .analysisPathBar {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+
+  .analysisPathBar input {
+    min-height: 42px;
+    font-size: 16px;
+  }
+
+  .analysisPathBar button {
+    min-height: 42px;
+  }
+
+  .analysisEditorGrid,
+  .analysisEditorGrid.markdown {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .analysisEditSurface,
+  .analysisMarkdownPreview {
+    border-radius: 8px;
+  }
+
+  .analysisCodeWrap,
+  .analysisCodeWrap .cm-editor,
+  .analysisCodeWrap .cm-scroller,
+  .analysisMarkdownBody {
+    min-height: 52vh;
+  }
+
+  .analysisMarkdownBody {
+    padding: 14px;
+  }
 }
 
 .memoContextMenu {
@@ -18771,6 +19052,13 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   top: calc(100% + 6px);
 }
 
+.ltAddressSearching {
+  padding: 10px 12px;
+  color: var(--lt-muted, #64748b);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
 .ltBudgetPreview,
 .ltRouteFacts article {
   display: grid;
@@ -18822,5 +19110,506 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   .ltAddressGrid,
   .ltRouteFacts {
     grid-template-columns: 1fr;
+  }
+}
+
+/* LocalTrip mobile usability pass */
+@media (max-width: 560px) {
+  body:has(.ltShell) {
+    overscroll-behavior-x: none;
+  }
+
+  .ltShell .ltNavInner {
+    width: 100% !important;
+    padding: 8px 10px 10px !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+  }
+
+  .ltShell .ltBrand {
+    gap: 8px !important;
+  }
+
+  .ltShell .ltBrand strong {
+    width: 34px !important;
+    height: 34px !important;
+    flex: 0 0 34px !important;
+  }
+
+  .ltShell .ltBrand span {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .ltShell .ltNavUserCard {
+    max-width: 128px !important;
+    min-height: 34px !important;
+    grid-template-columns: 26px minmax(0, 1fr) !important;
+    padding: 4px 6px !important;
+  }
+
+  .ltShell .ltNavUserCard > span {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .ltShell .ltServiceSwitch {
+    padding: 7px !important;
+  }
+
+  .ltShell .ltServiceSwitchTitle {
+    display: none !important;
+  }
+
+  .ltShell .ltServiceSwitchLinks a,
+  .ltShell .ltServiceSwitch a {
+    min-height: 34px !important;
+    padding: 0 12px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .ltShell .ltNavLinks {
+    width: min(calc(100vw - 14px), 520px) !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+    padding: 6px !important;
+    border-radius: 18px !important;
+  }
+
+  .ltShell .ltNavLinks a {
+    min-height: 48px !important;
+    padding: 5px 2px !important;
+    border-radius: 13px !important;
+    font-size: 0.66rem !important;
+  }
+
+  .ltShell .ltTabIcon,
+  .ltShell .ltTabIcon svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .ltShell .ltPage {
+    width: calc(100% - 20px) !important;
+    padding-top: 14px !important;
+    padding-bottom: calc(92px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .ltPageTitle {
+    padding: 0 !important;
+  }
+
+  .ltPageTitle h1,
+  .ltHeroCopy h1,
+  .ltPartnerHero h1,
+  .ltMyHeroText h1 {
+    font-size: clamp(1.7rem, 8vw, 2.15rem) !important;
+    line-height: 1.12 !important;
+  }
+
+  .ltPageTitle p,
+  .ltHeroCopy p,
+  .ltPartnerHero p {
+    font-size: 0.94rem !important;
+    line-height: 1.55 !important;
+  }
+
+  .ltHeroSearch,
+  .ltPlannerForm,
+  .ltPlannerPreview,
+  .ltSelectedSummary,
+  .ltGeneratedPreview,
+  .ltDestinationCard,
+  .ltPlanCard,
+  .ltDayCard,
+  .ltPlanHero,
+  .ltMyHero,
+  .ltMyPanel,
+  .ltFilterFold,
+  .ltRecentPlans,
+  .ltServiceSection,
+  .ltRequestFlow,
+  .ltRegionLinks,
+  .ltPartnerCta,
+  .ltPartnerPanel {
+    border-radius: 8px !important;
+  }
+
+  .ltHeroSearch,
+  .ltPlannerForm,
+  .ltPlannerPreview,
+  .ltSelectedSummary,
+  .ltGeneratedPreview,
+  .ltFilterBar,
+  .ltPlanHero,
+  .ltMyHero,
+  .ltPartnerPanel,
+  .ltServiceSection,
+  .ltRequestFlow,
+  .ltRegionLinks,
+  .ltPartnerCta {
+    padding: 14px !important;
+  }
+
+  .ltHeroSearchInput,
+  .ltAutocompleteContainer input,
+  .ltPlannerForm input,
+  .ltPlannerForm select,
+  .ltPlannerForm textarea,
+  .ltFilterBar input {
+    min-height: 46px !important;
+    font-size: 16px !important;
+  }
+
+  .ltHeroSearchInput {
+    gap: 8px !important;
+  }
+
+  .ltHeroSearchInput input {
+    min-width: 0 !important;
+  }
+
+  .ltHeroSearchInput button,
+  .ltPrimaryButton,
+  .ltSecondaryButton,
+  .ltGhostButton,
+  .ltStepActions button,
+  .ltPlannerForm button[type="submit"] {
+    min-height: 44px !important;
+  }
+
+  .ltStepBar {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    overflow: visible !important;
+  }
+
+  .ltStepBar button {
+    min-width: 0 !important;
+    min-height: 42px !important;
+    padding: 7px 5px !important;
+    white-space: normal !important;
+    line-height: 1.15 !important;
+    text-align: center !important;
+  }
+
+  .ltDailyRouteBuilder fieldset,
+  .ltAddressGrid,
+  .ltFormGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ltOptionGroup div,
+  .ltInterestGroup div,
+  .ltSegmented,
+  .ltSelectedTagRow,
+  .ltHeroFilters,
+  .ltPurposeChips {
+    display: flex !important;
+    gap: 7px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 2px !important;
+    scrollbar-width: none !important;
+  }
+
+  .ltOptionGroup div::-webkit-scrollbar,
+  .ltInterestGroup div::-webkit-scrollbar,
+  .ltSegmented::-webkit-scrollbar,
+  .ltSelectedTagRow::-webkit-scrollbar,
+  .ltHeroFilters::-webkit-scrollbar,
+  .ltPurposeChips::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .ltOptionGroup button,
+  .ltInterestGroup button,
+  .ltSegmented button,
+  .ltSelectedTag,
+  .ltHeroFilters button,
+  .ltPurposeChips button {
+    flex: 0 0 auto !important;
+    max-width: min(76vw, 260px) !important;
+    min-height: 38px !important;
+    white-space: nowrap !important;
+  }
+
+  .ltDestinationGrid,
+  .ltPlansGrid,
+  .ltMiniDestList,
+  .ltDayCards,
+  .ltDaySlots {
+    gap: 12px !important;
+  }
+
+  .ltDestinationPhoto {
+    aspect-ratio: 16 / 10 !important;
+  }
+
+  .ltDestinationBody,
+  .ltPlanCard {
+    padding: 14px !important;
+  }
+
+  .ltCardTopline,
+  .ltPlanBadges,
+  .ltPlanMeta,
+  .ltTagRow,
+  .ltDaySlotMeta {
+    gap: 6px !important;
+  }
+
+  .ltPlanMeta span,
+  .ltTagRow span,
+  .ltDaySlotMeta span,
+  .ltSlotTitleRow > span {
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+    white-space: normal !important;
+  }
+
+  .ltDayCard {
+    padding: 12px !important;
+  }
+
+  .ltDayCardHeader {
+    grid-template-columns: 58px minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .ltDayCover {
+    width: 58px !important;
+    height: 58px !important;
+    border-radius: 8px !important;
+  }
+
+  .ltDayRouteCheck {
+    grid-template-columns: 1fr !important;
+    gap: 7px !important;
+  }
+
+  .ltDayRouteCheck label {
+    grid-template-columns: 20px 38px minmax(0, 1fr) auto !important;
+    min-height: 46px !important;
+    padding: 8px 10px !important;
+  }
+
+  .ltDayRouteCheck strong {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .ltDaySlot {
+    padding: 11px !important;
+    border-radius: 8px !important;
+  }
+
+  .ltDayTimeline::before {
+    display: none !important;
+  }
+
+  .ltTimelineRail {
+    grid-template-columns: minmax(0, 1fr) 30px !important;
+  }
+
+  .ltTimelineRail time span {
+    min-height: 32px !important;
+    padding: 6px 9px !important;
+    font-size: 0.76rem !important;
+  }
+
+  .ltTimelineRail i {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .ltRecommendedMenu {
+    display: grid !important;
+    gap: 4px !important;
+    padding: 9px 10px !important;
+  }
+
+  .ltPlanTimelinePreview {
+    padding: 10px !important;
+  }
+
+  .ltPlanTimelinePreview div {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .ltStickyCta {
+    position: sticky !important;
+    bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+    z-index: 260 !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .ltShell .ltNavLinks {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .ltShell .ltNavLinks a {
+    font-size: 0.6rem !important;
+  }
+
+  .ltShell .ltNavUserCard {
+    max-width: 116px !important;
+  }
+
+  .ltShell .ltPage {
+    width: calc(100% - 16px) !important;
+  }
+
+  .ltDayRouteCheck label {
+    grid-template-columns: 20px 34px minmax(0, 1fr) !important;
+  }
+
+  .ltDayRouteCheck time {
+    display: none !important;
+  }
+}
+
+/* AI memo mobile repair */
+@media (max-width: 560px) {
+  body:has(.aiNoteShell) {
+    overflow-x: hidden !important;
+  }
+
+  .aiNoteShell {
+    display: block !important;
+    min-width: 0 !important;
+  }
+
+  .aiNoteSidebar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 40 !important;
+    max-height: 42vh !important;
+    padding: 10px !important;
+    overflow-y: auto !important;
+    border-bottom: 1px solid var(--memo-line) !important;
+  }
+
+  .aiNoteSideGroup,
+  .memoBoardNav {
+    padding: 10px !important;
+  }
+
+  .memoNavPrimary {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .memoNavPrimary > span {
+    grid-column: 1 / -1 !important;
+  }
+
+  .aiNoteSideGroup a,
+  .aiNoteSideGroup button,
+  .memoBoardNavSection > button,
+  .memoBoardNavSection div button {
+    min-width: 0 !important;
+    min-height: 42px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .memoBoardNavSection div {
+    max-height: 128px !important;
+    overflow-y: auto !important;
+  }
+
+  .aiNotePage {
+    width: calc(100% - 16px) !important;
+    padding: 12px 0 28px !important;
+  }
+
+  .aiNoteBoardPanel {
+    padding: 12px !important;
+    overflow: hidden !important;
+  }
+
+  .aiNoteBoardPanel .projectTopbar,
+  .projectBoardHero {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .projectTopActions,
+  .projectViewTabs {
+    width: 100% !important;
+    display: flex !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none !important;
+  }
+
+  .projectTopActions::-webkit-scrollbar,
+  .projectViewTabs::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .projectViewTabs button,
+  .projectNewItemButton {
+    min-height: 42px !important;
+    flex: 0 0 auto !important;
+  }
+
+  .projectFloatingNote {
+    position: static !important;
+    width: 100% !important;
+    margin: 10px 0 !important;
+  }
+
+  .projectKanban {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .aiNoteBoardPanel .projectKanbanColumn {
+    min-height: 160px !important;
+  }
+
+  .memoFreeformBoard {
+    min-height: auto !important;
+    display: grid !important;
+    gap: 10px !important;
+    margin-top: 14px !important;
+    padding: 10px !important;
+    overflow: visible !important;
+  }
+
+  .memoBoardCard {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 56px !important;
+    padding: 12px !important;
+    resize: none !important;
+    overflow: hidden !important;
+  }
+
+  .memoMoveHandle {
+    display: none !important;
+  }
+
+  .memoBoardCard .memoCardName {
+    padding-left: 0 !important;
+  }
+
+  .memoCardName {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    text-overflow: clip !important;
   }
 }

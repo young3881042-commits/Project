@@ -61,10 +61,11 @@ export function addSchedulerItem(item) {
     source: item?.source || '',
     done: Boolean(item?.done)
   };
-  const current = readSchedulerItems();
+  const storageKey = schedulerStorageKey();
+  const current = readSchedulerItems(storageKey);
   const next = [...current, nextItem];
-  localStorage.setItem(SCHEDULER_KEY, JSON.stringify(next));
-  window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { item: nextItem, items: next } }));
+  localStorage.setItem(storageKey, JSON.stringify(next));
+  window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { item: nextItem, items: next, storageKey } }));
   return nextItem;
 }
 
@@ -141,9 +142,15 @@ function readStoredAuth() {
   }
 }
 
-function readSchedulerItems() {
+function schedulerStorageKey(input = readStoredAuth()) {
+  const username = typeof input === 'string' ? input : input?.username;
+  const normalized = String(username || 'guestuser').trim().toLowerCase().replace(/[^a-z0-9._-]/g, '_') || 'guestuser';
+  return `${SCHEDULER_KEY}:${normalized}`;
+}
+
+function readSchedulerItems(input) {
   try {
-    const raw = localStorage.getItem(SCHEDULER_KEY);
+    const raw = localStorage.getItem(input?.startsWith?.(SCHEDULER_KEY) ? input : schedulerStorageKey(input));
     if (raw === null) {
       return DEFAULT_SCHEDULER_ITEMS;
     }
@@ -315,6 +322,8 @@ function normalizeNoteBlock(block) {
   const sector = ['project', 'memo'].includes(block?.sector) ? block.sector : 'project';
   const boardId = typeof block?.boardId === 'string' && block.boardId ? block.boardId : sector;
   const projectBlock = boardId === 'project';
+  const fallbackX = 24 + (Math.abs(String(block?.id || '').split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % 180);
+  const fallbackY = 24 + (Math.abs(String(block?.id || '').split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % 220);
   return {
     id: block?.id || `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     type: block?.type === 'file' ? 'file' : 'text',
@@ -325,7 +334,9 @@ function normalizeNoteBlock(block) {
     parentId: typeof block?.parentId === 'string' ? block.parentId : '',
     filePath: typeof block?.filePath === 'string' ? block.filePath : '',
     width: projectBlock ? Math.max(160, Math.min(520, Number(block?.width) || 220)) : Math.max(260, Math.min(920, Number(block?.width) || 760)),
-    height: projectBlock ? Math.max(96, Math.min(360, Number(block?.height) || 120)) : Math.max(48, Math.min(180, Number(block?.height) || 58))
+    height: projectBlock ? Math.max(96, Math.min(360, Number(block?.height) || 120)) : Math.max(48, Math.min(180, Number(block?.height) || 58)),
+    x: projectBlock ? 0 : Math.max(0, Math.min(1600, Number(block?.x) || fallbackX)),
+    y: projectBlock ? 0 : Math.max(0, Math.min(1600, Number(block?.y) || fallbackY))
   };
 }
 
@@ -378,7 +389,8 @@ function syncNoteSchedules(blocks) {
     .map(parseNoteScheduleBlock)
     .filter(Boolean);
   const scheduleIds = new Set(schedules.map((item) => item.id));
-  const current = readSchedulerItems();
+  const storageKey = schedulerStorageKey();
+  const current = readSchedulerItems(storageKey);
   const withoutStaleNoteItems = current.filter((item) => !['AI Note', '메모'].includes(item.source) || scheduleIds.has(item.id));
   const merged = [
     ...withoutStaleNoteItems.filter((item) => !['AI Note', '메모'].includes(item.source)),
@@ -387,8 +399,8 @@ function syncNoteSchedules(blocks) {
       return { ...schedule, done: Boolean(existing?.done), doneOverrides: existing?.doneOverrides || {} };
     })
   ];
-  localStorage.setItem(SCHEDULER_KEY, JSON.stringify(merged));
-  window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { items: merged } }));
+  localStorage.setItem(storageKey, JSON.stringify(merged));
+  window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { items: merged, storageKey } }));
   return schedules.length;
 }
 
@@ -1993,6 +2005,7 @@ function AnalysisFileEditorPage({ navigate }) {
   const [error, setError] = useState('');
   const [saveStatus, setSaveStatus] = useState('');
   const [loadedFile, setLoadedFile] = useState('');
+  const [editorView, setEditorView] = useState('edit');
   const isMarkdownFile = ['md', 'markdown'].includes(extensionForPath(selectedFile));
 
   useEffect(() => {
@@ -2090,7 +2103,7 @@ function AnalysisFileEditorPage({ navigate }) {
         headers: { 'Content-Type': 'application/json', ...authHeaders(auth.token) },
         body: JSON.stringify({ path: selectedFile.trim(), content })
       });
-      setSaveStatus('저장됨');
+      setSaveStatus(autoSave ? '자동 저장됨' : '저장됨');
       setLoadedFile(selectedFile.trim());
     } catch (saveError) {
       setError(saveError.message);
@@ -2107,6 +2120,15 @@ function AnalysisFileEditorPage({ navigate }) {
     }, 650);
     return () => window.clearTimeout(timer);
   }, [autoSave, auth?.token, selectedFile, loadedFile, content, loadingFile]);
+
+  useEffect(() => {
+    if (!isMarkdownFile || loadingFile) {
+      setEditorView('edit');
+      return undefined;
+    }
+    const timer = window.setTimeout(() => setEditorView('preview'), 900);
+    return () => window.clearTimeout(timer);
+  }, [content, isMarkdownFile, loadingFile]);
 
   if (!auth?.token) {
     if (authLoading && !authError) {
@@ -2137,41 +2159,40 @@ function AnalysisFileEditorPage({ navigate }) {
 
   return (
     <main className="analysisEditorShell">
-      <section className="analysisEditorPanel">
+      <section className="analysisEditorPanel memoEditorPanel">
         <header className="analysisEditorHeader">
           <div>
-            <span>FILE EDITOR</span>
+            <span>AI MEMO FILE</span>
             <h1>{labelForPath(selectedFile)}</h1>
-            <p>{selectedFile}</p>
+            <p>{autoSave ? '자동 저장으로 편집됩니다.' : '파일 내용을 편집합니다.'}</p>
           </div>
           <div>
-            <button type="button" onClick={() => navigate('/notes')}>AI 메모 보드</button>
+            <button type="button" onClick={() => navigate('/notes')}><MemoNavIcon type="board" />메모 보드</button>
             {auth.role === 'ADMIN' ? <button type="button" onClick={() => navigate('/analysisadmin')}>관리자</button> : null}
-            <button type="button" onClick={saveFile}>{autoSave ? '지금 저장' : '저장'}</button>
+            {!autoSave ? <button type="button" className="analysisPrimaryAction" onClick={saveFile}><MemoNavIcon type="file" />저장</button> : null}
           </div>
         </header>
-        <form className="analysisPathBar" onSubmit={(event) => { event.preventDefault(); loadFile(selectedFile).catch((loadError) => setError(loadError.message)); }}>
-          <label>
-            <span>파일 경로</span>
-            <input value={selectedFile} onChange={(event) => setSelectedFile(event.target.value)} />
-          </label>
-          <button type="submit">열기</button>
-        </form>
+        <div className="memoEditorStatusBar">
+          <strong>{labelForPath(selectedFile)}</strong>
+          <span>{autoSave ? saveStatus || '자동 저장 대기 중' : saveStatus || '편집 중'}</span>
+        </div>
         {loadingFile ? <p className="previewState">파일을 불러오는 중입니다.</p> : null}
         {error ? <p className="previewError">{error}</p> : null}
-        {saveStatus ? <p className="analysisSaveStatus">{saveStatus}</p> : null}
-        <div className={`analysisEditorGrid ${isMarkdownFile ? 'markdown' : ''}`}>
+        <div className={`analysisEditorGrid ${isMarkdownFile ? 'markdown autoPreview' : ''} ${editorView === 'preview' ? 'showPreview' : 'showEditor'}`}>
           <section className="analysisEditSurface">
             <div className="analysisPaneHeader">
               <strong>작성</strong>
-              <span>Markdown</span>
+              <span>{isMarkdownFile ? '작성 후 미리보기로 자동 전환' : 'Text'}</span>
             </div>
             <div className="analysisCodeWrap">
               <Suspense fallback={<div className="editorLoading">편집기를 불러오는 중입니다.</div>}>
                 <LazyCodeEditor
                   path={selectedFile}
                   value={content}
-                  onChange={(value) => setContent(value)}
+                  onChange={(value) => {
+                    setEditorView('edit');
+                    setContent(value);
+                  }}
                   onSave={saveFile}
                 />
               </Suspense>
@@ -2181,7 +2202,7 @@ function AnalysisFileEditorPage({ navigate }) {
             <section className="analysisMarkdownPreview">
               <div className="analysisPaneHeader">
                 <strong>미리보기</strong>
-                <span>Rendered</span>
+                <button type="button" onClick={() => setEditorView('edit')}>수정</button>
               </div>
               <article className="analysisMarkdownBody">
                 {content.trim() ? markdownPreviewBlocks(content) : <p>Markdown 내용을 작성하면 여기에 적용된 결과가 표시됩니다.</p>}
@@ -2449,9 +2470,9 @@ function SpaceHomePage({ navigate }) {
             )}
           </section>
           <div className="spaceHeroActions">
-            <button type="button" onClick={() => navigate('/scheduler')}>개인 스케줄러</button>
-            <button type="button" onClick={() => navigate('/notes')}>AI 메모 보드</button>
-            <button type="button" onClick={() => navigate('/destinations')}>여행 일정</button>
+            <button type="button" onClick={() => navigate('/scheduler')}><MemoNavIcon type="calendar" />개인 스케줄러</button>
+            <button type="button" onClick={() => navigate('/notes')}><MemoNavIcon type="board" />AI 메모 보드</button>
+            <button type="button" onClick={() => navigate('/destinations')}><MemoNavIcon type="trip" />여행 일정</button>
           </div>
         </div>
       </section>
@@ -2466,6 +2487,10 @@ function AiNotePage({ navigate }) {
   const [syncCount, setSyncCount] = useState(0);
   const [fileStatus, setFileStatus] = useState('');
   const [draggingBlockId, setDraggingBlockId] = useState('');
+  const [movingBlock, setMovingBlock] = useState(null);
+  const freeformBoardRef = useRef(null);
+  const movedBlockRef = useRef(false);
+  const movedBlockResetTimerRef = useRef(null);
   const [contextMenu, setContextMenu] = useState(null);
   const [activeBoardId, setActiveBoardId] = useState('project');
   const session = readStoredAuth();
@@ -2524,7 +2549,9 @@ function AiNotePage({ navigate }) {
       parentId,
       filePath: `memo-files/${boardId}/${nextId}.${extension}`,
       width: boardId === 'project' ? 220 : 760,
-      height: boardId === 'project' ? 120 : 58
+      height: boardId === 'project' ? 120 : 58,
+      x: boardId === 'project' ? 0 : 28 + (blocks.filter((block) => (block.boardId || block.sector) === boardId).length % 3) * 38,
+      y: boardId === 'project' ? 0 : 28 + (blocks.filter((block) => (block.boardId || block.sector) === boardId).length % 6) * 72
     };
     setBlocks((current) => [...current, nextBlock]);
     setActiveId(nextBlock.id);
@@ -2543,7 +2570,9 @@ function AiNotePage({ navigate }) {
       parentId: '',
       filePath: `memo-files/${activeBoardId}/${nextId}.md`,
       width: activeBoardId === 'project' ? 220 : 760,
-      height: activeBoardId === 'project' ? 120 : 58
+      height: activeBoardId === 'project' ? 120 : 58,
+      x: activeBoardId === 'project' ? 0 : 28 + (blocks.filter((block) => (block.boardId || block.sector) === activeBoardId).length % 3) * 38,
+      y: activeBoardId === 'project' ? 0 : 28 + (blocks.filter((block) => (block.boardId || block.sector) === activeBoardId).length % 6) * 72
     };
     setBlocks((current) => [...current, nextBlock]);
     setActiveId(nextBlock.id);
@@ -2562,6 +2591,35 @@ function AiNotePage({ navigate }) {
     setBlocks((current) => current.map((block) => (block.id === id ? { ...block, status, sector: activeBoardId, boardId: activeBoardId, parentId: '' } : block)));
     setActiveId(id);
   };
+
+  useEffect(() => {
+    if (!movingBlock) return undefined;
+    const handlePointerMove = (event) => {
+      const deltaX = event.clientX - movingBlock.startX;
+      const deltaY = event.clientY - movingBlock.startY;
+      if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+        movedBlockRef.current = true;
+      }
+      const maxX = Math.max(0, (movingBlock.boardWidth || 0) - (movingBlock.width || 0));
+      const nextX = Math.max(0, Math.min(maxX || 1600, Math.round(movingBlock.baseX + deltaX)));
+      const nextY = Math.max(0, Math.round(movingBlock.baseY + deltaY));
+      setBlocks((current) => current.map((block) => (block.id === movingBlock.id ? { ...block, x: nextX, y: nextY } : block)));
+    };
+    const handlePointerUp = () => {
+      setMovingBlock(null);
+      setDraggingBlockId('');
+      window.clearTimeout(movedBlockResetTimerRef.current);
+      movedBlockResetTimerRef.current = window.setTimeout(() => {
+        movedBlockRef.current = false;
+      }, 250);
+    };
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp, { once: true });
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [movingBlock]);
 
   const openBlockFile = async (block) => {
     const filePath = noteBlockFilePath(block);
@@ -2622,7 +2680,7 @@ function AiNotePage({ navigate }) {
     <article
       className={`projectTaskCard memoBoardCard ${activeId === block.id ? 'active' : ''} ${draggingBlockId === block.id ? 'dragging' : ''}`}
       key={block.id}
-      style={{ width: `${block.width || 220}px`, height: `${block.height || 120}px` }}
+      style={{ left: `${block.x || 0}px`, top: `${block.y || 0}px`, width: `${block.width || 220}px`, height: `${block.height || 120}px` }}
       onMouseUp={(event) => {
         const width = Math.round(event.currentTarget.offsetWidth);
         const height = Math.round(event.currentTarget.offsetHeight);
@@ -2631,8 +2689,46 @@ function AiNotePage({ navigate }) {
         }
       }}
       onContextMenu={(event) => openBlockContextMenu(event, block)}
-      onClick={() => openBlockFile(block)}
+      onClick={(event) => {
+        if (movedBlockRef.current) {
+          event.preventDefault();
+          event.stopPropagation();
+          movedBlockRef.current = false;
+          window.clearTimeout(movedBlockResetTimerRef.current);
+          return;
+        }
+        openBlockFile(block);
+      }}
     >
+      <button
+        type="button"
+        className="memoMoveHandle"
+        aria-label="블록 이동"
+        title="블록 이동"
+        onClick={(event) => event.stopPropagation()}
+        onPointerDown={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          event.currentTarget.setPointerCapture?.(event.pointerId);
+          const boardRect = freeformBoardRef.current?.getBoundingClientRect();
+          const cardRect = event.currentTarget.closest('.memoBoardCard')?.getBoundingClientRect();
+          window.clearTimeout(movedBlockResetTimerRef.current);
+          movedBlockRef.current = false;
+          setActiveId(block.id);
+          setDraggingBlockId(block.id);
+          setMovingBlock({
+            id: block.id,
+            startX: event.clientX,
+            startY: event.clientY,
+            baseX: block.x || 0,
+            baseY: block.y || 0,
+            boardWidth: boardRect?.width || 0,
+            width: cardRect?.width || block.width || 0
+          });
+        }}
+      >
+        ::
+      </button>
       <input
         className="memoCardName"
         value={noteBlockTitle(block)}
@@ -2651,6 +2747,13 @@ function AiNotePage({ navigate }) {
     <article
       className={`projectTaskCard memoProjectCard ${activeId === block.id ? 'active' : ''}`}
       key={block.id}
+      draggable
+      onDragStart={(event) => {
+        event.dataTransfer.setData('text/plain', block.id);
+        event.dataTransfer.effectAllowed = 'move';
+        setDraggingBlockId(block.id);
+      }}
+      onDragEnd={() => setDraggingBlockId('')}
       onContextMenu={(event) => openBlockContextMenu(event, block)}
       onClick={() => openBlockFile(block)}
     >
@@ -2771,7 +2874,15 @@ function AiNotePage({ navigate }) {
               ))}
             </section>
           ) : (
-            <section className="memoFreeformBoard" aria-label="freeform memo board" onContextMenu={(event) => openContextMenu(event, 'todo')}>
+            <section
+              ref={freeformBoardRef}
+              className="memoFreeformBoard"
+              aria-label="freeform memo board"
+              style={{
+                minHeight: `${Math.max(520, ...boardBlocks.map((block) => (block.y || 0) + (block.height || 58) + 48))}px`
+              }}
+              onContextMenu={(event) => openContextMenu(event, 'todo')}
+            >
               {boardBlocks.map(renderBoardCard)}
             </section>
           )}
@@ -2792,7 +2903,8 @@ function AiNotePage({ navigate }) {
 
 function SchedulerPage({ navigate }) {
   const session = readStoredAuth();
-  const [items, setItems] = useState(readSchedulerItems);
+  const schedulerKey = schedulerStorageKey(session);
+  const [items, setItems] = useState(() => readSchedulerItems(schedulerKey));
   const [filter, setFilter] = useState('전체');
   const [selectedDate, setSelectedDate] = useState(toDateKey(new Date()));
   const [calendarMonth, setCalendarMonth] = useState(toDateKey(new Date()).slice(0, 7));
@@ -2811,23 +2923,28 @@ function SchedulerPage({ navigate }) {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(SCHEDULER_KEY, JSON.stringify(items));
-  }, [items]);
+    localStorage.setItem(schedulerKey, JSON.stringify(items));
+  }, [items, schedulerKey]);
 
   useEffect(() => {
-    const syncItems = () => setItems(readSchedulerItems());
+    const syncItems = () => setItems(readSchedulerItems(schedulerKey));
     const handleStorage = (event) => {
-      if (event.key === SCHEDULER_KEY) {
+      if (event.key === schedulerKey) {
+        syncItems();
+      }
+    };
+    const handleSchedulerUpdate = (event) => {
+      if (!event.detail?.storageKey || event.detail.storageKey === schedulerKey) {
         syncItems();
       }
     };
     window.addEventListener('storage', handleStorage);
-    window.addEventListener('codex:scheduler-items-updated', syncItems);
+    window.addEventListener('codex:scheduler-items-updated', handleSchedulerUpdate);
     return () => {
       window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('codex:scheduler-items-updated', syncItems);
+      window.removeEventListener('codex:scheduler-items-updated', handleSchedulerUpdate);
     };
-  }, []);
+  }, [schedulerKey]);
 
   const today = toDateKey(new Date());
   const monthDays = useMemo(() => buildMonthDays(calendarMonth), [calendarMonth]);
@@ -2859,6 +2976,10 @@ function SchedulerPage({ navigate }) {
     .slice()
     .sort((left, right) => left.time.localeCompare(right.time));
   const pendingItems = expandedItems.filter((item) => !item.done);
+  const doneItems = expandedItems.filter((item) => item.done);
+  const completionRate = expandedItems.length ? Math.round((doneItems.length / expandedItems.length) * 100) : 0;
+  const todayDoneCount = todayItems.filter((item) => item.done).length;
+  const todayCompletionRate = todayItems.length ? Math.round((todayDoneCount / todayItems.length) * 100) : 0;
   const itemCountByDate = useMemo(() => expandedItems.reduce((counts, item) => {
     counts[item.date] = (counts[item.date] || 0) + 1;
     return counts;
@@ -2878,7 +2999,12 @@ function SchedulerPage({ navigate }) {
     .filter((item) => filter === '전체' || item.type === filter || (filter === '완료' && item.done))
     .slice()
     .sort((left, right) => `${left.date} ${left.time}`.localeCompare(`${right.date} ${right.time}`));
+  const weekItems = weekDays.flatMap((day) => itemsByDate[day.key] || []);
+  const weekDoneCount = weekItems.filter((item) => item.done).length;
+  const weekCompletionRate = weekItems.length ? Math.round((weekDoneCount / weekItems.length) * 100) : 0;
   const selectedDateItems = expandedItems.filter((item) => item.date === selectedDate);
+  const selectedDateDoneCount = selectedDateItems.filter((item) => item.done).length;
+  const selectedDateCompletionRate = selectedDateItems.length ? Math.round((selectedDateDoneCount / selectedDateItems.length) * 100) : 0;
 
   const moveCalendarMonth = (offset) => {
     const [year, month] = calendarMonth.split('-').map(Number);
@@ -2966,9 +3092,10 @@ function SchedulerPage({ navigate }) {
             <p>오늘 할 일과 여행 준비를 가볍게 정리합니다.</p>
           </div>
           <div className="schedulerStats">
-            <article><span>오늘</span><strong>{todayItems.length}</strong></article>
-            <article><span>미완료</span><strong>{pendingItems.length}</strong></article>
-            <article><span>전체</span><strong>{expandedItems.length}</strong></article>
+            <article><span>오늘 달성률</span><strong>{todayCompletionRate}%</strong><small>{todayDoneCount}/{todayItems.length}</small></article>
+            <article><span>금주 달성률</span><strong>{weekCompletionRate}%</strong><small>{weekDoneCount}/{weekItems.length}</small></article>
+            <article><span>전체 달성률</span><strong>{completionRate}%</strong><small>{doneItems.length}/{expandedItems.length}</small></article>
+            <article><span>미완료</span><strong>{pendingItems.length}</strong><small>남은 일정</small></article>
           </div>
         </header>
         <form className="schedulerQuickAdd" onSubmit={submitDraft}>
@@ -3024,7 +3151,7 @@ function SchedulerPage({ navigate }) {
             <div className="schedulerCalendarHeader">
               <div>
                 <h2>달력</h2>
-                <p>{selectedDate} · {selectedDateItems.length}개 일정</p>
+                <p>{selectedDate} · {selectedDateItems.length}개 일정 · 달성률 {selectedDateCompletionRate}%</p>
               </div>
               <div className="schedulerCalendarControls">
                 <button type="button" onClick={() => moveCalendarMonth(-1)}>{'<'}</button>

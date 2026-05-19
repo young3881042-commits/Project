@@ -21,16 +21,19 @@ public class LocalTripController {
     private final LocalTripDestinationService destinationService;
     private final TourApiSyncService tourApiSyncService;
     private final TravelPlanService travelPlanService;
+    private final LocalTripMapSearchService mapSearchService;
     private final AuthService authService;
 
     public LocalTripController(
             LocalTripDestinationService destinationService,
             TourApiSyncService tourApiSyncService,
             TravelPlanService travelPlanService,
+            LocalTripMapSearchService mapSearchService,
             AuthService authService) {
         this.destinationService = destinationService;
         this.tourApiSyncService = tourApiSyncService;
         this.travelPlanService = travelPlanService;
+        this.mapSearchService = mapSearchService;
         this.authService = authService;
     }
 
@@ -48,6 +51,12 @@ public class LocalTripController {
     @GetMapping("/destinations/{id}")
     public DestinationResponse destination(@PathVariable Long id) {
         return destinationService.getDestination(id);
+    }
+
+    @GetMapping("/maps/places")
+    public List<MapPlaceResponse> mapPlaces(@RequestParam String query, HttpServletRequest servletRequest) {
+        authService.requireSession(servletRequest);
+        return mapSearchService.search(query);
     }
 
     @PostMapping("/destinations/sync/mock")

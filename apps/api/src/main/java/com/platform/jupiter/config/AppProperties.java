@@ -36,6 +36,7 @@ public record AppProperties(
         Boolean ragWeatherEnabled,
         String weatherApiBaseUrl,
         String weatherLocations,
+        String kakaoRestApiKey,
         String codexApiBaseUrl,
         String codexModel,
         String geminiApiKey,

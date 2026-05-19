@@ -23,5 +23,6 @@ public record TravelPlanGenerateRequest(
         String endAddress,
         String departureTime,
         String arrivalTime,
+        List<DailyRouteRequest> dailyRoutes,
         String memo) {
 }

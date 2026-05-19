@@ -6,6 +6,8 @@ import com.platform.jupiter.chat.ChatCredentialService;
 import com.platform.jupiter.chat.ChatUsage;
 import com.platform.jupiter.chat.ChatUsageService;
 import com.platform.jupiter.config.AppProperties;
+import com.platform.jupiter.rag.RagQueryRequest;
+import com.platform.jupiter.rag.RagService;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -15,9 +17,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -48,6 +52,7 @@ public class TravelPlanService {
     private final ChatUsageService chatUsageService;
     private final AppProperties appProperties;
     private final ObjectMapper objectMapper;
+    private final RagService ragService;
     private final HttpClient httpClient;
 
     public TravelPlanService(
@@ -58,7 +63,8 @@ public class TravelPlanService {
             ChatCredentialService chatCredentialService,
             ChatUsageService chatUsageService,
             AppProperties appProperties,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            RagService ragService) {
         this.travelPlanRepository = travelPlanRepository;
         this.travelPlanItemRepository = travelPlanItemRepository;
         this.destinationService = destinationService;
@@ -67,6 +73,7 @@ public class TravelPlanService {
         this.chatUsageService = chatUsageService;
         this.appProperties = appProperties;
         this.objectMapper = objectMapper;
+        this.ragService = ragService;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(20))
                 .build();
@@ -228,6 +235,8 @@ public class TravelPlanService {
                 .map(destination -> destination.getName() + "(" + destination.getRegion() + " " + destination.getDistrict()
                         + "/" + destination.getPrimaryStyle() + "/" + destination.getRecommendedMinutes() + "분)")
                 .collect(java.util.stream.Collectors.joining(", "));
+        String ragContext = localTripRagContext(plan, request);
+        String dailyRouteContext = dailyRouteContext(request);
         return String.format(
             "한국 또는 일본 여행 일정을 JSON 배열로 생성해줘.\n" +
             "- 지역: %s\n" +
@@ -239,10 +248,14 @@ public class TravelPlanService {
             "- 예산: %s\n" +
             "- 전체 출발지: %s / 주소: %s / 출발 시간: %s\n" +
             "- 최종 목적지: %s / 주소: %s / 도착 시간: %s\n" +
+            "- 일자별 출발/도착 조건:\n%s\n" +
             "- 예상 예산: %s\n" +
             "- 메모: %s\n" +
             "- 우선 사용할 장소 후보: %s\n\n" +
+            "RAG 검색 문맥:\n%s\n\n" +
             "각 날짜는 아침/오전 관광, 점심 식당, 오후 관광, 카페/휴식, 저녁 식당, 야경/산책 중 필요한 6~8개 블록으로 구성해.\n" +
+            "각 날짜의 첫 블록은 해당 날짜 출발지와 출발 시간 이후로 시작하고, 마지막 블록은 해당 날짜 도착지와 도착 시간 전에 끝나게 해.\n" +
+            "RAG 문맥이 지역, 동행, 취향과 맞으면 우선 반영하고, 맞지 않는 문맥은 억지로 쓰지 마.\n" +
             "timeSlot은 09:30-10:50 같은 시간 범위로 쓰고, 같은 날 시간이 겹치면 안 돼.\n" +
             "점심 식당과 카페/휴식은 매일 반드시 포함하고, 이름이 확인 가능한 실제 영업 장소명만 써. '로컬 식당', '카페 추천' 같은 일반명은 금지야.\n" +
             "각 블록 note에는 이전 장소에서 출발하는 시간, 이번 장소 도착 시간, 이동 팁을 포함해. 식당/카페는 추천 메뉴도 함께 써.\n" +
@@ -264,10 +277,50 @@ public class TravelPlanService {
             defaultText(request.endPlace(), "미정"),
             defaultText(request.endAddress(), "미정"),
             defaultText(request.arrivalTime(), "미정"),
+            dailyRouteContext,
             estimateBudget(plan.getDays(), plan.getTravelerCount(), request.budgetLevel(), request.transportType()),
             defaultText(request.memo(), "없음"),
-            candidateNames.isBlank() ? "지역 대표 명소" : candidateNames
+            candidateNames.isBlank() ? "지역 대표 명소" : candidateNames,
+            ragContext.isBlank() ? "(관련 RAG 문맥 없음)" : ragContext
         );
+    }
+
+    private String dailyRouteContext(TravelPlanGenerateRequest request) {
+        if (request.dailyRoutes() == null || request.dailyRoutes().isEmpty()) {
+            return "(일자별 조건 없음)";
+        }
+        return request.dailyRoutes().stream()
+                .limit(7)
+                .map(route -> String.format(
+                        "  - %d일차: 출발지=%s / 주소=%s / 출발시간=%s, 도착지=%s / 주소=%s / 도착시간=%s",
+                        route.day() == null ? 1 : route.day(),
+                        defaultText(route.startPlace(), "미정"),
+                        defaultText(route.startAddress(), "미정"),
+                        defaultText(route.departureTime(), defaultText(request.departureTime(), "미정")),
+                        defaultText(route.endPlace(), "미정"),
+                        defaultText(route.endAddress(), "미정"),
+                        defaultText(route.arrivalTime(), defaultText(request.arrivalTime(), "미정"))))
+                .collect(java.util.stream.Collectors.joining("\n"));
+    }
+
+    private String localTripRagContext(TravelPlan plan, TravelPlanGenerateRequest request) {
+        String question = String.join(" ",
+                "LocalTrip 여행 일정 추천",
+                defaultText(plan.getRegion(), ""),
+                defaultText(plan.getTravelerType(), ""),
+                defaultText(plan.getPace(), ""),
+                defaultText(plan.getStyles(), ""),
+                defaultText(request.budgetLevel(), ""),
+                defaultText(request.memo(), ""));
+        try {
+            return ragService.retrieve(new RagQueryRequest(question, 4)).candidates().stream()
+                    .filter(chunk -> chunk.documentId().contains("localtrip"))
+                    .limit(4)
+                    .map(chunk -> "- " + limitText(chunk.text(), 360))
+                    .collect(java.util.stream.Collectors.joining("\n"));
+        } catch (Exception ignored) {
+            return "";
+        }
     }
 
     private String estimateBudget(int days, int travelerCount, String budgetLevel, String transportType) {
@@ -342,15 +395,19 @@ public class TravelPlanService {
     }
 
     private List<TravelPlanItem> applyVerifiedFoodPlaces(TravelPlan plan, List<TravelPlanItem> items) {
+        Map<String, Integer> placeUseCounts = new LinkedHashMap<>();
         for (TravelPlanItem item : items) {
             if (!isFoodOrCafe(item)) {
                 continue;
             }
+            String style = normalizeFoodStyle(item.getPrimaryStyle());
+            String counterKey = item.getDayNumber() + ":" + style;
+            int ordinal = placeUseCounts.merge(counterKey, 1, Integer::sum) - 1;
             VerifiedLocalPlaceCatalog.VerifiedPlace place = VerifiedLocalPlaceCatalog.pick(
                     plan.getRegion(),
-                    item.getPrimaryStyle(),
+                    style,
                     item.getDayNumber(),
-                    item.getSequenceNumber());
+                    ordinal);
             if (place == null) {
                 continue;
             }
@@ -368,8 +425,17 @@ public class TravelPlanService {
     }
 
     private boolean isFoodOrCafe(TravelPlanItem item) {
-        String text = (item.getPrimaryStyle() + " " + item.getDestinationName() + " " + item.getNote()).toLowerCase();
-        return text.matches(".*(식당|맛집|점심|저녁|한식|분식|레스토랑|restaurant|meal|카페|커피|디저트|브런치|cafe|coffee|bakery).*");
+        String style = LocalTripText.normalize(item.getPrimaryStyle()).toLowerCase();
+        if (style.matches(".*(식당|맛집|점심|저녁|한식|분식|레스토랑|restaurant|meal|카페|커피|디저트|브런치|cafe|coffee|bakery).*")) {
+            return true;
+        }
+        String note = LocalTripText.normalize(item.getNote()).toLowerCase();
+        return note.matches(".*(추천 메뉴|점심|저녁|식사|커피|디저트|브런치|menu).*");
+    }
+
+    private String normalizeFoodStyle(String primaryStyle) {
+        String normalized = LocalTripText.normalize(primaryStyle);
+        return normalized.contains("카페") || normalized.contains("디저트") || normalized.contains("브런치") ? "카페" : "식당";
     }
 
     private String extractJsonPayload(String content) {
@@ -471,9 +537,10 @@ public class TravelPlanService {
     private List<TravelPlanItem> fallbackItems(TravelPlan plan, List<Destination> candidates) {
         List<TravelPlanItem> items = new ArrayList<>();
         for (int day = 1; day <= plan.getDays(); day++) {
+            Set<String> usedDestinationNames = new HashSet<>();
             for (int slotIndex = 0; slotIndex < FALLBACK_SLOTS.size(); slotIndex++) {
                 FallbackSlot slot = FALLBACK_SLOTS.get(slotIndex);
-                Destination destination = candidates.isEmpty() ? null : candidates.get((day + slotIndex - 1) % candidates.size());
+                Destination destination = selectFallbackDestination(candidates, usedDestinationNames, slot, day, slotIndex);
                 TravelPlanItem item = new TravelPlanItem();
                 item.setTravelPlanId(plan.getId());
                 item.setDayNumber(day);
@@ -489,6 +556,67 @@ public class TravelPlanService {
             }
         }
         return items;
+    }
+
+    private Destination selectFallbackDestination(
+            List<Destination> candidates,
+            Set<String> usedDestinationNames,
+            FallbackSlot slot,
+            int day,
+            int slotIndex) {
+        if (candidates.isEmpty() || isFallbackFoodOrCafe(slot.primaryStyle())) {
+            return null;
+        }
+        List<Destination> preferred = candidates.stream()
+                .filter(destination -> !isDestinationFoodOrCafe(destination))
+                .filter(destination -> matchesFallbackSlot(destination, slot.primaryStyle()))
+                .toList();
+        List<Destination> fallback = preferred.isEmpty()
+                ? candidates.stream().filter(destination -> !isDestinationFoodOrCafe(destination)).toList()
+                : preferred;
+        if (fallback.isEmpty()) {
+            return null;
+        }
+        int start = Math.floorMod((day - 1) * FALLBACK_SLOTS.size() + slotIndex, fallback.size());
+        for (int offset = 0; offset < fallback.size(); offset++) {
+            Destination destination = fallback.get((start + offset) % fallback.size());
+            String key = normalizePlaceName(destination.getName());
+            if (usedDestinationNames.add(key)) {
+                return destination;
+            }
+        }
+        return fallback.get(start);
+    }
+
+    private boolean matchesFallbackSlot(Destination destination, String slotStyle) {
+        String style = LocalTripText.normalize(slotStyle);
+        String text = (defaultText(destination.getPrimaryStyle(), "") + " "
+                + defaultText(destination.getCategory(), "") + " "
+                + defaultText(destination.getStyleTags(), "")).toLowerCase();
+        if (style.contains("야경")) {
+            return text.matches(".*(야경|전망|타워|해변|공원|사진).*");
+        }
+        if (style.contains("산책")) {
+            return text.matches(".*(산책|자연|공원|거리|마을|해변|호수|숲).*");
+        }
+        return text.matches(".*(관광|역사|사진|자연|공원|궁궐|사찰|신사|전망|마을|거리|유적|박물관).*");
+    }
+
+    private boolean isFallbackFoodOrCafe(String primaryStyle) {
+        String normalized = LocalTripText.normalize(primaryStyle);
+        return normalized.contains("식당") || normalized.contains("맛집") || normalized.contains("카페");
+    }
+
+    private boolean isDestinationFoodOrCafe(Destination destination) {
+        String text = (defaultText(destination.getPrimaryStyle(), "") + " "
+                + defaultText(destination.getCategory(), "") + " "
+                + defaultText(destination.getStyleTags(), "") + " "
+                + defaultText(destination.getName(), "")).toLowerCase();
+        return text.matches(".*(식당|맛집|시장|카페|커피|디저트|브런치|먹자|food|cafe|coffee|market).*");
+    }
+
+    private String normalizePlaceName(String value) {
+        return value == null ? "" : value.replaceAll("\\s+", "").toLowerCase();
     }
 
     @Transactional

@@ -494,14 +494,58 @@ function destinationAddressSuggestions(destinations, query) {
 
 function AddressSearchInput({ label, value, address, onValue, onAddress, destinations, placeholder }) {
   const [focused, setFocused] = useState(false);
-  const suggestions = useMemo(() => destinationAddressSuggestions(destinations, `${value} ${address}`), [address, destinations, value]);
+  const [mapSuggestions, setMapSuggestions] = useState([]);
+  const [searchingMap, setSearchingMap] = useState(false);
+  const query = `${value} ${address}`.trim();
+  const localSuggestions = useMemo(() => destinationAddressSuggestions(destinations, query), [destinations, query]);
+  const suggestions = useMemo(() => [
+    ...mapSuggestions.map((place, index) => ({
+      id: `map-${place.source || 'map'}-${place.latitude || index}-${place.longitude || index}`,
+      name: place.name,
+      address: place.roadAddress || place.address,
+      region: place.category || place.source || '지도 검색',
+      source: place.source || 'map'
+    })),
+    ...localSuggestions
+  ].slice(0, 8), [localSuggestions, mapSuggestions]);
+
+  useEffect(() => {
+    if (!focused || query.length < 2) {
+      setMapSuggestions([]);
+      return undefined;
+    }
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setSearchingMap(true);
+      try {
+        const places = await localTripRequest(`/api/maps/places?query=${encodeURIComponent(query)}`);
+        if (!controller.signal.aborted) {
+          setMapSuggestions(Array.isArray(places) ? places : []);
+        }
+      } catch {
+        if (!controller.signal.aborted) {
+          setMapSuggestions([]);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setSearchingMap(false);
+        }
+      }
+    }, 280);
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [focused, query]);
+
   return (
     <label className="ltAddressSearch">
       <span>{label}</span>
       <input value={value} onChange={(event) => onValue(event.target.value)} onFocus={() => setFocused(true)} placeholder={placeholder} />
       <input value={address} onChange={(event) => onAddress(event.target.value)} onFocus={() => setFocused(true)} placeholder="실제 주소 검색 또는 직접 입력" />
-      {focused && suggestions.length ? (
+      {focused && (suggestions.length || searchingMap) ? (
         <div className="ltAutocompleteDropdown ltAddressDropdown">
+          {searchingMap ? <div className="ltAddressSearching">지도 API 검색 중...</div> : null}
           {suggestions.map((destination) => (
             <button
               key={destination.id}
@@ -1733,11 +1777,11 @@ function PlannerPage({ path, navigate }) {
   const [generateError, setGenerateError] = useState('');
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const [activeStep, setActiveStep] = useState(1);
-  const [dayRoutes, setDayRoutes] = useState([{ day: 1, startPlace: '', endPlace: '' }]);
+  const [dayRoutes, setDayRoutes] = useState([{ day: 1, startPlace: '', startAddress: '', endPlace: '', endAddress: '', departureTime: '09:00', arrivalTime: '20:00' }]);
   const validDayCount = Number.isFinite(Number(days)) && Number(days) >= 1 && Number(days) <= 7;
   const routeInfoComplete = Boolean(startDate) && validDayCount && dayRoutes.length === Number(days)
     && startPlace.trim() && endPlace.trim() && startAddress.trim() && endAddress.trim() && departureTime && arrivalTime
-    && dayRoutes.every((route) => route.startPlace.trim() && route.endPlace.trim());
+    && dayRoutes.every((route) => route.startPlace.trim() && route.endPlace.trim() && route.departureTime && route.arrivalTime);
 
   const estimatedBudget = useMemo(() => {
     const dayCount = Math.max(1, Number(days) || 1);
@@ -1769,10 +1813,14 @@ function PlannerPage({ path, navigate }) {
       return {
         day: index + 1,
         startPlace: existing.startPlace || '',
-        endPlace: existing.endPlace || ''
+        startAddress: existing.startAddress || '',
+        endPlace: existing.endPlace || '',
+        endAddress: existing.endAddress || '',
+        departureTime: existing.departureTime || departureTime,
+        arrivalTime: existing.arrivalTime || arrivalTime
       };
     }));
-  }, [days]);
+  }, [arrivalTime, days, departureTime]);
 
   const toggleDestination = (id) => {
     setSelectedDestinationIds((current) => (
@@ -1834,6 +1882,7 @@ function PlannerPage({ path, navigate }) {
       endAddress,
       departureTime,
       arrivalTime,
+      dailyRoutes: dayRoutes,
       exportFormat,
       memo: [
         notes,
@@ -1841,7 +1890,7 @@ function PlannerPage({ path, navigate }) {
         `최종 목적지=${endPlace} (${endAddress}), 도착 시간=${arrivalTime}`,
         `예상 예산=${estimatedBudget}`,
         '일자별 출발/도착:',
-        ...dayRoutes.map((route) => `${route.day}일차 출발지=${route.startPlace || '미정'}, 도착지=${route.endPlace || '미정'}`)
+        ...dayRoutes.map((route) => `${route.day}일차 출발지=${route.startPlace || '미정'} (${route.startAddress || '주소 미정'}) ${route.departureTime || departureTime}, 도착지=${route.endPlace || '미정'} (${route.endAddress || '주소 미정'}) ${route.arrivalTime || arrivalTime}`)
       ].filter(Boolean).join('\n')
     };
     try {
@@ -2023,13 +2072,31 @@ function PlannerPage({ path, navigate }) {
               {dayRoutes.map((route, index) => (
                 <fieldset key={route.day}>
                   <legend>{route.day}일차</legend>
+                  <AddressSearchInput
+                    label="출발지"
+                    value={route.startPlace}
+                    address={route.startAddress || ''}
+                    onValue={(value) => updateDayRoute(index, 'startPlace', value)}
+                    onAddress={(value) => updateDayRoute(index, 'startAddress', value)}
+                    destinations={destinations}
+                    placeholder="숙소, 역, 공항 등"
+                  />
+                  <AddressSearchInput
+                    label="도착지"
+                    value={route.endPlace}
+                    address={route.endAddress || ''}
+                    onValue={(value) => updateDayRoute(index, 'endPlace', value)}
+                    onAddress={(value) => updateDayRoute(index, 'endAddress', value)}
+                    destinations={destinations}
+                    placeholder="숙소, 다음 이동지 등"
+                  />
                   <label>
-                    <span>출발지</span>
-                    <input value={route.startPlace} onChange={(event) => updateDayRoute(index, 'startPlace', event.target.value)} placeholder="숙소, 역, 공항 등" />
+                    <span>출발 시간</span>
+                    <input type="time" value={route.departureTime || departureTime} onChange={(event) => updateDayRoute(index, 'departureTime', event.target.value)} />
                   </label>
                   <label>
-                    <span>도착지</span>
-                    <input value={route.endPlace} onChange={(event) => updateDayRoute(index, 'endPlace', event.target.value)} placeholder="숙소, 다음 이동지 등" />
+                    <span>도착 시간</span>
+                    <input type="time" value={route.arrivalTime || arrivalTime} onChange={(event) => updateDayRoute(index, 'arrivalTime', event.target.value)} />
                   </label>
                 </fieldset>
               ))}
