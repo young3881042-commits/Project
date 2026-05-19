@@ -2363,13 +2363,14 @@ function noteBlockFileContent(block) {
 }
 
 function SpaceHomePage({ navigate }) {
-  const [accessMode, setAccessMode] = useState('guest');
+  const storedSession = readStoredAuth();
+  const [accessMode, setAccessMode] = useState(storedSession?.username ? 'member' : 'guest');
   const [memberFlow, setMemberFlow] = useState('login');
   const [memberId, setMemberId] = useState('');
   const [memberPassword, setMemberPassword] = useState('');
   const [memberLoading, setMemberLoading] = useState(false);
   const [memberError, setMemberError] = useState('');
-  const [memberSession, setMemberSession] = useState(null);
+  const [memberSession, setMemberSession] = useState(storedSession);
 
   useEffect(() => {
     document.title = 'AI 개인일정 관리';

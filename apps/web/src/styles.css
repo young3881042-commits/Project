@@ -14303,6 +14303,7 @@ body:has(.ltShell) {
 }
 
 .schedulerBoardHeader {
+  grid-column: 1 / -1;
   display: flex;
   align-items: end;
   justify-content: space-between;
@@ -15427,6 +15428,7 @@ body:has(.ltShell) {
 }
 
 .schedulerList {
+  grid-column: 1 / -1;
   display: grid;
   gap: 0;
   overflow: auto;
@@ -15927,35 +15929,36 @@ body:has(.ltShell) {
   width: min(100%, 460px);
   display: grid;
   gap: 14px;
-  padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  background: rgba(2, 6, 23, 0.5);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
-  backdrop-filter: blur(20px);
+  padding: 14px;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 18px 46px rgba(15, 23, 42, 0.1);
+  backdrop-filter: blur(18px);
 }
 
 .spaceAuthSwitch {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 6px;
   padding: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
 }
 
 .spaceAuthSwitch button {
-  min-height: 40px;
-  border-radius: 12px;
-  color: rgba(255, 255, 255, 0.68);
+  min-width: 0;
+  min-height: 42px;
+  border-radius: 9px;
+  color: #64748b;
   font-weight: 800;
 }
 
 .spaceAuthSwitch button.active {
-  background: rgba(147, 197, 253, 0.22);
+  background: #0f172a;
   color: #fff;
-  box-shadow: inset 0 0 0 1px rgba(147, 197, 253, 0.34);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
 }
 
 .spaceAuthBody,
@@ -15967,23 +15970,23 @@ body:has(.ltShell) {
 .spaceAuthBody > span,
 .spaceAuthTitle span,
 .spaceMemberForm label span {
-  color: #93c5fd;
+  color: #047857;
   font-size: 0.78rem;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .spaceAuthBody strong,
 .spaceAuthTitle strong {
-  color: #fff;
+  color: #0f172a;
   font-size: 1.1rem;
 }
 
 .spaceAuthBody p,
 .spaceAuthTitle p,
 .spaceAuthError {
-  color: rgba(255, 255, 255, 0.76);
+  color: #475569;
   font-size: 0.9rem;
   line-height: 1.6;
 }
@@ -15997,28 +16000,28 @@ body:has(.ltShell) {
   width: 100%;
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #fff;
+  color: #0f172a;
   outline: none;
 }
 
 .spaceMemberForm input::placeholder {
-  color: rgba(255, 255, 255, 0.44);
+  color: #94a3b8;
 }
 
 .spaceMemberForm input:focus {
-  border-color: rgba(147, 197, 253, 0.68);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.16);
 }
 
 .spaceAuthSubmit {
   min-height: 44px;
   padding: 0 14px;
-  border: 1px solid rgba(147, 197, 253, 0.56);
-  border-radius: 12px;
-  background: rgba(37, 99, 235, 0.72);
+  border: 1px solid #047857;
+  border-radius: 10px;
+  background: #10b981;
   color: #fff;
   font-weight: 800;
 }
@@ -16039,13 +16042,13 @@ body:has(.ltShell) {
 .spaceSignupLink {
   width: fit-content;
   padding: 0;
-  color: #bfdbfe;
+  color: #047857;
   font-weight: 800;
   text-align: left;
 }
 
 .spaceSignupLink:hover {
-  color: #fff;
+  color: #064e3b;
 }
 
 @media (max-width: 900px) {
@@ -16121,7 +16124,7 @@ body:has(.ltShell) {
 
   .spaceAuthCard {
     padding: 12px;
-    border-radius: 16px;
+    border-radius: 14px;
   }
 }
 
