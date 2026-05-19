@@ -48,6 +48,8 @@ ensure_ssh_known_hosts() {
   if [[ "$(id -u)" == "0" ]] && id "$AUTO_GIT_USER" >/dev/null 2>&1; then
     log "ensure github.com SSH known_hosts for $AUTO_GIT_USER"
     sudo -n -H -u "$AUTO_GIT_USER" bash -lc 'mkdir -p ~/.ssh && touch ~/.ssh/known_hosts && chmod 700 ~/.ssh && chmod 600 ~/.ssh/known_hosts && grep -q github.com ~/.ssh/known_hosts || ssh-keyscan github.com >> ~/.ssh/known_hosts' 2>>"$LOG_FILE" || true
+    sudo -n -H -u "$AUTO_GIT_USER" git config --global --add safe.directory "$ROOT_DIR" 2>>"$LOG_FILE" || true
+    sudo -n -H -u "$AUTO_GIT_USER" git config --global --add safe.directory "$AUTO_WORKTREE_DIR" 2>>"$LOG_FILE" || true
     return 0
   fi
   mkdir -p "$HOME/.ssh" && touch "$HOME/.ssh/known_hosts"
@@ -158,7 +160,8 @@ fix_ownership() {
   uid="$(stat -c '%u' "$ROOT_DIR")"
   gid="$(stat -c '%g' "$ROOT_DIR")"
   if [[ "$(id -u)" == "0" ]]; then
-    chown -R "$uid:$gid" "$AUTO_WORKTREE_DIR" "$LOG_DIR" || true
+    local worktree_meta="$ROOT_DIR/.git/worktrees/$(basename "$AUTO_WORKTREE_DIR")"
+    chown -R "$uid:$gid" "$AUTO_WORKTREE_DIR" "$LOG_DIR" "$worktree_meta" 2>/dev/null || true
   fi
 }
 
