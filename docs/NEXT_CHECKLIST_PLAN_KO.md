@@ -79,3 +79,8 @@
 4. 식당/카페 실제 장소 보정 테스트 추가
 5. admin1 Workspace 기본 폴더와 RAG seed 작성
 6. 배포 후 실제 NodePort 주소에서 최종 확인
+
+## 자동 점검 메모
+
+- 2026-05-19 23:12 UTC `성공`: Web/API 빌드, Docker 재배포, health check, mock destination sync 확인
+  - 로그: `/home/lezzs5103/vibeCoding/.local/logs/checklist-auto-20260519T231117Z.log`
