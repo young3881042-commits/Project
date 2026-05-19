@@ -98,7 +98,7 @@ public class FileService {
 
     public FileTreeResponse browseWorkspace(String relativePath, String username, boolean admin) {
         Path root = workspaceRoot(username, admin);
-        ensureWorkspaceRoot(root, admin ? null : username);
+        ensureWorkspaceRoot(root, username);
         return browse(resolvePath(root, relativePath), root, relativePath);
     }
 
@@ -112,7 +112,7 @@ public class FileService {
             rejectSensitivePath(relativePath);
         }
         Path root = workspaceRoot(username, admin);
-        ensureWorkspaceRoot(root, admin ? null : username);
+        ensureWorkspaceRoot(root, username);
         Path file = resolvePath(root, relativePath);
         rejectOversizedTextRead(file);
         return openFile(file);
@@ -164,19 +164,19 @@ public class FileService {
 
     public Path workspaceRootPath(String username, boolean admin) {
         Path root = workspaceRoot(username, admin);
-        ensureWorkspaceRoot(root, admin ? null : username);
+        ensureWorkspaceRoot(root, username);
         return root;
     }
 
     public Path workspaceHomePath(String username, boolean admin) {
         Path root = workspaceHomeRoot(username, admin);
-        ensureWorkspaceHome(root, admin ? null : username);
+        ensureWorkspaceHome(root, username);
         return root;
     }
 
     public Path resolveWorkspacePath(String relativePath, String username, boolean admin) {
         Path root = workspaceRoot(username, admin);
-        ensureWorkspaceRoot(root, admin ? null : username);
+        ensureWorkspaceRoot(root, username);
         return resolvePath(root, relativePath);
     }
 
@@ -399,18 +399,23 @@ public class FileService {
 
     private Path workspaceRoot(String username, boolean admin) {
         Path home = workspaceHomeRoot(username, admin);
-        if (admin) {
-            return home;
-        }
         return home.resolve(USER_WORKSPACE_DIR).normalize();
     }
 
     private Path workspaceHomeRoot(String username, boolean admin) {
         Path root = Path.of(appProperties.workspaceRoot());
-        if (admin) {
-            return root;
+        return root.resolve("users").resolve(workspaceUsername(username)).normalize();
+    }
+
+    private String workspaceUsername(String username) {
+        if (username == null || username.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Workspace user is required");
         }
-        return root.resolve("users").resolve(username).normalize();
+        String normalized = username.trim().toLowerCase(Locale.ROOT);
+        if (!normalized.matches("[a-zA-Z0-9._-]+")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid workspace user");
+        }
+        return normalized;
     }
 
     private void ensureWorkspaceRoot(Path root, String username) {

@@ -8,6 +8,8 @@
 !/infra/**
 !/scripts/
 !/scripts/**
+!/docs/
+!/docs/**
 
 /apps/*/node_modules/
 /apps/*/dist/

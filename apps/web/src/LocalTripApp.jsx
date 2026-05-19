@@ -1625,20 +1625,6 @@ function HomePage({ navigate }) {
             <button type="button" onClick={() => navigate('/destinations')}>장소 보기</button>
           </div>
         </div>
-        <div className="spaceMissionPanel" aria-label="mission status">
-          <div>
-            <span>Orbit</span>
-            <strong>Travel Route</strong>
-          </div>
-          <div>
-            <span>Signal</span>
-            <strong>AI Ready</strong>
-          </div>
-          <div>
-            <span>Mode</span>
-            <strong>Explore</strong>
-          </div>
-        </div>
       </section>
     </main>
   );
