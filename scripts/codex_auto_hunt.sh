@@ -161,7 +161,9 @@ fix_ownership() {
   gid="$(stat -c '%g' "$ROOT_DIR")"
   if [[ "$(id -u)" == "0" ]]; then
     local worktree_meta="$ROOT_DIR/.git/worktrees/$(basename "$AUTO_WORKTREE_DIR")"
-    chown -R "$uid:$gid" "$AUTO_WORKTREE_DIR" "$LOG_DIR" "$worktree_meta" 2>/dev/null || true
+    local branch_ref="$ROOT_DIR/.git/refs/heads/$AUTO_BRANCH"
+    local branch_log="$ROOT_DIR/.git/logs/refs/heads/$AUTO_BRANCH"
+    chown -R "$uid:$gid" "$AUTO_WORKTREE_DIR" "$LOG_DIR" "$worktree_meta" "$branch_ref" "$branch_log" 2>/dev/null || true
   fi
 }
 
