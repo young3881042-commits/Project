@@ -18432,6 +18432,91 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   white-space: nowrap !important;
 }
 
+.memoBoardNavigator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 4px 0 8px;
+  scrollbar-width: none;
+}
+
+.memoBoardNavigator::-webkit-scrollbar {
+  display: none;
+}
+
+.memoBoardNavigator button {
+  min-height: 42px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--memo-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--memo-body);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.memoBoardNavigator button.active {
+  border-color: rgba(37, 99, 235, 0.36);
+  background: var(--memo-accent-soft);
+  color: var(--memo-accent-dark);
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+}
+
+.memoBoardNavigator button span {
+  max-width: 148px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memoBoardNavigator button small {
+  min-width: 22px;
+  min-height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.07);
+  color: currentColor;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.memoBoardNavigator .memoBoardAddButton {
+  border-style: dashed;
+  color: #047857;
+}
+
+.memoBoardTitleRow {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.memoBoardTitleRow input {
+  width: min(360px, 100%);
+  min-height: 38px;
+  border: 1px solid var(--memo-line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--memo-ink);
+  padding: 0 12px;
+  font: inherit;
+  font-weight: 850;
+}
+
+.memoBoardTitleRow input:focus {
+  border-color: rgba(37, 99, 235, 0.42);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
 .memoNavIcon {
   width: 24px;
   height: 24px;
@@ -18783,11 +18868,7 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
 }
 
 .analysisEditorGrid.autoPreview.showPreview {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.analysisEditorGrid.autoPreview.showPreview .analysisEditSurface {
-  display: none;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
 }
 
 .analysisEditorGrid.autoPreview.showPreview .analysisMarkdownPreview {
@@ -18963,6 +19044,14 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   .analysisEditorGrid.markdown {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+
+  .analysisEditorGrid.autoPreview.showPreview {
+    grid-template-columns: 1fr;
+  }
+
+  .analysisEditorGrid.autoPreview.showPreview .analysisEditSurface {
+    display: none;
   }
 
   .analysisEditSurface,
@@ -19541,7 +19630,8 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   }
 
   .projectTopActions,
-  .projectViewTabs {
+  .projectViewTabs,
+  .memoBoardNavigator {
     width: 100% !important;
     display: flex !important;
     gap: 6px !important;
@@ -19551,14 +19641,25 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   }
 
   .projectTopActions::-webkit-scrollbar,
-  .projectViewTabs::-webkit-scrollbar {
+  .projectViewTabs::-webkit-scrollbar,
+  .memoBoardNavigator::-webkit-scrollbar {
     display: none !important;
   }
 
   .projectViewTabs button,
+  .memoBoardNavigator button,
   .projectNewItemButton {
     min-height: 42px !important;
     flex: 0 0 auto !important;
+  }
+
+  .memoBoardNavigator button span {
+    max-width: 42vw !important;
+  }
+
+  .memoBoardTitleRow input {
+    min-height: 42px !important;
+    font-size: 16px !important;
   }
 
   .projectFloatingNote {

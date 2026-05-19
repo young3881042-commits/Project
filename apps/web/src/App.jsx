@@ -2825,14 +2825,34 @@ function AiNotePage({ navigate }) {
           </header>
           <section className="projectBoardHero">
             <div>
-              <div className="projectViewTabs" aria-label="board views">
+              <nav className="memoBoardNavigator" aria-label="AI memo board navigation">
                 {boards.map((board) => (
-                  <button type="button" className={activeBoardId === board.id ? 'active' : ''} key={board.id} onClick={() => setActiveBoardId(board.id)}>
-                    {board.title}
+                  <button
+                    type="button"
+                    className={activeBoardId === board.id ? 'active' : ''}
+                    key={board.id}
+                    onClick={() => setActiveBoardId(board.id)}
+                  >
+                    <MemoNavIcon type="board" />
+                    <span>{board.title}</span>
+                    <small>{rootBlocks.filter((block) => (block.boardId || block.sector) === board.id).length}</small>
                   </button>
                 ))}
+                <button type="button" className="memoBoardAddButton" onClick={addBoard}>
+                  <MemoNavIcon type="plus" />
+                  <span>새 보드</span>
+                </button>
+              </nav>
+              <div className="memoBoardTitleRow">
+                <h2>{activeBoard?.title || '메모 보드'}</h2>
+                {activeBoard ? (
+                  <input
+                    value={activeBoard.title}
+                    onChange={(event) => renameBoard(activeBoard.id, event.target.value)}
+                    aria-label="현재 보드 이름"
+                  />
+                ) : null}
               </div>
-              <h2>{activeBoard?.title || '메모 보드'}</h2>
             </div>
             <button type="button" className="projectNewItemButton" onClick={() => addBlock('text', '', 'todo', activeBoardId)}>+ 새 항목</button>
           </section>
