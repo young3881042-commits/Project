@@ -66,6 +66,7 @@
 - 2026-05-19 `curl -I http://localhost` 응답 `200 OK` 확인.
 - 2026-05-19 `scripts/checklist_auto_check.sh`, `scripts/codex_auto_hunt.sh`, `infra/systemd/localtrip-checklist-auto.timer` 추가. 실행 시각은 매일 00:00, 06:00, 12:00, 18:00이며 부팅 직후/누락분 실행은 하지 않는다. `/home/lezzs5103/vibeCoding-auto` 별도 worktree에서 Codex가 한 번에 작은 작업 1개만 수행한다.
 - 2026-05-19 README에 자동 작업 루틴 내용을 추가하고, `/` 기본 진입이 LocalTrip 앱 홈으로 열리도록 수정했다.
+- 2026-05-19 자동 루틴 CI/CD 보강: 별도 worktree web 의존성 자동 설치, 실패 exit code 전파, GitHub push 사용자 SSH 키 사용, 자동 compose 포트 충돌 방지 설정을 추가했다.
 - 2026-05-17 `apps/web`에서 `npm run build` 성공.
 - 2026-05-17 `docker compose -f docker-compose.dev.yml build api` 성공.
 - 2026-05-17 LocalTrip RAG seed와 일정 생성 프롬프트 연결 후 `docker compose -f docker-compose.dev.yml build api` 성공.

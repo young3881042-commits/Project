@@ -111,7 +111,12 @@ main() {
   log "checklist auto check done"
 }
 
-if ! main; then
-  append_checklist_note "실패" "자동 점검 실패. 로그 확인 필요"
-  exit 1
-fi
+on_error() {
+  local status="$?"
+  append_checklist_note "실패" "자동 점검 실패. 로그 확인 필요" || true
+  exit "$status"
+}
+
+trap on_error ERR
+main
+trap - ERR

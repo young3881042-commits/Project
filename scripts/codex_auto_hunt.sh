@@ -9,6 +9,7 @@ CODEX_IMAGE="${CODEX_IMAGE:-vibecoding-api}"
 CODEX_BIN="${CODEX_BIN:-/opt/jupiter-cli/bin/codex}"
 CODEX_HOME_DIR="${CODEX_HOME_DIR:-/data/codex}"
 CODEX_MODEL="${CODEX_MODEL:-gpt-5.5}"
+AUTO_GIT_USER="${AUTO_GIT_USER:-lezzs5103}"
 LOG_DIR="${LOG_DIR:-$ROOT_DIR/.local/logs}"
 RUN_ID="$(date -u '+%Y%m%dT%H%M%SZ')"
 LOG_FILE="$LOG_DIR/codex-auto-hunt-$RUN_ID.log"
@@ -28,16 +29,31 @@ run() {
   return "$status"
 }
 
+run_git() {
+  if [[ "$(id -u)" == "0" ]] && id "$AUTO_GIT_USER" >/dev/null 2>&1; then
+    log "run as $AUTO_GIT_USER: git $*"
+    set +e
+    sudo -n -H -u "$AUTO_GIT_USER" git "$@" 2>&1 | tee -a "$LOG_FILE"
+    local status="${PIPESTATUS[0]}"
+    set -e
+    return "$status"
+  fi
+  run git "$@"
+}
+
 ensure_ssh_known_hosts() {
   if ! command -v ssh-keyscan >/dev/null 2>&1; then
     return 0
   fi
-  mkdir -p "$HOME/.ssh"
-  touch "$HOME/.ssh/known_hosts"
-  chmod 700 "$HOME/.ssh"
-  chmod 600 "$HOME/.ssh/known_hosts"
+  if [[ "$(id -u)" == "0" ]] && id "$AUTO_GIT_USER" >/dev/null 2>&1; then
+    log "ensure github.com SSH known_hosts for $AUTO_GIT_USER"
+    sudo -n -H -u "$AUTO_GIT_USER" bash -lc 'mkdir -p ~/.ssh && touch ~/.ssh/known_hosts && chmod 700 ~/.ssh && chmod 600 ~/.ssh/known_hosts && grep -q github.com ~/.ssh/known_hosts || ssh-keyscan github.com >> ~/.ssh/known_hosts' 2>>"$LOG_FILE" || true
+    return 0
+  fi
+  mkdir -p "$HOME/.ssh" && touch "$HOME/.ssh/known_hosts"
+  chmod 700 "$HOME/.ssh" && chmod 600 "$HOME/.ssh/known_hosts"
   if ! grep -q 'github.com' "$HOME/.ssh/known_hosts"; then
-    log "add github.com to SSH known_hosts"
+    log "ensure github.com SSH known_hosts"
     ssh-keyscan github.com >> "$HOME/.ssh/known_hosts" 2>>"$LOG_FILE" || true
   fi
 }
@@ -45,13 +61,13 @@ ensure_ssh_known_hosts() {
 prepare_worktree() {
   log "prepare isolated worktree: $AUTO_WORKTREE_DIR"
   ensure_ssh_known_hosts
-  run git -C "$ROOT_DIR" fetch origin "$BASE_BRANCH"
+  run_git -C "$ROOT_DIR" fetch origin "$BASE_BRANCH"
   if [[ ! -d "$AUTO_WORKTREE_DIR/.git" ]]; then
-    run git -C "$ROOT_DIR" worktree add -B "$AUTO_BRANCH" "$AUTO_WORKTREE_DIR" "origin/$BASE_BRANCH"
+    run_git -C "$ROOT_DIR" worktree add -B "$AUTO_BRANCH" "$AUTO_WORKTREE_DIR" "origin/$BASE_BRANCH"
   else
-    run git -C "$AUTO_WORKTREE_DIR" checkout "$AUTO_BRANCH"
-    run git -C "$AUTO_WORKTREE_DIR" reset --hard "origin/$BASE_BRANCH"
-    run git -C "$AUTO_WORKTREE_DIR" clean -fd
+    run_git -C "$AUTO_WORKTREE_DIR" checkout "$AUTO_BRANCH"
+    run_git -C "$AUTO_WORKTREE_DIR" reset --hard "origin/$BASE_BRANCH"
+    run_git -C "$AUTO_WORKTREE_DIR" clean -fd
   fi
 }
 
@@ -107,6 +123,12 @@ build_deploy_check() {
   RUN_MOCK_SYNC=1 \
   AUTO_COMMIT=0 \
   AUTO_PUSH=0 \
+  DB_PORT="${AUTO_DB_PORT:-13306}" \
+  API_PORT="${AUTO_API_PORT:-18080}" \
+  WEB_HTTP_PORT="${AUTO_WEB_HTTP_PORT:-18000}" \
+  WEB_HTTPS_PORT="${AUTO_WEB_HTTPS_PORT:-18443}" \
+  WEB_URL="${AUTO_WEB_URL:-http://localhost:18000}" \
+  API_URL="${AUTO_API_URL:-http://localhost:18080}" \
   LOG_DIR="$LOG_DIR" \
   "$AUTO_WORKTREE_DIR/scripts/checklist_auto_check.sh" 2>&1 | tee -a "$LOG_FILE"
   local status="${PIPESTATUS[0]}"
@@ -114,17 +136,18 @@ build_deploy_check() {
 }
 
 commit_and_push() {
-  if git -C "$AUTO_WORKTREE_DIR" diff --quiet && [[ -z "$(git -C "$AUTO_WORKTREE_DIR" status --porcelain)" ]]; then
+  fix_ownership
+  if sudo -n -H -u "$AUTO_GIT_USER" git -C "$AUTO_WORKTREE_DIR" diff --quiet && [[ -z "$(sudo -n -H -u "$AUTO_GIT_USER" git -C "$AUTO_WORKTREE_DIR" status --porcelain)" ]]; then
     log "no changes to commit"
     return 0
   fi
 
-  run git -C "$AUTO_WORKTREE_DIR" add .
-  run git -C "$AUTO_WORKTREE_DIR" \
+  run_git -C "$AUTO_WORKTREE_DIR" add .
+  run_git -C "$AUTO_WORKTREE_DIR" \
     -c user.name="${GIT_USER_NAME:-LocalTrip Auto}" \
     -c user.email="${GIT_USER_EMAIL:-localtrip-auto@localhost}" \
     commit -m "Run automated checklist work"
-  run git -C "$AUTO_WORKTREE_DIR" push origin "HEAD:$BASE_BRANCH"
+  run_git -C "$AUTO_WORKTREE_DIR" push origin "HEAD:$BASE_BRANCH"
 }
 
 fix_ownership() {
@@ -145,8 +168,13 @@ main() {
   log "codex auto hunt done"
 }
 
-if ! main; then
+on_error() {
+  local status="$?"
   log "codex auto hunt failed"
   fix_ownership
-  exit 1
-fi
+  exit "$status"
+}
+
+trap on_error ERR
+main
+trap - ERR
