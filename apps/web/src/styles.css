@@ -19879,3 +19879,95 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
     bottom: calc(70px + env(safe-area-inset-bottom)) !important;
   }
 }
+
+/* LocalTrip mobile performance guard */
+@media (max-width: 900px) {
+  .ltShell * {
+    transition-duration: 0.08s !important;
+    animation-duration: 0.08s !important;
+  }
+
+  .ltShell button:active,
+  .ltShell a[class]:active,
+  .ltDestinationCard:hover,
+  .ltPlanCard:hover,
+  .ltMiniDestCard:hover,
+  .ltMyShortcutList button:hover {
+    transform: none !important;
+  }
+
+  .ltHeroImage,
+  .ltDestinationPhoto,
+  .ltMiniDestPhoto,
+  .ltDayCover {
+    box-shadow: none !important;
+  }
+
+  .ltHeroVisual,
+  .ltHeroPanel,
+  .ltPurposeRail,
+  .ltRoleBand,
+  .ltPartnerHero,
+  .ltPartnerStats,
+  .ltPartnerPanel,
+  .ltDestinationCard,
+  .ltPlanCard,
+  .ltRecentPlans,
+  .ltPlannerForm,
+  .ltPlannerPreview,
+  .ltSelectedSummary,
+  .ltGeneratedPreview,
+  .ltFilterBar,
+  .ltTimelineDay,
+  .ltPlanHero,
+  .ltFactItem,
+  .ltDayCard,
+  .ltMarkdownDayBlock,
+  .ltMyHero,
+  .ltMyPanel,
+  .ltFilterFold,
+  .ltEmptyState {
+    box-shadow: none !important;
+  }
+
+  .ltHeroVisual {
+    min-height: auto !important;
+  }
+
+  .ltHeroImage.main,
+  .ltHeroImage {
+    min-height: 140px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .ltPageTitle {
+    margin-bottom: 14px !important;
+  }
+
+  .ltPlannerLayout,
+  .ltDestinationGrid,
+  .ltPlansGrid,
+  .ltDayCards,
+  .ltDaySlots {
+    gap: 10px !important;
+  }
+
+  .ltFormSection {
+    gap: 12px !important;
+  }
+
+  .ltPlannerPreview {
+    position: static !important;
+    max-height: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce), (max-width: 560px) {
+  .ltShell *,
+  .ltShell *::before,
+  .ltShell *::after {
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -71,6 +71,7 @@ public class RagService {
             Files.createDirectories(sourceRoot);
             Files.createDirectories(documentsRoot);
             seedIfEmpty();
+            ensureLocalTripSeed();
             refreshWeatherSource();
             refreshDomainSources();
             reloadIndex();
@@ -249,6 +250,7 @@ public class RagService {
         }
         try (Stream<Path> stream = Files.walk(root)) {
             stream.filter(Files::isRegularFile)
+                    .filter(file -> TEXT_EXTENSIONS.contains(extensionOf(file.getFileName().toString())))
                     .map(file -> indexFile(root, file, category))
                     .forEach(document -> documents.put(document.id(), document));
         }
@@ -366,6 +368,86 @@ public class RagService {
 
         for (Map.Entry<String, String> entry : seeds.entrySet()) {
             Files.writeString(sourceRoot.resolve(entry.getKey()), entry.getValue(), StandardCharsets.UTF_8);
+        }
+    }
+
+    private void ensureLocalTripSeed() throws IOException {
+        Path localTripDirectory = sourceRoot.resolve("localtrip");
+        Path seedPath = localTripDirectory.resolve("localtrip_rag_seed.jsonl");
+        Path guidePath = localTripDirectory.resolve("localtrip_rag_guide.md");
+        Files.createDirectories(localTripDirectory);
+        if (!Files.exists(seedPath)) {
+            Files.writeString(seedPath, """
+                {"country":"KR","region":"서울","travelerType":"커플","budgetLevel":"보통","pace":"보통","interests":["역사","카페","사진"],"text":"서울 커플 일정은 오전 경복궁과 북촌한옥마을을 걷고, 점심 이후 익선동 한옥거리나 성수 카페거리에서 휴식하면 이동 피로가 낮다. 해질녘에는 남산서울타워나 여의도 한강공원을 넣으면 야경 만족도가 높다."}
+                {"country":"KR","region":"서울","travelerType":"가족","budgetLevel":"보통","pace":"여유","interests":["가족","자연","시장"],"text":"서울 가족 일정은 서울숲, 여의도 한강공원, 광장시장처럼 유모차와 대중교통 접근이 쉬운 장소를 섞는 편이 안정적이다. 고궁 일정은 오전에 넣고 오후에는 실내 카페나 시장 식사로 전환한다."}
+                {"country":"KR","region":"경주","travelerType":"커플","budgetLevel":"보통","pace":"보통","interests":["역사","사진","카페"],"text":"경주 커플 일정은 대릉원, 첨성대, 황리단길을 도보 중심으로 묶고 밤에는 동궁과 월지 또는 월정교 야경을 배치하면 사진 만족도가 높다. 불국사와 석굴암은 차량 반나절 코스로 분리하는 편이 좋다."}
+                {"country":"KR","region":"경주","travelerType":"가족","budgetLevel":"보통","pace":"여유","interests":["역사","가족","실내"],"text":"경주 가족 일정은 불국사, 국립경주박물관, 대릉원을 중심으로 잡으면 교육성과 이동 안정성이 좋다. 비가 오면 국립경주박물관과 황리단길 식사, 카페를 우선 배치한다."}
+                {"country":"KR","region":"부산","travelerType":"커플","budgetLevel":"보통","pace":"보통","interests":["바다","야경","맛집"],"text":"부산 커플 일정은 낮에 감천문화마을이나 흰여울문화마을을 걷고, 저녁에는 광안리해변과 광안대교 야경을 넣으면 흐름이 좋다. 해운대 숙박권이면 동백섬과 해운대해수욕장을 같은 날에 묶는다."}
+                {"country":"KR","region":"부산","travelerType":"가족","budgetLevel":"보통","pace":"여유","interests":["자연","시장","가족"],"text":"부산 가족 일정은 해운대해수욕장, 동백섬, 자갈치시장처럼 이동과 식사가 쉬운 장소를 우선한다. 태종대나 오륙도는 바람과 걷는 양을 고려해 낮 시간에 배치한다."}
+                {"country":"KR","region":"제주","travelerType":"커플","budgetLevel":"보통","pace":"여유","interests":["자연","카페","사진"],"text":"제주 커플 일정은 동부 성산일출봉과 우도, 서부 애월카페거리와 협재해변처럼 권역을 나누는 편이 좋다. 하루에 동서 이동을 모두 넣으면 피로가 커지므로 권역별로 묶는다."}
+                {"country":"KR","region":"제주","travelerType":"가족","budgetLevel":"보통","pace":"여유","interests":["가족","숲","해변"],"text":"제주 가족 일정은 협재해변, 절물자연휴양림, 오설록 티뮤지엄처럼 주차와 휴식이 쉬운 장소를 섞으면 안정적이다. 우도는 배편과 날씨 확인이 필요해 반나절 이상 확보한다."}
+                {"country":"JP","region":"도쿄","travelerType":"커플","budgetLevel":"보통","pace":"보통","interests":["도시","전망","맛집"],"text":"도쿄 커플 일정은 오전 센소지와 아사쿠사, 점심 츠키지 장외시장, 오후 시부야·하라주쿠, 해질녘 시부야 스카이처럼 권역 이동을 줄이면 좋다. 신주쿠교엔은 복잡한 도심 일정 사이 휴식지로 적합하다."}
+                {"country":"JP","region":"도쿄","travelerType":"가족","budgetLevel":"보통","pace":"여유","interests":["가족","공원","쇼핑"],"text":"도쿄 가족 일정은 우에노공원, 아사쿠사, 오다이바처럼 넓고 이동이 단순한 권역을 우선한다. 붐비는 시부야와 신주쿠는 짧게 넣고 식사 예약 또는 대체 후보를 준비한다."}
+                {"country":"JP","region":"교토","travelerType":"커플","budgetLevel":"보통","pace":"보통","interests":["역사","사진","카페"],"text":"교토 커플 일정은 이른 오전 후시미이나리 타이샤, 낮 기요미즈데라와 니넨자카·산넨자카, 저녁 기온 산책으로 구성하면 사진과 분위기가 좋다. 니시키시장은 점심 전후 간식 동선으로 적합하다."}
+                {"country":"JP","region":"교토","travelerType":"가족","budgetLevel":"보통","pace":"여유","interests":["역사","가족","자연"],"text":"교토 가족 일정은 기요미즈데라, 아라시야마 대나무숲, 니시키시장을 하루에 모두 넣기보다 동쪽과 서쪽 권역을 나누는 편이 안정적이다. 사찰은 계단이 많아 오전에 배치한다."}
+                {"country":"JP","region":"오사카","travelerType":"커플","budgetLevel":"보통","pace":"보통","interests":["맛집","야경","쇼핑"],"text":"오사카 커플 일정은 오전 오사카성 공원, 오후 신사이바시 쇼핑, 저녁 도톤보리와 난바 맛집으로 이어지면 이동이 단순하다. 우메다 스카이빌딩은 야경 대안으로 좋다."}
+                {"country":"JP","region":"오사카","travelerType":"가족","budgetLevel":"보통","pace":"여유","interests":["가족","역사","쇼핑"],"text":"오사카 가족 일정은 오사카성 공원, 덴포잔 대관람차, 난바 식사처럼 넓은 공간과 쉬운 이동을 우선한다. 도톤보리는 저녁 혼잡이 강하므로 짧게 보고 식사는 후보를 여러 개 둔다."}
+                {"country":"JP","region":"후쿠오카","travelerType":"커플","budgetLevel":"보통","pace":"여유","interests":["맛집","공원","야경"],"text":"후쿠오카 커플 일정은 오호리공원과 텐진 쇼핑, 저녁 나카스 포장마차 거리로 구성하면 짧은 여행에 효율적이다. 다자이후 텐만구는 반나절 근교 코스로 분리한다."}
+                {"country":"JP","region":"후쿠오카","travelerType":"가족","budgetLevel":"보통","pace":"여유","interests":["가족","자연","로컬"],"text":"후쿠오카 가족 일정은 오호리공원, 마린월드 우미노나카미치, 하카타역 식사처럼 접근이 쉬운 장소를 우선한다. 포장마차 거리는 아이 동반이면 짧게 분위기만 보는 편이 안정적이다."}
+                """, StandardCharsets.UTF_8);
+        }
+        if (!Files.exists(guidePath)) {
+            Files.writeString(guidePath, """
+                # LocalTrip RAG Guide
+
+                ## 서울
+
+                서울 커플 일정은 오전 경복궁과 북촌한옥마을을 걷고, 점심 이후 익선동 한옥거리나 성수 카페거리에서 휴식하면 이동 피로가 낮다. 해질녘에는 남산서울타워나 여의도 한강공원을 넣으면 야경 만족도가 높다.
+
+                서울 가족 일정은 서울숲, 여의도 한강공원, 광장시장처럼 유모차와 대중교통 접근이 쉬운 장소를 섞는 편이 안정적이다. 고궁 일정은 오전에 넣고 오후에는 실내 카페나 시장 식사로 전환한다.
+
+                ## 경주
+
+                경주 커플 일정은 대릉원, 첨성대, 황리단길을 도보 중심으로 묶고 밤에는 동궁과 월지 또는 월정교 야경을 배치하면 사진 만족도가 높다. 불국사와 석굴암은 차량 반나절 코스로 분리하는 편이 좋다.
+
+                경주 가족 일정은 불국사, 국립경주박물관, 대릉원을 중심으로 잡으면 교육성과 이동 안정성이 좋다. 비가 오면 국립경주박물관과 황리단길 식사, 카페를 우선 배치한다.
+
+                ## 부산
+
+                부산 커플 일정은 낮에 감천문화마을이나 흰여울문화마을을 걷고, 저녁에는 광안리해변과 광안대교 야경을 넣으면 흐름이 좋다. 해운대 숙박권이면 동백섬과 해운대해수욕장을 같은 날에 묶는다.
+
+                부산 가족 일정은 해운대해수욕장, 동백섬, 자갈치시장처럼 이동과 식사가 쉬운 장소를 우선한다. 태종대나 오륙도는 바람과 걷는 양을 고려해 낮 시간에 배치한다.
+
+                ## 제주
+
+                제주 커플 일정은 동부 성산일출봉과 우도, 서부 애월카페거리와 협재해변처럼 권역을 나누는 편이 좋다. 하루에 동서 이동을 모두 넣으면 피로가 커지므로 권역별로 묶는다.
+
+                제주 가족 일정은 협재해변, 절물자연휴양림, 오설록 티뮤지엄처럼 주차와 휴식이 쉬운 장소를 섞으면 안정적이다. 우도는 배편과 날씨 확인이 필요해 반나절 이상 확보한다.
+
+                ## 도쿄
+
+                도쿄 커플 일정은 오전 센소지와 아사쿠사, 점심 츠키지 장외시장, 오후 시부야와 하라주쿠, 해질녘 시부야 스카이처럼 권역 이동을 줄이면 좋다. 신주쿠교엔은 복잡한 도심 일정 사이 휴식지로 적합하다.
+
+                도쿄 가족 일정은 우에노공원, 아사쿠사, 오다이바처럼 넓고 이동이 단순한 권역을 우선한다. 붐비는 시부야와 신주쿠는 짧게 넣고 식사 예약 또는 대체 후보를 준비한다.
+
+                ## 교토
+
+                교토 커플 일정은 이른 오전 후시미이나리 타이샤, 낮 기요미즈데라와 니넨자카·산넨자카, 저녁 기온 산책으로 구성하면 사진과 분위기가 좋다. 니시키시장은 점심 전후 간식 동선으로 적합하다.
+
+                교토 가족 일정은 기요미즈데라, 아라시야마 대나무숲, 니시키시장을 하루에 모두 넣기보다 동쪽과 서쪽 권역을 나누는 편이 안정적이다. 사찰은 계단이 많아 오전에 배치한다.
+
+                ## 오사카
+
+                오사카 커플 일정은 오전 오사카성 공원, 오후 신사이바시 쇼핑, 저녁 도톤보리와 난바 맛집으로 이어지면 이동이 단순하다. 우메다 스카이빌딩은 야경 대안으로 좋다.
+
+                오사카 가족 일정은 오사카성 공원, 덴포잔 대관람차, 난바 식사처럼 넓은 공간과 쉬운 이동을 우선한다. 도톤보리는 저녁 혼잡이 강하므로 짧게 보고 식사는 후보를 여러 개 둔다.
+
+                ## 후쿠오카
+
+                후쿠오카 커플 일정은 오호리공원과 텐진 쇼핑, 저녁 나카스 포장마차 거리로 구성하면 짧은 여행에 효율적이다. 다자이후 텐만구는 반나절 근교 코스로 분리한다.
+
+                후쿠오카 가족 일정은 오호리공원, 마린월드 우미노나카미치, 하카타역 식사처럼 접근이 쉬운 장소를 우선한다. 포장마차 거리는 아이 동반이면 짧게 분위기만 보는 편이 안정적이다.
+                """, StandardCharsets.UTF_8);
         }
     }
 
