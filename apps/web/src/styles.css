@@ -19714,3 +19714,168 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
     text-overflow: clip !important;
   }
 }
+
+/* LocalTrip mobile compact planner and low-lag pass */
+@media (max-width: 900px) {
+  body:has(.ltShell) {
+    touch-action: pan-y;
+  }
+
+  .ltShell,
+  .ltShell * {
+    scroll-behavior: auto !important;
+  }
+
+  .ltShell .ltNav {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .ltShell .ltNavInner {
+    min-height: 48px !important;
+    grid-template-areas:
+      "brand account"
+      "services services" !important;
+    gap: 6px 8px !important;
+    padding-block: 6px !important;
+  }
+
+  .ltShell .ltBrand {
+    font-size: 0.96rem !important;
+  }
+
+  .ltShell .ltServiceSwitch {
+    display: block !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  .ltShell .ltServiceSwitchLinks {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: max-content !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
+    padding: 0 0 2px !important;
+    scrollbar-width: thin !important;
+  }
+
+  .ltShell .ltServiceSwitchLinks a,
+  .ltShell .ltServiceSwitch a {
+    min-height: 28px !important;
+    padding: 0 10px !important;
+    border-radius: 999px !important;
+    font-size: 0.72rem !important;
+    white-space: nowrap !important;
+  }
+
+  .ltShell .ltNavLinks {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: minmax(72px, 1fr) !important;
+    grid-template-columns: none !important;
+    scrollbar-width: thin !important;
+  }
+
+  .ltShell .ltNavLinks a {
+    min-width: 72px !important;
+  }
+
+  .ltPlannerLayout {
+    align-items: start !important;
+  }
+
+  .ltPlannerForm,
+  .ltPlannerPreview {
+    box-shadow: none !important;
+  }
+
+  .ltDailyRouteBuilder {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: minmax(286px, 86vw) !important;
+    grid-template-columns: none !important;
+    gap: 10px !important;
+    margin-inline: -4px !important;
+    padding: 2px 4px 10px !important;
+    overflow-x: auto !important;
+    overscroll-behavior-x: contain !important;
+    scroll-snap-type: x mandatory !important;
+    scrollbar-width: thin !important;
+  }
+
+  .ltDailyRouteBuilder fieldset {
+    scroll-snap-align: start !important;
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+    min-width: 0 !important;
+    padding: 12px !important;
+  }
+
+  .ltPlannerPreview {
+    position: sticky !important;
+    bottom: calc(86px + env(safe-area-inset-bottom)) !important;
+    z-index: 120 !important;
+    max-height: min(42vh, 360px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+  }
+
+  .ltPlannerPreview:empty {
+    display: none !important;
+  }
+
+  .ltMiniDestList,
+  .ltGeneratedPreview .ltDayCards {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: minmax(220px, 78vw) !important;
+    grid-template-columns: none !important;
+    overflow-x: auto !important;
+    overscroll-behavior-x: contain !important;
+    scroll-snap-type: x proximity !important;
+    scrollbar-width: thin !important;
+  }
+
+  .ltMiniDestCard,
+  .ltGeneratedPreview .ltDayCard {
+    scroll-snap-align: start !important;
+  }
+
+  .ltDestinationCard,
+  .ltPlanCard,
+  .ltDayCard,
+  .ltTimelineDay,
+  .ltMyPanel,
+  .ltPartnerPanel {
+    content-visibility: auto;
+    contain-intrinsic-size: 280px;
+  }
+}
+
+@media (max-width: 560px) {
+  .ltShell .ltPage {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .ltShell .ltNavLinks {
+    bottom: calc(6px + env(safe-area-inset-bottom)) !important;
+    width: min(calc(100vw - 10px), 520px) !important;
+    padding: 5px !important;
+  }
+
+  .ltShell .ltNavLinks a {
+    min-height: 44px !important;
+  }
+
+  .ltPlannerPreview {
+    max-height: min(36vh, 300px) !important;
+  }
+
+  .ltStickyCta {
+    bottom: calc(70px + env(safe-area-inset-bottom)) !important;
+  }
+}
