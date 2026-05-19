@@ -103,7 +103,7 @@ run_codex() {
 
   log "start unattended Codex worker"
   set +e
-  codex_prompt | docker run --rm \
+  codex_prompt | docker run --rm -i \
     --network host \
     -v "$AUTO_WORKTREE_DIR:/workspace" \
     -v "$CODEX_HOME_DIR:/root/.codex" \
