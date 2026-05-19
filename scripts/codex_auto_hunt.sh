@@ -62,6 +62,9 @@ prepare_worktree() {
   log "prepare isolated worktree: $AUTO_WORKTREE_DIR"
   ensure_ssh_known_hosts
   run_git -C "$ROOT_DIR" fetch origin "$BASE_BRANCH"
+  if [[ -e "$AUTO_WORKTREE_DIR" ]]; then
+    fix_ownership
+  fi
   if [[ ! -e "$AUTO_WORKTREE_DIR/.git" ]]; then
     run_git -C "$ROOT_DIR" worktree add -B "$AUTO_BRANCH" "$AUTO_WORKTREE_DIR" "origin/$BASE_BRANCH"
   else
