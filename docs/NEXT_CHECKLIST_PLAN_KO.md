@@ -51,6 +51,7 @@
 - [x] `docker compose -f docker-compose.dev.yml build web`로 Web 이미지를 재빌드한다.
 - [x] `docker compose -f docker-compose.dev.yml up -d web`로 Web 컨테이너를 재시작한다.
 - [x] `http://localhost`에서 Web 응답 `200 OK`를 확인한다.
+- [x] 6시간마다 별도 worktree에서 Codex가 다음 체크리스트 작업 1개를 자동 수행하고 Web/API 빌드, Docker 재배포, health check, mock sync, 커밋/푸시까지 수행하는 systemd timer를 추가한다.
 - [ ] Mock 여행지 동기화 API를 호출해 기본 데이터가 다시 들어가는지 확인한다.
 - [ ] `/api/travel-plans/generate`로 서울, 경주, 도쿄, 교토 각 1건씩 생성 테스트한다.
 - [ ] 실제 배포 주소 `http://192.168.45.101:31088/`에서 화면 동작을 최종 확인한다.
@@ -61,6 +62,7 @@
 - 2026-05-19 `docker compose -f docker-compose.dev.yml build web` 성공.
 - 2026-05-19 `docker compose -f docker-compose.dev.yml up -d web` 성공.
 - 2026-05-19 `curl -I http://localhost` 응답 `200 OK` 확인.
+- 2026-05-19 `scripts/checklist_auto_check.sh`, `scripts/codex_auto_hunt.sh`, `infra/systemd/localtrip-checklist-auto.timer` 추가. 기본 주기는 6시간이며 `/home/lezzs5103/vibeCoding-auto` 별도 worktree에서 Codex가 한 번에 작은 작업 1개만 수행한다.
 - 2026-05-17 `apps/web`에서 `npm run build` 성공.
 - 2026-05-17 `docker compose -f docker-compose.dev.yml build api` 성공.
 - 2026-05-17 LocalTrip RAG seed와 일정 생성 프롬프트 연결 후 `docker compose -f docker-compose.dev.yml build api` 성공.
