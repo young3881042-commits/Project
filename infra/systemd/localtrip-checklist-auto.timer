@@ -2,9 +2,8 @@
 Description=Run LocalTrip checklist auto check every 6 hours
 
 [Timer]
-OnBootSec=10min
-OnUnitActiveSec=6h
-Persistent=true
+OnCalendar=*-*-* 00,06,12,18:00:00
+Persistent=false
 Unit=localtrip-checklist-auto.service
 
 [Install]

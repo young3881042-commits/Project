@@ -3358,10 +3358,6 @@ export default function App() {
     return <WorkspaceApp navigate={navigate} />;
   }
 
-  if (routePath === '/') {
-    return <SpaceHomePage navigate={navigate} />;
-  }
-
   if (routePath === '/scheduler') {
     return <SchedulerPage navigate={navigate} />;
   }

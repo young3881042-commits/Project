@@ -21,11 +21,30 @@ log() {
 
 run() {
   log "run: $*"
+  set +e
   "$@" 2>&1 | tee -a "$LOG_FILE"
+  local status="${PIPESTATUS[0]}"
+  set -e
+  return "$status"
+}
+
+ensure_ssh_known_hosts() {
+  if ! command -v ssh-keyscan >/dev/null 2>&1; then
+    return 0
+  fi
+  mkdir -p "$HOME/.ssh"
+  touch "$HOME/.ssh/known_hosts"
+  chmod 700 "$HOME/.ssh"
+  chmod 600 "$HOME/.ssh/known_hosts"
+  if ! grep -q 'github.com' "$HOME/.ssh/known_hosts"; then
+    log "add github.com to SSH known_hosts"
+    ssh-keyscan github.com >> "$HOME/.ssh/known_hosts" 2>>"$LOG_FILE" || true
+  fi
 }
 
 prepare_worktree() {
   log "prepare isolated worktree: $AUTO_WORKTREE_DIR"
+  ensure_ssh_known_hosts
   run git -C "$ROOT_DIR" fetch origin "$BASE_BRANCH"
   if [[ ! -d "$AUTO_WORKTREE_DIR/.git" ]]; then
     run git -C "$ROOT_DIR" worktree add -B "$AUTO_BRANCH" "$AUTO_WORKTREE_DIR" "origin/$BASE_BRANCH"
@@ -38,7 +57,7 @@ prepare_worktree() {
 
 codex_prompt() {
   cat <<'PROMPT'
-You are running unattended on a 6-hour timer for the LocalTrip project.
+You are running unattended on the 00:00, 06:00, 12:00, and 18:00 UTC timer for the LocalTrip project.
 
 Goal:
 - Pick exactly one small unchecked item from docs/NEXT_CHECKLIST_PLAN_KO.md.
@@ -62,6 +81,7 @@ run_codex() {
   fi
 
   log "start unattended Codex worker"
+  set +e
   codex_prompt | docker run --rm \
     --network host \
     -v "$AUTO_WORKTREE_DIR:/workspace" \
@@ -71,9 +91,12 @@ run_codex() {
     exec \
     --cd /workspace \
     --sandbox workspace-write \
-    --ask-for-approval never \
+    --dangerously-bypass-approvals-and-sandbox \
     --model "$CODEX_MODEL" \
     - 2>&1 | tee -a "$LOG_FILE"
+  local status="${PIPESTATUS[1]}"
+  set -e
+  return "$status"
 }
 
 build_deploy_check() {
@@ -86,6 +109,8 @@ build_deploy_check() {
   AUTO_PUSH=0 \
   LOG_DIR="$LOG_DIR" \
   "$AUTO_WORKTREE_DIR/scripts/checklist_auto_check.sh" 2>&1 | tee -a "$LOG_FILE"
+  local status="${PIPESTATUS[0]}"
+  return "$status"
 }
 
 commit_and_push() {

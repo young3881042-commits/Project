@@ -141,6 +141,30 @@ LocalTrip AI는 한국관광공사 TourAPI 연동을 준비한 국내 여행 일
 - 기존 Jupiter 분석 워크스페이스: `http://192.168.45.101:31088/analysisadmin`
 - API NodePort: `http://192.168.45.101:31090`
 
+### 자동 작업 루틴
+
+LocalTrip 체크리스트 자동 작업은 systemd timer로 백그라운드 실행합니다.
+
+- 실행 시각: 매일 `00:00`, `06:00`, `12:00`, `18:00`
+- 부팅 직후 실행: 사용하지 않음
+- 놓친 시간대 부팅 후 실행: 사용하지 않음
+- 실행 스크립트: `scripts/codex_auto_hunt.sh`
+- 검증/배포 스크립트: `scripts/checklist_auto_check.sh`
+
+설치 및 리로드:
+
+```bash
+cd /home/lezzs5103/vibeCoding
+sudo ./scripts/install_checklist_timer.sh
+```
+
+상태 확인:
+
+```bash
+systemctl list-timers localtrip-checklist-auto.timer --all
+systemctl status localtrip-checklist-auto.timer
+```
+
 ### 실행 방법
 
 전체 소스 기반 재배포:

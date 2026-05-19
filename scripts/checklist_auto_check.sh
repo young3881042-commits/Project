@@ -25,7 +25,22 @@ log() {
 
 run() {
   log "run: $*"
+  set +e
   "$@" 2>&1 | tee -a "$LOG_FILE"
+  local status="${PIPESTATUS[0]}"
+  set -e
+  return "$status"
+}
+
+ensure_web_dependencies() {
+  if [[ "$RUN_WEB_BUILD" != "1" ]]; then
+    return 0
+  fi
+  if [[ -x "$ROOT_DIR/apps/web/node_modules/vite/bin/vite.js" ]]; then
+    return 0
+  fi
+  log "install web dependencies for isolated worktree"
+  run npm --prefix apps/web ci
 }
 
 wait_for_http() {
@@ -58,6 +73,7 @@ main() {
   log "checklist auto check start"
 
   if [[ "$RUN_WEB_BUILD" == "1" ]]; then
+    ensure_web_dependencies
     run npm --prefix apps/web run build
   fi
 
