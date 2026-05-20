@@ -18,7 +18,7 @@ Jupiter Workspace는 분석 업무용 웹 UI, API, DB, 실행 인프라를 한 �
 - React + Vite 기반 Web UI
 - Spring Boot 기반 API 서버
 - MariaDB 기반 DB 구성
-- Docker / Kubernetes 실행 구조
+- Docker 실행 구조
 - 개인별 분석환경을 만들기 위한 실행 템플릿
 - Gemini 연동을 통해 분석환경에서 **파이썬 파일 생성, 수정, 실행 흐름을 처리할 수 있는 구조**
 
@@ -64,7 +64,7 @@ Jupiter Workspace는 분석 업무용 웹 UI, API, DB, 실행 인프라를 한 �
 
 ### 6. 실행 인프라 분리
 - Web / API / DB 별 실행 구조 분리
-- Docker와 Kubernetes를 각각 관리 가능
+- Docker 실행 구성을 중심으로 관리
 - 개발 환경과 배포 환경으로 확장 가능한 형태 유지
 
 ---
@@ -132,7 +132,7 @@ LocalTrip AI는 한국관광공사 TourAPI 연동을 준비한 국내 여행 일
 - Web: React, Vite
 - API: Spring Boot, JDBC/JPA 기반 Repository
 - DB: MariaDB
-- Deploy: 기존 Kubernetes 소스 기반 배포 유지
+- Deploy: Docker 기반 배포
 - Collection: Bash 초기화 스크립트, Python TourAPI collector
 
 ### 현재 실행 주소
@@ -140,30 +140,6 @@ LocalTrip AI는 한국관광공사 TourAPI 연동을 준비한 국내 여행 일
 - LocalTrip AI Web: `http://192.168.45.101:31088/`
 - 기존 Jupiter 분석 워크스페이스: `http://192.168.45.101:31088/analysisadmin`
 - API NodePort: `http://192.168.45.101:31090`
-
-### 자동 작업 루틴
-
-LocalTrip 체크리스트 자동 작업은 systemd timer로 백그라운드 실행합니다.
-
-- 실행 시각: 매일 `00:00`, `06:00`, `12:00`, `18:00`
-- 부팅 직후 실행: 사용하지 않음
-- 놓친 시간대 부팅 후 실행: 사용하지 않음
-- 실행 스크립트: `scripts/codex_auto_hunt.sh`
-- 검증/배포 스크립트: `scripts/checklist_auto_check.sh`
-
-설치 및 리로드:
-
-```bash
-cd /home/lezzs5103/vibeCoding
-sudo ./scripts/install_checklist_timer.sh
-```
-
-상태 확인:
-
-```bash
-systemctl list-timers localtrip-checklist-auto.timer --all
-systemctl status localtrip-checklist-auto.timer
-```
 
 ### 실행 방법
 
@@ -254,7 +230,6 @@ python3 /root/scripts/localtrip_collect_tourapi.py mock-export
 - Gemini/OpenAI 기반 일정 생성
 - Vector DB 기반 여행지 검색
 - 사용자 로그인/찜하기
-- Kubernetes 운영 배포 고도화
 - Prometheus/Grafana 모니터링
 
 
