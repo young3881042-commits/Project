@@ -3,7 +3,7 @@
 실행 순서: **DB → API → Web**
 
 # 0. Docker base 배포 후 테스트
-main 이미지는 `/home/lezzs5103/vibeCoding`의 `vibecoding-*` 컨테이너입니다. `vibeCoding-auto`는 테스트 이미지입니다.
+main 이미지는 `/home/lezzs5103/vibeCoding`의 `vibecoding-*` 컨테이너입니다.
 
 ```bash
 cd /home/lezzs5103/vibeCoding

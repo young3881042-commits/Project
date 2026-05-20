@@ -2268,30 +2268,38 @@ const PROJECT_BOARD_COLUMNS = [
     title: '작업 예정',
     icon: '○',
     color: '#f59e0b',
-    tasks: ['온보딩 플로우 정리', '랜딩 페이지 문구 초안', '고객 인터뷰 질문 작성']
+    tasks: ['메인 화면 guest/member 제거 확인', 'AI 보드에 스케줄러 메뉴 통합', '예약 실행 문서/스크립트 제거']
   },
   {
     id: 'progress',
     title: '진행 중',
     icon: '◐',
     color: '#3b82f6',
-    tasks: ['대시보드 레이아웃 개선', 'API 응답 상태 정리', '스프린트 우선순위 조정']
+    tasks: ['운영 Docker 웹 재배포', 'AI Trip 장소 보기 데이터 500개 표시 점검']
   },
   {
     id: 'review',
     title: '검토 중',
     icon: '◇',
     color: '#a855f7',
-    tasks: ['권한 설정 QA', '릴리즈 노트 점검']
+    tasks: ['모바일 보드/스케줄러 화면 맞춤', 'Nginx 운영 포트 확인']
   },
   {
     id: 'done',
     title: '완료',
     icon: '✓',
     color: '#22c55e',
-    tasks: ['팀 캘린더 연결', '문서 템플릿 정리', '프로젝트 보드 샘플 구성']
+    tasks: ['메인 화면 바로가기 2개로 단순화', '장소 보기 기본 조회 500개로 확장', '메모 제목 표시와 빠른 미리보기 적용']
   }
 ];
+
+const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
+  column.tasks.map((task, index) => ({
+    id: `admin1-goal-${column.id}-${index}`,
+    title: task,
+    status: column.id
+  }))
+));
 
 function BoardIcon({ type }) {
   const paths = {
@@ -2387,123 +2395,21 @@ function noteBlockFileContent(block) {
 }
 
 function SpaceHomePage({ navigate }) {
-  const storedSession = readStoredAuth();
-  const [accessMode, setAccessMode] = useState(storedSession?.isGuest ? 'guest' : 'member');
-  const [memberFlow, setMemberFlow] = useState('login');
-  const [memberId, setMemberId] = useState('');
-  const [memberPassword, setMemberPassword] = useState('');
-  const [memberLoading, setMemberLoading] = useState(false);
-  const [memberError, setMemberError] = useState('');
-  const [memberSession, setMemberSession] = useState(storedSession);
-
   useEffect(() => {
     document.title = 'AI 개인일정 관리';
   }, []);
-
-  const submitMember = async (event) => {
-    event.preventDefault();
-    if (memberLoading) return;
-    const username = memberId.trim();
-    if (!username || !memberPassword.trim()) {
-      setMemberError('아이디와 비밀번호를 입력하세요.');
-      return;
-    }
-    setMemberLoading(true);
-    setMemberError('');
-    try {
-      const session = await requestJson(memberFlow === 'signup' ? '/api/auth/signup' : '/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password: memberPassword })
-      });
-      localStorage.setItem(AUTH_KEY, JSON.stringify(session));
-      setMemberSession(session);
-      setMemberPassword('');
-    } catch (error) {
-      setMemberError(error.message);
-    } finally {
-      setMemberLoading(false);
-    }
-  };
-
-  const logoutMember = () => {
-    localStorage.removeItem(AUTH_KEY);
-    setMemberSession(null);
-    setMemberPassword('');
-    setAccessMode('member');
-  };
 
   return (
     <main className="spaceHome">
       <section className="spaceHero">
         <div className="spaceHeroCopy">
-          <span className="spaceEyebrow">AI SCHEDULE OS</span>
-          <h1>AI 개인일정 관리</h1>
-          <strong className="spaceHeroLead">메모, 할 일, 여행 일정을 한 화면에서 정리합니다.</strong>
-          <p>글과 텍스트 파일을 블록으로 정리하고 일정 블록은 개인 스케줄러에 자동 연결됩니다.</p>
-          <section className="spaceAuthCard" aria-label="access mode">
-            <div className="spaceAuthSwitch">
-              <button type="button" className={accessMode === 'guest' ? 'active' : ''} onClick={() => setAccessMode('guest')}>
-                Guest
-              </button>
-              <button type="button" className={accessMode === 'member' ? 'active' : ''} onClick={() => setAccessMode('member')}>
-                Member
-              </button>
-            </div>
-            {accessMode === 'guest' ? (
-              <div className="spaceAuthBody">
-                <span>Guest mode</span>
-                <p>게스트는 일부 기능만 사용할 수 있습니다. 저장/연동 기능은 로그인 후 이용하세요.</p>
-                <button type="button" className="spaceAuthSubmit" onClick={() => setAccessMode('member')}>
-                  Login
-                </button>
-              </div>
-            ) : (
-              <div className="spaceAuthBody">
-                {memberSession?.username ? (
-                  <>
-                    <span>Member mode</span>
-                    <p>{memberSession.username} 계정으로 연결되었습니다.</p>
-                    <button type="button" className="spaceSignupLink" onClick={logoutMember}>로그아웃</button>
-                  </>
-                ) : (
-                  <form className="spaceMemberForm" onSubmit={submitMember}>
-                    <div className="spaceAuthTitle">
-                      <span>Member mode</span>
-                    </div>
-                    <label>
-                      <span>이메일/아이디</span>
-                      <input value={memberId} onChange={(event) => setMemberId(event.target.value)} placeholder="my-id" autoComplete="username" />
-                    </label>
-                    <label>
-                      <span>비밀번호</span>
-                      <input type="password" value={memberPassword} onChange={(event) => setMemberPassword(event.target.value)} placeholder="password" autoComplete={memberFlow === 'signup' ? 'new-password' : 'current-password'} />
-                    </label>
-                    <button type="submit" className="spaceAuthSubmit" disabled={memberLoading}>
-                      {memberLoading ? '처리 중...' : memberFlow === 'signup' ? '회원가입' : 'Login'}
-                    </button>
-                    {memberError ? <p className="spaceAuthError">{memberError}</p> : null}
-                    <button
-                      type="button"
-                      className="spaceSignupLink"
-                      onClick={() => {
-                        setMemberFlow((current) => (current === 'signup' ? 'login' : 'signup'));
-                        setMemberError('');
-                      }}
-                    >
-                      {memberFlow === 'signup' ? '로그인으로 돌아가기' : '회원가입'}
-                    </button>
-                  </form>
-                )}
-              </div>
-            )}
-          </section>
+          <span className="spaceEyebrow">AI Schedule</span>
+          <h1>내 여행과 하루 일정을 간단하게 정리하세요</h1>
+          <strong className="spaceHeroLead">관광지 추천은 AI Trip에서, 개인 할 일은 스케줄러에서 관리합니다.</strong>
+          <p>필요한 기능만 바로 열 수 있게 단순하게 정리했습니다.</p>
           <div className="spaceHeroActions">
-            <button type="button" onClick={() => navigate(APP_SHORTCUTS.aiSchedule.path)}><MemoNavIcon type="calendar" />{APP_SHORTCUTS.aiSchedule.label}</button>
-            <button type="button" onClick={() => navigate(APP_SHORTCUTS.aiTrip.path)}><MemoNavIcon type="trip" />{APP_SHORTCUTS.aiTrip.label}</button>
             <button type="button" onClick={() => navigate(APP_SHORTCUTS.personalScheduler.path)}><MemoNavIcon type="calendar" />{APP_SHORTCUTS.personalScheduler.label}</button>
-            <button type="button" onClick={() => navigate(APP_SHORTCUTS.aiMemoBoard.path)}><MemoNavIcon type="board" />{APP_SHORTCUTS.aiMemoBoard.label}</button>
-            <button type="button" onClick={() => navigate(APP_SHORTCUTS.adminWorkspace.path)}><MemoNavIcon type="file" />{APP_SHORTCUTS.adminWorkspace.label}</button>
+            <button type="button" onClick={() => navigate(APP_SHORTCUTS.aiTrip.path)}><MemoNavIcon type="trip" />{APP_SHORTCUTS.aiTrip.label}</button>
           </div>
         </div>
       </section>
@@ -2515,6 +2421,7 @@ function AiNotePage({ navigate }) {
   const [boards, setBoards] = useState(readMemoBoards);
   const [blocks, setBlocks] = useState(readNoteBlocks);
   const [activeId, setActiveId] = useState('');
+  const [workspaceMode, setWorkspaceMode] = useState('board');
   const [syncCount, setSyncCount] = useState(0);
   const [fileStatus, setFileStatus] = useState('');
   const [draggingBlockId, setDraggingBlockId] = useState('');
@@ -2541,6 +2448,32 @@ function AiNotePage({ navigate }) {
   useEffect(() => {
     localStorage.setItem(AI_NOTE_BOARDS_KEY, JSON.stringify(boards));
   }, [boards]);
+
+  useEffect(() => {
+    if (session?.username !== 'admin1') return;
+    setBlocks((current) => {
+      const existingIds = new Set(current.map((block) => block.id));
+      const missingTasks = ADMIN1_BOARD_TASKS.filter((task) => !existingIds.has(task.id));
+      if (!missingTasks.length) return current;
+      return [
+        ...missingTasks.map((task, index) => ({
+          id: task.id,
+          type: 'text',
+          content: `## ${task.title}\n\n- [ ] 진행 상태 확인\n- [ ] 운영 화면 확인`,
+          sector: 'project',
+          boardId: 'project',
+          status: task.status,
+          parentId: '',
+          filePath: `memo-files/admin1/${task.id}.md`,
+          width: 220,
+          height: 120,
+          x: 18 + (index % 3) * 24,
+          y: 18 + Math.floor(index / 3) * 32
+        })),
+        ...current
+      ];
+    });
+  }, [session?.username]);
 
   useEffect(() => {
     if (!boards.some((board) => board.id === activeBoardId)) {
@@ -2860,7 +2793,8 @@ function AiNotePage({ navigate }) {
         <div className="aiNoteSideGroup memoNavPrimary">
           <span>이동</span>
           <button type="button" onClick={() => navigate(APP_SHORTCUTS.mainHub.path)}><MemoNavIcon type="home" />{APP_SHORTCUTS.mainHub.label}</button>
-          <a href={APP_SHORTCUTS.personalScheduler.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.personalScheduler.path); }}><MemoNavIcon type="calendar" />{APP_SHORTCUTS.personalScheduler.label}</a>
+          <button type="button" className={workspaceMode === 'board' ? 'active' : ''} onClick={() => setWorkspaceMode('board')}><MemoNavIcon type="board" />메모 보드</button>
+          <button type="button" className={workspaceMode === 'scheduler' ? 'active' : ''} onClick={() => setWorkspaceMode('scheduler')}><MemoNavIcon type="calendar" />스케줄러</button>
           <a href={APP_SHORTCUTS.aiTrip.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.aiTrip.path); }}><MemoNavIcon type="trip" />{APP_SHORTCUTS.aiTrip.label}</a>
           <a href={APP_SHORTCUTS.adminWorkspace.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.adminWorkspace.path); }}><MemoNavIcon type="file" />{APP_SHORTCUTS.adminWorkspace.label}</a>
           <button type="button" onClick={addBoard}><MemoNavIcon type="plus" />보드 추가</button>
@@ -2893,7 +2827,18 @@ function AiNotePage({ navigate }) {
           ))}
         </div>
       </aside>
-      <section className="aiNotePage" onClick={() => setContextMenu(null)} onContextMenu={(event) => openContextMenu(event, 'todo')}>
+      <section
+        className={`aiNotePage ${workspaceMode === 'scheduler' ? 'schedulerMode' : ''}`}
+        onClick={() => workspaceMode === 'board' && setContextMenu(null)}
+        onContextMenu={(event) => {
+          if (workspaceMode === 'board') {
+            openContextMenu(event, 'todo');
+          }
+        }}
+      >
+        {workspaceMode === 'scheduler' ? (
+          <SchedulerPage navigate={navigate} embedded />
+        ) : (
         <section className="aiNoteBoardPanel" onContextMenu={(event) => openContextMenu(event, 'todo')}>
           <header className="projectTopbar">
             <div>
@@ -3028,12 +2973,13 @@ function AiNotePage({ navigate }) {
             </div>
           ) : null}
         </section>
+        )}
       </section>
     </main>
   );
 }
 
-function SchedulerPage({ navigate }) {
+function SchedulerPage({ navigate, embedded = false }) {
   const session = readStoredAuth();
   const schedulerKey = schedulerStorageKey(session);
   const [items, setItems] = useState(() => readSchedulerItems(schedulerKey));
@@ -3051,8 +2997,10 @@ function SchedulerPage({ navigate }) {
   });
 
   useEffect(() => {
-    document.title = 'AI 개인 스케줄러';
-  }, []);
+    if (!embedded) {
+      document.title = 'AI 개인 스케줄러';
+    }
+  }, [embedded]);
 
   useEffect(() => {
     localStorage.setItem(schedulerKey, JSON.stringify(items));
@@ -3197,26 +3145,7 @@ function SchedulerPage({ navigate }) {
     deleteItem(item.sourceId || item.id);
   };
 
-  return (
-    <main className="schedulerShell">
-      <aside className="schedulerSidebar">
-        <button type="button" className="schedulerHomeButton" onClick={() => navigate(APP_SHORTCUTS.mainHub.path)}>{APP_SHORTCUTS.mainHub.label}</button>
-        <div className="schedulerSideGroup">
-          <span>Services</span>
-          <a href={APP_SHORTCUTS.mainHub.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.mainHub.path); }}>{APP_SHORTCUTS.mainHub.label}</a>
-          <a href={APP_SHORTCUTS.aiMemoBoard.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.aiMemoBoard.path); }}>{APP_SHORTCUTS.aiMemoBoard.label}</a>
-          <a href={APP_SHORTCUTS.aiTrip.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.aiTrip.path); }}>{APP_SHORTCUTS.aiTrip.label}</a>
-          <a href={APP_SHORTCUTS.adminWorkspace.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.adminWorkspace.path); }}>{APP_SHORTCUTS.adminWorkspace.label}</a>
-        </div>
-        <div className="schedulerSideGroup">
-          <span>Views</span>
-          {['전체', '작업', '회의', '검토', '개인', '메모', '완료'].map((item) => (
-            <button key={item} type="button" className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>
-              {item}
-            </button>
-          ))}
-        </div>
-      </aside>
+  const schedulerContent = (
       <section className="schedulerPage">
         <header className="schedulerHero">
           <div>
@@ -3439,6 +3368,33 @@ function SchedulerPage({ navigate }) {
           </div>
         </section>
       </section>
+  );
+
+  if (embedded) {
+    return <section className="schedulerEmbedded">{schedulerContent}</section>;
+  }
+
+  return (
+    <main className="schedulerShell">
+      <aside className="schedulerSidebar">
+        <button type="button" className="schedulerHomeButton" onClick={() => navigate(APP_SHORTCUTS.mainHub.path)}>{APP_SHORTCUTS.mainHub.label}</button>
+        <div className="schedulerSideGroup">
+          <span>Services</span>
+          <a href={APP_SHORTCUTS.mainHub.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.mainHub.path); }}>{APP_SHORTCUTS.mainHub.label}</a>
+          <a href={APP_SHORTCUTS.aiMemoBoard.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.aiMemoBoard.path); }}>{APP_SHORTCUTS.aiMemoBoard.label}</a>
+          <a href={APP_SHORTCUTS.aiTrip.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.aiTrip.path); }}>{APP_SHORTCUTS.aiTrip.label}</a>
+          <a href={APP_SHORTCUTS.adminWorkspace.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.adminWorkspace.path); }}>{APP_SHORTCUTS.adminWorkspace.label}</a>
+        </div>
+        <div className="schedulerSideGroup">
+          <span>Views</span>
+          {['전체', '작업', '회의', '검토', '개인', '메모', '완료'].map((item) => (
+            <button key={item} type="button" className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>
+              {item}
+            </button>
+          ))}
+        </div>
+      </aside>
+      {schedulerContent}
     </main>
   );
 }

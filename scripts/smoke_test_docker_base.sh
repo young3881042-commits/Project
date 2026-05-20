@@ -2,8 +2,8 @@
 set -euo pipefail
 
 BASE_URL="${BASE_URL:-http://127.0.0.1}"
-EXPECTED_TEXT="${EXPECTED_TEXT:-Member Login}"
-REMOVED_TEXT="${REMOVED_TEXT:-Guest 로그아웃}"
+EXPECTED_TEXT="${EXPECTED_TEXT:-내 여행과 하루 일정을 간단하게 정리하세요}"
+REMOVED_TEXT="${REMOVED_TEXT:-Guest mode}"
 
 tmp_html="$(mktemp)"
 tmp_js="$(mktemp)"
