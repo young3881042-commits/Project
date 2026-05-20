@@ -744,9 +744,12 @@ function WorkspaceHeader({
           </button>
         ) : null}
         {isGuest ? (
-          <div className="workspaceUserButton guestLabel" aria-label="Guest session">
-            <span>Guest</span>
-            <strong>{auth.username}</strong>
+          <div className="workspaceGuestActions">
+            <div className="workspaceUserButton guestLabel" aria-label="Guest session">
+              <span>Guest</span>
+              <strong>{auth.username}</strong>
+            </div>
+            <button type="button" className="ghostButton compact" onClick={() => { localStorage.removeItem(AUTH_KEY); navigate('/'); }}>Login</button>
           </div>
         ) : (
           <div className="userMenuWrap">
@@ -2364,7 +2367,7 @@ function noteBlockFileContent(block) {
 
 function SpaceHomePage({ navigate }) {
   const storedSession = readStoredAuth();
-  const [accessMode, setAccessMode] = useState(storedSession?.username ? 'member' : 'guest');
+  const [accessMode, setAccessMode] = useState(storedSession?.isGuest ? 'guest' : 'member');
   const [memberFlow, setMemberFlow] = useState('login');
   const [memberId, setMemberId] = useState('');
   const [memberPassword, setMemberPassword] = useState('');
@@ -2406,6 +2409,7 @@ function SpaceHomePage({ navigate }) {
     localStorage.removeItem(AUTH_KEY);
     setMemberSession(null);
     setMemberPassword('');
+    setAccessMode('member');
   };
 
   return (
@@ -2428,7 +2432,10 @@ function SpaceHomePage({ navigate }) {
             {accessMode === 'guest' ? (
               <div className="spaceAuthBody">
                 <span>Guest mode</span>
-                <p>로그인 없이 AI 개인일정 관리 화면을 둘러보세요.</p>
+                <p>게스트는 일부 기능만 사용할 수 있습니다. 저장/연동 기능은 로그인 후 이용하세요.</p>
+                <button type="button" className="spaceAuthSubmit" onClick={() => setAccessMode('member')}>
+                  Login
+                </button>
               </div>
             ) : (
               <div className="spaceAuthBody">

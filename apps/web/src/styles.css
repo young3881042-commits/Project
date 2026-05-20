@@ -20178,3 +20178,51 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
     font-size: 0.61rem !important;
   }
 }
+
+.workspaceGuestActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .workspaceTopbar {
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .workspaceUserTray {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .workspaceTopTabs {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .workspaceTopTabs .ghostButton.compact {
+    flex: 0 0 auto;
+  }
+
+  .workspaceGuestActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 560px) {
+  .spaceAuthCard {
+    width: 100%;
+  }
+
+  .spaceAuthSubmit,
+  .spaceSignupLink {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+}
