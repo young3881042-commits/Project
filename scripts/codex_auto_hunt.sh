@@ -9,10 +9,12 @@ CODEX_IMAGE="${CODEX_IMAGE:-vibecoding-api}"
 CODEX_BIN="${CODEX_BIN:-/opt/jupiter-cli/bin/codex}"
 CODEX_HOME_DIR="${CODEX_HOME_DIR:-/data/codex}"
 CODEX_MODEL="${CODEX_MODEL:-gpt-5.5}"
+CODEX_REASONING_EFFORT="${CODEX_REASONING_EFFORT:-high}"
 AUTO_GIT_USER="${AUTO_GIT_USER:-lezzs5103}"
 LOG_DIR="${LOG_DIR:-$ROOT_DIR/.local/logs}"
 RUN_ID="$(date -u '+%Y%m%dT%H%M%SZ')"
 LOG_FILE="$LOG_DIR/codex-auto-hunt-$RUN_ID.log"
+CHECKLIST_FILE="${CHECKLIST_FILE:-$AUTO_WORKTREE_DIR/docs/NEXT_CHECKLIST_PLAN_KO.md}"
 
 mkdir -p "$LOG_DIR"
 
@@ -39,6 +41,18 @@ run_git() {
     return "$status"
   fi
   run git "$@"
+}
+
+next_checklist_item() {
+  awk '
+    /^## 자동 실행 큐/ { in_queue = 1; next }
+    /^## / && in_queue { exit }
+    in_queue && /^- \[ \] / {
+      sub(/^- \[ \] /, "")
+      print
+      exit
+    }
+  ' "$CHECKLIST_FILE"
 }
 
 ensure_ssh_known_hosts() {
@@ -77,11 +91,12 @@ prepare_worktree() {
 }
 
 codex_prompt() {
+  local item="$1"
   cat <<'PROMPT'
 You are running unattended on the 00:00, 06:00, 12:00, and 18:00 UTC timer for the LocalTrip project.
 
 Goal:
-- Pick exactly one small unchecked item from docs/NEXT_CHECKLIST_PLAN_KO.md.
+- Work on exactly the checklist item shown below.
 - Prefer safe LocalTrip AI trip work: mobile UI/UX polish, dataset/checklist docs, lightweight validation, or user-facing error copy.
 - Implement a small, reviewable change.
 - Do not perform broad refactors.
@@ -92,7 +107,10 @@ Goal:
 Validation:
 - Run the smallest relevant local validation available in this workspace.
 - If validation cannot run, document why in docs/NEXT_CHECKLIST_PLAN_KO.md.
+
+Selected checklist item:
 PROMPT
+  printf -- '- [ ] %s\n' "$item"
 }
 
 run_codex() {
@@ -101,9 +119,17 @@ run_codex() {
     return 0
   fi
 
+  local item
+  item="$(next_checklist_item)"
+  if [[ -z "$item" ]]; then
+    log "skip codex: no unchecked item in 자동 실행 큐"
+    return 0
+  fi
+  log "selected checklist item: $item"
+
   log "start unattended Codex worker"
   set +e
-  codex_prompt | docker run --rm -i \
+  codex_prompt "$item" | docker run --rm -i \
     --network host \
     -v "$AUTO_WORKTREE_DIR:/workspace" \
     -v "$CODEX_HOME_DIR:/root/.codex" \
@@ -114,6 +140,7 @@ run_codex() {
     --sandbox workspace-write \
     --dangerously-bypass-approvals-and-sandbox \
     --model "$CODEX_MODEL" \
+    -c "model_reasoning_effort=\"$CODEX_REASONING_EFFORT\"" \
     - 2>&1 | tee -a "$LOG_FILE"
   local status="${PIPESTATUS[1]}"
   set -e
@@ -151,7 +178,7 @@ commit_and_push() {
   run_git -C "$AUTO_WORKTREE_DIR" \
     -c user.name="${GIT_USER_NAME:-LocalTrip Auto}" \
     -c user.email="${GIT_USER_EMAIL:-localtrip-auto@localhost}" \
-    commit -m "Run automated checklist work"
+    commit -m "자동 체크리스트 작업 반영"
   run_git -C "$AUTO_WORKTREE_DIR" push origin "HEAD:$BASE_BRANCH"
 }
 

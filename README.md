@@ -143,6 +143,15 @@ LocalTrip AI는 한국관광공사 TourAPI 연동을 준비한 국내 여행 일
 
 ### 실행 방법
 
+Docker base 이미지(`vibeCoding`) 재배포:
+
+```bash
+docker compose -f docker-compose.dev.yml up -d --build
+scripts/smoke_test_docker_base.sh
+```
+
+배포 후에는 반드시 스모크 테스트를 실행해 실제 서버 HTML/JS 번들에 변경 문구가 포함됐는지, 브라우저 캐시가 `immutable`로 고정되지 않았는지 확인합니다. 로컬 검증 URL은 `localhost` 대신 `127.0.0.1`을 기본으로 사용합니다.
+
 전체 소스 기반 재배포:
 
 ```bash

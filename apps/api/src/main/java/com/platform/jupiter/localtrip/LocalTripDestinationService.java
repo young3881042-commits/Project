@@ -37,7 +37,7 @@ public class LocalTripDestinationService {
         String normalizedRegion = LocalTripText.normalize(region);
         String normalizedStyle = LocalTripText.normalize(style);
         int pageNumber = Math.max(0, page == null ? 0 : page);
-        int pageSize = Math.min(100, Math.max(1, size == null ? 50 : size));
+        int pageSize = Math.min(500, Math.max(1, size == null ? 500 : size));
         return destinationRepository.findAllByOrderByRegionAscPopularityScoreDescNameAsc().stream()
                 .filter(destination -> matchesRegion(destination, normalizedRegion, normalizedAreaCode))
                 .filter(destination -> normalizedStyle.isBlank() || hasStyle(destination, normalizedStyle))

@@ -100,7 +100,7 @@ main() {
   if [[ "$AUTO_COMMIT" == "1" || "$AUTO_PUSH" == "1" ]]; then
     if ! git diff --quiet -- "$CHECKLIST_FILE"; then
       run git add "$CHECKLIST_FILE"
-      run git commit -m "Update automated checklist log"
+      run git commit -m "자동 체크리스트 점검 로그 반영"
     fi
   fi
 

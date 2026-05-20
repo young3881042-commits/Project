@@ -47,11 +47,12 @@ server {
 
   location /assets/ {
     try_files $uri =404;
-    expires 1y;
-    add_header Cache-Control "public, immutable";
+    expires -1;
+    add_header Cache-Control "no-cache, must-revalidate";
   }
 
   location / {
+    add_header Cache-Control "no-cache, must-revalidate";
     try_files $uri $uri/ /index.html;
   }
 }

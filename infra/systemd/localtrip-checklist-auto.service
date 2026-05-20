@@ -11,4 +11,5 @@ Environment=BASE_BRANCH=main
 Environment=CODEX_IMAGE=vibecoding-api
 Environment=CODEX_HOME_DIR=/data/codex
 Environment=CODEX_MODEL=gpt-5.5
+Environment=CODEX_REASONING_EFFORT=high
 ExecStart=/home/lezzs5103/vibeCoding/scripts/codex_auto_hunt.sh

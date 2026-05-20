@@ -365,7 +365,9 @@ async function ensureLocalTripSession() {
 function readStoredAuth() {
   try {
     const raw = localStorage.getItem(AUTH_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    return session?.username === 'guestuser' && !session.isGuest ? { ...session, isGuest: true } : session;
   } catch {
     return null;
   }
@@ -1166,7 +1168,7 @@ function useDestinations() {
     setLoading(true);
     setError('');
     try {
-      const payload = await localTripRequest('/api/destinations');
+      const payload = await localTripRequest('/api/destinations?size=500');
       const normalized = normalizeDestinations(payload);
       setDestinations(normalized);
       setUsingFallback(false);
@@ -1621,8 +1623,10 @@ function HomePage({ navigate }) {
           <h1>내 여행 일정을 한 번에 정리하세요</h1>
           <p>관광지, 식당 위치, 카페 휴식과 매일 출발지·도착지를 기준으로 움직이기 쉬운 일정을 만듭니다.</p>
           <div className="spaceHeroActions">
-            <button type="button" onClick={() => navigate('/planner')}>AI 일정 만들기</button>
-            <button type="button" onClick={() => navigate('/destinations')}>장소 보기</button>
+            <button type="button" onClick={() => navigate('/destinations')}>AI Trip</button>
+            <button type="button" onClick={() => navigate('/planner')}>Scheduler</button>
+            <button type="button" onClick={() => navigate('/scheduler')}>개인 스케줄러</button>
+            <button type="button" onClick={() => navigate('/notes')}>AI 메모 보드</button>
           </div>
         </div>
       </section>
@@ -2640,15 +2644,59 @@ function NotFoundPage({ navigate }) {
 }
 
 function MyPage({ navigate }) {
-  const session = readStoredAuth();
+  const [session, setSession] = useState(readStoredAuth());
+  const [authMode, setAuthMode] = useState('login');
+  const [authUsername, setAuthUsername] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
   const guest = isGuestSession(session);
   const { destinations, loading: destinationsLoading } = useDestinations();
   const { plans, loading: plansLoading } = usePlans();
   const recentPlans = plans.slice(0, 3);
 
+  const showMemberLogin = () => {
+    document.getElementById('lt-member-login')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
   const logout = () => {
     localStorage.removeItem(AUTH_KEY);
-    window.location.href = '/';
+    setSession(null);
+    setAuthUsername('');
+    setAuthPassword('');
+    setAuthError('');
+    navigate('/');
+  };
+
+  const submitAuth = async (event) => {
+    event.preventDefault();
+    if (authLoading) return;
+    const username = authUsername.trim();
+    if (!username || !authPassword.trim()) {
+      setAuthError('아이디와 비밀번호를 입력하세요.');
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const response = await fetch(authMode === 'signup' ? '/api/auth/signup' : '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ username, password: authPassword })
+      });
+      if (!response.ok) {
+        throw new Error((await response.text()) || `HTTP ${response.status}`);
+      }
+      const nextSession = await response.json();
+      localStorage.setItem(AUTH_KEY, JSON.stringify(nextSession));
+      setSession(nextSession);
+      setAuthUsername('');
+      setAuthPassword('');
+    } catch (error) {
+      setAuthError(error.message);
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   return (
@@ -2669,7 +2717,7 @@ function MyPage({ navigate }) {
         <div className="ltMyActions">
           <button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>새 일정 만들기</button>
           {guest ? (
-            <button type="button" className="ltGhostButton" onClick={() => navigate('/')}>AI 일정 홈</button>
+            <button type="button" className="ltGhostButton" onClick={showMemberLogin}>회원 로그인</button>
           ) : (
             <button type="button" className="ltGhostButton" onClick={logout}>로그아웃</button>
           )}
@@ -2705,6 +2753,36 @@ function MyPage({ navigate }) {
           <summary>
             <span>계정 정보</span>
           </summary>
+          {guest ? (
+            <form id="lt-member-login" className="ltMemberLoginForm" onSubmit={submitAuth}>
+              <div className="ltSectionHeader compact">
+                <span className="ltEyebrow">Member Login</span>
+                <h2>{authMode === 'signup' ? '회원가입' : '회원 로그인'}</h2>
+              </div>
+              <label>
+                <span>이메일/아이디</span>
+                <input value={authUsername} onChange={(event) => setAuthUsername(event.target.value)} placeholder="my-id" autoComplete="username" />
+              </label>
+              <label>
+                <span>비밀번호</span>
+                <input type="password" value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} placeholder="password" autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'} />
+              </label>
+              <button type="submit" className="ltPrimaryButton" disabled={authLoading}>
+                {authLoading ? '처리 중...' : authMode === 'signup' ? '회원가입' : 'Login'}
+              </button>
+              {authError ? <p className="ltAuthError">{authError}</p> : null}
+              <button
+                type="button"
+                className="ltTextButton"
+                onClick={() => {
+                  setAuthMode((current) => (current === 'signup' ? 'login' : 'signup'));
+                  setAuthError('');
+                }}
+              >
+                {authMode === 'signup' ? '로그인으로 돌아가기' : '회원가입'}
+              </button>
+            </form>
+          ) : null}
           <dl className="ltProfileList">
             <div>
               <dt>아이디</dt>
