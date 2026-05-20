@@ -20389,8 +20389,253 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
     flex: 0 0 auto;
   }
 
-  .workspaceGuestActions {
+.workspaceGuestActions {
     width: 100%;
     justify-content: space-between;
+  }
+}
+
+/* Workspace navigator pass: Schedule / NotePad / AI Trip */
+body:has(.schedulerShell),
+body:has(.aiNoteShell) {
+  background: #f7f8fa;
+}
+
+.schedulerShell,
+.aiNoteShell {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  min-height: 100vh !important;
+  background: #f7f8fa !important;
+}
+
+.workspaceNavigator {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  width: 100%;
+  min-height: 74px;
+  display: grid;
+  grid-template-columns: minmax(180px, auto) minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 12px clamp(18px, 4vw, 42px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(18px);
+}
+
+.workspaceNavigatorBrand {
+  min-width: 0;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  padding: 0;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 950;
+  text-align: left;
+}
+
+.workspaceNavigator > div {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid rgba(226, 232, 240, 0.96);
+  border-radius: 22px;
+  background: #f8fafc;
+}
+
+.workspaceNavigator a {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 16px;
+  color: #475569;
+  padding: 0 14px;
+  font-size: 0.86rem;
+  font-weight: 950;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.workspaceNavigator a:hover,
+.workspaceNavigator a.active {
+  background: #fff;
+  color: #047857;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.workspaceNavigator a.active .memoNavIcon,
+.workspaceNavigator a:hover .memoNavIcon {
+  background: #dff8ee;
+  color: #047857;
+}
+
+.schedulerShell > .schedulerPage,
+.aiNotePage {
+  width: min(1440px, calc(100% - 32px)) !important;
+  margin: 0 auto !important;
+  padding: 22px 0 56px !important;
+}
+
+.schedulerShell > .schedulerPage {
+  display: grid !important;
+  gap: 14px !important;
+}
+
+.schedulerShell > .schedulerPage .schedulerHero {
+  min-height: auto !important;
+  padding: 18px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+}
+
+.schedulerShell > .schedulerPage .schedulerQuickAdd,
+.schedulerShell > .schedulerPage .schedulerDatabase,
+.aiNoteBoardPanel {
+  border-radius: 8px !important;
+}
+
+.schedulerShell > .schedulerPage .schedulerDatabase {
+  grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.75fr) !important;
+}
+
+.schedulerShell > .schedulerPage .schedulerQuickAdd {
+  grid-template-columns: minmax(220px, 1.1fr) repeat(3, minmax(140px, 0.65fr)) minmax(180px, 0.9fr) auto !important;
+}
+
+.notePadStart {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.72fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--memo-line, #e5e7eb);
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.notePadStart > div:first-child {
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.notePadStart span {
+  color: var(--memo-muted, #6b7280);
+  font-size: 0.74rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.notePadStart strong {
+  color: var(--memo-ink, #111827);
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
+  line-height: 1.14;
+}
+
+.notePadStart p {
+  color: var(--memo-body, #4b5563);
+  line-height: 1.55;
+}
+
+.notePadStart > div:last-child {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.notePadStart button {
+  min-width: 0;
+  min-height: 82px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--memo-line, #e5e7eb);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--memo-ink, #111827);
+  padding: 12px;
+  font: inherit;
+  font-weight: 950;
+  text-align: left;
+}
+
+.notePadStart button:hover {
+  border-color: rgba(37, 99, 235, 0.3);
+  background: var(--memo-accent-soft, #e8f1ff);
+}
+
+.notePadStart button span {
+  overflow: hidden;
+  color: inherit;
+  font-size: 0.95rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: none;
+}
+
+.notePadStart button small {
+  min-width: 28px;
+  min-height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: var(--memo-muted, #6b7280);
+  font-size: 0.78rem;
+}
+
+@media (max-width: 760px) {
+  .workspaceNavigator {
+    min-height: auto;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .workspaceNavigator > div {
+    justify-self: stretch;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    padding: 5px;
+  }
+
+  .workspaceNavigator a {
+    justify-content: center;
+    min-width: 0;
+    padding: 0 6px;
+    font-size: 0.74rem;
+  }
+
+  .schedulerShell > .schedulerPage,
+  .aiNotePage {
+    width: calc(100% - 16px) !important;
+    padding: 12px 0 30px !important;
+  }
+
+  .schedulerShell > .schedulerPage .schedulerQuickAdd,
+  .schedulerShell > .schedulerPage .schedulerDatabase,
+  .notePadStart,
+  .notePadStart > div:last-child {
+    grid-template-columns: 1fr !important;
   }
 }

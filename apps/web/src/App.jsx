@@ -12,8 +12,8 @@ const APP_SHORTCUTS = {
   mainHub: { label: 'Home', path: '/' },
   aiTrip: { label: 'AI Trip', path: '/destinations' },
   aiSchedule: { label: 'Scheduler', path: '/planner' },
-  personalScheduler: { label: '개인 스케줄러', path: '/scheduler' },
-  aiMemoBoard: { label: 'AI Memo Board', path: '/notes' },
+  personalScheduler: { label: 'Schedule', path: '/scheduler' },
+  aiMemoBoard: { label: 'NotePad', path: '/notes' },
   adminWorkspace: { label: '관리자 배치', path: '/analysisadmin' }
 };
 const RECURRENCE_LABELS = {
@@ -2381,6 +2381,38 @@ function MemoNavIcon({ type }) {
   );
 }
 
+function WorkspaceNavigator({ active, navigate }) {
+  const items = [
+    { key: 'schedule', label: 'Schedule', path: APP_SHORTCUTS.personalScheduler.path, icon: 'calendar' },
+    { key: 'notes', label: 'NotePad', path: APP_SHORTCUTS.aiMemoBoard.path, icon: 'board' },
+    { key: 'trip', label: 'AI Trip', path: APP_SHORTCUTS.aiTrip.path, icon: 'trip' }
+  ];
+  return (
+    <nav className="workspaceNavigator" aria-label="workspace navigator">
+      <button type="button" className="workspaceNavigatorBrand" onClick={() => navigate(APP_SHORTCUTS.mainHub.path)}>
+        <MemoNavIcon type="home" />
+        <span>AI Schedule</span>
+      </button>
+      <div>
+        {items.map((item) => (
+          <a
+            key={item.key}
+            className={active === item.key ? 'active' : ''}
+            href={item.path}
+            onClick={(event) => {
+              event.preventDefault();
+              navigate(item.path);
+            }}
+          >
+            <MemoNavIcon type={item.icon} />
+            <span>{item.label}</span>
+          </a>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 function noteBlockFilePath(block) {
   if (block.filePath) return block.filePath;
   return `memo-files/${block.id}.md`;
@@ -2422,6 +2454,7 @@ function AiNotePage({ navigate }) {
   const [blocks, setBlocks] = useState(readNoteBlocks);
   const [activeId, setActiveId] = useState('');
   const [workspaceMode, setWorkspaceMode] = useState('board');
+  const [noteContentOpen, setNoteContentOpen] = useState(false);
   const [syncCount, setSyncCount] = useState(0);
   const [fileStatus, setFileStatus] = useState('');
   const [draggingBlockId, setDraggingBlockId] = useState('');
@@ -2496,6 +2529,7 @@ function AiNotePage({ navigate }) {
     };
     setBoards((current) => [...current, nextBoard]);
     setActiveBoardId(nextBoard.id);
+    setNoteContentOpen(true);
   };
 
   const renameBoard = (id, title) => {
@@ -2601,6 +2635,7 @@ function AiNotePage({ navigate }) {
   const openBlockFile = async (block) => {
     const filePath = noteBlockFilePath(block);
     setActiveId(block.id);
+    setNoteContentOpen(true);
     setMemoViewMode('preview');
     setFileStatus('파일을 준비하는 중...');
     setBlocks((current) => current.map((item) => (item.id === block.id ? { ...item, filePath } : item)));
@@ -2789,44 +2824,7 @@ function AiNotePage({ navigate }) {
 
   return (
     <main className="aiNoteShell">
-      <aside className="aiNoteSidebar">
-        <div className="aiNoteSideGroup memoNavPrimary">
-          <span>이동</span>
-          <button type="button" onClick={() => navigate(APP_SHORTCUTS.mainHub.path)}><MemoNavIcon type="home" />{APP_SHORTCUTS.mainHub.label}</button>
-          <button type="button" className={workspaceMode === 'board' ? 'active' : ''} onClick={() => setWorkspaceMode('board')}><MemoNavIcon type="board" />메모 보드</button>
-          <button type="button" className={workspaceMode === 'scheduler' ? 'active' : ''} onClick={() => setWorkspaceMode('scheduler')}><MemoNavIcon type="calendar" />스케줄러</button>
-          <a href={APP_SHORTCUTS.aiTrip.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.aiTrip.path); }}><MemoNavIcon type="trip" />{APP_SHORTCUTS.aiTrip.label}</a>
-          <a href={APP_SHORTCUTS.adminWorkspace.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.adminWorkspace.path); }}><MemoNavIcon type="file" />{APP_SHORTCUTS.adminWorkspace.label}</a>
-          <button type="button" onClick={addBoard}><MemoNavIcon type="plus" />보드 추가</button>
-        </div>
-        <nav className="memoBoardNav" aria-label="memo boards">
-          <span>보드</span>
-          {boards.map((board) => {
-            const files = rootBlocks.filter((block) => (block.boardId || block.sector) === board.id);
-            return (
-              <section className={`memoBoardNavSection ${activeBoardId === board.id ? 'active' : ''}`} key={board.id}>
-                <button type="button" onClick={() => setActiveBoardId(board.id)}><MemoNavIcon type="board" />{board.title}</button>
-                {activeBoardId === board.id ? (
-                  <input value={board.title} onChange={(event) => renameBoard(board.id, event.target.value)} aria-label="보드 이름" />
-                ) : null}
-                <div>
-                  {files.map((block) => (
-                    <button type="button" key={block.id} onClick={() => openBlockFile(block)}>
-                      <MemoNavIcon type="file" />{noteBlockTitle(block)}
-                    </button>
-                  ))}
-                </div>
-              </section>
-            );
-          })}
-        </nav>
-        <div className="aiNoteSideGroup">
-          <span>현재 보드 파일</span>
-          {boardBlocks.map((block) => (
-            <button type="button" key={block.id} onClick={() => openBlockFile(block)}><MemoNavIcon type="file" />{noteBlockTitle(block)}</button>
-          ))}
-        </div>
-      </aside>
+      <WorkspaceNavigator active="notes" navigate={navigate} />
       <section
         className={`aiNotePage ${workspaceMode === 'scheduler' ? 'schedulerMode' : ''}`}
         onClick={() => workspaceMode === 'board' && setContextMenu(null)}
@@ -2842,13 +2840,12 @@ function AiNotePage({ navigate }) {
         <section className="aiNoteBoardPanel" onContextMenu={(event) => openContextMenu(event, 'todo')}>
           <header className="projectTopbar">
             <div>
-              <span className="projectBreadcrumb">AI Schedule / Goal Board</span>
-              <h1>오늘의 목표 보드</h1>
+              <span className="projectBreadcrumb">AI Schedule / NotePad</span>
+              <h1>NotePad</h1>
             </div>
             <div className="projectTopActions" aria-label="workspace actions">
-              <button type="button" title="공유"><BoardIcon type="share" /></button>
-              <button type="button" title="댓글"><BoardIcon type="comments" /></button>
-              <button type="button" title="즐겨찾기"><BoardIcon type="star" /></button>
+              <button type="button" onClick={() => setWorkspaceMode('scheduler')} title="스케줄러"><MemoNavIcon type="calendar" /></button>
+              <button type="button" onClick={addBoard} title="새 보드"><MemoNavIcon type="plus" /></button>
             </div>
           </header>
           <section className="projectBoardHero">
@@ -2859,7 +2856,10 @@ function AiNotePage({ navigate }) {
                     type="button"
                     className={activeBoardId === board.id ? 'active' : ''}
                     key={board.id}
-                    onClick={() => setActiveBoardId(board.id)}
+                    onClick={() => {
+                      setActiveBoardId(board.id);
+                      setNoteContentOpen(true);
+                    }}
                   >
                     <MemoNavIcon type="board" />
                     <span>{board.title}</span>
@@ -2882,8 +2882,34 @@ function AiNotePage({ navigate }) {
                 ) : null}
               </div>
             </div>
-            <button type="button" className="projectNewItemButton" onClick={() => addBlock('text', '', 'todo', activeBoardId)}>+ 새 항목</button>
+            <button type="button" className="projectNewItemButton" onClick={() => { setNoteContentOpen(true); addBlock('text', '', 'todo', activeBoardId); }}>+ 새 항목</button>
           </section>
+          {!noteContentOpen ? (
+            <section className="notePadStart">
+              <div>
+                <span>Boards</span>
+                <strong>보드를 선택하면 아래 내용이 열립니다.</strong>
+                <p>작업 카드, 메모 작성, 파일 연결은 선택한 보드 안에서만 표시합니다.</p>
+              </div>
+              <div>
+                {boards.map((board) => (
+                  <button
+                    type="button"
+                    key={board.id}
+                    onClick={() => {
+                      setActiveBoardId(board.id);
+                      setNoteContentOpen(true);
+                    }}
+                  >
+                    <MemoNavIcon type="board" />
+                    <span>{board.title}</span>
+                    <small>{rootBlocks.filter((block) => (block.boardId || block.sector) === board.id).length}</small>
+                  </button>
+                ))}
+              </div>
+            </section>
+          ) : (
+            <>
           <aside className="projectFloatingNote" aria-label="recent comment">
             <span><BoardIcon type="bell" /></span>
             <div>
@@ -2972,6 +2998,8 @@ function AiNotePage({ navigate }) {
               )}
             </div>
           ) : null}
+            </>
+          )}
         </section>
         )}
       </section>
@@ -3376,24 +3404,7 @@ function SchedulerPage({ navigate, embedded = false }) {
 
   return (
     <main className="schedulerShell">
-      <aside className="schedulerSidebar">
-        <button type="button" className="schedulerHomeButton" onClick={() => navigate(APP_SHORTCUTS.mainHub.path)}>{APP_SHORTCUTS.mainHub.label}</button>
-        <div className="schedulerSideGroup">
-          <span>Services</span>
-          <a href={APP_SHORTCUTS.mainHub.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.mainHub.path); }}>{APP_SHORTCUTS.mainHub.label}</a>
-          <a href={APP_SHORTCUTS.aiMemoBoard.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.aiMemoBoard.path); }}>{APP_SHORTCUTS.aiMemoBoard.label}</a>
-          <a href={APP_SHORTCUTS.aiTrip.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.aiTrip.path); }}>{APP_SHORTCUTS.aiTrip.label}</a>
-          <a href={APP_SHORTCUTS.adminWorkspace.path} onClick={(event) => { event.preventDefault(); navigate(APP_SHORTCUTS.adminWorkspace.path); }}>{APP_SHORTCUTS.adminWorkspace.label}</a>
-        </div>
-        <div className="schedulerSideGroup">
-          <span>Views</span>
-          {['전체', '작업', '회의', '검토', '개인', '메모', '완료'].map((item) => (
-            <button key={item} type="button" className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>
-              {item}
-            </button>
-          ))}
-        </div>
-      </aside>
+      <WorkspaceNavigator active="schedule" navigate={navigate} />
       {schedulerContent}
     </main>
   );
