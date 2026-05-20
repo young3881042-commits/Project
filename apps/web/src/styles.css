@@ -20226,3 +20226,43 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
     justify-content: center;
   }
 }
+
+.ltQuickRegionPanel {
+  margin-top: 0.9rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.ltQuickRegionGroup {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 0.85rem;
+  padding: 0.65rem 0.8rem;
+  background: rgba(248, 250, 252, 0.8);
+}
+
+.ltQuickRegionGroup strong {
+  display: block;
+  font-size: 0.85rem;
+  color: #334155;
+  margin-bottom: 0.45rem;
+}
+
+.ltQuickRegionButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.ltQuickRegionButtons button {
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 0.28rem 0.72rem;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.82rem;
+}
+
+.ltQuickRegionButtons button:hover {
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}

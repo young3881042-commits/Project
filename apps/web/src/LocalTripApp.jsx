@@ -161,6 +161,16 @@ const FALLBACK_DESTINATIONS = [
 ];
 
 const INTERESTS = ['맛집', '자연', '역사', '카페', '가족', '커플', '사진'];
+const QUICK_REGION_GROUPS = [
+  {
+    country: '한국',
+    regions: ['서울', '경주', '부산', '제주']
+  },
+  {
+    country: '일본',
+    regions: ['도쿄', '교토', '오사카', '후쿠오카']
+  }
+];
 
 const QUICK_PURPOSES = ['당일치기 코스', '가족 여행', '로컬 맛집', '사진 명소', '역사 투어', '차량 동선'];
 
@@ -1956,6 +1966,27 @@ function PlannerPage({ path, navigate }) {
                   {d.name} ({d.region})
                   <button type="button" onClick={() => toggleDestination(d.id)} aria-label="삭제">×</button>
                 </span>
+              ))}
+            </div>
+            <div className="ltQuickRegionPanel" aria-label="빠른 지역 선택">
+              {QUICK_REGION_GROUPS.map((group) => (
+                <div key={group.country} className="ltQuickRegionGroup">
+                  <strong>{group.country}</strong>
+                  <div className="ltQuickRegionButtons">
+                    {group.regions.map((quickRegion) => (
+                      <button
+                        key={quickRegion}
+                        type="button"
+                        onClick={() => {
+                          setDestSearch(quickRegion);
+                          setShowDestSuggestions(true);
+                        }}
+                      >
+                        {quickRegion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
             </div>
