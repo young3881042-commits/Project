@@ -25,28 +25,6 @@ const RECURRENCE_LABELS = {
   monthly: '매월'
 };
 const DEFAULT_SCHEDULER_ITEMS = [
-  {
-    id: 'schedule-demo-1',
-    title: '홈페이지 MVP 문구 정리',
-    date: toDateKey(new Date()),
-    time: '10:00',
-    type: '작업',
-    memo: '메인 화면과 서비스 이동 동선을 점검합니다.',
-    recurrence: 'none',
-    recurrenceEnd: '',
-    done: false
-  },
-  {
-    id: 'schedule-demo-2',
-    title: 'AI Workspace에서 초안 확인',
-    date: toDateKey(new Date()),
-    time: '14:00',
-    type: '검토',
-    memo: '생성된 파일과 프롬프트 결과를 workspace에서 확인합니다.',
-    recurrence: 'none',
-    recurrenceEnd: '',
-    done: false
-  }
 ];
 
 function normalizeAuthSession(session) {
@@ -165,7 +143,7 @@ function readSchedulerItems(input) {
       return DEFAULT_SCHEDULER_ITEMS;
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.map(normalizeSchedulerItem) : DEFAULT_SCHEDULER_ITEMS;
+    return Array.isArray(parsed) ? parsed.map(normalizeSchedulerItem).filter((item) => !item.id?.startsWith?.('schedule-demo-')) : DEFAULT_SCHEDULER_ITEMS;
   } catch {
     return DEFAULT_SCHEDULER_ITEMS;
   }
@@ -2693,7 +2671,7 @@ function AiNotePage({ navigate }) {
     };
     setBoards((current) => [...current, nextBoard]);
     setActiveBoardId(nextBoard.id);
-    setNoteContentOpen(false);
+    setNoteContentOpen(true);
   };
 
   const renameBoard = (id, title) => {
@@ -2896,7 +2874,7 @@ function AiNotePage({ navigate }) {
   };
   const createChecklistBlock = (status = 'todo', boardId = activeBoardId) => {
     setNoteContentOpen(true);
-    addBlock('checklist', '', status, boardId);
+    addBlock('text', '', status, boardId);
     setContextMenu(null);
   };
   const renderBoardCard = (block) => (
@@ -3100,10 +3078,7 @@ function AiNotePage({ navigate }) {
               <div className="memoBoardCreateActions">
                 <button type="button" className="projectNewItemButton ghost" onClick={() => setNoteContentOpen(false)}>보드 선택</button>
                 <button type="button" className="projectNewItemButton iconAdd" onClick={() => { setNoteContentOpen(true); addBlock('text', '', 'todo', activeBoardId); }} title="글 생성">
-                  <MemoNavIcon type="plus" /><span>글</span>
-                </button>
-                <button type="button" className="projectNewItemButton iconAdd" onClick={() => { setNoteContentOpen(true); addBlock('checklist', '', 'todo', activeBoardId); }} title="체크리스트 생성">
-                  <MemoNavIcon type="plus" /><span>체크</span>
+                  <MemoNavIcon type="plus" /><span>새글</span>
                 </button>
               </div>
             ) : null}
@@ -3112,8 +3087,8 @@ function AiNotePage({ navigate }) {
             <section className="notePadStart">
               <div>
                 <span>Boards</span>
-                <strong>보드를 선택하면 아래 내용이 열립니다.</strong>
-                <p>작업 카드, 메모 작성, 파일 연결은 선택한 보드 안에서만 표시합니다.</p>
+                <strong>보드를 선택하고 새글을 작성하세요.</strong>
+                <p>Markdown 글 작성과 미리보기만 남겨 노트 흐름을 단순하게 정리했습니다.</p>
               </div>
               <div>
                 {boards.map((board) => (
@@ -3158,47 +3133,19 @@ function AiNotePage({ navigate }) {
                   />
                 </div>
                 <div>
-                  <button type="button" className={memoViewMode === 'edit' ? 'active' : ''} onClick={() => setMemoViewMode('edit')}>작성</button>
-                  <button type="button" className={memoViewMode === 'preview' ? 'active' : ''} onClick={() => setMemoViewMode('preview')}>미리보기</button>
+                  <span className="memoEditorModeLabel">Markdown</span>
                 </div>
               </header>
-              {memoViewMode === 'edit' ? (
-                activeBlock.type === 'checklist' ? renderChecklistEditor(activeBlock) : (
-                  <div className="memoHybridEditor">
-                    {`${activeBlock.content || ''}`.split('\n').map((line, index) => (
-                      index === memoActiveLine ? (
-                        <textarea
-                          key={`active-${activeBlock.id}-${index}`}
-                          value={line}
-                          rows={Math.max(1, line.split('\n').length)}
-                          onChange={(event) => updateActiveBlockLine(activeBlock, index, event.target.value)}
-                          onKeyDown={(event) => {
-                            if (event.key === 'Enter' && !event.shiftKey) {
-                              event.preventDefault();
-                              insertActiveBlockLine(activeBlock, index);
-                            }
-                          }}
-                          placeholder="# 제목 또는 내용"
-                          autoFocus
-                        />
-                      ) : (
-                        <button
-                          type="button"
-                          key={`preview-${activeBlock.id}-${index}`}
-                          className="memoPreviewLine"
-                          onClick={() => setMemoActiveLine(index)}
-                        >
-                          {line.trim() ? <MarkdownPreview markdown={line} compact /> : <span className="memoBlankLine">빈 줄</span>}
-                        </button>
-                      )
-                    ))}
-                  </div>
-                )
-              ) : (
+              <div className="memoMarkdownComposer">
+                <textarea
+                  value={activeBlock.content || ''}
+                  onChange={(event) => updateActiveBlockContent(activeBlock.id, event.target.value)}
+                  placeholder="# 제목&#10;&#10;Markdown으로 글을 작성하세요."
+                />
                 <article className="memoInlinePreview">
-                  {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : <p>내용을 작성하면 바로 미리보기로 전환됩니다.</p>}
+                  {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : <p>내용을 작성하면 오른쪽에 미리보기가 표시됩니다.</p>}
                 </article>
-              )}
+              </div>
             </section>
           ) : null}
           {activeBoardId === 'project' ? (
@@ -3250,9 +3197,7 @@ function AiNotePage({ navigate }) {
                 <button type="button" className="dangerMenuAction" onClick={() => { deleteBlock(contextMenu.blockId); setContextMenu(null); }}>삭제</button>
               ) : (
                 <>
-                  <button type="button" onClick={() => { setNoteContentOpen(true); addBlock('text', '', contextMenu.status, contextMenu.boardId); setContextMenu(null); }}>메모 생성</button>
-                  <button type="button" onClick={() => createChecklistBlock(contextMenu.status, contextMenu.boardId)}>체크리스트 생성</button>
-                  <button type="button" onClick={() => createTextFileBlock(contextMenu.status, contextMenu.boardId)}>텍스트 파일 생성</button>
+                  <button type="button" onClick={() => { setNoteContentOpen(true); addBlock('text', '', contextMenu.status, contextMenu.boardId); setContextMenu(null); }}>새글 작성</button>
                 </>
               )}
             </div>
@@ -3435,6 +3380,58 @@ function SchedulerPage({ navigate, embedded = false }) {
     deleteItem(item.sourceId || item.id);
   };
 
+  const todayPanel = (
+    <aside className="schedulerTodayPanel top">
+      <div className="schedulerTodayHeader">
+        <div>
+          <span>Today</span>
+          <h2>오늘 일정</h2>
+          <p>{today} · {todayItems.length}개</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedDate(today);
+            setCalendarMonth(today.slice(0, 7));
+            setDraft((current) => ({ ...current, date: today }));
+          }}
+        >
+          보기
+        </button>
+      </div>
+      {todayItems.length ? (
+        <div className="schedulerTodayTimeline">
+          {todayTimeline
+            .filter((slot) => slot.items.length)
+            .map((slot) => (
+              <section key={slot.key} className="schedulerTodaySlot">
+                <div className="schedulerTodayTime">
+                  <strong>{slot.label}</strong>
+                  <span>{slot.range}</span>
+                </div>
+                <div className="schedulerTodayEvents">
+                  {slot.items.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={item.done ? 'done' : ''}
+                      onClick={() => updateVisibleItem(item, { done: !item.done })}
+                    >
+                      <time>{item.time}</time>
+                      <strong>{item.title}</strong>
+                      <span>{item.type}{item.recurring ? ` · ${item.recurrenceLabel}` : ''}</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            ))}
+        </div>
+      ) : (
+        <div className="schedulerNoToday">오늘 등록된 일정이 없습니다.</div>
+      )}
+    </aside>
+  );
+
   const schedulerContent = (
       <section className="schedulerPage">
         <header className="schedulerHero">
@@ -3504,6 +3501,7 @@ function SchedulerPage({ navigate, embedded = false }) {
           </label>
           <button type="submit"><MemoNavIcon type="plus" /> 저장</button>
         </form> : null}
+        {todayPanel}
         <section className="schedulerDatabase">
           <div className="schedulerCalendarPanel">
             <div className="schedulerCalendarHeader">
@@ -3553,7 +3551,7 @@ function SchedulerPage({ navigate, embedded = false }) {
                 </div>
               </div>
               <div className="schedulerWeekSlots">
-                {weekDays.map((day) => {
+                {weekDays.filter((day) => (itemsByDate[day.key] || []).length).map((day) => {
                   const dayItems = (itemsByDate[day.key] || []).slice().sort((left, right) => left.time.localeCompare(right.time));
                   return (
                     <button
@@ -3575,58 +3573,14 @@ function SchedulerPage({ navigate, embedded = false }) {
                       <div>
                         {dayItems.slice(0, 3).map((item) => <em key={item.id}>{item.time} {item.title}{item.recurring ? ' · 반복' : ''}</em>)}
                         {dayItems.length > 3 ? <em>+{dayItems.length - 3}개 더</em> : null}
-                        {dayItems.length ? null : <em>일정 없음</em>}
                       </div>
                     </button>
                   );
                 })}
+                {weekItems.length ? null : <p className="schedulerEmptyInline">금주에 등록된 일정이 없습니다.</p>}
               </div>
             </div>
           </div>
-          <aside className="schedulerTodayPanel">
-            <div className="schedulerTodayHeader">
-              <div>
-                <span>Today</span>
-                <h2>오늘 일정</h2>
-                <p>{today} · {todayItems.length}개</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedDate(today);
-                  setCalendarMonth(today.slice(0, 7));
-                  setDraft((current) => ({ ...current, date: today }));
-                }}
-              >
-                보기
-              </button>
-            </div>
-            <div className="schedulerTodayTimeline">
-              {todayTimeline.map((slot) => (
-                <section key={slot.key} className="schedulerTodaySlot">
-                  <div className="schedulerTodayTime">
-                    <strong>{slot.label}</strong>
-                    <span>{slot.range}</span>
-                  </div>
-                  <div className="schedulerTodayEvents">
-                    {slot.items.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        className={item.done ? 'done' : ''}
-                        onClick={() => updateVisibleItem(item, { done: !item.done })}
-                      >
-                        <time>{item.time}</time>
-                        <strong>{item.title}</strong>
-                        <span>{item.type}{item.recurring ? ` · ${item.recurrenceLabel}` : ''}</span>
-                      </button>
-                    ))}
-                    {slot.items.length ? null : <em>일정 없음</em>}
-                  </div>
-                </section>
-              ))}
-            </div>
-          </aside>
           <div className="schedulerBoardHeader">
             <div>
               <h2>일정</h2>
