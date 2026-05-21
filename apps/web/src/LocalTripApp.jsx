@@ -1126,6 +1126,10 @@ function TravelWorkspaceNavigator({ path, navigate }) {
     { key: 'trip', label: '여행 추천', path: '/destinations', icon: 'trip' }
   ];
   const active = path.startsWith('/scheduler') ? 'schedule' : path.startsWith('/notes') ? 'notes' : 'trip';
+  const session = readStoredAuth();
+  const guest = isGuestSession(session);
+  const accountPath = guest ? '/login' : '/mypage';
+  const displayName = guest ? 'Guest' : session?.username || 'Guest';
 
   return (
     <nav className="workspaceNavigator travelWorkspaceNavigator" aria-label="workspace navigator">
@@ -1133,7 +1137,7 @@ function TravelWorkspaceNavigator({ path, navigate }) {
         <TravelWorkspaceIcon type="home" />
         <span>Home</span>
       </button>
-      <div>
+      <div className="workspaceNavigatorLinks">
         {items.map((item) => (
           <a
             key={item.key}
@@ -1146,6 +1150,11 @@ function TravelWorkspaceNavigator({ path, navigate }) {
           </a>
         ))}
       </div>
+      <a className="workspaceNavigatorAccount" href={accountPath} onClick={(event) => routeClick(event, accountPath, navigate)}>
+        <span>{displayName.slice(0, 1).toUpperCase()}</span>
+        <strong>{displayName}</strong>
+        <small>{guest ? '로그인' : '내 정보'}</small>
+      </a>
     </nav>
   );
 }
@@ -2753,58 +2762,15 @@ function NotFoundPage({ navigate }) {
 
 function MyPage({ navigate }) {
   const [session, setSession] = useState(readStoredAuth());
-  const [authMode, setAuthMode] = useState('login');
-  const [authUsername, setAuthUsername] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState('');
   const guest = isGuestSession(session);
   const { destinations, loading: destinationsLoading } = useDestinations();
   const { plans, loading: plansLoading } = usePlans();
   const recentPlans = plans.slice(0, 3);
 
-  const showMemberLogin = () => {
-    document.getElementById('lt-member-login')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
-
   const logout = () => {
     localStorage.removeItem(AUTH_KEY);
     setSession(null);
-    setAuthUsername('');
-    setAuthPassword('');
-    setAuthError('');
     navigate('/');
-  };
-
-  const submitAuth = async (event) => {
-    event.preventDefault();
-    if (authLoading) return;
-    const username = authUsername.trim();
-    if (!username || !authPassword.trim()) {
-      setAuthError('아이디와 비밀번호를 입력하세요.');
-      return;
-    }
-    setAuthLoading(true);
-    setAuthError('');
-    try {
-      const response = await fetch(authMode === 'signup' ? '/api/auth/signup' : '/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ username, password: authPassword })
-      });
-      if (!response.ok) {
-        throw new Error((await response.text()) || `HTTP ${response.status}`);
-      }
-      const nextSession = await response.json();
-      localStorage.setItem(AUTH_KEY, JSON.stringify(nextSession));
-      setSession(nextSession);
-      setAuthUsername('');
-      setAuthPassword('');
-    } catch (error) {
-      setAuthError(error.message);
-    } finally {
-      setAuthLoading(false);
-    }
   };
 
   return (
@@ -2825,7 +2791,7 @@ function MyPage({ navigate }) {
         <div className="ltMyActions">
           <button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>새 일정 만들기</button>
           {guest ? (
-            <button type="button" className="ltGhostButton" onClick={showMemberLogin}>회원 로그인</button>
+            <button type="button" className="ltGhostButton" onClick={() => navigate('/login')}>회원 로그인</button>
           ) : (
             <button type="button" className="ltGhostButton" onClick={logout}>로그아웃</button>
           )}
@@ -2861,36 +2827,6 @@ function MyPage({ navigate }) {
           <summary>
             <span>계정 정보</span>
           </summary>
-          {guest ? (
-            <form id="lt-member-login" className="ltMemberLoginForm" onSubmit={submitAuth}>
-              <div className="ltSectionHeader compact">
-                <span className="ltEyebrow">Member Login</span>
-                <h2>{authMode === 'signup' ? '회원가입' : '회원 로그인'}</h2>
-              </div>
-              <label>
-                <span>이메일/아이디</span>
-                <input value={authUsername} onChange={(event) => setAuthUsername(event.target.value)} placeholder="my-id" autoComplete="username" />
-              </label>
-              <label>
-                <span>비밀번호</span>
-                <input type="password" value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} placeholder="password" autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'} />
-              </label>
-              <button type="submit" className="ltPrimaryButton" disabled={authLoading}>
-                {authLoading ? '처리 중...' : authMode === 'signup' ? '회원가입' : 'Login'}
-              </button>
-              {authError ? <p className="ltAuthError">{authError}</p> : null}
-              <button
-                type="button"
-                className="ltTextButton"
-                onClick={() => {
-                  setAuthMode((current) => (current === 'signup' ? 'login' : 'signup'));
-                  setAuthError('');
-                }}
-              >
-                {authMode === 'signup' ? '로그인으로 돌아가기' : '회원가입'}
-              </button>
-            </form>
-          ) : null}
           <dl className="ltProfileList">
             <div>
               <dt>아이디</dt>
@@ -2907,12 +2843,88 @@ function MyPage({ navigate }) {
               </dd>
             </div>
           </dl>
+          {guest ? (
+            <button type="button" className="ltPrimaryButton" onClick={() => navigate('/login')}>로그인 페이지로 이동</button>
+          ) : null}
           <div className="ltMyShortcutList">
             <button type="button" onClick={() => navigate('/destinations')}>장소 둘러보기</button>
             <button type="button" onClick={() => navigate('/planner')}>AI 일정 만들기</button>
             <button type="button" onClick={() => navigate('/plans')}>내 일정 보기</button>
           </div>
         </details>
+      </section>
+    </main>
+  );
+}
+
+function LoginPage({ navigate }) {
+  const [authMode, setAuthMode] = useState('login');
+  const [authUsername, setAuthUsername] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
+
+  const submitAuth = async (event) => {
+    event.preventDefault();
+    if (authLoading) return;
+    const username = authUsername.trim();
+    if (!username || !authPassword.trim()) {
+      setAuthError('아이디와 비밀번호를 입력하세요.');
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const response = await fetch(authMode === 'signup' ? '/api/auth/signup' : '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ username, password: authPassword })
+      });
+      if (!response.ok) {
+        throw new Error((await response.text()) || `HTTP ${response.status}`);
+      }
+      const nextSession = await response.json();
+      localStorage.setItem(AUTH_KEY, JSON.stringify(nextSession));
+      navigate('/mypage');
+    } catch (error) {
+      setAuthError(error.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  return (
+    <main className="ltPage ltLoginPage">
+      <section className="ltLoginPanel">
+        <div className="ltSectionHeader">
+          <span className="ltEyebrow">Member Access</span>
+          <h1>{authMode === 'signup' ? '회원가입' : '회원 로그인'}</h1>
+          <p>일정과 여행 정보를 내 계정에 저장하려면 로그인하세요.</p>
+        </div>
+        <form className="ltMemberLoginForm" onSubmit={submitAuth}>
+          <label>
+            <span>이메일/아이디</span>
+            <input value={authUsername} onChange={(event) => setAuthUsername(event.target.value)} placeholder="my-id" autoComplete="username" />
+          </label>
+          <label>
+            <span>비밀번호</span>
+            <input type="password" value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} placeholder="password" autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'} />
+          </label>
+          <button type="submit" className="ltPrimaryButton" disabled={authLoading}>
+            {authLoading ? '처리 중...' : authMode === 'signup' ? '회원가입' : 'Login'}
+          </button>
+          {authError ? <p className="ltAuthError">{authError}</p> : null}
+          <button
+            type="button"
+            className="ltTextButton"
+            onClick={() => {
+              setAuthMode((current) => (current === 'signup' ? 'login' : 'signup'));
+              setAuthError('');
+            }}
+          >
+            {authMode === 'signup' ? '로그인으로 돌아가기' : '회원가입'}
+          </button>
+        </form>
       </section>
     </main>
   );
@@ -2950,6 +2962,8 @@ export default function LocalTripApp({ path, navigate }) {
     page = <PlansPage navigate={navigate} />;
   } else if (cleanPath === '/partners') {
     page = <PartnerPage navigate={navigate} />;
+  } else if (cleanPath === '/login') {
+    page = <LoginPage navigate={navigate} />;
   } else if (cleanPath === '/mypage') {
     page = <MyPage navigate={navigate} />;
   } else if (cleanPath.startsWith('/plans/')) {

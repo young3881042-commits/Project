@@ -2397,13 +2397,18 @@ function WorkspaceNavigator({ active, navigate }) {
     { key: 'notes', label: APP_SHORTCUTS.aiMemoBoard.label, path: APP_SHORTCUTS.aiMemoBoard.path, icon: 'board' },
     { key: 'trip', label: APP_SHORTCUTS.aiTrip.label, path: APP_SHORTCUTS.aiTrip.path, icon: 'trip' }
   ];
+  const session = readStoredAuth();
+  const isGuest = !session || session.isGuest || session.username === 'guestuser';
+  const accountPath = isGuest ? '/login' : '/mypage';
+  const displayName = isGuest ? 'Guest' : session.username;
+
   return (
     <nav className="workspaceNavigator" aria-label="workspace navigator">
       <button type="button" className="workspaceNavigatorBrand" onClick={() => navigate(APP_SHORTCUTS.mainHub.path)}>
         <MemoNavIcon type="home" />
         <span>Home</span>
       </button>
-      <div>
+      <div className="workspaceNavigatorLinks">
         {items.map((item) => (
           <a
             key={item.key}
@@ -2419,6 +2424,18 @@ function WorkspaceNavigator({ active, navigate }) {
           </a>
         ))}
       </div>
+      <a
+        className="workspaceNavigatorAccount"
+        href={accountPath}
+        onClick={(event) => {
+          event.preventDefault();
+          navigate(accountPath);
+        }}
+      >
+        <span>{displayName.slice(0, 1).toUpperCase()}</span>
+        <strong>{displayName}</strong>
+        <small>{isGuest ? '로그인' : '내 정보'}</small>
+      </a>
     </nav>
   );
 }
