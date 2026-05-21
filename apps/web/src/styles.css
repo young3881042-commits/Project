@@ -15961,6 +15961,11 @@ body:has(.ltShell) {
   padding: 72px 0;
 }
 
+.spaceHero.hasAdminOverview {
+  grid-template-columns: minmax(0, 1.02fr) minmax(360px, 0.68fr);
+  gap: clamp(28px, 5vw, 72px);
+}
+
 .spaceHeroCopy {
   display: grid;
   gap: 22px;
@@ -16064,6 +16069,144 @@ body:has(.ltShell) {
   background: #047857;
 }
 
+.adminOverviewPanel {
+  display: grid;
+  gap: 14px;
+  align-self: center;
+  padding: 18px;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.14);
+  backdrop-filter: blur(18px);
+}
+
+.adminOverviewHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.adminOverviewHeader span,
+.adminOverviewNext span,
+.adminOverviewStats span {
+  color: #047857;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.adminOverviewHeader strong {
+  color: #0f172a;
+  font-size: 1.18rem;
+}
+
+.adminOverviewStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.adminOverviewStats article {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.adminOverviewStats strong {
+  color: #0f172a;
+  font-size: 1.42rem;
+  line-height: 1;
+}
+
+.adminOverviewStats small,
+.adminOverviewMeta,
+.adminOverviewNext p {
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.adminOverviewStrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.adminOverviewStrip span {
+  min-width: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #065f46;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.adminOverviewNext {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #eff6ff;
+}
+
+.adminOverviewNext strong {
+  color: #1d4ed8;
+}
+
+.adminOverviewActions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.adminOverviewActions button {
+  min-width: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  font-weight: 900;
+}
+
+.adminOverviewActions button:hover {
+  border-color: rgba(16, 185, 129, 0.38);
+  background: #f0fdf4;
+  color: #047857;
+}
+
+.adminOverviewActions .memoNavIcon {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  background: #eef2f7;
+}
+
+.adminOverviewActions .memoNavIcon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.adminOverviewMeta {
+  font-size: 0.84rem;
+}
+
 .spaceSideStack {
   align-self: end;
   display: grid;
@@ -16114,8 +16257,16 @@ body:has(.ltShell) {
     padding: 44px 0;
   }
 
+  .spaceHero.hasAdminOverview {
+    grid-template-columns: 1fr;
+  }
+
   .spaceSideStack {
     width: 100%;
+    align-self: auto;
+  }
+
+  .adminOverviewPanel {
     align-self: auto;
   }
 
@@ -16161,6 +16312,12 @@ body:has(.ltShell) {
 
   .spaceHeroActions button {
     width: 100%;
+  }
+
+  .adminOverviewStats,
+  .adminOverviewStrip,
+  .adminOverviewActions {
+    grid-template-columns: 1fr;
   }
 
   .spaceSideStack {
@@ -18731,6 +18888,20 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   background: #f8fbff;
 }
 
+.memoChecklistCardMeta {
+  padding-left: 24px;
+  color: var(--memo-muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.memoBoardCreateActions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .memoInlineEditor {
   display: grid;
   gap: 12px;
@@ -18810,6 +18981,54 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   font: inherit;
   line-height: 1.55;
   resize: vertical;
+}
+
+.memoChecklistEditor {
+  display: grid;
+  gap: 8px;
+  min-height: 150px;
+  padding: 12px;
+  border: 1px solid var(--memo-line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.memoChecklistItem {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.memoChecklistItem input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+  padding: 0;
+  accent-color: var(--memo-accent);
+}
+
+.memoChecklistItem input[type="text"] {
+  min-height: 34px;
+  padding: 0 10px;
+  font-weight: 700;
+}
+
+.memoChecklistItem button,
+.memoChecklistAdd {
+  min-height: 34px;
+  border: 1px solid var(--memo-line);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: var(--memo-body);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 850;
+}
+
+.memoChecklistAdd {
+  justify-self: start;
 }
 
 .memoInlinePreview {
@@ -20360,6 +20579,137 @@ body:has(.aiNoteShell) { background: #f7f8fa; }
   }
 }
 
+/* Planner country/map polish */
+.ltCountrySwitch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ltCountrySwitch button {
+  min-width: 0;
+  min-height: 74px;
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  color: #334155;
+  padding: 12px 14px;
+  text-align: left;
+}
+
+.ltCountrySwitch button strong {
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 950;
+}
+
+.ltCountrySwitch button span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.ltCountrySwitch button.active {
+  border-color: rgba(16, 185, 129, 0.45);
+  background: linear-gradient(180deg, #ecfdf5, #ffffff);
+  box-shadow: 0 14px 34px rgba(16, 185, 129, 0.14);
+}
+
+.ltMapSearchLink {
+  width: fit-content;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3730a3;
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.ltMapSearchLink:hover {
+  background: #e0e7ff;
+}
+
+.ltPlannerLayout {
+  align-items: start;
+}
+
+.ltPlannerForm {
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.96)),
+    radial-gradient(circle at top right, rgba(16, 185, 129, 0.12), transparent 30%);
+}
+
+.ltPlannerPreview {
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: #ffffff;
+}
+
+.ltStepBar {
+  padding: 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.ltStepBar button {
+  border-radius: 13px;
+}
+
+.ltStepBar button.active {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.ltServiceSwitchLinks {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ltServiceSwitchLinks a.active,
+.ltServiceSwitch a.active {
+  background: #dff8ee;
+  color: #047857;
+}
+
+@media (min-width: 901px) {
+  .ltPlannerForm {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ltPlannerForm::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background: linear-gradient(90deg, #10b981, #38bdf8, #f59e0b);
+  }
+}
+
+@media (max-width: 560px) {
+  .ltCountrySwitch {
+    gap: 8px;
+  }
+
+  .ltCountrySwitch button {
+    min-height: 64px;
+    border-radius: 12px;
+    padding: 10px;
+  }
+
+  .ltServiceSwitchLinks {
+    grid-auto-columns: max-content !important;
+    grid-template-columns: none !important;
+  }
+}
+
 .workspaceGuestActions {
   display: inline-flex;
   align-items: center;
@@ -20637,5 +20987,408 @@ body:has(.aiNoteShell) {
   .notePadStart,
   .notePadStart > div:last-child {
     grid-template-columns: 1fr !important;
+  }
+}
+
+/* UI consistency pass: shared workspace, scheduler, notes, and trip controls. */
+.spaceHeroActions button,
+.workspaceNavigator a,
+.workspaceNavigatorBrand,
+.schedulerQuickAdd > button,
+.schedulerFilters button,
+.schedulerCalendarControls button,
+.ltStepBar button,
+.ltStepActions button {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.workspaceNavigator {
+  min-width: 0;
+}
+
+.workspaceNavigator > div {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.workspaceNavigator > div::-webkit-scrollbar {
+  display: none;
+}
+
+.workspaceNavigatorBrand span,
+.workspaceNavigator a span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spaceHeroActions button {
+  min-width: 148px;
+}
+
+.schedulerShell > .schedulerPage .schedulerQuickAdd {
+  align-items: end;
+}
+
+.schedulerQuickAdd label,
+.schedulerQuickAdd input,
+.schedulerQuickAdd select,
+.schedulerQuickAdd textarea,
+.schedulerNameCell,
+.schedulerNameCell strong,
+.schedulerItem time,
+.schedulerItem small {
+  min-width: 0;
+}
+
+.schedulerTableHead,
+.schedulerItem {
+  grid-template-columns: minmax(180px, 1.4fr) minmax(72px, 0.45fr) minmax(132px, 0.7fr) minmax(160px, 1fr) auto !important;
+}
+
+.schedulerNameCell strong,
+.schedulerItem small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schedulerFilters,
+.schedulerCalendarControls {
+  min-width: 0;
+}
+
+.aiNotePage,
+.aiNoteBoardPanel,
+.memoInlineEditor,
+.memoFreeformBoard,
+.projectKanban {
+  min-width: 0;
+}
+
+.memoInlineEditor input,
+.memoBoardTitleRow input,
+.memoCardName {
+  min-width: 0;
+}
+
+.ltStepBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ltStepBar button {
+  flex: 1 1 150px;
+}
+
+.ltPlannerForm label,
+.ltPlannerForm input,
+.ltPlannerForm select,
+.ltPlannerForm textarea,
+.ltAutocompleteContainer {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .schedulerTableHead {
+    display: none !important;
+  }
+
+  .schedulerItem {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+  }
+
+  .schedulerItem time,
+  .schedulerItem small {
+    grid-column: 1 / -1;
+    white-space: normal;
+  }
+
+  .schedulerDelete {
+    justify-self: end;
+  }
+}
+
+@media (max-width: 760px) {
+  .spaceHeroActions button {
+    min-width: 0;
+  }
+
+  .workspaceNavigatorBrand {
+    min-height: 38px;
+  }
+
+  .workspaceNavigator > div {
+    overflow: visible;
+  }
+
+  .workspaceNavigator a {
+    gap: 5px;
+  }
+
+  .workspaceNavigator a .memoNavIcon {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+  }
+
+  .workspaceNavigator a span {
+    max-width: 100%;
+  }
+
+  .schedulerStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .schedulerQuickAdd > button {
+    width: 100%;
+  }
+
+  .schedulerCalendarControls,
+  .schedulerFilters {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .schedulerCalendarControls::-webkit-scrollbar,
+  .schedulerFilters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .schedulerCalendarControls button,
+  .schedulerFilters button {
+    flex: 0 0 auto;
+  }
+
+  .notePadStart button {
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+  }
+
+  .memoInlineEditor header {
+    grid-template-columns: 1fr !important;
+  }
+
+  .memoInlineEditor header > div:last-child {
+    justify-content: stretch;
+  }
+
+  .memoInlineEditor header > div:last-child button {
+    flex: 1;
+  }
+}
+
+/* Travel workspace consistency: use the same shortcut bar as schedule and notes. */
+body:has(.ltShell) {
+  background: #f7f8fa !important;
+}
+
+.ltShell {
+  grid-template-columns: 248px minmax(0, 1fr) !important;
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
+}
+
+.ltShell > .travelWorkspaceNavigator {
+  grid-column: 1 / -1 !important;
+  grid-row: 1 !important;
+}
+
+.ltShell > .ltNav {
+  grid-column: 1 !important;
+  grid-row: 2 / 4 !important;
+  top: 74px !important;
+  min-height: calc(100vh - 74px) !important;
+}
+
+.ltShell > .ltPage {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+}
+
+.ltShell > .ltFooter {
+  grid-column: 2 !important;
+  grid-row: 3 !important;
+}
+
+.ltShell .ltServiceSwitch {
+  display: none !important;
+}
+
+.ltValueHero {
+  align-items: center;
+}
+
+.ltValueHero .ltHeroSearch {
+  margin-top: 22px;
+}
+
+.ltValuePoints {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.ltValuePoints article {
+  display: grid;
+  gap: 6px;
+  min-height: 104px;
+  padding: 14px;
+  border: 1px solid var(--lt-border, #e5e7eb);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.06);
+}
+
+.ltValuePoints strong {
+  color: #0f172a;
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.ltValuePoints span {
+  color: #64748b;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.schedulerWeekSlots {
+  grid-template-columns: repeat(auto-fit, minmax(138px, 1fr)) !important;
+}
+
+.schedulerWeekSlots button {
+  height: 166px !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.schedulerWeekSlots button > div {
+  max-height: 72px !important;
+  overflow: hidden !important;
+}
+
+.schedulerWeekSlots em {
+  display: block !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.memoHybridEditor {
+  min-height: 220px;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--memo-line, #e5e7eb);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.memoHybridEditor textarea {
+  width: 100%;
+  min-height: 46px;
+  margin: 0;
+  border-color: #2563eb;
+  background: #f8fbff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+.memoPreviewLine {
+  width: 100%;
+  min-height: 34px;
+  display: block;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: inherit !important;
+  padding: 4px 8px !important;
+  text-align: left !important;
+  box-shadow: none !important;
+}
+
+.memoPreviewLine:hover {
+  border-color: var(--memo-line, #e5e7eb) !important;
+  background: #f8fafc !important;
+}
+
+.memoPreviewLine h1,
+.memoPreviewLine h2,
+.memoPreviewLine h3,
+.memoPreviewLine p,
+.memoPreviewLine blockquote,
+.memoPreviewLine li,
+.memoPreviewLine label {
+  margin: 0;
+}
+
+.memoBlankLine {
+  color: #9ca3af;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.aiNoteBoardPanel:not(:has(.memoInlineEditor)) .projectBoardHero {
+  margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  .ltShell {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto minmax(0, 1fr) auto !important;
+  }
+
+  .ltShell > .travelWorkspaceNavigator {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  .ltShell > .ltNav {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    top: 74px !important;
+    min-height: auto !important;
+  }
+
+  .ltShell > .ltPage {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+  }
+
+  .ltShell > .ltFooter {
+    grid-column: 1 !important;
+    grid-row: 4 !important;
+  }
+
+  .ltShell .ltNavInner {
+    grid-template-areas:
+      "brand account"
+      "tabs tabs" !important;
+  }
+
+  .ltValuePoints {
+    grid-template-columns: 1fr;
+  }
+
+  .schedulerWeekSlots {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .schedulerWeekSlots {
+    grid-template-columns: 1fr !important;
+  }
+
+  .schedulerWeekSlots button {
+    height: 132px !important;
   }
 }

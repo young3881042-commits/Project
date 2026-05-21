@@ -47,6 +47,7 @@ public class TravelPlanService {
     private final TravelPlanRepository travelPlanRepository;
     private final TravelPlanItemRepository travelPlanItemRepository;
     private final LocalTripDestinationService destinationService;
+    private final LocalTripRealPlaceService realPlaceService;
     private final LocalTripSchemaService schemaService;
     private final ChatCredentialService chatCredentialService;
     private final ChatUsageService chatUsageService;
@@ -59,6 +60,7 @@ public class TravelPlanService {
             TravelPlanRepository travelPlanRepository,
             TravelPlanItemRepository travelPlanItemRepository,
             LocalTripDestinationService destinationService,
+            LocalTripRealPlaceService realPlaceService,
             LocalTripSchemaService schemaService,
             ChatCredentialService chatCredentialService,
             ChatUsageService chatUsageService,
@@ -68,6 +70,7 @@ public class TravelPlanService {
         this.travelPlanRepository = travelPlanRepository;
         this.travelPlanItemRepository = travelPlanItemRepository;
         this.destinationService = destinationService;
+        this.realPlaceService = realPlaceService;
         this.schemaService = schemaService;
         this.chatCredentialService = chatCredentialService;
         this.chatUsageService = chatUsageService;
@@ -112,9 +115,9 @@ public class TravelPlanService {
         plan.setEndAddress(limitText(defaultText(request.endAddress(), ""), 255));
         plan.setDepartureTime(limitText(defaultText(request.departureTime(), ""), 20));
         plan.setArrivalTime(limitText(defaultText(request.arrivalTime(), ""), 20));
-        plan.setEstimatedBudget(estimateBudget(days, travelerCount, request.budgetLevel(), request.transportType()));
+        plan.setEstimatedBudget("");
         plan.setSummary(regionLabel + "의 " + stylesLabel + " 취향을 반영한 " + travelerType + "용 "
-                + pace + " 속도 추천 일정입니다. 예상 예산은 " + plan.getEstimatedBudget() + "입니다.");
+                + pace + " 속도 추천 일정입니다.");
         TravelPlan savedPlan = travelPlanRepository.save(plan);
         List<Destination> destinations = destinationService.findCandidatesForPlan(request.destinationIds(), regions, styles);
 
@@ -249,7 +252,6 @@ public class TravelPlanService {
             "- 전체 출발지: %s / 주소: %s / 출발 시간: %s\n" +
             "- 최종 목적지: %s / 주소: %s / 도착 시간: %s\n" +
             "- 일자별 출발/도착 조건:\n%s\n" +
-            "- 예상 예산: %s\n" +
             "- 메모: %s\n" +
             "- 우선 사용할 장소 후보: %s\n\n" +
             "RAG 검색 문맥:\n%s\n\n" +
@@ -259,7 +261,7 @@ public class TravelPlanService {
             "timeSlot은 09:30-10:50 같은 시간 범위로 쓰고, 같은 날 시간이 겹치면 안 돼.\n" +
             "점심 식당과 카페/휴식은 매일 반드시 포함하고, 이름이 확인 가능한 실제 영업 장소명만 써. '로컬 식당', '카페 추천' 같은 일반명은 금지야.\n" +
             "각 블록 note에는 이전 장소에서 출발하는 시간, 이번 장소 도착 시간, 이동 팁을 포함해. 식당/카페는 추천 메뉴도 함께 써.\n" +
-            "destinationName은 실제 한국 장소명으로 쓰고 note는 추천 이유, 이동 팁, 체류 포인트 또는 추천 메뉴를 포함해 120자 이하로 구체적으로 써.\n" +
+            "destinationName은 선택한 국가와 지역에 맞는 실제 장소명으로 쓰고 note는 추천 이유, 이동 팁, 체류 포인트 또는 추천 메뉴를 포함해 120자 이하로 구체적으로 써.\n" +
             "durationMinutes는 해당 블록의 권장 체류 시간을 분 단위 숫자로 써.\n" +
             "primaryStyle은 관광지, 식당, 카페, 야경, 산책, 이동 중 가장 가까운 값을 써.\n" +
             "API 키, 토큰, 서버 주소, 내부 설정 같은 민감정보는 절대 포함하지 마.\n" +
@@ -278,7 +280,6 @@ public class TravelPlanService {
             defaultText(request.endAddress(), "미정"),
             defaultText(request.arrivalTime(), "미정"),
             dailyRouteContext,
-            estimateBudget(plan.getDays(), plan.getTravelerCount(), request.budgetLevel(), request.transportType()),
             defaultText(request.memo(), "없음"),
             candidateNames.isBlank() ? "지역 대표 명소" : candidateNames,
             ragContext.isBlank() ? "(관련 RAG 문맥 없음)" : ragContext
@@ -403,11 +404,12 @@ public class TravelPlanService {
             String style = normalizeFoodStyle(item.getPrimaryStyle());
             String counterKey = item.getDayNumber() + ":" + style;
             int ordinal = placeUseCounts.merge(counterKey, 1, Integer::sum) - 1;
-            VerifiedLocalPlaceCatalog.VerifiedPlace place = VerifiedLocalPlaceCatalog.pick(
+            RealLocalPlaceResponse place = realPlaceService.pickFoodPlace(
                     plan.getRegion(),
                     style,
                     item.getDayNumber(),
-                    ordinal);
+                    ordinal,
+                    item.getDestinationName());
             if (place == null) {
                 continue;
             }
@@ -415,13 +417,26 @@ public class TravelPlanService {
             item.setDestinationName(place.name());
             item.setRegion(place.region());
             item.setPrimaryStyle(place.category());
-            item.setNote(limitText(place.address()
-                    + " · 추천 메뉴: " + place.recommendedMenu()
-                    + " · " + place.verificationNote()
-                    + " · 검증: " + place.sourceLabel(), 240));
+            item.setNote(limitText(placeNote(place), 240));
             item.setDurationMinutes(normalizeDuration(item.getDurationMinutes()));
         }
         return items;
+    }
+
+    private String placeNote(RealLocalPlaceResponse place) {
+        List<String> parts = new ArrayList<>();
+        parts.add(defaultText(place.roadAddress(), defaultText(place.address(), "주소 미정")));
+        if (!LocalTripText.normalize(place.recommendedMenu()).isBlank()) {
+            parts.add("추천 메뉴: " + place.recommendedMenu());
+        }
+        if (!LocalTripText.normalize(place.phone()).isBlank()) {
+            parts.add("전화: " + place.phone());
+        }
+        if (!LocalTripText.normalize(place.verificationNote()).isBlank()) {
+            parts.add(place.verificationNote());
+        }
+        parts.add("출처: " + place.source());
+        return String.join(" · ", parts);
     }
 
     private boolean isFoodOrCafe(TravelPlanItem item) {

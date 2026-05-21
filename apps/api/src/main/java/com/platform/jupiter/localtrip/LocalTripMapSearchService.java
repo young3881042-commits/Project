@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class LocalTripMapSearchService {
     private static final int LIMIT = 8;
+    private static final int MAX_LIMIT = 15;
     private final AppProperties appProperties;
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
@@ -30,22 +31,53 @@ public class LocalTripMapSearchService {
     }
 
     public List<MapPlaceResponse> search(String query) {
+        return search(query, LIMIT);
+    }
+
+    public List<MapPlaceResponse> search(String query, Integer requestedLimit) {
         String text = query == null ? "" : query.trim();
         if (text.length() < 2) {
             return List.of();
         }
+        int limit = normalizeLimit(requestedLimit);
         if (appProperties.kakaoRestApiKey() != null && !appProperties.kakaoRestApiKey().isBlank()) {
-            List<MapPlaceResponse> kakaoResults = searchKakao(text);
+            List<MapPlaceResponse> kakaoResults = searchKakao(text, limit);
             if (!kakaoResults.isEmpty()) {
                 return kakaoResults;
             }
         }
-        return searchNominatim(text);
+        return searchNominatim(text, limit);
     }
 
-    private List<MapPlaceResponse> searchKakao(String query) {
+    public List<MapPlaceResponse> searchKakaoFoodPlaces(String region, String style, String anchor, Integer requestedLimit) {
+        if (appProperties.kakaoRestApiKey() == null || appProperties.kakaoRestApiKey().isBlank()) {
+            return List.of();
+        }
+        String normalizedStyle = LocalTripText.normalize(style);
+        String categoryGroupCode = normalizedStyle.contains("카페") || normalizedStyle.contains("디저트") || normalizedStyle.contains("브런치")
+                ? "CE7"
+                : "FD6";
+        String query = String.join(" ",
+                LocalTripText.normalize(region),
+                LocalTripText.normalize(anchor),
+                "CE7".equals(categoryGroupCode) ? "카페" : "맛집").trim();
+        if (query.length() < 2) {
+            return List.of();
+        }
+        return searchKakao(query, normalizeLimit(requestedLimit), categoryGroupCode);
+    }
+
+    private List<MapPlaceResponse> searchKakao(String query, int limit) {
+        return searchKakao(query, limit, null);
+    }
+
+    private List<MapPlaceResponse> searchKakao(String query, int limit, String categoryGroupCode) {
         try {
-            URI uri = URI.create("https://dapi.kakao.com/v2/local/search/keyword.json?size=" + LIMIT
+            String categoryQuery = categoryGroupCode == null || categoryGroupCode.isBlank()
+                    ? ""
+                    : "&category_group_code=" + encode(categoryGroupCode);
+            URI uri = URI.create("https://dapi.kakao.com/v2/local/search/keyword.json?size=" + limit
+                    + categoryQuery
                     + "&query=" + encode(query));
             HttpRequest request = HttpRequest.newBuilder(uri)
                     .timeout(Duration.ofSeconds(5))
@@ -67,7 +99,10 @@ public class LocalTripMapSearchService {
                         item.path("category_group_name").asText(item.path("category_name").asText("")),
                         item.path("y").asText(""),
                         item.path("x").asText(""),
-                        "kakao"));
+                        "kakao",
+                        item.path("id").asText(""),
+                        item.path("phone").asText(""),
+                        item.path("place_url").asText("")));
             }
             return results;
         } catch (Exception ignored) {
@@ -75,9 +110,9 @@ public class LocalTripMapSearchService {
         }
     }
 
-    private List<MapPlaceResponse> searchNominatim(String query) {
+    private List<MapPlaceResponse> searchNominatim(String query, int limit) {
         try {
-            URI uri = URI.create("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=" + LIMIT
+            URI uri = URI.create("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=" + limit
                     + "&accept-language=ko,en&q=" + encode(query));
             HttpRequest request = HttpRequest.newBuilder(uri)
                     .timeout(Duration.ofSeconds(5))
@@ -101,12 +136,22 @@ public class LocalTripMapSearchService {
                         item.path("type").asText(item.path("class").asText("")),
                         item.path("lat").asText(""),
                         item.path("lon").asText(""),
-                        "openstreetmap"));
+                        "openstreetmap",
+                        item.path("osm_type").asText("") + ":" + item.path("osm_id").asText(""),
+                        "",
+                        ""));
             }
             return results;
         } catch (Exception ignored) {
             return List.of();
         }
+    }
+
+    private int normalizeLimit(Integer requestedLimit) {
+        if (requestedLimit == null) {
+            return LIMIT;
+        }
+        return Math.max(1, Math.min(MAX_LIMIT, requestedLimit));
     }
 
     private String encode(String value) {

@@ -22,6 +22,7 @@ public class LocalTripController {
     private final TourApiSyncService tourApiSyncService;
     private final TravelPlanService travelPlanService;
     private final LocalTripMapSearchService mapSearchService;
+    private final LocalTripRealPlaceService realPlaceService;
     private final AuthService authService;
 
     public LocalTripController(
@@ -29,11 +30,13 @@ public class LocalTripController {
             TourApiSyncService tourApiSyncService,
             TravelPlanService travelPlanService,
             LocalTripMapSearchService mapSearchService,
+            LocalTripRealPlaceService realPlaceService,
             AuthService authService) {
         this.destinationService = destinationService;
         this.tourApiSyncService = tourApiSyncService;
         this.travelPlanService = travelPlanService;
         this.mapSearchService = mapSearchService;
+        this.realPlaceService = realPlaceService;
         this.authService = authService;
     }
 
@@ -54,9 +57,23 @@ public class LocalTripController {
     }
 
     @GetMapping("/maps/places")
-    public List<MapPlaceResponse> mapPlaces(@RequestParam String query, HttpServletRequest servletRequest) {
+    public List<MapPlaceResponse> mapPlaces(
+            @RequestParam String query,
+            @RequestParam(required = false) Integer size,
+            HttpServletRequest servletRequest) {
         authService.requireSession(servletRequest);
-        return mapSearchService.search(query);
+        return mapSearchService.search(query, size);
+    }
+
+    @GetMapping("/travel-plans/real-places")
+    public List<RealLocalPlaceResponse> realPlaces(
+            @RequestParam(required = false) String region,
+            @RequestParam(defaultValue = "식당") String style,
+            @RequestParam(required = false) String anchor,
+            @RequestParam(required = false) Integer size,
+            HttpServletRequest servletRequest) {
+        authService.requireSession(servletRequest);
+        return realPlaceService.suggestFoodPlaces(region, style, anchor, size);
     }
 
     @PostMapping("/destinations/sync/mock")

@@ -104,9 +104,6 @@ public record TravelPlanResponse(
                     .append(hasText(plan.getArrivalTime()) ? " · " + plan.getArrivalTime() : "")
                     .append("\n");
         }
-        if (hasText(plan.getEstimatedBudget())) {
-            markdown.append("- 예상 예산: ").append(plan.getEstimatedBudget()).append("\n");
-        }
         markdown.append("- 취향: ").append(plan.getStyles()).append("\n\n");
 
         int currentDay = -1;

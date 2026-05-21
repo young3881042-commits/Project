@@ -18,14 +18,14 @@ spec:
           image: jupiter-web:local
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 5173
+            - containerPort: 80
               name: http
           envFrom:
             - configMapRef:
                 name: jupiter-web-env
           readinessProbe:
             tcpSocket:
-              port: 5173
+              port: 80
             initialDelaySeconds: 12
             periodSeconds: 10
             timeoutSeconds: 1

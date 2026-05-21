@@ -10,8 +10,8 @@ RUN npm run build
 
 FROM nginx:1.27-alpine
 
-ENV WEB_PORT=5173
-ENV WEB_HTTPS_PORT=5443
+ENV WEB_PORT=80
+ENV WEB_HTTPS_PORT=443
 ENV VITE_API_PROXY=http://jupiter-api:8080
 
 RUN apk add --no-cache openssl \
@@ -25,4 +25,4 @@ RUN apk add --no-cache openssl \
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 
-EXPOSE 5173 5443
+EXPOSE 80 443

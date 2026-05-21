@@ -276,6 +276,19 @@ const REQUEST_STEPS = [
 ];
 
 const REGION_LINKS = ['서울', '부산', '제주', '경주', '도쿄', '오사카', '교토', '후쿠오카', '강릉', '전주', '여수', '속초', '인천', '대구', '광주', '대전'];
+const COUNTRY_OPTIONS = [
+  { key: 'korea', label: '한국', hint: '국내 여행' },
+  { key: 'japan', label: '일본', hint: '일본 여행' }
+];
+const JAPAN_REGION_KEYWORDS = ['도쿄', '오사카', '교토', '후쿠오카', '삿포로', '오키나와', '나고야', '나라', '고베', '요코하마', '일본', 'tokyo', 'osaka', 'kyoto', 'fukuoka', 'sapporo', 'okinawa', 'nagoya', 'japan'];
+
+function countryForDestination(destination) {
+  const text = [destination?.region, destination?.name, destination?.summary, destination?.category]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return JAPAN_REGION_KEYWORDS.some((keyword) => text.includes(keyword.toLowerCase())) ? 'japan' : 'korea';
+}
 
 const USER_ROLES = [
   {
@@ -494,6 +507,11 @@ function destinationAddressSuggestions(destinations, query) {
     .slice(0, 6);
 }
 
+function mapSearchUrl(name, address = '') {
+  const query = encodeURIComponent([name, address].filter(Boolean).join(' ').trim());
+  return `https://map.naver.com/v5/search/${query}`;
+}
+
 function AddressSearchInput({ label, value, address, onValue, onAddress, destinations, placeholder }) {
   const [focused, setFocused] = useState(false);
   const [mapSuggestions, setMapSuggestions] = useState([]);
@@ -564,6 +582,11 @@ function AddressSearchInput({ label, value, address, onValue, onAddress, destina
             </button>
           ))}
         </div>
+      ) : null}
+      {(value || address) ? (
+        <a className="ltMapSearchLink" href={mapSearchUrl(value, address)} target="_blank" rel="noreferrer">
+          지도에서 확인
+        </a>
       ) : null}
     </label>
   );
@@ -1063,6 +1086,70 @@ function Icon({ children, size = 18 }) {
   );
 }
 
+function TravelWorkspaceIcon({ type }) {
+  const paths = {
+    home: <path d="M4 11.5 12 5l8 6.5V20H5v-8.5z" />,
+    calendar: (
+      <>
+        <path d="M5 5h14v15H5z" />
+        <path d="M8 3v4M16 3v4M5 10h14" />
+      </>
+    ),
+    board: (
+      <>
+        <path d="M4 5h7v6H4z" />
+        <path d="M13 5h7v14h-7z" />
+        <path d="M4 13h7v6H4z" />
+      </>
+    ),
+    trip: (
+      <>
+        <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z" />
+        <path d="M9 3v15M15 6v15" />
+      </>
+    )
+  };
+
+  return (
+    <span className="memoNavIcon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+        {paths[type] || paths.trip}
+      </svg>
+    </span>
+  );
+}
+
+function TravelWorkspaceNavigator({ path, navigate }) {
+  const items = [
+    { key: 'schedule', label: '일정', path: '/scheduler', icon: 'calendar' },
+    { key: 'notes', label: '노트', path: '/notes', icon: 'board' },
+    { key: 'trip', label: '여행 추천', path: '/destinations', icon: 'trip' }
+  ];
+  const active = path.startsWith('/scheduler') ? 'schedule' : path.startsWith('/notes') ? 'notes' : 'trip';
+
+  return (
+    <nav className="workspaceNavigator travelWorkspaceNavigator" aria-label="workspace navigator">
+      <button type="button" className="workspaceNavigatorBrand" onClick={() => navigate('/')}>
+        <TravelWorkspaceIcon type="home" />
+        <span>Home</span>
+      </button>
+      <div>
+        {items.map((item) => (
+          <a
+            key={item.key}
+            className={active === item.key ? 'active' : ''}
+            href={item.path}
+            onClick={(event) => routeClick(event, item.path, navigate)}
+          >
+            <TravelWorkspaceIcon type={item.icon} />
+            <span>{item.label}</span>
+          </a>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 function ServiceIcon({ type }) {
   const paths = {
     route: (
@@ -1291,8 +1378,10 @@ function LocalTripNav({ path, navigate }) {
         <div className="ltServiceSwitch" aria-label="서비스 이동">
           <span className="ltServiceSwitchTitle">서비스 이동</span>
           <div className="ltServiceSwitchLinks">
-            <a href="/" onClick={(event) => routeClick(event, '/', navigate)}>AI 일정 홈</a>
-            <a href="/scheduler" onClick={(event) => routeClick(event, '/scheduler', navigate)}>개인 스케줄러</a>
+            <a className={path === '/' ? 'active' : ''} href="/" onClick={(event) => routeClick(event, '/', navigate)}>홈</a>
+            <a className={path.startsWith('/scheduler') ? 'active' : ''} href="/scheduler" onClick={(event) => routeClick(event, '/scheduler', navigate)}>일정</a>
+            <a className={path.startsWith('/notes') ? 'active' : ''} href="/notes" onClick={(event) => routeClick(event, '/notes', navigate)}>노트</a>
+            <a className={path.startsWith('/destinations') || path.startsWith('/planner') || path.startsWith('/plans') ? 'active' : ''} href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)}>여행</a>
           </div>
         </div>
         <nav className="ltNavLinks" aria-label="여행 일정 메뉴">
@@ -1615,21 +1704,59 @@ function PartnerCta({ navigate }) {
 }
 
 function HomePage({ navigate }) {
+  const [query, setQuery] = useState('');
+
   return (
-    <main className="spaceHome">
-      <section className="spaceHero">
-        <div className="spaceHeroCopy">
-          <span className="spaceEyebrow">Travel Schedule</span>
-          <h1>내 여행 일정을 한 번에 정리하세요</h1>
-          <p>관광지, 식당 위치, 카페 휴식과 매일 출발지·도착지를 기준으로 움직이기 쉬운 일정을 만듭니다.</p>
-          <div className="spaceHeroActions">
-            <button type="button" onClick={() => navigate('/destinations')}>AI Trip</button>
-            <button type="button" onClick={() => navigate('/planner')}>Scheduler</button>
-            <button type="button" onClick={() => navigate('/scheduler')}>개인 스케줄러</button>
-            <button type="button" onClick={() => navigate('/notes')}>AI 메모 보드</button>
+    <main className="ltPage ltHomePage">
+      <section className="ltHero ltValueHero">
+        <div className="ltHeroCopy">
+          <span className="ltEyebrow">Local-first Travel</span>
+          <h1>숨은 맛집과 현지 동선을 함께 보는 여행 일정</h1>
+          <p>블로그 목록처럼 흩어진 정보를 보여주는 대신, 현재 위치와 출발지·도착지를 기준으로 관광지, 식당, 카페 휴식까지 하루 코스로 묶습니다.</p>
+          <HeroSearch query={query} setQuery={setQuery} navigate={navigate} />
+          <div className="ltValuePoints" aria-label="서비스 차별점">
+            <article>
+              <strong>현지 추천 경로</strong>
+              <span>인기 관광지 주변의 로컬 식당과 카페를 이동 순서로 연결합니다.</span>
+            </article>
+            <article>
+              <strong>위치 기반 탐색</strong>
+              <span>지도 검색과 실제 주소를 함께 써서 출발지·도착지 중심으로 일정을 만듭니다.</span>
+            </article>
+            <article>
+              <strong>일정 저장</strong>
+              <span>완성한 여행 코스를 내 일정과 메모로 이어서 관리합니다.</span>
+            </article>
+          </div>
+        </div>
+        <div className="ltHeroVisual" aria-hidden="true">
+          <div className="ltHeroImage main" style={{ backgroundImage: `url("${DESTINATION_IMAGES['SEOUL-004']}")` }}>
+            <span>망원시장 로컬 맛집</span>
+          </div>
+          <div className="ltHeroImage" style={{ backgroundImage: `url("${DESTINATION_IMAGES.GYEONGUI_FOREST}")` }}>
+            <span>도보 산책 경로</span>
+          </div>
+          <div className="ltHeroImage" style={{ backgroundImage: `url("${DESTINATION_IMAGES.CHANGDEOKGUNG}")` }}>
+            <span>근처 명소 연결</span>
+          </div>
+          <div className="ltHeroPanel">
+            <div>
+              <span>오늘 추천</span>
+              <strong>로컬 코스</strong>
+            </div>
+            <div>
+              <span>탐색 기준</span>
+              <strong>현재 위치</strong>
+            </div>
+            <div>
+              <span>저장 방식</span>
+              <strong>일정·노트</strong>
+            </div>
           </div>
         </div>
       </section>
+      <PurposeRail navigate={navigate} />
+      <ServiceCategoryGrid navigate={navigate} />
     </main>
   );
 }
@@ -1641,8 +1768,6 @@ function DestinationsPage({ path, navigate }) {
   const [query, setQuery] = useState(initialQuery);
   const [region, setRegion] = useState('all');
   const [tag, setTag] = useState('all');
-  const [tourSyncing, setTourSyncing] = useState(false);
-  const [syncError, setSyncError] = useState('');
 
   useEffect(() => {
     setQuery(initialQuery);
@@ -1672,36 +1797,15 @@ function DestinationsPage({ path, navigate }) {
     });
   }, [destinations, query, region, tag]);
 
-  const syncTourApi = async () => {
-    setTourSyncing(true);
-    setSyncError('');
-    try {
-      await localTripRequest('/api/destinations/sync/tour-api', { method: 'POST' });
-      await reload();
-    } catch (syncFailure) {
-      setSyncError(syncFailure.message);
-    } finally {
-      setTourSyncing(false);
-    }
-  };
-
   return (
     <main className="ltPage">
       <PageHeader
-        eyebrow="추천장소"
-        title="내 여행에 맞는 관광지"
-        description="지역과 여행 스타일을 고르면 지금 방문하기 좋은 국내 관광지를 모아 보여드립니다."
-        actions={(
-          <>
-            <button type="button" className="ltGhostButton ltAdminButton" onClick={syncTourApi} disabled={tourSyncing}>
-              {tourSyncing ? 'Tour API 동기화 중' : 'Tour API 동기화'}
-            </button>
-          </>
-        )}
+        eyebrow="여행 추천"
+        title="어디로 갈지 고르기"
+        description="지역, 분위기, 동행 스타일에 맞는 국내 여행지를 편하게 찾아보세요."
       />
 
       <InlineNotice error={error} fallback={usingFallback} />
-      {syncError ? <div className="ltInlineNotice error"><strong>동기화 실패</strong><span>{syncError}</span></div> : null}
 
       <details className="ltFold ltFilterFold">
         <summary>
@@ -1745,6 +1849,7 @@ function PlannerPage({ path, navigate }) {
   const { destinations, error, usingFallback } = useDestinations();
   const params = new URLSearchParams(path.split('?')[1] || '');
   const initialDestination = params.get('destination') || '';
+  const [country, setCountry] = useState('korea');
   const [selectedDestinationIds, setSelectedDestinationIds] = useState(initialDestination ? [initialDestination] : []);
   const [destSearch, setDestSearch] = useState('');
   const [showSuggestions, setShowDestSuggestions] = useState(false);
@@ -1773,16 +1878,18 @@ function PlannerPage({ path, navigate }) {
     && startPlace.trim() && endPlace.trim() && startAddress.trim() && endAddress.trim() && departureTime && arrivalTime
     && dayRoutes.every((route) => route.startPlace.trim() && route.endPlace.trim() && route.departureTime && route.arrivalTime);
 
-  const estimatedBudget = useMemo(() => {
-    const dayCount = Math.max(1, Number(days) || 1);
-    const travelerCount = travelers === '가족' ? 4 : travelers === '친구' ? 3 : travelers === '커플' ? 2 : 1;
-    const levelBase = budget === '절약' ? 85000 : budget === '프리미엄' ? 220000 : 140000;
-    const transportBase = transportType === '자동차' ? 45000 : transportType === '도보' ? 12000 : 25000;
-    const total = dayCount * travelerCount * levelBase + dayCount * transportBase;
-    const low = Math.max(10000, Math.round((total * 0.9) / 10000) * 10000);
-    const high = Math.max(low, Math.round((total * 1.15) / 10000) * 10000);
-    return `${low.toLocaleString('ko-KR')}원 ~ ${high.toLocaleString('ko-KR')}원`;
-  }, [budget, days, transportType, travelers]);
+  const countryDestinations = useMemo(
+    () => destinations.filter((destination) => countryForDestination(destination) === country),
+    [country, destinations]
+  );
+
+  useEffect(() => {
+    if (!initialDestination || !destinations.length) return;
+    const initial = destinations.find((destination) => destination.id === initialDestination);
+    if (initial) {
+      setCountry(countryForDestination(initial));
+    }
+  }, [destinations, initialDestination]);
 
   useEffect(() => {
     if (initialDestination && !selectedDestinationIds.includes(initialDestination)) {
@@ -1791,10 +1898,19 @@ function PlannerPage({ path, navigate }) {
   }, [initialDestination]);
 
   useEffect(() => {
-    if (selectedDestinationIds.length === 0 && destinations.length > 0 && !initialDestination) {
-      setSelectedDestinationIds([destinations[0].id]);
+    setSelectedDestinationIds((current) => {
+      const allowedIds = new Set(countryDestinations.map((destination) => destination.id));
+      const next = current.filter((id) => allowedIds.has(id));
+      if (next.length) return next;
+      return countryDestinations[0] ? [countryDestinations[0].id] : [];
+    });
+  }, [countryDestinations]);
+
+  useEffect(() => {
+    if (selectedDestinationIds.length === 0 && countryDestinations.length > 0 && !initialDestination) {
+      setSelectedDestinationIds([countryDestinations[0].id]);
     }
-  }, [destinations]);
+  }, [countryDestinations, initialDestination, selectedDestinationIds.length]);
 
   useEffect(() => {
     const count = Math.max(1, Math.min(7, Number(days) || 1));
@@ -1823,11 +1939,11 @@ function PlannerPage({ path, navigate }) {
   const filteredSuggestions = useMemo(() => {
     const query = destSearch.trim().toLowerCase();
     if (!query) return [];
-    return destinations.filter(d => 
+    return countryDestinations.filter(d =>
       (d.name.toLowerCase().includes(query) || d.region.toLowerCase().includes(query)) &&
       !selectedDestinationIds.includes(d.id)
     ).slice(0, 8);
-  }, [destSearch, destinations, selectedDestinationIds]);
+  }, [countryDestinations, destSearch, selectedDestinationIds]);
 
   const toggleInterest = (interest) => {
     setSelectedInterests((current) => (
@@ -1878,7 +1994,6 @@ function PlannerPage({ path, navigate }) {
         notes,
         `전체 출발지=${startPlace} (${startAddress}), 출발 시간=${departureTime}`,
         `최종 목적지=${endPlace} (${endAddress}), 도착 시간=${arrivalTime}`,
-        `예상 예산=${estimatedBudget}`,
         '일자별 출발/도착:',
         ...dayRoutes.map((route) => `${route.day}일차 출발지=${route.startPlace || '미정'} (${route.startAddress || '주소 미정'}) ${route.departureTime || departureTime}, 도착지=${route.endPlace || '미정'} (${route.endAddress || '주소 미정'}) ${route.arrivalTime || arrivalTime}`)
       ].filter(Boolean).join('\n')
@@ -1901,15 +2016,15 @@ function PlannerPage({ path, navigate }) {
   return (
     <main className="ltPage">
       <PageHeader
-        eyebrow="일정만들기"
-        title="AI 여행 일정을 만들어보세요"
-        description="방문할 관광지, 여행 일수, 동행 스타일을 고르면 AI가 하루 동선을 깔끔하게 정리합니다."
+        eyebrow="일정 만들기"
+        title="여행 코스 만들기"
+        description="나라와 장소, 날짜, 동행 스타일을 고르면 이동하기 쉬운 하루 코스로 정리합니다."
       />
 
       <InlineNotice error={error} fallback={usingFallback} />
 
       <div className="ltStepBar" aria-label="일정 생성 단계">
-        <button type="button" className={activeStep === 1 ? 'active' : selectedDestinationIds.length ? 'done' : ''} onClick={() => setActiveStep(1)}>1 장소</button>
+        <button type="button" className={activeStep === 1 ? 'active' : selectedDestinationIds.length ? 'done' : ''} onClick={() => setActiveStep(1)}>1 나라·장소</button>
         <button type="button" className={activeStep === 2 ? 'active' : routeInfoComplete ? 'done' : ''} disabled={!selectedDestinationIds.length} onClick={() => setActiveStep(2)}>2 날짜·동선</button>
         <button type="button" className={activeStep === 3 ? 'active' : selectedInterests.length ? 'done' : ''} disabled={!routeInfoComplete} onClick={() => setActiveStep(3)}>3 취향</button>
       </div>
@@ -1919,7 +2034,24 @@ function PlannerPage({ path, navigate }) {
           {activeStep === 1 ? <div className="ltFormSection">
             <div className="ltFormSectionTitle">
               <span>Step 1</span>
-              <strong>방문할 장소</strong>
+              <strong>나라와 장소</strong>
+            </div>
+            <div className="ltCountrySwitch" aria-label="여행 국가">
+              {COUNTRY_OPTIONS.map((option) => (
+                <button
+                  key={option.key}
+                  type="button"
+                  className={country === option.key ? 'active' : ''}
+                  onClick={() => {
+                    setCountry(option.key);
+                    setDestSearch('');
+                    setShowDestSuggestions(false);
+                  }}
+                >
+                  <strong>{option.label}</strong>
+                  <span>{option.hint}</span>
+                </button>
+              ))}
             </div>
             <div className="ltAutocompleteGroup">
             <label>
@@ -1932,7 +2064,7 @@ function PlannerPage({ path, navigate }) {
                     setShowDestSuggestions(true);
                   }}
                   onFocus={() => setShowDestSuggestions(true)}
-                  placeholder="지역 또는 장소 검색 (예: 경주, 도쿄, 교토...)"
+                  placeholder={country === 'japan' ? '도쿄, 오사카, 교토...' : '서울, 제주, 경주...'}
                 />
                 {showSuggestions && filteredSuggestions.length > 0 && (
                   <div className="ltAutocompleteDropdown">
@@ -1955,7 +2087,7 @@ function PlannerPage({ path, navigate }) {
               </div>
             </label>
             <div className="ltSelectedTagRow">
-              {destinations.filter(d => selectedDestinationIds.includes(d.id)).map(d => (
+              {countryDestinations.filter(d => selectedDestinationIds.includes(d.id)).map(d => (
                 <span key={d.id} className="ltSelectedTag">
                   {d.name} ({d.region})
                   <button type="button" onClick={() => toggleDestination(d.id)} aria-label="삭제">×</button>
@@ -2000,7 +2132,7 @@ function PlannerPage({ path, navigate }) {
                   address={startAddress}
                   onValue={setStartPlace}
                   onAddress={setStartAddress}
-                  destinations={destinations}
+                  destinations={countryDestinations}
                   placeholder="집, 역, 공항, 숙소명"
                 />
               </PlannerInfoCard>
@@ -2020,7 +2152,7 @@ function PlannerPage({ path, navigate }) {
                   address={endAddress}
                   onValue={setEndPlace}
                   onAddress={setEndAddress}
-                  destinations={destinations}
+                  destinations={countryDestinations}
                   placeholder="마지막 도착지, 역, 공항"
                 />
               </PlannerInfoCard>
@@ -2068,7 +2200,7 @@ function PlannerPage({ path, navigate }) {
                     address={route.startAddress || ''}
                     onValue={(value) => updateDayRoute(index, 'startPlace', value)}
                     onAddress={(value) => updateDayRoute(index, 'startAddress', value)}
-                    destinations={destinations}
+                    destinations={countryDestinations}
                     placeholder="숙소, 역, 공항 등"
                   />
                   <AddressSearchInput
@@ -2077,7 +2209,7 @@ function PlannerPage({ path, navigate }) {
                     address={route.endAddress || ''}
                     onValue={(value) => updateDayRoute(index, 'endPlace', value)}
                     onAddress={(value) => updateDayRoute(index, 'endAddress', value)}
-                    destinations={destinations}
+                    destinations={countryDestinations}
                     placeholder="숙소, 다음 이동지 등"
                   />
                   <label>
@@ -2099,24 +2231,7 @@ function PlannerPage({ path, navigate }) {
               <OptionGroup label="이동수단" value={transportType} options={['대중교통', '자동차', '도보']} onChange={setTransportType} />
               <OptionGroup label="내보내기" value={exportFormat} options={['텍스트', '엑셀', 'PDF']} onChange={setExportFormat} />
             </div>
-            <OptionGroup label="예산" value={budget} options={['절약', '보통', '프리미엄']} onChange={setBudget} />
-            <PlannerInfoCard
-              title="예상 예산"
-              description="여행 일수, 동행 유형, 이동수단, 예산 단계를 기준으로 대략적인 범위를 계산합니다."
-              icon={(
-                <>
-                  <path d="M4 7h16v10H4z"></path>
-                  <path d="M8 11h.01"></path>
-                  <path d="M12 11h4"></path>
-                  <path d="M8 15h8"></path>
-                </>
-              )}
-            >
-              <div className="ltBudgetPreview">
-                <span>예상 예산</span>
-                <strong>{estimatedBudget}</strong>
-              </div>
-            </PlannerInfoCard>
+            <OptionGroup label="예산 성향" value={budget} options={['절약', '보통', '프리미엄']} onChange={setBudget} />
             <div className="ltStepActions">
               <button type="button" onClick={() => setActiveStep(1)}>이전</button>
               <button type="button" disabled={!routeInfoComplete} onClick={() => setActiveStep(3)}>동선 완료</button>
@@ -2161,7 +2276,7 @@ function PlannerPage({ path, navigate }) {
           <div className="ltSelectedSummary">
             <h3>선택한 장소 ({selectedDestinationIds.length})</h3>
             <div className="ltMiniDestList">
-              {destinations.filter(d => selectedDestinationIds.includes(d.id)).map(d => (
+              {countryDestinations.filter(d => selectedDestinationIds.includes(d.id)).map(d => (
                 <div key={d.id} className="ltMiniDestCard">
                   {d.imageUrl ? (
                     <img
@@ -2524,8 +2639,7 @@ function PlanDayCards({ plan }) {
 function PlanRouteFacts({ plan }) {
   const facts = [
     ['출발', [plan.startPlace, plan.startAddress, plan.departureTime].filter(Boolean).join(' · ')],
-    ['도착', [plan.endPlace, plan.endAddress, plan.arrivalTime].filter(Boolean).join(' · ')],
-    ['예상 예산', plan.estimatedBudget]
+    ['도착', [plan.endPlace, plan.endAddress, plan.arrivalTime].filter(Boolean).join(' · ')]
   ].filter(([, value]) => value);
   if (!facts.length) return null;
   return (
@@ -2612,12 +2726,6 @@ function PlanDetailPage({ planId, navigate }) {
                 <span>속도</span>
                 <strong>{plan.pace}</strong>
               </div>
-              {plan.estimatedBudget ? (
-                <div className="ltFactItem">
-                  <span>예산</span>
-                  <strong>{plan.estimatedBudget}</strong>
-                </div>
-              ) : null}
             </div>
           </section>
           <PlanRouteFacts plan={plan} />
@@ -2813,6 +2921,7 @@ function MyPage({ navigate }) {
 function AppShell({ path, navigate, children }) {
   return (
     <div className="ltShell">
+      <TravelWorkspaceNavigator path={path} navigate={navigate} />
       <LocalTripNav path={path} navigate={navigate} />
       {children}
       <footer className="ltFooter">

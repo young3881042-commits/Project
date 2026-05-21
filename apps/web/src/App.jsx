@@ -9,11 +9,11 @@ const SCHEDULER_KEY = 'codex-personal-scheduler-items';
 const AI_NOTE_KEY = 'codex-ai-note-blocks';
 const AI_NOTE_BOARDS_KEY = 'codex-ai-note-boards';
 const APP_SHORTCUTS = {
-  mainHub: { label: 'Home', path: '/' },
-  aiTrip: { label: 'AI Trip', path: '/destinations' },
-  aiSchedule: { label: 'Scheduler', path: '/planner' },
-  personalScheduler: { label: 'Schedule', path: '/scheduler' },
-  aiMemoBoard: { label: 'NotePad', path: '/notes' },
+  mainHub: { label: '홈', path: '/' },
+  aiTrip: { label: '여행 추천', path: '/destinations' },
+  aiSchedule: { label: 'AI 일정 만들기', path: '/planner' },
+  personalScheduler: { label: '일정', path: '/scheduler' },
+  aiMemoBoard: { label: '노트', path: '/notes' },
   adminWorkspace: { label: '관리자 배치', path: '/analysisadmin' }
 };
 const RECURRENCE_LABELS = {
@@ -330,11 +330,12 @@ function normalizeNoteBlock(block) {
   const sector = ['project', 'memo'].includes(block?.sector) ? block.sector : 'project';
   const boardId = typeof block?.boardId === 'string' && block.boardId ? block.boardId : sector;
   const projectBlock = boardId === 'project';
+  const blockType = ['text', 'file', 'checklist'].includes(block?.type) ? block.type : 'text';
   const fallbackX = 24 + (Math.abs(String(block?.id || '').split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % 180);
   const fallbackY = 24 + (Math.abs(String(block?.id || '').split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % 220);
   return {
     id: block?.id || `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-    type: block?.type === 'file' ? 'file' : 'text',
+    type: blockType,
     content: typeof block?.content === 'string' ? block.content : '',
     sector,
     boardId,
@@ -375,6 +376,26 @@ function noteBlockContentWithTitle(block, title) {
   const safeTitle = title.trim() || '새 메모';
   const body = noteBlockBody(block);
   return [`# ${safeTitle}`, body].filter(Boolean).join('\n\n');
+}
+
+function checklistItemsFromBlock(block) {
+  const body = noteBlockBody(block);
+  const lines = body.split('\n').map((line) => line.trim()).filter(Boolean);
+  const items = lines.map((line) => {
+    const match = line.match(/^[-*]\s+\[([ xX])\]\s+(.*)$/);
+    return match ? { checked: match[1].toLowerCase() === 'x', text: match[2] } : { checked: false, text: line.replace(/^[-*]\s+/, '') };
+  });
+  return items.length ? items : [{ checked: false, text: '' }];
+}
+
+function checklistContentWithItems(block, items) {
+  const title = noteBlockTitle(block);
+  const lines = items.length ? items : [{ checked: false, text: '' }];
+  return [
+    `# ${title}`,
+    '',
+    ...lines.map((item) => `- [${item.checked ? 'x' : ' '}] ${item.text}`)
+  ].join('\n');
 }
 
 function parseNoteScheduleBlock(block) {
@@ -461,6 +482,20 @@ function markdownPreviewBlocks(markdown) {
     if (/^\s*>\s+/.test(line)) return <blockquote key={key}>{inline(line.replace(/^\s*>\s+/, ''))}</blockquote>;
     return line.trim() ? <p key={key}>{inline(line)}</p> : <br key={key} />;
   });
+}
+
+function updateMarkdownLine(markdown, lineIndex, value) {
+  const lines = `${markdown || ''}`.split('\n');
+  const safeIndex = Math.max(0, Math.min(lineIndex, Math.max(0, lines.length - 1)));
+  lines[safeIndex] = value;
+  return lines.join('\n');
+}
+
+function insertMarkdownLine(markdown, lineIndex) {
+  const lines = `${markdown || ''}`.split('\n');
+  const safeIndex = Math.max(0, Math.min(lineIndex + 1, lines.length));
+  lines.splice(safeIndex, 0, '');
+  return { content: lines.join('\n'), lineIndex: safeIndex };
 }
 
 if (typeof window !== 'undefined') {
@@ -2383,15 +2418,15 @@ function MemoNavIcon({ type }) {
 
 function WorkspaceNavigator({ active, navigate }) {
   const items = [
-    { key: 'schedule', label: 'Schedule', path: APP_SHORTCUTS.personalScheduler.path, icon: 'calendar' },
-    { key: 'notes', label: 'NotePad', path: APP_SHORTCUTS.aiMemoBoard.path, icon: 'board' },
-    { key: 'trip', label: 'AI Trip', path: APP_SHORTCUTS.aiTrip.path, icon: 'trip' }
+    { key: 'schedule', label: APP_SHORTCUTS.personalScheduler.label, path: APP_SHORTCUTS.personalScheduler.path, icon: 'calendar' },
+    { key: 'notes', label: APP_SHORTCUTS.aiMemoBoard.label, path: APP_SHORTCUTS.aiMemoBoard.path, icon: 'board' },
+    { key: 'trip', label: APP_SHORTCUTS.aiTrip.label, path: APP_SHORTCUTS.aiTrip.path, icon: 'trip' }
   ];
   return (
     <nav className="workspaceNavigator" aria-label="workspace navigator">
       <button type="button" className="workspaceNavigatorBrand" onClick={() => navigate(APP_SHORTCUTS.mainHub.path)}>
         <MemoNavIcon type="home" />
-        <span>AI Schedule</span>
+        <span>Home</span>
       </button>
       <div>
         {items.map((item) => (
@@ -2426,24 +2461,155 @@ function noteBlockFileContent(block) {
   return [`# ${title}`, '', block.content.trim()].filter(Boolean).join('\n');
 }
 
+function readStoredArrayByKey(storageKey) {
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map(normalizeSchedulerItem) : [];
+  } catch {
+    return [];
+  }
+}
+
+function checklistStatsForBlocks(blocks) {
+  return blocks.reduce((stats, block) => {
+    const checks = `${block.content || ''}`.match(/^\s*[-*]\s+\[[ xX]\]\s+/gm) || [];
+    const done = checks.filter((line) => /^\s*[-*]\s+\[[xX]\]\s+/.test(line)).length;
+    return {
+      total: stats.total + checks.length,
+      done: stats.done + done
+    };
+  }, { total: 0, done: 0 });
+}
+
+function summarizeAdmin1Activity() {
+  const session = readStoredAuth();
+  if (session?.username !== 'admin1') return null;
+
+  const schedulerItems = [
+    ...readSchedulerItems(schedulerStorageKey(session)),
+    ...readStoredArrayByKey(SCHEDULER_KEY)
+  ].filter((item, index, items) => index === items.findIndex((candidate) => candidate.id === item.id));
+  const today = toDateKey(new Date());
+  const nextSevenDays = Array.from({ length: 7 }, (_, index) => toDateKey(addDays(new Date(), index)));
+  const expandedWeekItems = expandSchedulerItemsForDates(schedulerItems, nextSevenDays);
+  const todayItems = expandedWeekItems.filter((item) => item.date === today);
+  const pendingWeekItems = expandedWeekItems.filter((item) => !item.done);
+  const nextSchedule = pendingWeekItems
+    .slice()
+    .sort((left, right) => `${left.date} ${left.time}`.localeCompare(`${right.date} ${right.time}`))[0];
+  const travelScheduleItems = schedulerItems.filter((item) => item.source === 'travel-plan' || `${item.id || ''}`.startsWith('travel-plan-'));
+
+  const boards = readMemoBoards();
+  const blocks = readNoteBlocks();
+  const adminSeedBlocks = blocks.filter((block) => `${block.id || ''}`.startsWith('admin1-goal-'));
+  const projectBlocks = blocks.filter((block) => (block.boardId || block.sector) === 'project');
+  const memoBlocks = blocks.filter((block) => (block.boardId || block.sector) !== 'project');
+  const seededChecklist = checklistStatsForBlocks(adminSeedBlocks);
+  const expectedChecklistTotal = ADMIN1_BOARD_TASKS.length * 2;
+  const checklistTotal = Math.max(seededChecklist.total, expectedChecklistTotal);
+  const checklistDone = seededChecklist.done;
+  const statusCounts = PROJECT_BOARD_COLUMNS.reduce((counts, column) => ({
+    ...counts,
+    [column.id]: projectBlocks.filter((block) => block.status === column.id).length
+  }), {});
+
+  return {
+    todayCount: todayItems.length,
+    weekPendingCount: pendingWeekItems.length,
+    nextSchedule,
+    totalScheduleCount: schedulerItems.length,
+    travelScheduleCount: travelScheduleItems.length,
+    boardCount: boards.length,
+    noteCount: blocks.length,
+    memoCount: memoBlocks.length,
+    adminGoalCount: Math.max(adminSeedBlocks.length, ADMIN1_BOARD_TASKS.length),
+    checklistDone,
+    checklistTotal,
+    statusCounts
+  };
+}
+
 function SpaceHomePage({ navigate }) {
+  const [adminOverview, setAdminOverview] = useState(() => summarizeAdmin1Activity());
+
   useEffect(() => {
     document.title = 'AI 개인일정 관리';
   }, []);
 
+  useEffect(() => {
+    const refresh = () => setAdminOverview(summarizeAdmin1Activity());
+    const handleStorage = (event) => {
+      if (!event.key || [AUTH_KEY, AI_NOTE_KEY, AI_NOTE_BOARDS_KEY, SCHEDULER_KEY, schedulerStorageKey('admin1')].includes(event.key)) {
+        refresh();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('codex:scheduler-items-updated', refresh);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('codex:scheduler-items-updated', refresh);
+    };
+  }, []);
+
   return (
     <main className="spaceHome">
-      <section className="spaceHero">
+      <section className={`spaceHero ${adminOverview ? 'hasAdminOverview' : ''}`}>
         <div className="spaceHeroCopy">
-          <span className="spaceEyebrow">AI Schedule</span>
-          <h1>내 여행과 하루 일정을 간단하게 정리하세요</h1>
-          <strong className="spaceHeroLead">관광지 추천은 AI Trip에서, 개인 할 일은 스케줄러에서 관리합니다.</strong>
-          <p>필요한 기능만 바로 열 수 있게 단순하게 정리했습니다.</p>
+          <span className="spaceEyebrow">내 작업 공간</span>
+          <h1>여행 준비와 하루 일정을 한곳에서 정리하세요</h1>
+          <strong className="spaceHeroLead">추천 장소를 보고, 일정을 만들고, 필요한 메모를 이어서 관리합니다.</strong>
+          <p>자주 쓰는 기능만 바로 열 수 있게 정리했습니다.</p>
           <div className="spaceHeroActions">
             <button type="button" onClick={() => navigate(APP_SHORTCUTS.personalScheduler.path)}><MemoNavIcon type="calendar" />{APP_SHORTCUTS.personalScheduler.label}</button>
+            <button type="button" onClick={() => navigate(APP_SHORTCUTS.aiMemoBoard.path)}><MemoNavIcon type="board" />{APP_SHORTCUTS.aiMemoBoard.label}</button>
             <button type="button" onClick={() => navigate(APP_SHORTCUTS.aiTrip.path)}><MemoNavIcon type="trip" />{APP_SHORTCUTS.aiTrip.label}</button>
           </div>
         </div>
+        {adminOverview ? (
+          <aside className="adminOverviewPanel" aria-label="admin1 activity overview">
+            <div className="adminOverviewHeader">
+              <span>admin1 운영 현황</span>
+              <strong>전체 작업 상태</strong>
+            </div>
+            <div className="adminOverviewStats">
+              <article>
+                <span>오늘 일정</span>
+                <strong>{adminOverview.todayCount}</strong>
+                <small>7일 미완료 {adminOverview.weekPendingCount}</small>
+              </article>
+              <article>
+                <span>체크리스트</span>
+                <strong>{adminOverview.checklistDone}/{adminOverview.checklistTotal}</strong>
+                <small>관리 목표 {adminOverview.adminGoalCount}</small>
+              </article>
+              <article>
+                <span>여행 생성</span>
+                <strong>{adminOverview.travelScheduleCount}</strong>
+                <small>스케줄 연결 항목</small>
+              </article>
+            </div>
+            <div className="adminOverviewStrip">
+              {PROJECT_BOARD_COLUMNS.map((column) => (
+                <span key={column.id}>
+                  {column.title} <strong>{adminOverview.statusCounts[column.id] || 0}</strong>
+                </span>
+              ))}
+            </div>
+            <div className="adminOverviewNext">
+              <span>다음 확인</span>
+              <strong>{adminOverview.nextSchedule ? `${adminOverview.nextSchedule.date} ${adminOverview.nextSchedule.time}` : '대기 중인 일정 없음'}</strong>
+              <p>{adminOverview.nextSchedule?.title || '노트 보드와 여행 일정 생성 상태를 바로 열어 확인할 수 있습니다.'}</p>
+            </div>
+            <div className="adminOverviewActions">
+              <button type="button" onClick={() => navigate(APP_SHORTCUTS.personalScheduler.path)}><MemoNavIcon type="calendar" />일정 보기</button>
+              <button type="button" onClick={() => navigate(APP_SHORTCUTS.aiMemoBoard.path)}><MemoNavIcon type="board" />노트/체크</button>
+              <button type="button" onClick={() => navigate('/plans')}><MemoNavIcon type="trip" />여행 계획</button>
+            </div>
+            <p className="adminOverviewMeta">{adminOverview.boardCount}개 보드 · {adminOverview.noteCount}개 노트 · 일반 메모 {adminOverview.memoCount}개</p>
+          </aside>
+        ) : null}
       </section>
     </main>
   );
@@ -2465,6 +2631,7 @@ function AiNotePage({ navigate }) {
   const [contextMenu, setContextMenu] = useState(null);
   const [activeBoardId, setActiveBoardId] = useState('project');
   const [memoViewMode, setMemoViewMode] = useState('preview');
+  const [memoActiveLine, setMemoActiveLine] = useState(0);
   const previewTimerRef = useRef(null);
   const session = readStoredAuth();
   const displayName = session?.username && session.username !== 'guestuser' ? session.username : 'Guest';
@@ -2529,7 +2696,7 @@ function AiNotePage({ navigate }) {
     };
     setBoards((current) => [...current, nextBoard]);
     setActiveBoardId(nextBoard.id);
-    setNoteContentOpen(true);
+    setNoteContentOpen(false);
   };
 
   const renameBoard = (id, title) => {
@@ -2539,17 +2706,18 @@ function AiNotePage({ navigate }) {
   const addBlock = (type, parentId = '', status = 'todo', boardId = activeBoardId) => {
     const nextId = `note-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const extension = type === 'file' ? 'txt' : 'md';
+    const blockType = ['file', 'checklist'].includes(type) ? type : 'text';
     const nextBlock = {
       id: nextId,
-      type: type === 'file' ? 'file' : 'text',
-      content: type === 'file' ? '새 텍스트 파일' : '새 Markdown 글',
+      type: blockType,
+      content: blockType === 'file' ? '새 텍스트 파일' : blockType === 'checklist' ? '# 새 체크리스트\n\n- [ ] 첫 번째 항목' : '새 Markdown 글',
       sector: boardId,
       boardId,
       status,
       parentId,
       filePath: `memo-files/${boardId}/${nextId}.${extension}`,
       width: boardId === 'project' ? 220 : 760,
-      height: boardId === 'project' ? 120 : 58,
+      height: boardId === 'project' ? 120 : blockType === 'checklist' ? 104 : 58,
       x: boardId === 'project' ? 0 : 28 + (blocks.filter((block) => (block.boardId || block.sector) === boardId).length % 3) * 38,
       y: boardId === 'project' ? 0 : 28 + (blocks.filter((block) => (block.boardId || block.sector) === boardId).length % 6) * 72
     };
@@ -2594,6 +2762,17 @@ function AiNotePage({ navigate }) {
     previewTimerRef.current = window.setTimeout(() => setMemoViewMode('preview'), 320);
   };
 
+  const updateActiveBlockLine = (block, lineIndex, value) => {
+    setMemoViewMode('edit');
+    updateBlock(block.id, { content: updateMarkdownLine(block.content || '', lineIndex, value) });
+  };
+
+  const insertActiveBlockLine = (block, lineIndex) => {
+    const next = insertMarkdownLine(block.content || '', lineIndex);
+    updateBlock(block.id, { content: next.content });
+    setMemoActiveLine(next.lineIndex);
+  };
+
   const deleteBlock = (id) => {
     setBlocks((current) => current.length > 1 ? current.filter((block) => block.id !== id) : current);
   };
@@ -2635,6 +2814,7 @@ function AiNotePage({ navigate }) {
   const openBlockFile = async (block) => {
     const filePath = noteBlockFilePath(block);
     setActiveId(block.id);
+    setMemoActiveLine(0);
     setNoteContentOpen(true);
     setMemoViewMode('preview');
     setFileStatus('파일을 준비하는 중...');
@@ -2713,7 +2893,13 @@ function AiNotePage({ navigate }) {
     setContextMenu({ x: event.clientX, y: event.clientY, blockId: block.id, boardId: block.boardId || block.sector });
   };
   const createTextFileBlock = (status = 'todo', boardId = activeBoardId) => {
+    setNoteContentOpen(true);
     addBlock('file', '', status, boardId);
+    setContextMenu(null);
+  };
+  const createChecklistBlock = (status = 'todo', boardId = activeBoardId) => {
+    setNoteContentOpen(true);
+    addBlock('checklist', '', status, boardId);
     setContextMenu(null);
   };
   const renderBoardCard = (block) => (
@@ -2786,6 +2972,11 @@ function AiNotePage({ navigate }) {
           }
         }}
       />
+      {block.type === 'checklist' ? (
+        <small className="memoChecklistCardMeta">
+          {checklistItemsFromBlock(block).filter((item) => item.checked).length}/{checklistItemsFromBlock(block).length} 완료
+        </small>
+      ) : null}
     </article>
   );
   const renderProjectCard = (block) => (
@@ -2819,8 +3010,53 @@ function AiNotePage({ navigate }) {
           }
         }}
       />
+      {block.type === 'checklist' ? (
+        <small className="memoChecklistCardMeta">
+          {checklistItemsFromBlock(block).filter((item) => item.checked).length}/{checklistItemsFromBlock(block).length} 완료
+        </small>
+      ) : null}
     </article>
   );
+  const renderChecklistEditor = (block) => {
+    const items = checklistItemsFromBlock(block);
+    const updateChecklistItems = (nextItems) => {
+      updateBlock(block.id, { content: checklistContentWithItems(block, nextItems) });
+    };
+    return (
+      <div className="memoChecklistEditor">
+        {items.map((item, index) => (
+          <div className="memoChecklistItem" key={`checklist-${index}`}>
+            <input
+              type="checkbox"
+              checked={item.checked}
+              onChange={(event) => {
+                const nextItems = items.map((current, itemIndex) => (itemIndex === index ? { ...current, checked: event.target.checked } : current));
+                updateChecklistItems(nextItems);
+              }}
+            />
+            <input
+              value={item.text}
+              onChange={(event) => {
+                const nextItems = items.map((current, itemIndex) => (itemIndex === index ? { ...current, text: event.target.value } : current));
+                updateChecklistItems(nextItems);
+              }}
+              placeholder="체크리스트 항목"
+            />
+            <button
+              type="button"
+              aria-label="항목 삭제"
+              onClick={() => updateChecklistItems(items.length > 1 ? items.filter((_, itemIndex) => itemIndex !== index) : [{ checked: false, text: '' }])}
+            >
+              삭제
+            </button>
+          </div>
+        ))}
+        <button type="button" className="memoChecklistAdd" onClick={() => updateChecklistItems([...items, { checked: false, text: '' }])}>
+          항목 추가
+        </button>
+      </div>
+    );
+  };
 
   return (
     <main className="aiNoteShell">
@@ -2829,7 +3065,7 @@ function AiNotePage({ navigate }) {
         className={`aiNotePage ${workspaceMode === 'scheduler' ? 'schedulerMode' : ''}`}
         onClick={() => workspaceMode === 'board' && setContextMenu(null)}
         onContextMenu={(event) => {
-          if (workspaceMode === 'board') {
+          if (workspaceMode === 'board' && noteContentOpen) {
             openContextMenu(event, 'todo');
           }
         }}
@@ -2837,11 +3073,11 @@ function AiNotePage({ navigate }) {
         {workspaceMode === 'scheduler' ? (
           <SchedulerPage navigate={navigate} embedded />
         ) : (
-        <section className="aiNoteBoardPanel" onContextMenu={(event) => openContextMenu(event, 'todo')}>
+        <section className="aiNoteBoardPanel" onContextMenu={(event) => noteContentOpen && openContextMenu(event, 'todo')}>
           <header className="projectTopbar">
             <div>
-              <span className="projectBreadcrumb">AI Schedule / NotePad</span>
-              <h1>NotePad</h1>
+              <span className="projectBreadcrumb">Home / 노트</span>
+              <h1>노트</h1>
             </div>
             <div className="projectTopActions" aria-label="workspace actions">
               <button type="button" onClick={() => setWorkspaceMode('scheduler')} title="스케줄러"><MemoNavIcon type="calendar" /></button>
@@ -2871,18 +3107,25 @@ function AiNotePage({ navigate }) {
                   <span>새 보드</span>
                 </button>
               </nav>
-              <div className="memoBoardTitleRow">
-                <h2>{activeBoard?.title || '메모 보드'}</h2>
-                {activeBoard ? (
-                  <input
-                    value={activeBoard.title}
-                    onChange={(event) => renameBoard(activeBoard.id, event.target.value)}
-                    aria-label="현재 보드 이름"
-                  />
-                ) : null}
-              </div>
+              {noteContentOpen ? (
+                <div className="memoBoardTitleRow">
+                  <h2>{activeBoard?.title || '메모 보드'}</h2>
+                  {activeBoard ? (
+                    <input
+                      value={activeBoard.title}
+                      onChange={(event) => renameBoard(activeBoard.id, event.target.value)}
+                      aria-label="현재 보드 이름"
+                    />
+                  ) : null}
+                </div>
+              ) : null}
             </div>
-            <button type="button" className="projectNewItemButton" onClick={() => { setNoteContentOpen(true); addBlock('text', '', 'todo', activeBoardId); }}>+ 새 항목</button>
+            {noteContentOpen ? (
+              <div className="memoBoardCreateActions">
+                <button type="button" className="projectNewItemButton" onClick={() => { setNoteContentOpen(true); addBlock('text', '', 'todo', activeBoardId); }}>+ 새 항목</button>
+                <button type="button" className="projectNewItemButton" onClick={() => { setNoteContentOpen(true); addBlock('checklist', '', 'todo', activeBoardId); }}>+ 체크리스트</button>
+              </div>
+            ) : null}
           </section>
           {!noteContentOpen ? (
             <section className="notePadStart">
@@ -2934,11 +3177,37 @@ function AiNotePage({ navigate }) {
                 </div>
               </header>
               {memoViewMode === 'edit' ? (
-                <textarea
-                  value={activeBlock.content || ''}
-                  onChange={(event) => updateActiveBlockContent(activeBlock.id, event.target.value)}
-                  placeholder="# 제목&#10;&#10;내용을 작성하세요."
-                />
+                activeBlock.type === 'checklist' ? renderChecklistEditor(activeBlock) : (
+                  <div className="memoHybridEditor">
+                    {`${activeBlock.content || ''}`.split('\n').map((line, index) => (
+                      index === memoActiveLine ? (
+                        <textarea
+                          key={`active-${activeBlock.id}-${index}`}
+                          value={line}
+                          rows={Math.max(1, line.split('\n').length)}
+                          onChange={(event) => updateActiveBlockLine(activeBlock, index, event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' && !event.shiftKey) {
+                              event.preventDefault();
+                              insertActiveBlockLine(activeBlock, index);
+                            }
+                          }}
+                          placeholder="# 제목 또는 내용"
+                          autoFocus
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          key={`preview-${activeBlock.id}-${index}`}
+                          className="memoPreviewLine"
+                          onClick={() => setMemoActiveLine(index)}
+                        >
+                          {line.trim() ? markdownPreviewBlocks(line) : <span className="memoBlankLine">빈 줄</span>}
+                        </button>
+                      )
+                    ))}
+                  </div>
+                )
               ) : (
                 <article className="memoInlinePreview">
                   {(activeBlock.content || '').trim() ? markdownPreviewBlocks(activeBlock.content) : <p>내용을 작성하면 바로 미리보기로 전환됩니다.</p>}
@@ -2994,7 +3263,11 @@ function AiNotePage({ navigate }) {
               {contextMenu.blockId ? (
                 <button type="button" className="dangerMenuAction" onClick={() => { deleteBlock(contextMenu.blockId); setContextMenu(null); }}>삭제</button>
               ) : (
-                <button type="button" onClick={() => createTextFileBlock(contextMenu.status, contextMenu.boardId)}>텍스트 파일 생성</button>
+                <>
+                  <button type="button" onClick={() => { setNoteContentOpen(true); addBlock('text', '', contextMenu.status, contextMenu.boardId); setContextMenu(null); }}>메모 생성</button>
+                  <button type="button" onClick={() => createChecklistBlock(contextMenu.status, contextMenu.boardId)}>체크리스트 생성</button>
+                  <button type="button" onClick={() => createTextFileBlock(contextMenu.status, contextMenu.boardId)}>텍스트 파일 생성</button>
+                </>
               )}
             </div>
           ) : null}
@@ -3009,6 +3282,7 @@ function AiNotePage({ navigate }) {
 
 function SchedulerPage({ navigate, embedded = false }) {
   const session = readStoredAuth();
+  const schedulerTitle = session?.username && session.username !== 'guestuser' ? `${session.username}님의 일정` : '내 일정';
   const schedulerKey = schedulerStorageKey(session);
   const [items, setItems] = useState(() => readSchedulerItems(schedulerKey));
   const [filter, setFilter] = useState('전체');
@@ -3177,9 +3451,9 @@ function SchedulerPage({ navigate, embedded = false }) {
       <section className="schedulerPage">
         <header className="schedulerHero">
           <div>
-            <span className="schedulerPageIcon">#</span>
-            <h1>{session?.username || 'Guest'} 스케줄러</h1>
-            <p>오늘 할 일과 여행 준비를 가볍게 정리합니다.</p>
+            <span className="schedulerPageIcon"><MemoNavIcon type="calendar" /></span>
+            <h1>{schedulerTitle}</h1>
+            <p>오늘 해야 할 일과 여행 준비를 한곳에서 정리합니다.</p>
           </div>
           <div className="schedulerStats">
             <article><span>오늘 달성률</span><strong>{todayCompletionRate}%</strong><small>{todayDoneCount}/{todayItems.length}</small></article>
