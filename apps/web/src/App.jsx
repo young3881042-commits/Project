@@ -1,4 +1,6 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import LocalTripApp from './LocalTripApp.jsx';
 
 const AUTH_KEY = 'codex-workspace-auth';
@@ -9,7 +11,7 @@ const SCHEDULER_KEY = 'codex-personal-scheduler-items';
 const AI_NOTE_KEY = 'codex-ai-note-blocks';
 const AI_NOTE_BOARDS_KEY = 'codex-ai-note-boards';
 const APP_SHORTCUTS = {
-  mainHub: { label: '홈', path: '/' },
+  mainHub: { label: 'Home', path: '/' },
   aiTrip: { label: '여행 추천', path: '/destinations' },
   aiSchedule: { label: 'AI 일정 만들기', path: '/planner' },
   personalScheduler: { label: '일정', path: '/scheduler' },
@@ -461,27 +463,22 @@ function markdownPreviewLines(markdown) {
 }
 
 function markdownPreviewBlocks(markdown) {
-  return markdown.split('\n').map((line, index) => {
-    const key = `${index}-${line}`;
-    const inline = (text) => text
-      .split(/(`[^`]+`|\*\*[^*]+\*\*)/g)
-      .filter(Boolean)
-      .map((part, partIndex) => {
-        if (part.startsWith('`') && part.endsWith('`')) return <code key={partIndex}>{part.slice(1, -1)}</code>;
-        if (part.startsWith('**') && part.endsWith('**')) return <strong key={partIndex}>{part.slice(2, -2)}</strong>;
-        return part;
-      });
-    if (line.startsWith('# ')) return <h1 key={key}>{inline(line.slice(2))}</h1>;
-    if (line.startsWith('## ')) return <h2 key={key}>{inline(line.slice(3))}</h2>;
-    if (line.startsWith('### ')) return <h3 key={key}>{inline(line.slice(4))}</h3>;
-    if (/^\s*[-*]\s+\[[ xX]\]\s+/.test(line)) {
-      const checked = /^\s*[-*]\s+\[[xX]\]\s+/.test(line);
-      return <label key={key} className="analysisMarkdownCheck"><input type="checkbox" checked={checked} readOnly />{inline(line.replace(/^\s*[-*]\s+\[[ xX]\]\s+/, ''))}</label>;
-    }
-    if (/^\s*[-*]\s+/.test(line)) return <li key={key}>{inline(line.replace(/^\s*[-*]\s+/, ''))}</li>;
-    if (/^\s*>\s+/.test(line)) return <blockquote key={key}>{inline(line.replace(/^\s*>\s+/, ''))}</blockquote>;
-    return line.trim() ? <p key={key}>{inline(line)}</p> : <br key={key} />;
-  });
+  return <MarkdownPreview markdown={markdown} />;
+}
+
+function MarkdownPreview({ markdown, compact = false }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      className={compact ? 'markdownRender compact' : 'markdownRender'}
+      components={{
+        a: ({ node, ...props }) => <a {...props} target="_blank" rel="noreferrer" />,
+        input: ({ node, ...props }) => <input {...props} readOnly />
+      }}
+    >
+      {markdown || ''}
+    </ReactMarkdown>
+  );
 }
 
 function updateMarkdownLine(markdown, lineIndex, value) {
@@ -3080,33 +3077,12 @@ function AiNotePage({ navigate }) {
               <h1>노트</h1>
             </div>
             <div className="projectTopActions" aria-label="workspace actions">
-              <button type="button" onClick={() => setWorkspaceMode('scheduler')} title="스케줄러"><MemoNavIcon type="calendar" /></button>
-              <button type="button" onClick={addBoard} title="새 보드"><MemoNavIcon type="plus" /></button>
+              <button type="button" onClick={() => setWorkspaceMode('scheduler')} title="일정"><MemoNavIcon type="calendar" /></button>
+              <button type="button" onClick={addBoard} title="보드 생성"><MemoNavIcon type="plus" /><span>보드</span></button>
             </div>
           </header>
           <section className="projectBoardHero">
             <div>
-              <nav className="memoBoardNavigator" aria-label="AI memo board navigation">
-                {boards.map((board) => (
-                  <button
-                    type="button"
-                    className={activeBoardId === board.id ? 'active' : ''}
-                    key={board.id}
-                    onClick={() => {
-                      setActiveBoardId(board.id);
-                      setNoteContentOpen(true);
-                    }}
-                  >
-                    <MemoNavIcon type="board" />
-                    <span>{board.title}</span>
-                    <small>{rootBlocks.filter((block) => (block.boardId || block.sector) === board.id).length}</small>
-                  </button>
-                ))}
-                <button type="button" className="memoBoardAddButton" onClick={addBoard}>
-                  <MemoNavIcon type="plus" />
-                  <span>새 보드</span>
-                </button>
-              </nav>
               {noteContentOpen ? (
                 <div className="memoBoardTitleRow">
                   <h2>{activeBoard?.title || '메모 보드'}</h2>
@@ -3122,8 +3098,13 @@ function AiNotePage({ navigate }) {
             </div>
             {noteContentOpen ? (
               <div className="memoBoardCreateActions">
-                <button type="button" className="projectNewItemButton" onClick={() => { setNoteContentOpen(true); addBlock('text', '', 'todo', activeBoardId); }}>+ 새 항목</button>
-                <button type="button" className="projectNewItemButton" onClick={() => { setNoteContentOpen(true); addBlock('checklist', '', 'todo', activeBoardId); }}>+ 체크리스트</button>
+                <button type="button" className="projectNewItemButton ghost" onClick={() => setNoteContentOpen(false)}>보드 선택</button>
+                <button type="button" className="projectNewItemButton iconAdd" onClick={() => { setNoteContentOpen(true); addBlock('text', '', 'todo', activeBoardId); }} title="글 생성">
+                  <MemoNavIcon type="plus" /><span>글</span>
+                </button>
+                <button type="button" className="projectNewItemButton iconAdd" onClick={() => { setNoteContentOpen(true); addBlock('checklist', '', 'todo', activeBoardId); }} title="체크리스트 생성">
+                  <MemoNavIcon type="plus" /><span>체크</span>
+                </button>
               </div>
             ) : null}
           </section>
@@ -3149,6 +3130,11 @@ function AiNotePage({ navigate }) {
                     <small>{rootBlocks.filter((block) => (block.boardId || block.sector) === board.id).length}</small>
                   </button>
                 ))}
+                <button type="button" className="notePadAddBoard" onClick={addBoard}>
+                  <MemoNavIcon type="plus" />
+                  <span>보드 생성</span>
+                  <small>+</small>
+                </button>
               </div>
             </section>
           ) : (
@@ -3202,7 +3188,7 @@ function AiNotePage({ navigate }) {
                           className="memoPreviewLine"
                           onClick={() => setMemoActiveLine(index)}
                         >
-                          {line.trim() ? markdownPreviewBlocks(line) : <span className="memoBlankLine">빈 줄</span>}
+                          {line.trim() ? <MarkdownPreview markdown={line} compact /> : <span className="memoBlankLine">빈 줄</span>}
                         </button>
                       )
                     ))}
@@ -3210,7 +3196,7 @@ function AiNotePage({ navigate }) {
                 )
               ) : (
                 <article className="memoInlinePreview">
-                  {(activeBlock.content || '').trim() ? markdownPreviewBlocks(activeBlock.content) : <p>내용을 작성하면 바로 미리보기로 전환됩니다.</p>}
+                  {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : <p>내용을 작성하면 바로 미리보기로 전환됩니다.</p>}
                 </article>
               )}
             </section>
@@ -3288,6 +3274,7 @@ function SchedulerPage({ navigate, embedded = false }) {
   const [filter, setFilter] = useState('전체');
   const [selectedDate, setSelectedDate] = useState(toDateKey(new Date()));
   const [calendarMonth, setCalendarMonth] = useState(toDateKey(new Date()).slice(0, 7));
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [draft, setDraft] = useState({
     title: '',
     date: toDateKey(new Date()),
@@ -3416,6 +3403,7 @@ function SchedulerPage({ navigate, embedded = false }) {
     setDraft((current) => ({ ...current, title: '', memo: '' }));
     setSelectedDate(draft.date);
     setCalendarMonth(draft.date.slice(0, 7));
+    setQuickAddOpen(false);
   };
 
   const updateItem = (id, patch) => {
@@ -3462,7 +3450,13 @@ function SchedulerPage({ navigate, embedded = false }) {
             <article><span>미완료</span><strong>{pendingItems.length}</strong><small>남은 일정</small></article>
           </div>
         </header>
-        <form className="schedulerQuickAdd" onSubmit={submitDraft}>
+        <div className="schedulerAddDock">
+          <button type="button" className="schedulerCuteAdd" onClick={() => setQuickAddOpen((current) => !current)}>
+            <MemoNavIcon type="plus" />
+            <span>{quickAddOpen ? '닫기' : '일정 추가'}</span>
+          </button>
+        </div>
+        {quickAddOpen ? <form className="schedulerQuickAdd cute" onSubmit={submitDraft}>
           <label>
             <span>할 일</span>
             <input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="예: 경주 일정 확인" />
@@ -3508,8 +3502,8 @@ function SchedulerPage({ navigate, embedded = false }) {
             <span>노트</span>
             <textarea value={draft.memo} onChange={(event) => setDraft((current) => ({ ...current, memo: event.target.value }))} placeholder="필요한 내용을 짧게 적어주세요." />
           </label>
-          <button type="submit">추가</button>
-        </form>
+          <button type="submit"><MemoNavIcon type="plus" /> 저장</button>
+        </form> : null}
         <section className="schedulerDatabase">
           <div className="schedulerCalendarPanel">
             <div className="schedulerCalendarHeader">

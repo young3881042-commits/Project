@@ -21392,3 +21392,191 @@ body:has(.ltShell) {
     height: 132px !important;
   }
 }
+
+/* Note and scheduler simplification pass */
+.schedulerAddDock {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.schedulerCuteAdd {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #eff6ff, #ecfdf5);
+  color: #1d4ed8;
+  padding: 0 18px 0 12px;
+  font: inherit;
+  font-weight: 950;
+  box-shadow: 0 14px 34px rgba(37, 99, 235, 0.12);
+}
+
+.schedulerCuteAdd .memoNavIcon,
+.projectNewItemButton.iconAdd .memoNavIcon,
+.notePadAddBoard .memoNavIcon {
+  background: #2563eb;
+  color: #fff;
+}
+
+.schedulerQuickAdd.cute {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #bfdbfe !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98)),
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.2), transparent 28%) !important;
+  box-shadow: 0 22px 58px rgba(37, 99, 235, 0.12) !important;
+}
+
+.schedulerQuickAdd.cute > button {
+  gap: 8px;
+  border-radius: 999px !important;
+  background: #2563eb !important;
+}
+
+.schedulerWeekSlots {
+  display: grid !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: 156px !important;
+  grid-template-columns: none !important;
+  gap: 10px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding: 2px 2px 12px !important;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+}
+
+.schedulerWeekSlots button {
+  width: 156px !important;
+  height: 150px !important;
+  min-width: 156px !important;
+  max-width: 156px !important;
+  scroll-snap-align: start;
+}
+
+.schedulerWeekSlots button > div {
+  max-height: 54px !important;
+}
+
+.projectTopActions {
+  border-radius: 999px;
+}
+
+.projectTopActions button {
+  width: auto;
+  min-width: 38px;
+  display: inline-flex;
+  gap: 6px;
+  padding: 0 10px;
+  font-weight: 900;
+}
+
+.projectTopActions button span {
+  font-size: 0.82rem;
+}
+
+.projectBoardHero {
+  align-items: flex-start;
+}
+
+.memoBoardCreateActions {
+  align-items: center;
+}
+
+.projectNewItemButton.iconAdd {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  padding: 0 13px 0 8px;
+}
+
+.projectNewItemButton.ghost {
+  background: #f8fafc;
+  color: #475569;
+}
+
+.notePadAddBoard {
+  border-style: dashed !important;
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+}
+
+.markdownRender {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  color: inherit;
+  line-height: 1.6;
+}
+
+.markdownRender.compact {
+  display: block;
+  line-height: 1.45;
+}
+
+.markdownRender.compact > * {
+  display: inline;
+  margin: 0;
+}
+
+.markdownRender h1,
+.markdownRender h2,
+.markdownRender h3,
+.markdownRender p,
+.markdownRender ul,
+.markdownRender ol,
+.markdownRender blockquote,
+.markdownRender pre {
+  margin: 0;
+}
+
+.markdownRender ul,
+.markdownRender ol {
+  padding-left: 1.2rem;
+}
+
+.markdownRender code {
+  border-radius: 6px;
+  background: #eef2ff;
+  color: #3730a3;
+  padding: 0.12rem 0.32rem;
+}
+
+.markdownRender pre {
+  overflow-x: auto;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 12px;
+}
+
+.markdownRender blockquote {
+  border-left: 3px solid #bfdbfe;
+  color: #475569;
+  padding-left: 10px;
+}
+
+.markdownRender input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  margin-right: 7px;
+  accent-color: #2563eb;
+}
+
+@media (max-width: 560px) {
+  .schedulerWeekSlots {
+    grid-auto-columns: 148px !important;
+  }
+
+  .schedulerWeekSlots button {
+    width: 148px !important;
+    min-width: 148px !important;
+    max-width: 148px !important;
+  }
+}
