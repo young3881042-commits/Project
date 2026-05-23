@@ -1,0 +1,185 @@
+.ltPlannerForm {
+  overflow: visible;
+}
+
+.ltProgressiveStack {
+  display: grid;
+  gap: 10px;
+}
+
+.ltProgressiveCard {
+  min-width: 0;
+  border: 1px solid #dde5df;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: visible;
+}
+
+.ltProgressiveCard.active {
+  border-color: #69a38f;
+  box-shadow: 0 14px 32px rgba(28, 67, 56, 0.08);
+}
+
+.ltProgressiveTrigger {
+  width: 100%;
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #1f2933;
+  padding: 13px 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ltProgressiveTrigger:hover,
+.ltProgressiveTrigger:focus-visible {
+  background: #f5faf7;
+}
+
+.ltProgressiveTrigger:focus-visible {
+  outline: 3px solid rgba(36, 86, 74, 0.16);
+  outline-offset: 2px;
+}
+
+.ltProgressiveTitle {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 11px;
+  align-items: center;
+}
+
+.ltProgressiveIndex {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d7e1db;
+  border-radius: 8px;
+  background: #f7faf8;
+  color: #24564a;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.ltProgressiveTitle strong,
+.ltProgressiveTitle small {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ltProgressiveTitle strong {
+  color: #17221e;
+  font-size: 0.98rem;
+  font-weight: 900;
+}
+
+.ltProgressiveTitle small {
+  margin-top: 3px;
+  color: #69746e;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.ltProgressiveMeta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ltProgressiveState {
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #eef2ef;
+  color: #5f6862;
+  padding: 0 9px;
+  font-size: 0.76rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.ltProgressiveState.complete {
+  background: #e6f5ee;
+  color: #166143;
+}
+
+.ltProgressiveChevron {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #53605a;
+  transition: transform 0.16s ease;
+}
+
+.ltProgressiveCard.active .ltProgressiveChevron {
+  transform: rotate(180deg);
+}
+
+.ltProgressivePanel {
+  display: grid;
+  gap: 14px;
+  border-top: 1px solid #edf0ec;
+  padding: 14px;
+}
+
+.ltInlinePlannerGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.ltInlinePlannerGrid > .ltOptionGroup:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.ltDailyRouteBuilder.compact fieldset {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  border-radius: 8px;
+}
+
+.ltDailyRouteBuilder.compact legend {
+  color: #47534d;
+  font-weight: 900;
+}
+
+.ltDailyRouteBuilder.compact .ltAddressSearch,
+.ltDailyRouteBuilder.compact label,
+.ltInlinePlannerGrid label,
+.ltInlinePlannerGrid .ltAddressSearch {
+  min-width: 0;
+}
+
+@media (max-width: 780px) {
+  .ltProgressiveTrigger,
+  .ltProgressiveMeta,
+  .ltInlinePlannerGrid,
+  .ltDailyRouteBuilder.compact fieldset {
+    grid-template-columns: 1fr;
+  }
+
+  .ltProgressiveTrigger {
+    min-height: 76px;
+  }
+
+  .ltProgressiveMeta {
+    display: grid;
+    justify-items: start;
+  }
+
+  .ltProgressivePanel {
+    padding: 12px;
+  }
+}

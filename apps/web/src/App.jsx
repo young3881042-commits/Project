@@ -2321,6 +2321,20 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260523-planner-connect-simple',
+    content: `# 2026-05-23 플래너와 연결 화면 단순화
+
+- [x] \`/planner\` 날짜·동선 입력을 클릭형 보강 카드로 정리
+- [x] 주소, 시간, 일자별 동선은 선택 입력으로 낮추고 출발일/일수만으로 다음 단계 이동
+- [x] \`/connect\` 기본 화면을 이메일/문자 2개 선택지로 단순화
+- [x] API 서버와 OpenAI 키 입력은 고급 설정으로 접기
+
+## 검증
+
+- [x] \`npm --prefix apps/web run build\`
+- [x] Docker web 재배포 후 \`/planner\`, \`/connect\` 확인`
+  },
+  {
     id: 'admin1-memo-20260523-ai-assitant-app-apk',
     content: `# 2026-05-23 ai-assitant 앱 라우트와 설치 파일
 

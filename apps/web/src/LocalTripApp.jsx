@@ -592,19 +592,41 @@ function AddressSearchInput({ label, value, address, onValue, onAddress, destina
   );
 }
 
-function PlannerInfoCard({ icon, title, description, children }) {
+function PlannerProgressiveCard({ index, title, summary, complete, active, onToggle, children }) {
+  const panelId = `planner-progressive-${index}`;
+
   return (
-    <section className="ltPlannerInfoCard">
-      <span className="ltPlannerInfoIcon" aria-hidden="true">
-        <Icon size={22}>{icon}</Icon>
-      </span>
-      <div>
-        <strong>{title}</strong>
-        <p>{description}</p>
-      </div>
-      <div className="ltPlannerInfoBody">
-        {children}
-      </div>
+    <section className={`ltProgressiveCard ${active ? 'active' : ''} ${complete ? 'complete' : ''}`}>
+      <button
+        type="button"
+        className="ltProgressiveTrigger"
+        aria-expanded={active}
+        aria-controls={panelId}
+        onClick={onToggle}
+      >
+        <span className="ltProgressiveTitle">
+          <span className="ltProgressiveIndex">{index}</span>
+          <span>
+            <strong>{title}</strong>
+            <small>{summary}</small>
+          </span>
+        </span>
+        <span className="ltProgressiveMeta">
+          <span className={`ltProgressiveState ${complete ? 'complete' : ''}`}>
+            {complete ? '입력됨' : '선택'}
+          </span>
+          <span className="ltProgressiveChevron" aria-hidden="true">
+            <Icon size={18}>
+              <path d="m6 9 6 6 6-6"></path>
+            </Icon>
+          </span>
+        </span>
+      </button>
+      {active ? (
+        <div className="ltProgressivePanel" id={panelId}>
+          {children}
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -1893,11 +1915,14 @@ function PlannerPage({ path, navigate }) {
   const [generateError, setGenerateError] = useState('');
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const [activeStep, setActiveStep] = useState(1);
+  const [activeRouteField, setActiveRouteField] = useState('dates');
   const [dayRoutes, setDayRoutes] = useState([{ day: 1, startPlace: '', startAddress: '', endPlace: '', endAddress: '', departureTime: '09:00', arrivalTime: '20:00' }]);
   const validDayCount = Number.isFinite(Number(days)) && Number(days) >= 1 && Number(days) <= 7;
-  const routeInfoComplete = Boolean(startDate) && validDayCount && dayRoutes.length === Number(days)
-    && startPlace.trim() && endPlace.trim() && startAddress.trim() && endAddress.trim() && departureTime && arrivalTime
-    && dayRoutes.every((route) => route.startPlace.trim() && route.endPlace.trim() && route.departureTime && route.arrivalTime);
+  const routeInfoComplete = Boolean(startDate) && validDayCount;
+  const overallRouteComplete = Boolean(startPlace.trim() || endPlace.trim() || startAddress.trim() || endAddress.trim());
+  const dailyRouteCount = dayRoutes.filter((route) => (
+    route.startPlace.trim() || route.endPlace.trim() || route.startAddress.trim() || route.endAddress.trim()
+  )).length;
 
   const countryDestinations = useMemo(
     () => destinations.filter((destination) => countryForDestination(destination) === country),
@@ -1980,6 +2005,14 @@ function PlannerPage({ path, navigate }) {
     )));
   };
 
+  const routeDateSummary = routeInfoComplete ? `${formatDate(startDate)} · ${formatDaysLabel(days)}` : '출발일과 여행 일수';
+  const overallRouteSummary = overallRouteComplete
+    ? `${startPlace || '출발지 미정'} → ${endPlace || '도착지 미정'}`
+    : '출발지와 도착지는 필요할 때만 입력';
+  const routeTimeSummary = departureTime && arrivalTime ? `${departureTime} → ${arrivalTime}` : '기본 시간';
+  const dailyRouteSummary = dailyRouteCount ? `${dailyRouteCount}일차 세부 동선 입력` : '일자별 동선은 선택 입력';
+  const travelOptionSummary = `${travelers} · ${pace} · ${transportType} · ${budget}`;
+
   const submit = async (event) => {
     event.preventDefault();
     setGenerating(true);
@@ -1991,6 +2024,15 @@ function PlannerPage({ path, navigate }) {
     const destinationIds = selectedDestObjects
       .map((destination) => Number(destination.id))
       .filter((id) => Number.isFinite(id));
+    const routeMemoLines = [
+      notes,
+      startPlace || startAddress || departureTime ? `전체 출발: ${startPlace || '미정'}${startAddress ? ` (${startAddress})` : ''}${departureTime ? ` · ${departureTime}` : ''}` : '',
+      endPlace || endAddress || arrivalTime ? `최종 도착: ${endPlace || '미정'}${endAddress ? ` (${endAddress})` : ''}${arrivalTime ? ` · ${arrivalTime}` : ''}` : '',
+      dailyRouteCount ? '일자별 출발/도착:' : '',
+      ...dayRoutes
+        .filter((route) => route.startPlace || route.startAddress || route.endPlace || route.endAddress)
+        .map((route) => `${route.day}일차 출발=${route.startPlace || '미정'}${route.startAddress ? ` (${route.startAddress})` : ''} ${route.departureTime || departureTime || ''}, 도착=${route.endPlace || '미정'}${route.endAddress ? ` (${route.endAddress})` : ''} ${route.arrivalTime || arrivalTime || ''}`)
+    ].filter(Boolean);
 
     const payload = {
       regions,
@@ -2011,13 +2053,7 @@ function PlannerPage({ path, navigate }) {
       arrivalTime,
       dailyRoutes: dayRoutes,
       exportFormat,
-      memo: [
-        notes,
-        `전체 출발지=${startPlace} (${startAddress}), 출발 시간=${departureTime}`,
-        `최종 목적지=${endPlace} (${endAddress}), 도착 시간=${arrivalTime}`,
-        '일자별 출발/도착:',
-        ...dayRoutes.map((route) => `${route.day}일차 출발지=${route.startPlace || '미정'} (${route.startAddress || '주소 미정'}) ${route.departureTime || departureTime}, 도착지=${route.endPlace || '미정'} (${route.endAddress || '주소 미정'}) ${route.arrivalTime || arrivalTime}`)
-      ].filter(Boolean).join('\n')
+      memo: routeMemoLines.join('\n')
     };
     try {
       const response = await localTripRequest('/api/travel-plans/generate', { method: 'POST', body: payload });
@@ -2124,138 +2160,142 @@ function PlannerPage({ path, navigate }) {
           {activeStep === 2 ? <div className="ltFormSection">
             <div className="ltFormSectionTitle">
               <span>Step 2</span>
-              <strong>날짜와 매일 동선</strong>
+              <strong>날짜와 동선</strong>
             </div>
-            <div className="ltFormGrid">
-              <label>
-                <span>출발일</span>
-                <input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} />
-              </label>
-              <label>
-                <span>여행 일수</span>
-                <input type="number" min="1" max="7" value={days} onChange={(event) => setDays(event.target.value)} />
-              </label>
-            </div>
-            <div className="ltAddressGrid">
-              <PlannerInfoCard
-                title="출발지"
-                description="집, 역, 공항, 숙소처럼 여행을 시작할 실제 주소를 검색하거나 입력하세요."
-                icon={(
-                  <>
-                    <path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11Z"></path>
-                    <circle cx="12" cy="10" r="2.6"></circle>
-                  </>
-                )}
+            <div className="ltProgressiveStack">
+              <PlannerProgressiveCard
+                index={1}
+                title="날짜"
+                summary={routeDateSummary}
+                complete={routeInfoComplete}
+                active={activeRouteField === 'dates'}
+                onToggle={() => setActiveRouteField('dates')}
               >
-                <AddressSearchInput
-                  label="전체 출발지"
-                  value={startPlace}
-                  address={startAddress}
-                  onValue={setStartPlace}
-                  onAddress={setStartAddress}
-                  destinations={countryDestinations}
-                  placeholder="집, 역, 공항, 숙소명"
-                />
-              </PlannerInfoCard>
-              <PlannerInfoCard
-                title="최종 목적지"
-                description="일정 마지막에 도착해야 하는 역, 공항, 숙소, 장소 주소를 넣으세요."
-                icon={(
-                  <>
-                    <path d="M5 5h10l4 4-4 4H5z"></path>
-                    <path d="M5 19V5"></path>
-                  </>
-                )}
+                <div className="ltInlinePlannerGrid">
+                  <label>
+                    <span>출발일</span>
+                    <input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} />
+                  </label>
+                  <label>
+                    <span>여행 일수</span>
+                    <input type="number" min="1" max="7" value={days} onChange={(event) => setDays(event.target.value)} />
+                  </label>
+                </div>
+              </PlannerProgressiveCard>
+
+              <PlannerProgressiveCard
+                index={2}
+                title="출발·도착"
+                summary={overallRouteSummary}
+                complete={overallRouteComplete}
+                active={activeRouteField === 'route'}
+                onToggle={() => setActiveRouteField('route')}
               >
-                <AddressSearchInput
-                  label="최종 목적지"
-                  value={endPlace}
-                  address={endAddress}
-                  onValue={setEndPlace}
-                  onAddress={setEndAddress}
-                  destinations={countryDestinations}
-                  placeholder="마지막 도착지, 역, 공항"
-                />
-              </PlannerInfoCard>
-            </div>
-            <div className="ltFormGrid">
-              <PlannerInfoCard
-                title="출발 시간"
-                description="첫 이동을 시작할 시간을 기준으로 하루 코스 간격을 맞춥니다."
-                icon={(
-                  <>
-                    <circle cx="12" cy="12" r="9"></circle>
-                    <path d="M12 7v5l3 2"></path>
-                  </>
-                )}
-              >
-                <label>
-                  <span>출발 시간</span>
-                  <input type="time" value={departureTime} onChange={(event) => setDepartureTime(event.target.value)} />
-                </label>
-              </PlannerInfoCard>
-              <PlannerInfoCard
-                title="도착 시간"
-                description="마지막 장소에서 빠져나와 도착해야 하는 목표 시간을 반영합니다."
-                icon={(
-                  <>
-                    <path d="M4 12h16"></path>
-                    <path d="m14 6 6 6-6 6"></path>
-                    <path d="M4 6v12"></path>
-                  </>
-                )}
-              >
-                <label>
-                  <span>도착 시간</span>
-                  <input type="time" value={arrivalTime} onChange={(event) => setArrivalTime(event.target.value)} />
-                </label>
-              </PlannerInfoCard>
-            </div>
-            <div className="ltDailyRouteBuilder">
-              {dayRoutes.map((route, index) => (
-                <fieldset key={route.day}>
-                  <legend>{route.day}일차</legend>
+                <div className="ltInlinePlannerGrid">
                   <AddressSearchInput
-                    label="출발지"
-                    value={route.startPlace}
-                    address={route.startAddress || ''}
-                    onValue={(value) => updateDayRoute(index, 'startPlace', value)}
-                    onAddress={(value) => updateDayRoute(index, 'startAddress', value)}
+                    label="전체 출발지"
+                    value={startPlace}
+                    address={startAddress}
+                    onValue={setStartPlace}
+                    onAddress={setStartAddress}
                     destinations={countryDestinations}
-                    placeholder="숙소, 역, 공항 등"
+                    placeholder="집, 역, 공항, 숙소명"
                   />
                   <AddressSearchInput
-                    label="도착지"
-                    value={route.endPlace}
-                    address={route.endAddress || ''}
-                    onValue={(value) => updateDayRoute(index, 'endPlace', value)}
-                    onAddress={(value) => updateDayRoute(index, 'endAddress', value)}
+                    label="최종 목적지"
+                    value={endPlace}
+                    address={endAddress}
+                    onValue={setEndPlace}
+                    onAddress={setEndAddress}
                     destinations={countryDestinations}
-                    placeholder="숙소, 다음 이동지 등"
+                    placeholder="마지막 도착지, 역, 공항"
                   />
+                </div>
+              </PlannerProgressiveCard>
+
+              <PlannerProgressiveCard
+                index={3}
+                title="기본 시간"
+                summary={routeTimeSummary}
+                complete={Boolean(departureTime && arrivalTime)}
+                active={activeRouteField === 'time'}
+                onToggle={() => setActiveRouteField('time')}
+              >
+                <div className="ltInlinePlannerGrid">
                   <label>
                     <span>출발 시간</span>
-                    <input type="time" value={route.departureTime || departureTime} onChange={(event) => updateDayRoute(index, 'departureTime', event.target.value)} />
+                    <input type="time" value={departureTime} onChange={(event) => setDepartureTime(event.target.value)} />
                   </label>
                   <label>
                     <span>도착 시간</span>
-                    <input type="time" value={route.arrivalTime || arrivalTime} onChange={(event) => updateDayRoute(index, 'arrivalTime', event.target.value)} />
+                    <input type="time" value={arrivalTime} onChange={(event) => setArrivalTime(event.target.value)} />
                   </label>
-                </fieldset>
-              ))}
+                </div>
+              </PlannerProgressiveCard>
+
+              <PlannerProgressiveCard
+                index={4}
+                title="일자별 동선"
+                summary={dailyRouteSummary}
+                complete={dailyRouteCount > 0}
+                active={activeRouteField === 'daily'}
+                onToggle={() => setActiveRouteField('daily')}
+              >
+                <div className="ltDailyRouteBuilder compact">
+                  {dayRoutes.map((route, index) => (
+                    <fieldset key={route.day}>
+                      <legend>{route.day}일차</legend>
+                      <AddressSearchInput
+                        label="출발지"
+                        value={route.startPlace}
+                        address={route.startAddress || ''}
+                        onValue={(value) => updateDayRoute(index, 'startPlace', value)}
+                        onAddress={(value) => updateDayRoute(index, 'startAddress', value)}
+                        destinations={countryDestinations}
+                        placeholder="숙소, 역, 공항 등"
+                      />
+                      <AddressSearchInput
+                        label="도착지"
+                        value={route.endPlace}
+                        address={route.endAddress || ''}
+                        onValue={(value) => updateDayRoute(index, 'endPlace', value)}
+                        onAddress={(value) => updateDayRoute(index, 'endAddress', value)}
+                        destinations={countryDestinations}
+                        placeholder="숙소, 다음 이동지 등"
+                      />
+                      <label>
+                        <span>출발 시간</span>
+                        <input type="time" value={route.departureTime || departureTime} onChange={(event) => updateDayRoute(index, 'departureTime', event.target.value)} />
+                      </label>
+                      <label>
+                        <span>도착 시간</span>
+                        <input type="time" value={route.arrivalTime || arrivalTime} onChange={(event) => updateDayRoute(index, 'arrivalTime', event.target.value)} />
+                      </label>
+                    </fieldset>
+                  ))}
+                </div>
+              </PlannerProgressiveCard>
+
+              <PlannerProgressiveCard
+                index={5}
+                title="여행 옵션"
+                summary={travelOptionSummary}
+                complete={true}
+                active={activeRouteField === 'options'}
+                onToggle={() => setActiveRouteField('options')}
+              >
+                <div className="ltInlinePlannerGrid">
+                  <OptionGroup label="동행" value={travelers} options={['혼자', '커플', '친구', '가족']} onChange={setTravelers} />
+                  <OptionGroup label="여행 속도" value={pace} options={['여유', '보통', '촘촘']} onChange={setPace} />
+                  <OptionGroup label="이동수단" value={transportType} options={['대중교통', '자동차', '도보']} onChange={setTransportType} />
+                  <OptionGroup label="내보내기" value={exportFormat} options={['텍스트', '엑셀', 'PDF']} onChange={setExportFormat} />
+                  <OptionGroup label="예산 성향" value={budget} options={['절약', '보통', '프리미엄']} onChange={setBudget} />
+                </div>
+              </PlannerProgressiveCard>
             </div>
-            <div className="ltFormGrid">
-              <OptionGroup label="동행" value={travelers} options={['혼자', '커플', '친구', '가족']} onChange={setTravelers} />
-              <OptionGroup label="여행 속도" value={pace} options={['여유', '보통', '촘촘']} onChange={setPace} />
-            </div>
-            <div className="ltFormGrid">
-              <OptionGroup label="이동수단" value={transportType} options={['대중교통', '자동차', '도보']} onChange={setTransportType} />
-              <OptionGroup label="내보내기" value={exportFormat} options={['텍스트', '엑셀', 'PDF']} onChange={setExportFormat} />
-            </div>
-            <OptionGroup label="예산 성향" value={budget} options={['절약', '보통', '프리미엄']} onChange={setBudget} />
             <div className="ltStepActions">
               <button type="button" onClick={() => setActiveStep(1)}>이전</button>
-              <button type="button" disabled={!routeInfoComplete} onClick={() => setActiveStep(3)}>동선 완료</button>
+              <button type="button" disabled={!routeInfoComplete} onClick={() => setActiveStep(3)}>취향 선택</button>
             </div>
           </div> : null}
 
