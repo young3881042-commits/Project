@@ -1,0 +1,577 @@
+/* Extra-wide cute polish */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(240, 111, 156, 0.42) rgba(255, 255, 255, 0.5);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffb3cc, #ffd082);
+}
+
+::selection {
+  background: rgba(255, 143, 179, 0.35);
+  color: #33251f;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a[class],
+.entryMain,
+.treeRootLabel,
+.treeLabel {
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    background-color 0.16s ease,
+    box-shadow 0.16s ease,
+    color 0.16s ease;
+}
+
+button:active,
+a[class]:active,
+.entryMain:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.workspaceBrowserShell::before,
+.ltShell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 143, 179, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 143, 179, 0.08) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 70%);
+}
+
+.workspaceTopbar {
+  position: relative;
+}
+
+.workspacePathCard {
+  overflow: hidden;
+}
+
+.workspacePathCard::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 54px;
+  height: 18px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 9px 9px, #ff8fb3 0 5px, transparent 6px),
+    radial-gradient(circle at 27px 9px, #ffd66b 0 5px, transparent 6px),
+    radial-gradient(circle at 45px 9px, #7dd9c2 0 5px, transparent 6px);
+  opacity: 0.78;
+}
+
+.workspaceUserButton {
+  min-height: 62px;
+}
+
+.workspaceUserButton strong::before {
+  content: "";
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 8px;
+  border-radius: 999px;
+  background: var(--mint);
+  box-shadow: 0 0 0 4px rgba(125, 217, 194, 0.18);
+}
+
+.browserListPanel,
+.browserPreviewPanel,
+.assistantPanel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 250, 246, 0.84)),
+    radial-gradient(circle at top right, rgba(255, 214, 107, 0.15), transparent 32%);
+}
+
+.panelTop.simple {
+  align-items: center;
+}
+
+.panelTop input,
+.listFilterGroup input {
+  min-height: 46px;
+  padding-left: 16px;
+}
+
+.entryList {
+  gap: 12px;
+}
+
+.entryRow {
+  min-height: 58px;
+  border-radius: 20px;
+}
+
+.entryRow:hover {
+  box-shadow: 0 16px 34px rgba(143, 88, 64, 0.12);
+}
+
+.entryType,
+.entrySize,
+.statusPill,
+.ragTopMeta span,
+.ltPlanMeta span,
+.ltTagRow span,
+.ltSelectedTag {
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.treeRootLabel,
+.treeRow {
+  min-height: 42px;
+  border-radius: 18px;
+}
+
+.treeToggle {
+  border-radius: 14px;
+  color: #b53867;
+  font-weight: 900;
+}
+
+.runButton,
+.itemActionButton,
+.actionIconButton {
+  border-radius: 15px;
+}
+
+.sendButton,
+.loginButton,
+.ltPrimaryButton,
+.ltHeroActions a:first-child,
+.ltPlannerTeaser button,
+.ragSendButton {
+  position: relative;
+  overflow: hidden;
+}
+
+.sendButton::after,
+.loginButton::after,
+.ltPrimaryButton::after,
+.ltHeroActions a:first-child::after,
+.ltPlannerTeaser button::after,
+.ragSendButton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.36), transparent);
+  transform: translateX(-130%);
+  transition: transform 0.45s ease;
+}
+
+.sendButton:hover::after,
+.loginButton:hover::after,
+.ltPrimaryButton:hover::after,
+.ltHeroActions a:first-child:hover::after,
+.ltPlannerTeaser button:hover::after,
+.ragSendButton:hover::after {
+  transform: translateX(130%);
+}
+
+.chatBubble,
+.ragBubble,
+.assistantBubble,
+.citationCard,
+.ragCitationPanel,
+.assistantCitationCard,
+.assistantDocumentCard,
+.assistantHeroCard {
+  border-radius: 22px;
+  border-color: rgba(226, 173, 151, 0.28);
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.chatBubble.user,
+.ragBubble.user,
+.assistantBubble.user {
+  background: #fff1f7;
+}
+
+.chatBubble.assistant,
+.ragBubble.assistant,
+.assistantBubble.assistant {
+  background: #f2fffb;
+}
+
+.bubbleRole,
+.assistantLabel,
+.ragTopLabel {
+  color: var(--accent-deep);
+}
+
+.editorCodeWrap,
+.cm-editor,
+.terminalSurface {
+  border-radius: 24px;
+}
+
+.cm-gutters {
+  background: #fff3e9 !important;
+  border-color: rgba(226, 173, 151, 0.28) !important;
+}
+
+.modalOverlay {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 214, 107, 0.2), transparent 24%),
+    rgba(83, 55, 48, 0.24);
+}
+
+.accountDialogHeader h2 {
+  color: #33251f;
+}
+
+.ltShell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 10% 8%, rgba(255, 214, 107, 0.3), transparent 22%),
+    radial-gradient(circle at 92% 6%, rgba(139, 199, 255, 0.24), transparent 24%),
+    linear-gradient(135deg, #fff8f2 0%, #fff3f8 50%, #eff9ff 100%) !important;
+  color: #33251f;
+}
+
+.ltNav {
+  top: 14px;
+  width: min(1180px, calc(100% - 28px));
+  margin: 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: 0 18px 44px rgba(143, 88, 64, 0.12);
+}
+
+.ltBrand {
+  gap: 10px;
+}
+
+.ltBrand::before {
+  content: "";
+  width: 38px;
+  height: 38px;
+  border: 3px solid #ffffff;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #ff8fb3, #ffd66b);
+  box-shadow: 0 12px 24px rgba(240, 111, 156, 0.2);
+}
+
+.ltBrand strong {
+  color: #33251f;
+}
+
+.ltNavLinks {
+  padding: 5px;
+  border: 1px solid rgba(226, 173, 151, 0.24);
+  border-radius: 20px;
+  background: rgba(255, 248, 242, 0.78);
+}
+
+.ltNavLinks a {
+  min-height: 40px;
+  border-radius: 15px;
+  color: #765b51;
+}
+
+.ltNavLinks a:hover,
+.ltNavLinks a.active {
+  background: #fff1f7;
+  color: #b53867;
+}
+
+.ltNavLinks a.active {
+  box-shadow: inset 0 0 0 1px rgba(255, 143, 179, 0.24);
+}
+
+.ltNavAction {
+  border-radius: 17px;
+  background: linear-gradient(135deg, #ff8fb3, #ffb46f);
+  color: #ffffff;
+  box-shadow: 0 14px 28px rgba(240, 111, 156, 0.22);
+}
+
+.ltPage {
+  padding-top: 46px;
+}
+
+.ltHero {
+  align-items: center;
+}
+
+.ltEyebrow,
+.ltHeroKicker,
+.ltSectionEyebrow {
+  color: #d95686;
+}
+
+.ltHeroCopy h1,
+.ltPageTitle h1,
+.ltSectionHeader h2,
+.ltMyHeroText h1,
+.ltPlanHeroMain h1 {
+  color: #33251f;
+  letter-spacing: 0;
+}
+
+.ltHeroCopy p,
+.ltPageTitle p,
+.ltSectionHeader p,
+.ltMyHeroText p,
+.ltPlanHeroMain p,
+.ltDestinationBody p,
+.ltPlanCard p,
+.ltEmptyState {
+  color: #8c6f64;
+}
+
+.ltHeroImage,
+.ltDestinationPhoto,
+.ltMiniDestPhoto,
+.ltDayCover {
+  border: 4px solid rgba(255, 255, 255, 0.78);
+  border-radius: 26px;
+  box-shadow: 0 18px 42px rgba(143, 88, 64, 0.16);
+}
+
+.ltHeroImage::after,
+.ltDestinationPhoto::after {
+  background: linear-gradient(180deg, transparent 42%, rgba(67, 43, 36, 0.38));
+}
+
+.ltHeroPanel,
+.ltDestinationCard,
+.ltPlanCard,
+.ltRecentPlans,
+.ltPlannerForm,
+.ltPlannerPreview,
+.ltSelectedSummary,
+.ltGeneratedPreview,
+.ltFilterBar,
+.ltTimelineDay,
+.ltPlanHero,
+.ltFactItem,
+.ltDayCard,
+.ltMarkdownDayBlock,
+.ltMyHero,
+.ltMyPanel,
+.ltFilterFold,
+.ltEmptyState {
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 250, 246, 0.84)),
+    radial-gradient(circle at top right, rgba(255, 214, 107, 0.14), transparent 34%);
+  box-shadow: 0 22px 54px rgba(143, 88, 64, 0.13);
+}
+
+.ltDestinationCard:hover,
+.ltPlanCard:hover,
+.ltMiniDestCard:hover,
+.ltMyShortcutList button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 28px 64px rgba(143, 88, 64, 0.18);
+}
+
+.ltCardTopline > span:first-child,
+.ltPlanMeta span,
+.ltTagRow span,
+.ltDayCardHeader > div > span,
+.ltTimelineDayHeader span,
+.ltSelectedTag {
+  border-radius: 999px;
+  background: #fff0db;
+  color: #9b6231;
+}
+
+.ltTagRow span:nth-child(2n),
+.ltPlanMeta span:nth-child(2n) {
+  background: #e9fbf6;
+  color: #14786a;
+}
+
+.ltTagRow span:nth-child(3n),
+.ltPlanMeta span:nth-child(3n) {
+  background: #eef7ff;
+  color: #326da8;
+}
+
+.ltPrimaryButton,
+.ltHeroActions a:first-child,
+.ltPlannerTeaser button,
+.ltPlannerForm button[type="submit"] {
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ff8fb3 0%, #ffb46f 100%);
+  color: #ffffff;
+  box-shadow: 0 16px 32px rgba(240, 111, 156, 0.24);
+}
+
+.ltSecondaryButton,
+.ltHeroActions a:last-child,
+.ltBackButton,
+.ltTextButton,
+.ltSegmented button,
+.ltInterestGroup button,
+.ltMyShortcutList button {
+  border-color: rgba(226, 173, 151, 0.34);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.76);
+  color: #684f46;
+}
+
+.ltSecondaryButton:hover,
+.ltHeroActions a:last-child:hover,
+.ltBackButton:hover,
+.ltTextButton:hover,
+.ltSegmented button:hover,
+.ltInterestGroup button:hover,
+.ltMyShortcutList button:hover {
+  background: #fff4f8;
+  color: #b53867;
+}
+
+.ltSegmented button.active,
+.ltInterestGroup button.active,
+.ltOptionGroup button.active {
+  border-color: rgba(125, 217, 194, 0.5);
+  background: #e9fbf6;
+  color: #14786a;
+  box-shadow: 0 0 0 4px rgba(125, 217, 194, 0.14);
+}
+
+.ltPlannerForm input,
+.ltPlannerForm select,
+.ltPlannerForm textarea,
+.ltAutocompleteContainer input {
+  min-height: 48px;
+  border-color: rgba(226, 173, 151, 0.38);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #33251f;
+}
+
+.ltPlannerForm input:focus,
+.ltPlannerForm select:focus,
+.ltPlannerForm textarea:focus,
+.ltAutocompleteContainer input:focus {
+  border-color: rgba(240, 111, 156, 0.62);
+  box-shadow: 0 0 0 4px rgba(255, 143, 179, 0.14);
+}
+
+.ltAutocompleteDropdown {
+  border-color: rgba(226, 173, 151, 0.34);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 20px 44px rgba(143, 88, 64, 0.14);
+}
+
+.ltAutocompleteDropdown button:hover {
+  background: #fff4f8;
+}
+
+.ltSelectedTag {
+  padding: 8px 10px 8px 12px;
+}
+
+.ltSelectedTag button {
+  background: rgba(255, 255, 255, 0.7);
+  color: #b53867;
+}
+
+.ltInlineNotice {
+  border-radius: 20px;
+  background: #fff0db;
+  color: #9b6231;
+}
+
+.ltInlineNotice.error {
+  background: #fff1f7;
+  color: #b53867;
+}
+
+.ltMyAvatar {
+  border: 5px solid rgba(255, 255, 255, 0.84);
+  background: linear-gradient(135deg, #ff8fb3, #ffd66b);
+  box-shadow: 0 18px 34px rgba(240, 111, 156, 0.24);
+}
+
+.ltFactItem {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.ltFactItem span,
+.ltProfileList dt {
+  color: #9b776a;
+}
+
+.ltFactItem strong,
+.ltProfileList dd {
+  color: #33251f;
+}
+
+.ltTimelineItem time,
+.ltDaySlot time {
+  border-radius: 999px;
+  background: #e9fbf6;
+  color: #14786a;
+}
+
+.ltDaySlot {
+  border-color: rgba(226, 173, 151, 0.3);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.ltFooter {
+  color: #9b776a;
+}
+
+@media (max-width: 760px) {
+  .ltNav {
+    top: 8px;
+    width: min(100% - 16px, 1180px);
+    border-radius: 22px;
+  }
+
+  .ltNavLinks {
+    width: 100%;
+  }
+
+  .ltPage {
+    padding-top: 28px;
+  }
+
+  .ltHeroCopy h1,
+  .ltPageTitle h1,
+  .ltMyHeroText h1 {
+    font-size: clamp(2rem, 12vw, 3rem);
+  }
+}

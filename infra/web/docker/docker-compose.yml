@@ -3,7 +3,7 @@ services:
     build:
       context: ../../../apps/web
       dockerfile: ../../infra/web/docker/Dockerfile
-    image: jupiter-web:local
+    image: ai-assitant-web:local
     env_file:
       - web.env
     ports:

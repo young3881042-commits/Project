@@ -1,0 +1,1074 @@
+/* Hard repair for LocalTrip desktop sidebar */
+@media (min-width: 901px) {
+  .ltShell {
+    display: grid !important;
+    grid-template-columns: 248px minmax(0, 1fr) !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+  }
+
+  .ltShell .ltNav {
+    position: sticky !important;
+    top: 0 !important;
+    grid-column: 1 !important;
+    width: 248px !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-y: auto !important;
+    border: 0 !important;
+    border-right: 1px solid #dbe3ee !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  .ltShell .ltNavInner {
+    width: 100% !important;
+    min-height: 100% !important;
+    margin: 0 !important;
+    padding: 22px 18px !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto auto 1fr !important;
+    grid-template-areas:
+      "brand"
+      "services"
+      "menu"
+      "account" !important;
+    align-items: start !important;
+    gap: 20px !important;
+  }
+
+  .ltShell .ltBrand {
+    grid-area: brand !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 0 0 18px !important;
+    border-bottom: 1px solid #edf2f7 !important;
+  }
+
+  .ltShell .ltBrand span {
+    display: grid !important;
+    min-width: 0 !important;
+    color: #111827 !important;
+  }
+
+  .ltShell .ltBrand small {
+    display: block !important;
+    color: #64748b !important;
+    font-size: 0.72rem !important;
+  }
+
+  .ltShell .ltNavLinks {
+    grid-area: menu !important;
+    position: static !important;
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .ltShell .ltServiceSwitch {
+    grid-area: services !important;
+  }
+
+  .ltShell .ltNavGroup {
+    display: grid !important;
+    gap: 7px !important;
+  }
+
+  .ltShell .ltNavGroupTitle {
+    display: block !important;
+    padding: 0 10px !important;
+    color: #94a3b8 !important;
+    font-size: 0.72rem !important;
+    font-weight: 900 !important;
+  }
+
+  .ltShell .ltNavLinks a {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 42px !important;
+    display: flex !important;
+    grid-template-rows: none !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    padding: 10px 12px !important;
+    border: 1px solid transparent !important;
+    border-radius: 8px !important;
+    background: transparent !important;
+    color: #475569 !important;
+    font-size: 0.94rem !important;
+    line-height: 1.2 !important;
+    text-align: left !important;
+  }
+
+  .ltShell .ltNavLinks a.active,
+  .ltShell .ltNavLinks a:hover {
+    border-color: #b7eadf !important;
+    background: #e8f5f3 !important;
+    color: #0f766e !important;
+  }
+
+  .ltShell .ltTabIcon {
+    width: 22px !important;
+    height: 22px !important;
+    flex: 0 0 22px !important;
+  }
+
+  .ltShell .ltTabLabel {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .ltShell .ltNavUserCard {
+    grid-area: account !important;
+    align-self: end !important;
+    width: 100% !important;
+    max-width: none !important;
+    display: grid !important;
+    grid-template-columns: 38px minmax(0, 1fr) !important;
+    gap: 10px !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    border: 1px solid #dbe3ee !important;
+    border-radius: 8px !important;
+    background: #f8fafc !important;
+  }
+
+  .ltShell .ltPage,
+  .ltShell .ltFooter {
+    grid-column: 2 !important;
+  }
+}
+
+/* LocalTrip mobile repair: keep the travel workflow usable after desktop overrides. */
+@media (max-width: 900px) {
+  body:has(.ltShell) {
+    background: #f8fafc !important;
+    overflow-x: hidden !important;
+  }
+
+  .ltShell {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 100dvh !important;
+    display: block !important;
+    overflow-x: clip !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .ltShell .ltNav {
+    position: sticky !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border-inline: 0 !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+  }
+
+  .ltShell .ltNavInner {
+    width: min(100% - 24px, 520px) !important;
+    min-height: 58px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas:
+      "brand account"
+      "services services" !important;
+    gap: 8px 10px !important;
+    padding: 8px 0 !important;
+  }
+
+  .ltShell .ltBrand {
+    grid-area: brand !important;
+    min-width: 0 !important;
+  }
+
+  .ltShell .ltBrand small,
+  .ltShell .ltNavGroupTitle {
+    display: none !important;
+  }
+
+  .ltShell .ltServiceSwitch {
+    grid-area: services !important;
+    display: grid !important;
+    gap: 6px !important;
+    overflow: hidden !important;
+    padding: 8px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+  }
+
+  .ltShell .ltServiceSwitch::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .ltShell .ltServiceSwitchTitle {
+    display: block !important;
+    color: #64748b !important;
+    font-size: 0.68rem !important;
+    font-weight: 900 !important;
+  }
+
+  .ltShell .ltServiceSwitchLinks {
+    display: flex !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
+    padding-bottom: 1px !important;
+    scrollbar-width: none !important;
+  }
+
+  .ltShell .ltServiceSwitchLinks::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .ltShell .ltServiceSwitchLinks a,
+  .ltShell .ltServiceSwitch a {
+    flex: 0 0 auto !important;
+    min-height: 30px !important;
+    padding: 0 10px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 999px !important;
+    background: #f8fafc !important;
+    color: #475569 !important;
+    font-size: 0.76rem !important;
+    font-weight: 800 !important;
+  }
+
+  .ltShell .ltNavUserCard {
+    grid-area: account !important;
+    width: auto !important;
+    max-width: 142px !important;
+    min-height: 38px !important;
+    display: grid !important;
+    grid-template-columns: 30px minmax(0, 1fr) !important;
+    gap: 7px !important;
+    padding: 4px 7px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 999px !important;
+    background: #fff !important;
+  }
+
+  .ltShell .ltNavUserCard > span {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .ltShell .ltNavUserCard small {
+    display: none !important;
+  }
+
+  .ltShell .ltNavLinks {
+    position: fixed !important;
+    left: 50% !important;
+    bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+    z-index: 300 !important;
+    width: min(calc(100vw - 16px), 520px) !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    padding: 7px !important;
+    border: 1px solid rgba(209, 213, 219, 0.9) !important;
+    border-radius: 22px !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    box-shadow: 0 16px 42px rgba(15, 23, 42, 0.18) !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .ltShell .ltNavGroup {
+    display: contents !important;
+  }
+
+  .ltShell .ltNavLinks a {
+    min-width: 0 !important;
+    min-height: 50px !important;
+    display: grid !important;
+    grid-template-rows: 22px auto !important;
+    place-items: center !important;
+    gap: 3px !important;
+    padding: 5px 2px !important;
+    border-radius: 16px !important;
+    font-size: 0.68rem !important;
+    line-height: 1 !important;
+    text-align: center !important;
+  }
+
+  .ltShell .ltPage {
+    width: min(100% - 24px, 520px) !important;
+    max-width: 520px !important;
+    margin: 0 auto !important;
+    padding: 18px 0 calc(98px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .ltPageTitle,
+  .ltPageActions,
+  .ltCardTopline,
+  .ltPlanBadges,
+  .ltSlotTitleRow,
+  .ltDaySlotMeta {
+    min-width: 0 !important;
+  }
+
+  .ltPageActions {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+  }
+
+  .ltAdminButton {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+
+  .ltHero,
+  .ltPlannerLayout,
+  .ltPartnerGrid,
+  .ltMyGrid,
+  .ltRequestFlow {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ltServiceGrid,
+  .ltDestinationGrid,
+  .ltPlansGrid,
+  .ltPartnerStats,
+  .ltPlanFacts,
+  .ltMyStats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ltFormGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ltSegmented,
+  .ltInterestGroup div,
+  .ltOptionGroup div,
+  .ltSelectedTagRow,
+  .ltHeroFilters {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none !important;
+  }
+
+  .ltSegmented button,
+  .ltInterestGroup button,
+  .ltOptionGroup button,
+  .ltSelectedTag {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+
+  .ltDayCard {
+    padding: 14px !important;
+  }
+
+  .ltDayCardHeader {
+    grid-template-columns: 66px minmax(0, 1fr) !important;
+  }
+
+  .ltDayCover {
+    width: 66px !important;
+    height: 66px !important;
+  }
+
+  .ltDaySlot {
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+    padding: 11px !important;
+  }
+
+  .ltTimelineRail {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 34px !important;
+    gap: 8px !important;
+    align-items: center !important;
+  }
+
+  .ltDaySlot time {
+    min-height: 38px !important;
+    padding: 0 10px !important;
+    justify-items: start !important;
+    text-align: left !important;
+  }
+
+  .ltDaySlot time span,
+  .ltSlotTitleRow h3,
+  .ltDaySlotBody p,
+  .ltRecommendedMenu span {
+    overflow-wrap: anywhere !important;
+  }
+
+  .ltTimelineRail i {
+    width: 34px !important;
+    height: 34px !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: 999px !important;
+    background: #e9f8f3 !important;
+    color: #008c69 !important;
+    font-style: normal !important;
+    font-weight: 900 !important;
+  }
+
+  .ltSlotTitleRow {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+  }
+
+  .ltSlotTitleRow span {
+    width: fit-content !important;
+  }
+
+  .ltStickyCta {
+    bottom: calc(82px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* LocalTrip final mobile/tour-plan repair */
+.ltShell img {
+  max-width: 100%;
+}
+
+.ltPlannerForm,
+.ltPlannerPreview,
+.ltDayCard,
+.ltPlanCard,
+.ltDestinationCard,
+.ltPlanDetailContainer,
+.ltGeneratedPreview,
+.ltSelectedSummary {
+  min-width: 0;
+}
+
+.ltDaySlotBody,
+.ltDaySlotBody > div,
+.ltSlotTitleRow,
+.ltPlanTimelinePreview div,
+.ltMiniDestCard > div {
+  min-width: 0;
+}
+
+.ltDaySlotBody p,
+.ltDestinationBody p,
+.ltPlanCard p,
+.ltPlanHeroMain p,
+.ltMyHeroText p {
+  overflow-wrap: anywhere;
+}
+
+.ltPlanTimelinePreview em,
+.ltSlotTitleRow > span,
+.ltTagRow span,
+.ltPlanMeta span {
+  max-width: 100%;
+}
+
+@media (max-width: 900px) {
+  .ltShell .ltNav {
+    z-index: 500 !important;
+  }
+
+  .ltShell .ltNavInner {
+    max-width: none !important;
+  }
+
+  .ltShell .ltNavLinks {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    overflow: hidden !important;
+  }
+
+  .ltShell .ltTabLabel {
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .ltPageTitle {
+    gap: 12px !important;
+  }
+
+  .ltPageActions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    overflow: visible !important;
+  }
+
+  .ltPageActions > * {
+    max-width: 100% !important;
+  }
+
+  .ltSegmented.compact {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    overflow: hidden !important;
+  }
+
+  .ltSegmented.compact button {
+    min-width: 0 !important;
+    padding-inline: 8px !important;
+  }
+
+  .ltPlannerLayout {
+    gap: 14px !important;
+  }
+
+  .ltPlannerForm,
+  .ltPlannerPreview,
+  .ltFilterBar,
+  .ltDayCard,
+  .ltPlanCard,
+  .ltPlanHero,
+  .ltMyHero,
+  .ltPartnerPanel {
+    padding: 14px !important;
+  }
+
+  .ltAutocompleteDropdown {
+    left: 0 !important;
+    right: 0 !important;
+    width: auto !important;
+    max-width: 100% !important;
+  }
+
+  .ltSelectedTagRow,
+  .ltInterestGroup div,
+  .ltOptionGroup div,
+  .ltHeroFilters {
+    margin-inline: -2px !important;
+    padding: 2px !important;
+  }
+
+  .ltDayTimeline {
+    gap: 12px !important;
+  }
+
+  .ltDayTimeline::before {
+    left: 16px !important;
+  }
+
+  .ltDaySlot {
+    width: 100% !important;
+    grid-template-columns: 1fr !important;
+    padding: 12px !important;
+    gap: 10px !important;
+  }
+
+  .ltTimelineRail {
+    grid-template-columns: minmax(0, 1fr) 34px !important;
+  }
+
+  .ltTimelineRail time {
+    min-width: 0 !important;
+  }
+
+  .ltTimelineRail time span {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .ltSlotTitleRow {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .ltSlotTitleRow h3 {
+    min-width: 0 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .ltDaySlotMeta {
+    gap: 5px 8px !important;
+  }
+
+  .ltDaySlotMeta span + span::before {
+    display: none !important;
+  }
+
+  .ltRecommendedMenu {
+    border-radius: 8px !important;
+  }
+
+  .ltPlanTimelinePreview {
+    border-radius: 8px !important;
+  }
+
+  .ltPlanTimelinePreview div {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 4px !important;
+  }
+
+  .ltPlanTimelinePreview time,
+  .ltPlanTimelinePreview span,
+  .ltPlanTimelinePreview em {
+    white-space: normal !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .ltShell .ltNavUserCard {
+    max-width: 112px !important;
+  }
+
+  .ltShell .ltServiceSwitch a {
+    font-size: 0.7rem !important;
+    padding-inline: 8px !important;
+  }
+
+  .ltDayCardHeader {
+    grid-template-columns: 54px minmax(0, 1fr) !important;
+  }
+
+  .ltDayCover {
+    width: 54px !important;
+    height: 54px !important;
+  }
+}
+
+/* Goal repair: soft scheduler UI and non-overlapping AI Trip mobile chrome. */
+.schedulerShell {
+  background: #f6f8fb !important;
+  color: #1f2937 !important;
+}
+
+.schedulerSidebar {
+  border-right: 1px solid #dbe3ee !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+}
+
+.schedulerHomeButton,
+.schedulerSideGroup a,
+.schedulerSideGroup button {
+  border-radius: 999px !important;
+}
+
+.schedulerHomeButton,
+.schedulerSideGroup button.active,
+.schedulerSideGroup a:hover,
+.schedulerSideGroup button:hover {
+  background: #e8f1ff !important;
+  color: #1d4ed8 !important;
+}
+
+.schedulerPage {
+  width: min(1120px, calc(100% - 40px)) !important;
+}
+
+.schedulerHero {
+  align-items: center !important;
+  padding: 10px 0 18px !important;
+}
+
+.schedulerPageIcon {
+  border-radius: 18px !important;
+  background: #e8f1ff !important;
+  color: #2563eb !important;
+}
+
+.schedulerHero h1 {
+  font-size: clamp(2rem, 4.4vw, 3.2rem) !important;
+  letter-spacing: 0 !important;
+}
+
+.schedulerHero p,
+.schedulerBoardHeader p,
+.schedulerCalendarHeader p {
+  color: #64748b !important;
+}
+
+.schedulerStats article,
+.schedulerQuickAdd,
+.schedulerDatabase {
+  border: 1px solid #dbe3ee !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  box-shadow: 0 18px 42px rgba(31, 41, 55, 0.08) !important;
+}
+
+.schedulerQuickAdd {
+  grid-template-columns: minmax(190px, 1.1fr) minmax(210px, 0.9fr) minmax(210px, 0.9fr) minmax(120px, 0.55fr) minmax(180px, 0.8fr) auto !important;
+  gap: 10px !important;
+}
+
+.schedulerDatabase {
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr) !important;
+}
+
+.schedulerBoardHeader,
+.schedulerList {
+  grid-column: 1 / -1 !important;
+}
+
+.schedulerTodayPanel {
+  border-color: #dbe3ee !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+}
+
+.schedulerTodayHeader button,
+.schedulerTodayEvents button {
+  border-color: #dbe3ee !important;
+}
+
+.schedulerTodayEvents time {
+  color: #2563eb !important;
+}
+
+.schedulerQuickAdd input,
+.schedulerQuickAdd select,
+.schedulerQuickAdd textarea {
+  border-color: #dbe3ee !important;
+  border-radius: 12px !important;
+  background: #f8fafc !important;
+}
+
+.schedulerQuickAdd > button {
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: #2563eb !important;
+  color: #fff !important;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.24) !important;
+}
+
+.schedulerCalendarControls button,
+.schedulerFilters button {
+  border-color: #dbe3ee !important;
+  border-radius: 999px !important;
+  background: #f8fafc !important;
+}
+
+.schedulerCalendarGrid button {
+  min-height: 68px !important;
+  border-color: #e2e8f0 !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+}
+
+.schedulerCalendarGrid button.selected {
+  border-color: #2563eb !important;
+  background: #eff6ff !important;
+}
+
+.schedulerCalendarGrid button.today {
+  border-color: #10b981 !important;
+}
+
+.schedulerCalendarGrid button small,
+.schedulerTypePill {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+}
+
+.schedulerLinkedSchedule {
+  border-top-color: #dbe3ee !important;
+}
+
+.schedulerLinkedHeader p {
+  color: #64748b !important;
+}
+
+.schedulerViewSwitch {
+  border-color: #dbe3ee !important;
+  background: #f8fafc !important;
+}
+
+.schedulerViewSwitch button.active {
+  background: #2563eb !important;
+  color: #fff !important;
+}
+
+.schedulerWeekSlots button,
+.schedulerMonthSlots button {
+  border-color: #e2e8f0 !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+}
+
+.schedulerWeekSlots button.selected,
+.schedulerMonthSlots button.selected {
+  border-color: #2563eb !important;
+  background: #eff6ff !important;
+}
+
+.schedulerWeekSlots button.today,
+.schedulerMonthSlots button.today {
+  border-color: #10b981 !important;
+}
+
+.schedulerWeekSlots button > small,
+.schedulerMonthSlots button > small {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+}
+
+.schedulerTableHead,
+.schedulerItem {
+  min-width: 0 !important;
+  grid-template-columns: minmax(180px, 1.1fr) 92px 142px minmax(140px, 1fr) 76px !important;
+}
+
+.schedulerItem {
+  min-height: 58px !important;
+  padding: 8px 6px !important;
+}
+
+.schedulerCheck {
+  border-radius: 999px !important;
+}
+
+.schedulerDelete {
+  border-radius: 999px !important;
+}
+
+@media (max-width: 980px) {
+  .schedulerSidebar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 20 !important;
+    min-height: auto !important;
+    padding: 10px 12px !important;
+  }
+
+  .schedulerPage {
+    width: min(100% - 24px, 680px) !important;
+    padding: 22px 0 calc(28px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .schedulerHero {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .schedulerStats {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .schedulerQuickAdd {
+    grid-template-columns: 1fr !important;
+  }
+
+  .schedulerDatabase {
+    grid-template-columns: 1fr !important;
+    padding: 12px !important;
+  }
+
+  .schedulerTodayPanel {
+    min-height: auto !important;
+    padding: 14px !important;
+  }
+
+  .schedulerTodaySlot {
+    grid-template-columns: 82px minmax(0, 1fr) !important;
+  }
+
+  .schedulerTodayEvents button {
+    min-width: 0 !important;
+  }
+
+  .schedulerBoardHeader,
+  .schedulerCalendarHeader,
+  .schedulerLinkedHeader {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .schedulerCalendarControls,
+  .schedulerFilters,
+  .schedulerViewSwitch {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none !important;
+  }
+
+  .schedulerWeekSlots {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .schedulerMonthSlots {
+    grid-template-columns: repeat(7, minmax(36px, 1fr)) !important;
+  }
+
+  .schedulerTableHead {
+    display: none !important;
+  }
+
+  .schedulerList {
+    gap: 10px !important;
+    overflow: visible !important;
+  }
+
+  .schedulerItem {
+    grid-template-columns: 1fr auto !important;
+    gap: 8px 10px !important;
+    padding: 12px !important;
+    border: 1px solid #efe4dc !important;
+    border-color: #e2e8f0 !important;
+    border-radius: 16px !important;
+    background: #fff !important;
+  }
+
+  .schedulerNameCell,
+  .schedulerItem time,
+  .schedulerItem small {
+    grid-column: 1 / -1 !important;
+  }
+
+  .schedulerDelete {
+    justify-self: end !important;
+    min-width: max-content !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .schedulerStats {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .schedulerStats article {
+    padding: 10px !important;
+  }
+
+  .schedulerCalendarGrid {
+    gap: 4px !important;
+  }
+
+  .schedulerCalendarGrid button {
+    min-height: 48px !important;
+    padding: 6px !important;
+    border-radius: 12px !important;
+  }
+
+  .schedulerWeekSlots {
+    grid-template-columns: 1fr !important;
+  }
+
+  .schedulerWeekSlots button {
+    min-height: 118px !important;
+  }
+
+  .schedulerMonthSlots {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .schedulerMonthSlots button {
+    min-height: 44px !important;
+    grid-template-columns: auto 1fr !important;
+  }
+
+  .schedulerMonthSlots button > small {
+    grid-column: 1 / -1 !important;
+    justify-self: start !important;
+  }
+
+  .schedulerTodayHeader {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .schedulerTodayHeader button,
+  .schedulerQuickAdd > button {
+    width: 100% !important;
+  }
+
+  .schedulerTodaySlot {
+    grid-template-columns: 1fr !important;
+  }
+
+  .schedulerTodayTime {
+    grid-template-columns: auto 1fr !important;
+    align-items: center !important;
+  }
+
+  .schedulerTodayEvents button {
+    padding: 12px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .ltShell .ltNav {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 900 !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .ltShell .ltNavInner {
+    width: min(100% - 20px, 560px) !important;
+    min-height: 54px !important;
+    margin: 0 auto !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas:
+      "brand account"
+      "services services" !important;
+    align-items: center !important;
+    gap: 6px 8px !important;
+    padding: 7px 0 !important;
+  }
+
+  .ltShell .ltBrand {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .ltShell .ltBrand span,
+  .ltShell .ltBrand strong {
+    min-width: 0 !important;
+  }
+
+  .ltShell .ltNavUserCard {
+    max-width: 118px !important;
+    min-width: 0 !important;
+  }
+
+  .ltShell .ltNavUserCard strong {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .ltShell .ltServiceSwitch {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ltShell .ltServiceSwitchLinks a,
+  .ltShell .ltServiceSwitch a {
+    min-height: 28px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+
+  .ltShell .ltPage {
+    padding-top: 16px !important;
+  }
+}

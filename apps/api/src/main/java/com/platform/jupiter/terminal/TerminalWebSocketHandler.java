@@ -204,7 +204,7 @@ public class TerminalWebSocketHandler extends TextWebSocketHandler {
     private String codexSessionEnvironment(String username) {
         return chatCredentialService.resolveOpenAiApiKey(username)
                 .map(apiKey -> " OPENAI_API_KEY=" + shellQuote(apiKey) + " CODEX_MODEL=" + shellQuote(ChatCredentialService.DEFAULT_CODEX_MODEL))
-                .orElse("");
+                .orElseThrow(() -> new IllegalStateException(ChatCredentialService.CONNECT_OPENAI_API_KEY_MESSAGE));
     }
 
     private String buildCliBootstrap(Path workspaceHome) {

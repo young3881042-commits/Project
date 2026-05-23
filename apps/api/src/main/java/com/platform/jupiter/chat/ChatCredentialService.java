@@ -32,6 +32,9 @@ public class ChatCredentialService {
     private static final String PROVIDER_OPENAI = "openai";
     private static final String PROVIDER_GEMINI = "gemini";
     public static final String DEFAULT_CODEX_MODEL = "gpt-5.5";
+    public static final String CONNECT_PERSONAL_API_KEY_MESSAGE = "개인 API 키를 연결하세요.";
+    public static final String CONNECT_OPENAI_API_KEY_MESSAGE = CONNECT_PERSONAL_API_KEY_MESSAGE + " OpenAI API 키가 필요합니다.";
+    public static final String CONNECT_GEMINI_ACCOUNT_MESSAGE = CONNECT_PERSONAL_API_KEY_MESSAGE + " Gemini 계정을 연결해야 합니다.";
 
     private final JdbcTemplate jdbcTemplate;
     private final AppProperties appProperties;
@@ -75,16 +78,13 @@ public class ChatCredentialService {
     }
 
     public List<ChatProviderStatus> listProviderStatuses(String username) {
-        boolean geminiApiKeyConfigured = appProperties.geminiApiKey() != null && !appProperties.geminiApiKey().isBlank();
         boolean geminiOauthConfigured = isGeminiOauthConfigured();
-        boolean geminiEnabled = geminiApiKeyConfigured || geminiOauthConfigured;
 
         boolean openAiConnected = findCredential(username, PROVIDER_OPENAI)
                 .map(credential -> credential.apiKey() != null && !credential.apiKey().isBlank())
                 .orElse(false);
-        boolean openAiServerConfigured = appProperties.openAiApiKey() != null && !appProperties.openAiApiKey().isBlank();
 
-        boolean geminiConnected = geminiApiKeyConfigured || findCredential(username, PROVIDER_GEMINI)
+        boolean geminiConnected = findCredential(username, PROVIDER_GEMINI)
                 .map(credential -> credential.refreshToken() != null && !credential.refreshToken().isBlank())
                 .orElse(false);
 
@@ -93,22 +93,20 @@ public class ChatCredentialService {
                         PROVIDER_OPENAI,
                         "OpenAI / Codex",
                         true,
-                        openAiConnected || openAiServerConfigured,
+                        openAiConnected,
                         openAiConnected
-                                ? "사용자 키가 서버에 저장되어 있습니다."
-                                : (openAiServerConfigured ? "서버 기본 키 사용 중" : "연결되지 않음"),
+                                ? "로그인한 사용자 키가 저장되어 있습니다."
+                                : CONNECT_OPENAI_API_KEY_MESSAGE,
                         "https://api.openai.com",
                         appProperties.openAiModel() == null || appProperties.openAiModel().isBlank() ? DEFAULT_CODEX_MODEL : appProperties.openAiModel().trim()),
                 new ChatProviderStatus(
                         PROVIDER_GEMINI,
                         "Google Gemini",
-                        geminiEnabled,
+                        geminiOauthConfigured,
                         geminiConnected,
-                        geminiApiKeyConfigured
-                                ? "서버 API 키를 사용합니다."
-                                : (geminiOauthConfigured
-                                        ? (geminiConnected ? "Google 로그인 완료" : "Google 계정을 연결하세요.")
-                                        : "Gemini 설정이 서버에 완료되지 않았습니다."),
+                        geminiOauthConfigured
+                                ? (geminiConnected ? "Google 로그인 완료" : CONNECT_GEMINI_ACCOUNT_MESSAGE)
+                                : "Google OAuth 설정이 서버에 완료되지 않았습니다.",
                         "https://generativelanguage.googleapis.com/v1beta/openai",
                         "gemini-2.5-flash"));
     }
@@ -116,7 +114,7 @@ public class ChatCredentialService {
     public void saveOpenAiApiKey(String username, String apiKey) {
         String trimmed = apiKey == null ? "" : apiKey.trim();
         if (trimmed.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OpenAI API key is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CONNECT_OPENAI_API_KEY_MESSAGE);
         }
         upsertCredential(username, PROVIDER_OPENAI, trimmed, null, null, null);
     }
@@ -207,14 +205,7 @@ public class ChatCredentialService {
     }
 
     public Optional<String> resolveOpenAiApiKey(String username) {
-        Optional<String> userKey = resolveUserOpenAiApiKey(username);
-        if (userKey.isPresent()) {
-            return userKey;
-        }
-        if (appProperties.openAiApiKey() != null && !appProperties.openAiApiKey().isBlank()) {
-            return Optional.of(appProperties.openAiApiKey().trim());
-        }
-        return Optional.empty();
+        return resolveUserOpenAiApiKey(username);
     }
 
     public Optional<String> resolveUserOpenAiApiKey(String username) {
@@ -226,9 +217,9 @@ public class ChatCredentialService {
 
     public Optional<String> resolveGeminiAccessToken(String username) {
         StoredCredential credential = findCredential(username, PROVIDER_GEMINI)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Gemini account is not connected"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, CONNECT_GEMINI_ACCOUNT_MESSAGE));
         if (credential.refreshToken() == null || credential.refreshToken().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Gemini refresh token is missing");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CONNECT_GEMINI_ACCOUNT_MESSAGE);
         }
         if (credential.accessToken() != null
                 && !credential.accessToken().isBlank()
@@ -240,16 +231,7 @@ public class ChatCredentialService {
     }
 
     public Optional<String> resolveGeminiAuthorization(String username) {
-        Optional<String> userToken = tryResolveGeminiAccessToken(username);
-        if (userToken.isPresent()) {
-            return userToken;
-        }
-
-        if (appProperties.geminiApiKey() != null && !appProperties.geminiApiKey().isBlank()) {
-            return Optional.of(appProperties.geminiApiKey().trim());
-        }
-
-        return tryResolveGeminiAccessToken("admin");
+        return tryResolveGeminiAccessToken(username);
     }
 
     public Optional<String> resolveUserGeminiAuthorization(String username) {

@@ -1,5 +1,6 @@
 *
 !/.gitignore
+!/AGENTS.md
 !/README.md
 !/Jenkinsfile
 !/apps/
@@ -14,6 +15,7 @@
 /apps/*/node_modules/
 /apps/*/dist/
 /apps/*/build/
+/apps/mobile/android/build/
 /apps/*/.gradle/
 /apps/*/.env
 /infra/**/.env

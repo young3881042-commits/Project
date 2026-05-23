@@ -1,0 +1,271 @@
+/* Simplified home and shared travel UI pass. */
+
+.spaceHome {
+  min-height: 100svh;
+  color: #111827;
+  background:
+    linear-gradient(90deg, rgba(248, 250, 252, 0.98) 0%, rgba(248, 250, 252, 0.9) 54%, rgba(248, 250, 252, 0.5) 100%),
+    url("https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=2200&q=80") center/cover no-repeat;
+}
+
+.spaceHome::before,
+.spaceHome::after {
+  display: none;
+}
+
+.spaceHero {
+  width: min(100% - 48px, 1080px) !important;
+  min-height: 100svh !important;
+  padding: 60px 0 !important;
+  align-items: center !important;
+}
+
+.spaceHero.hasAdminOverview {
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 390px) !important;
+  gap: clamp(24px, 5vw, 56px) !important;
+}
+
+.spaceHeroCopy {
+  max-width: 620px !important;
+  gap: 14px !important;
+}
+
+.spaceEyebrow {
+  padding: 7px 10px;
+  border-radius: 8px;
+  letter-spacing: 0 !important;
+  text-transform: none;
+}
+
+.spaceHeroCopy h1 {
+  max-width: 560px;
+  font-size: clamp(2.4rem, 5vw, 4.3rem) !important;
+  line-height: 1.06 !important;
+}
+
+.spaceHeroLead {
+  max-width: 520px;
+  color: #1f2937;
+  font-size: clamp(1.08rem, 2vw, 1.35rem) !important;
+  line-height: 1.48;
+  font-weight: 850;
+}
+
+.spaceHeroCopy p {
+  max-width: 460px;
+  color: #64748b;
+  font-size: 0.98rem !important;
+  line-height: 1.55;
+}
+
+.spaceHeroActions {
+  width: min(100%, 520px);
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin-top: 4px;
+}
+
+.spaceHeroActions button {
+  width: 100%;
+  min-width: 0 !important;
+  min-height: 46px !important;
+  padding: 0 12px !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  white-space: nowrap;
+}
+
+.spaceHeroActions .memoNavIcon {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+}
+
+.adminOverviewPanel {
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.12);
+}
+
+.adminOverviewStats {
+  gap: 8px;
+}
+
+.adminOverviewStats article,
+.adminOverviewNext {
+  padding: 12px;
+}
+
+.adminOverviewStats strong {
+  font-size: 1.2rem;
+}
+
+.adminOverviewActions button {
+  min-height: 40px;
+}
+
+.workspaceNavigator {
+  min-height: 62px;
+  border-bottom: 1px solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: none;
+}
+
+.workspaceNavigatorBrand,
+.workspaceNavigator a {
+  min-height: 38px;
+  border-radius: 8px;
+}
+
+.workspaceNavigatorLinks {
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.workspaceNavigatorAccount {
+  min-height: 40px;
+  border-radius: 8px;
+}
+
+.ltShell .ltBrand small,
+.ltShell .ltTabLabel,
+.workspaceNavigatorBrand span,
+.workspaceNavigator a span {
+  white-space: nowrap;
+}
+
+.ltShell .ltBrand small {
+  color: #64748b;
+}
+
+.ltShell .ltNavLinks a {
+  min-height: 40px;
+}
+
+.ltPageTitle {
+  margin-bottom: 18px;
+}
+
+.ltPageTitle h1,
+.ltSectionHeader h2 {
+  font-size: clamp(1.8rem, 3.4vw, 2.7rem) !important;
+  line-height: 1.12 !important;
+}
+
+.ltPageTitle p,
+.ltSectionHeader p,
+.ltHeroCopy p {
+  line-height: 1.6;
+}
+
+.ltHero {
+  gap: 28px !important;
+  margin-bottom: 16px;
+}
+
+.ltHeroCopy h1 {
+  font-size: clamp(2rem, 4vw, 3rem) !important;
+  line-height: 1.1 !important;
+}
+
+.ltValuePoints {
+  gap: 8px;
+}
+
+.ltValuePoints article {
+  min-height: 88px;
+  padding: 12px;
+  box-shadow: none;
+}
+
+.ltHeroSearch,
+.ltPurposeRail,
+.ltServiceSection,
+.ltFilterFold,
+.ltDestinationCard,
+.ltPlanCard,
+.ltPlannerForm,
+.ltPlannerPreview,
+.ltSelectedSummary,
+.ltGeneratedPreview,
+.ltMyHero,
+.ltMyPanel,
+.ltEmptyState {
+  border-radius: 8px !important;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05) !important;
+}
+
+.ltHeroFilters,
+.ltPurposeChips,
+.ltSegmented,
+.ltInterestGroup > div,
+.ltStepBar {
+  gap: 6px;
+}
+
+.ltHeroFilters button,
+.ltPurposeChips button,
+.ltSegmented button,
+.ltInterestGroup button,
+.ltStepBar button,
+.ltStepActions button {
+  min-height: 38px;
+  border-radius: 8px !important;
+}
+
+.ltDestinationBody h3,
+.ltPlanCard h3,
+.ltMyHeroText h1 {
+  line-height: 1.18;
+}
+
+@media (max-width: 900px) {
+  .spaceHero,
+  .spaceHero.hasAdminOverview {
+    grid-template-columns: 1fr !important;
+    width: min(100% - 28px, 680px) !important;
+    min-height: auto !important;
+    padding: 48px 0 28px !important;
+  }
+
+  .spaceHeroActions {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .adminOverviewPanel {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .spaceHome {
+    background:
+      linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(248, 250, 252, 0.98) 100%),
+      url("https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80") center top/auto 42vh no-repeat,
+      #f8fafc;
+  }
+
+  .spaceHero {
+    padding-top: 34vh !important;
+  }
+
+  .spaceHeroActions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .spaceHeroActions button {
+    justify-content: center;
+  }
+
+  .spaceHeroCopy h1 {
+    font-size: clamp(2.1rem, 12vw, 3rem) !important;
+  }
+
+  .ltValuePoints {
+    grid-template-columns: 1fr !important;
+  }
+}

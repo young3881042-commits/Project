@@ -1,0 +1,133 @@
+/* LocalTrip hub and scheduler density pass */
+@media (min-width: 981px) {
+  .spaceHero {
+    width: min(100% - 72px, 980px) !important;
+    min-height: auto !important;
+    align-items: start !important;
+    padding: 96px 0 64px !important;
+  }
+
+  .spaceHeroCopy {
+    max-width: 720px !important;
+    gap: 18px !important;
+  }
+
+  .spaceHeroCopy h1 {
+    font-size: clamp(2.6rem, 4.8vw, 4.4rem) !important;
+  }
+
+  .spaceHeroLead {
+    font-size: clamp(1.1rem, 2vw, 1.55rem) !important;
+  }
+
+  .spaceHeroActions {
+    max-width: 480px !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .spaceHeroActions button {
+    min-width: 0 !important;
+    min-height: 44px !important;
+    padding: 0 16px !important;
+    border-radius: 12px !important;
+    font-size: 0.92rem !important;
+    white-space: nowrap !important;
+  }
+
+  .schedulerPage {
+    width: min(1280px, calc(100% - 40px)) !important;
+    padding: 28px 0 52px !important;
+  }
+
+  .schedulerHero {
+    gap: 16px !important;
+    padding-bottom: 14px !important;
+  }
+
+  .schedulerPageIcon {
+    width: 42px !important;
+    height: 42px !important;
+    margin-bottom: 10px !important;
+    font-size: 1.35rem !important;
+  }
+
+  .schedulerHero h1 {
+    font-size: 2.2rem !important;
+  }
+
+  .schedulerStats {
+    grid-template-columns: repeat(4, minmax(86px, 1fr)) !important;
+  }
+
+  .schedulerQuickAdd,
+  .schedulerDatabase {
+    margin-top: 10px !important;
+    padding: 12px !important;
+  }
+
+  .schedulerDatabase {
+    grid-template-columns: minmax(0, 1.8fr) minmax(260px, 0.62fr) !important;
+  }
+
+  .schedulerWeekSlots button {
+    min-height: 124px !important;
+  }
+
+  .schedulerCalendarGrid button {
+    min-height: 52px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .spaceHeroActions {
+    gap: 8px !important;
+  }
+
+  .spaceHeroActions button {
+    min-height: 44px !important;
+    border-radius: 10px !important;
+  }
+
+  .schedulerPage {
+    width: calc(100% - 18px) !important;
+    padding-top: 16px !important;
+  }
+
+  .schedulerSidebar {
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+
+  .schedulerQuickAdd,
+  .schedulerDatabase,
+  .schedulerTodayPanel {
+    padding: 10px !important;
+    border-radius: 8px !important;
+  }
+
+  .schedulerDatabase {
+    grid-template-columns: 1fr !important;
+  }
+
+  .schedulerCalendarHeader,
+  .schedulerBoardHeader {
+    display: grid !important;
+    align-items: start !important;
+  }
+
+  .schedulerCalendarControls,
+  .schedulerFilters {
+    width: 100% !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .schedulerWeekSlots {
+    grid-auto-flow: column !important;
+    grid-auto-columns: minmax(160px, 72vw) !important;
+    grid-template-columns: none !important;
+    overflow-x: auto !important;
+  }
+}

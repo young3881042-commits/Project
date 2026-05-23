@@ -129,15 +129,13 @@ public class TravelPlanService {
 
     private List<TravelPlanItem> generateItineraryWithLocalGpt(TravelPlan plan, TravelPlanGenerateRequest request, String username, List<Destination> candidates) {
         String prompt = buildPrompt(plan, request, candidates);
+        String apiKey = chatCredentialService.resolveOpenAiApiKey(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, ChatCredentialService.CONNECT_OPENAI_API_KEY_MESSAGE));
         if (Boolean.TRUE.equals(appProperties.enableCodexCliMode())) {
-            List<TravelPlanItem> codexItems = generateItineraryWithCodexCli(plan, prompt, candidates);
+            List<TravelPlanItem> codexItems = generateItineraryWithCodexCli(plan, prompt, candidates, apiKey);
             if (!codexItems.isEmpty()) {
                 return codexItems;
             }
-        }
-        String apiKey = chatCredentialService.resolveOpenAiApiKey(username).orElse("");
-        if (apiKey.isBlank()) {
-            return fallbackItems(plan, candidates);
         }
         try {
             String model = codexModel();
@@ -188,7 +186,7 @@ public class TravelPlanService {
         }
     }
 
-    private List<TravelPlanItem> generateItineraryWithCodexCli(TravelPlan plan, String prompt, List<Destination> candidates) {
+    private List<TravelPlanItem> generateItineraryWithCodexCli(TravelPlan plan, String prompt, List<Destination> candidates, String apiKey) {
         try {
             Path outputPath = Files.createTempFile("localtrip-codex-", ".json");
             ProcessBuilder builder = new ProcessBuilder(
@@ -208,6 +206,7 @@ public class TravelPlanService {
             environment.put("NO_COLOR", "1");
             environment.put("TERM", "dumb");
             environment.put("HOME", "/root");
+            environment.put("OPENAI_API_KEY", apiKey);
             environment.put("CODEX_MODEL", codexModel());
             Process process = builder.start();
             process.getOutputStream().close();

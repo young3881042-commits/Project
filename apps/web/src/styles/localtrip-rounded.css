@@ -1,0 +1,174 @@
+/* Rounded UI refresh */
+.loginNav,
+.loginCard,
+.loginHint,
+.workspacePathCard,
+.workspaceTopTabs,
+.workspaceUserButton,
+.browserListPanel,
+.browserPreviewPanel,
+.assistantPanel,
+.accountDialog {
+  border-radius: 30px;
+}
+
+.loginMascot,
+.providerMark,
+.entryRow,
+.treeRootLabel,
+.treeRow,
+.previewBody,
+.settingsPanel,
+.ragControls,
+.terminalToolbar,
+.terminalSurface,
+.outputBlock,
+.citationCard {
+  border-radius: 24px;
+}
+
+.loginField input,
+.loginButton,
+.providerButton,
+.authSwitch,
+.authSwitch button,
+.ghostButton,
+.iconButton,
+.sendButton,
+.itemActionButton,
+.runButton,
+.actionIconButton {
+  border-radius: 999px;
+}
+
+.ltShell {
+  --lt-radius-xl: 32px;
+  --lt-radius-lg: 26px;
+  --lt-radius-md: 20px;
+  --lt-radius-sm: 16px;
+}
+
+.ltNav {
+  width: min(100% - 20px, 410px);
+  margin: 10px auto 0;
+  border: 1px solid rgba(229, 231, 235, 0.92);
+  border-radius: var(--lt-radius-xl);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.1);
+}
+
+.ltNavInner {
+  width: calc(100% - 22px);
+}
+
+.ltBrand strong,
+.ltIconButton,
+.ltEmptyIcon,
+.ltMyAvatar,
+.ltTaskCard > span {
+  border-radius: var(--lt-radius-md);
+}
+
+.ltNavLinks {
+  border-radius: 32px;
+  padding: 8px;
+}
+
+.ltNavLinks a {
+  border-radius: 23px;
+}
+
+.ltHeroSearch,
+.ltPurposeRail,
+.ltRoleBand,
+.ltPartnerHero,
+.ltPartnerStats,
+.ltPartnerPanel,
+.ltDestinationCard,
+.ltPlanCard,
+.ltRecentPlans,
+.ltPlannerForm,
+.ltPlannerPreview,
+.ltSelectedSummary,
+.ltGeneratedPreview,
+.ltFilterBar,
+.ltFilterFold,
+.ltTimelineDay,
+.ltPlanHero,
+.ltFactItem,
+.ltDayCard,
+.ltMarkdownDayBlock,
+.ltMyHero,
+.ltMyPanel,
+.ltEmptyState {
+  border-radius: var(--lt-radius-xl);
+}
+
+.ltDestinationPhoto {
+  width: calc(100% - 20px);
+  margin: 10px 10px 0;
+  border-radius: var(--lt-radius-lg);
+  overflow: hidden;
+}
+
+.ltHeroImage,
+.ltMiniDestPhoto,
+.ltDayCover,
+.ltHeroPanel,
+.ltMiniDestCard,
+.ltTaskCard,
+.ltDaySlot {
+  border-radius: var(--lt-radius-lg);
+}
+
+.ltHeroSearchInput,
+.ltFilterBar input,
+.ltPlannerForm input,
+.ltPlannerForm select,
+.ltPlannerForm textarea,
+.ltAutocompleteContainer input,
+.ltAutocompleteDropdown,
+.ltAutocompleteDropdown button,
+.ltInlineNotice {
+  border-radius: var(--lt-radius-md);
+}
+
+.ltPrimaryButton,
+.ltSecondaryButton,
+.ltGhostButton,
+.ltTextButton,
+.ltBackButton,
+.ltHeroActions a,
+.ltPlannerTeaser button,
+.ltPlannerForm button[type="submit"],
+.ltMyShortcutList button,
+.ltHeroSearchInput button,
+.ltAdminButton,
+.ltSegmented,
+.ltSegmented button,
+.ltInterestGroup button,
+.ltOptionGroup button,
+.ltPurposeChips button,
+.ltTagRow span,
+.ltPlanMeta span,
+.ltSelectedTag,
+.ltStepBar span,
+.ltFactItem span,
+.ltProfileList dt,
+.ltTimelineItem time,
+.ltDaySlot time,
+.ltMarkdownDayHeader span,
+.ltMarkdownHeading span {
+  border-radius: 999px;
+}
+
+@media (max-width: 480px) {
+  .ltNav {
+    width: calc(100% - 16px);
+    margin-top: 8px;
+  }
+
+  .ltShell {
+    border-radius: 0;
+  }
+}

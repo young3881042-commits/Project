@@ -1,0 +1,1139 @@
+/* LocalTrip mobile usability pass */
+@media (max-width: 560px) {
+  body:has(.ltShell) {
+    overscroll-behavior-x: none;
+  }
+
+  .ltShell .ltNavInner {
+    width: 100% !important;
+    padding: 8px 10px 10px !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+  }
+
+  .ltShell .ltBrand {
+    gap: 8px !important;
+  }
+
+  .ltShell .ltBrand strong {
+    width: 34px !important;
+    height: 34px !important;
+    flex: 0 0 34px !important;
+  }
+
+  .ltShell .ltBrand span {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .ltShell .ltNavUserCard {
+    max-width: 128px !important;
+    min-height: 34px !important;
+    grid-template-columns: 26px minmax(0, 1fr) !important;
+    padding: 4px 6px !important;
+  }
+
+  .ltShell .ltNavUserCard > span {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .ltShell .ltServiceSwitch {
+    padding: 7px !important;
+  }
+
+  .ltShell .ltServiceSwitchTitle {
+    display: none !important;
+  }
+
+  .ltShell .ltServiceSwitchLinks a,
+  .ltShell .ltServiceSwitch a {
+    min-height: 34px !important;
+    padding: 0 12px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .ltShell .ltNavLinks {
+    width: min(calc(100vw - 14px), 520px) !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+    padding: 6px !important;
+    border-radius: 18px !important;
+  }
+
+  .ltShell .ltNavLinks a {
+    min-height: 48px !important;
+    padding: 5px 2px !important;
+    border-radius: 13px !important;
+    font-size: 0.66rem !important;
+  }
+
+  .ltShell .ltTabIcon,
+  .ltShell .ltTabIcon svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .ltShell .ltPage {
+    width: calc(100% - 20px) !important;
+    padding-top: 14px !important;
+    padding-bottom: calc(92px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .ltPageTitle {
+    padding: 0 !important;
+  }
+
+  .ltPageTitle h1,
+  .ltHeroCopy h1,
+  .ltPartnerHero h1,
+  .ltMyHeroText h1 {
+    font-size: clamp(1.7rem, 8vw, 2.15rem) !important;
+    line-height: 1.12 !important;
+  }
+
+  .ltPageTitle p,
+  .ltHeroCopy p,
+  .ltPartnerHero p {
+    font-size: 0.94rem !important;
+    line-height: 1.55 !important;
+  }
+
+  .ltHeroSearch,
+  .ltPlannerForm,
+  .ltPlannerPreview,
+  .ltSelectedSummary,
+  .ltGeneratedPreview,
+  .ltDestinationCard,
+  .ltPlanCard,
+  .ltDayCard,
+  .ltPlanHero,
+  .ltMyHero,
+  .ltMyPanel,
+  .ltFilterFold,
+  .ltRecentPlans,
+  .ltServiceSection,
+  .ltRequestFlow,
+  .ltRegionLinks,
+  .ltPartnerCta,
+  .ltPartnerPanel {
+    border-radius: 8px !important;
+  }
+
+  .ltHeroSearch,
+  .ltPlannerForm,
+  .ltPlannerPreview,
+  .ltSelectedSummary,
+  .ltGeneratedPreview,
+  .ltFilterBar,
+  .ltPlanHero,
+  .ltMyHero,
+  .ltPartnerPanel,
+  .ltServiceSection,
+  .ltRequestFlow,
+  .ltRegionLinks,
+  .ltPartnerCta {
+    padding: 14px !important;
+  }
+
+  .ltHeroSearchInput,
+  .ltAutocompleteContainer input,
+  .ltPlannerForm input,
+  .ltPlannerForm select,
+  .ltPlannerForm textarea,
+  .ltFilterBar input {
+    min-height: 46px !important;
+    font-size: 16px !important;
+  }
+
+  .ltHeroSearchInput {
+    gap: 8px !important;
+  }
+
+  .ltHeroSearchInput input {
+    min-width: 0 !important;
+  }
+
+  .ltHeroSearchInput button,
+  .ltPrimaryButton,
+  .ltSecondaryButton,
+  .ltGhostButton,
+  .ltStepActions button,
+  .ltPlannerForm button[type="submit"] {
+    min-height: 44px !important;
+  }
+
+  .ltStepBar {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    overflow: visible !important;
+  }
+
+  .ltStepBar button {
+    min-width: 0 !important;
+    min-height: 42px !important;
+    padding: 7px 5px !important;
+    white-space: normal !important;
+    line-height: 1.15 !important;
+    text-align: center !important;
+  }
+
+  .ltDailyRouteBuilder fieldset,
+  .ltAddressGrid,
+  .ltFormGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ltOptionGroup div,
+  .ltInterestGroup div,
+  .ltSegmented,
+  .ltSelectedTagRow,
+  .ltHeroFilters,
+  .ltPurposeChips {
+    display: flex !important;
+    gap: 7px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 2px !important;
+    scrollbar-width: none !important;
+  }
+
+  .ltOptionGroup div::-webkit-scrollbar,
+  .ltInterestGroup div::-webkit-scrollbar,
+  .ltSegmented::-webkit-scrollbar,
+  .ltSelectedTagRow::-webkit-scrollbar,
+  .ltHeroFilters::-webkit-scrollbar,
+  .ltPurposeChips::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .ltOptionGroup button,
+  .ltInterestGroup button,
+  .ltSegmented button,
+  .ltSelectedTag,
+  .ltHeroFilters button,
+  .ltPurposeChips button {
+    flex: 0 0 auto !important;
+    max-width: min(76vw, 260px) !important;
+    min-height: 38px !important;
+    white-space: nowrap !important;
+  }
+
+  .ltDestinationGrid,
+  .ltPlansGrid,
+  .ltMiniDestList,
+  .ltDayCards,
+  .ltDaySlots {
+    gap: 12px !important;
+  }
+
+  .ltDestinationPhoto {
+    aspect-ratio: 16 / 10 !important;
+  }
+
+  .ltDestinationBody,
+  .ltPlanCard {
+    padding: 14px !important;
+  }
+
+  .ltCardTopline,
+  .ltPlanBadges,
+  .ltPlanMeta,
+  .ltTagRow,
+  .ltDaySlotMeta {
+    gap: 6px !important;
+  }
+
+  .ltPlanMeta span,
+  .ltTagRow span,
+  .ltDaySlotMeta span,
+  .ltSlotTitleRow > span {
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+    white-space: normal !important;
+  }
+
+  .ltDayCard {
+    padding: 12px !important;
+  }
+
+  .ltDayCardHeader {
+    grid-template-columns: 58px minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .ltDayCover {
+    width: 58px !important;
+    height: 58px !important;
+    border-radius: 8px !important;
+  }
+
+  .ltDayRouteCheck {
+    grid-template-columns: 1fr !important;
+    gap: 7px !important;
+  }
+
+  .ltDayRouteCheck label {
+    grid-template-columns: 20px 38px minmax(0, 1fr) auto !important;
+    min-height: 46px !important;
+    padding: 8px 10px !important;
+  }
+
+  .ltDayRouteCheck strong {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .ltDaySlot {
+    padding: 11px !important;
+    border-radius: 8px !important;
+  }
+
+  .ltDayTimeline::before {
+    display: none !important;
+  }
+
+  .ltTimelineRail {
+    grid-template-columns: minmax(0, 1fr) 30px !important;
+  }
+
+  .ltTimelineRail time span {
+    min-height: 32px !important;
+    padding: 6px 9px !important;
+    font-size: 0.76rem !important;
+  }
+
+  .ltTimelineRail i {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .ltRecommendedMenu {
+    display: grid !important;
+    gap: 4px !important;
+    padding: 9px 10px !important;
+  }
+
+  .ltPlanTimelinePreview {
+    padding: 10px !important;
+  }
+
+  .ltPlanTimelinePreview div {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .ltStickyCta {
+    position: sticky !important;
+    bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+    z-index: 260 !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .ltShell .ltNavLinks {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .ltShell .ltNavLinks a {
+    font-size: 0.6rem !important;
+  }
+
+  .ltShell .ltNavUserCard {
+    max-width: 116px !important;
+  }
+
+  .ltShell .ltPage {
+    width: calc(100% - 16px) !important;
+  }
+
+  .ltDayRouteCheck label {
+    grid-template-columns: 20px 34px minmax(0, 1fr) !important;
+  }
+
+  .ltDayRouteCheck time {
+    display: none !important;
+  }
+}
+
+/* AI memo mobile repair */
+@media (max-width: 560px) {
+  body:has(.aiNoteShell) {
+    overflow-x: hidden !important;
+  }
+
+  .aiNoteShell {
+    display: block !important;
+    min-width: 0 !important;
+  }
+
+  .aiNoteSidebar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 40 !important;
+    max-height: 42vh !important;
+    padding: 10px !important;
+    overflow-y: auto !important;
+    border-bottom: 1px solid var(--memo-line) !important;
+  }
+
+  .aiNoteSideGroup,
+  .memoBoardNav {
+    padding: 10px !important;
+  }
+
+  .memoNavPrimary {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .memoNavPrimary > span {
+    grid-column: 1 / -1 !important;
+  }
+
+  .aiNoteSideGroup a,
+  .aiNoteSideGroup button,
+  .memoBoardNavSection > button,
+  .memoBoardNavSection div button {
+    min-width: 0 !important;
+    min-height: 42px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .memoBoardNavSection div {
+    max-height: 128px !important;
+    overflow-y: auto !important;
+  }
+
+  .aiNotePage {
+    width: calc(100% - 16px) !important;
+    padding: 12px 0 28px !important;
+  }
+
+  .aiNoteBoardPanel {
+    padding: 12px !important;
+    overflow: hidden !important;
+  }
+
+  .aiNoteBoardPanel .projectTopbar,
+  .projectBoardHero {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .projectTopActions,
+  .projectViewTabs,
+  .memoBoardNavigator {
+    width: 100% !important;
+    display: flex !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none !important;
+  }
+
+  .projectTopActions::-webkit-scrollbar,
+  .projectViewTabs::-webkit-scrollbar,
+  .memoBoardNavigator::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .projectViewTabs button,
+  .memoBoardNavigator button,
+  .projectNewItemButton {
+    min-height: 42px !important;
+    flex: 0 0 auto !important;
+  }
+
+  .memoBoardNavigator button span {
+    max-width: 42vw !important;
+  }
+
+  .memoBoardTitleRow input {
+    min-height: 42px !important;
+    font-size: 16px !important;
+  }
+
+  .projectFloatingNote {
+    position: static !important;
+    width: 100% !important;
+    margin: 10px 0 !important;
+  }
+
+  .projectKanban {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .aiNoteBoardPanel .projectKanbanColumn {
+    min-height: 160px !important;
+  }
+
+  .memoFreeformBoard {
+    min-height: auto !important;
+    display: grid !important;
+    gap: 10px !important;
+    margin-top: 14px !important;
+    padding: 10px !important;
+    overflow: visible !important;
+  }
+
+  .memoBoardCard {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 56px !important;
+    padding: 12px !important;
+    resize: none !important;
+    overflow: hidden !important;
+  }
+
+  .memoMoveHandle {
+    display: none !important;
+  }
+
+  .memoBoardCard .memoCardName {
+    padding-left: 0 !important;
+  }
+
+  .memoCardName {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    text-overflow: clip !important;
+  }
+}
+
+/* LocalTrip mobile compact planner and low-lag pass */
+@media (max-width: 900px) {
+  body:has(.ltShell) {
+    touch-action: pan-y;
+  }
+
+  .ltShell,
+  .ltShell * {
+    scroll-behavior: auto !important;
+  }
+
+  .ltShell .ltNav {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .ltShell .ltNavInner {
+    min-height: 48px !important;
+    grid-template-areas:
+      "brand account"
+      "services services" !important;
+    gap: 6px 8px !important;
+    padding-block: 6px !important;
+  }
+
+  .ltShell .ltBrand {
+    font-size: 0.96rem !important;
+  }
+
+  .ltShell .ltServiceSwitch {
+    display: block !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  .ltShell .ltServiceSwitchLinks {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: max-content !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
+    padding: 0 0 2px !important;
+    scrollbar-width: thin !important;
+  }
+
+  .ltShell .ltServiceSwitchLinks a,
+  .ltShell .ltServiceSwitch a {
+    min-height: 28px !important;
+    padding: 0 10px !important;
+    border-radius: 999px !important;
+    font-size: 0.72rem !important;
+    white-space: nowrap !important;
+  }
+
+  .ltShell .ltNavLinks {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: minmax(72px, 1fr) !important;
+    grid-template-columns: none !important;
+    scrollbar-width: thin !important;
+  }
+
+  .ltShell .ltNavLinks a {
+    min-width: 72px !important;
+  }
+
+  .ltPlannerLayout {
+    align-items: start !important;
+  }
+
+  .ltPlannerForm,
+  .ltPlannerPreview {
+    box-shadow: none !important;
+  }
+
+  .ltDailyRouteBuilder {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: minmax(286px, 86vw) !important;
+    grid-template-columns: none !important;
+    gap: 10px !important;
+    margin-inline: -4px !important;
+    padding: 2px 4px 10px !important;
+    overflow-x: auto !important;
+    overscroll-behavior-x: contain !important;
+    scroll-snap-type: x mandatory !important;
+    scrollbar-width: thin !important;
+  }
+
+  .ltDailyRouteBuilder fieldset {
+    scroll-snap-align: start !important;
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+    min-width: 0 !important;
+    padding: 12px !important;
+  }
+
+  .ltPlannerPreview {
+    position: sticky !important;
+    bottom: calc(86px + env(safe-area-inset-bottom)) !important;
+    z-index: 120 !important;
+    max-height: min(42vh, 360px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+  }
+
+  .ltPlannerPreview:empty {
+    display: none !important;
+  }
+
+  .ltMiniDestList,
+  .ltGeneratedPreview .ltDayCards {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: minmax(220px, 78vw) !important;
+    grid-template-columns: none !important;
+    overflow-x: auto !important;
+    overscroll-behavior-x: contain !important;
+    scroll-snap-type: x proximity !important;
+    scrollbar-width: thin !important;
+  }
+
+  .ltMiniDestCard,
+  .ltGeneratedPreview .ltDayCard {
+    scroll-snap-align: start !important;
+  }
+
+  .ltDestinationCard,
+  .ltPlanCard,
+  .ltDayCard,
+  .ltTimelineDay,
+  .ltMyPanel,
+  .ltPartnerPanel {
+    content-visibility: auto;
+    contain-intrinsic-size: 280px;
+  }
+}
+
+@media (max-width: 560px) {
+  .ltShell .ltPage {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .ltShell .ltNavLinks {
+    bottom: calc(6px + env(safe-area-inset-bottom)) !important;
+    width: min(calc(100vw - 10px), 520px) !important;
+    padding: 5px !important;
+  }
+
+  .ltShell .ltNavLinks a {
+    min-height: 44px !important;
+  }
+
+  .ltPlannerPreview {
+    max-height: min(36vh, 300px) !important;
+  }
+
+  .ltStickyCta {
+    bottom: calc(70px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* LocalTrip mobile performance guard */
+@media (max-width: 900px) {
+  .ltShell * {
+    transition-duration: 0.08s !important;
+    animation-duration: 0.08s !important;
+  }
+
+  .ltShell button:active,
+  .ltShell a[class]:active,
+  .ltDestinationCard:hover,
+  .ltPlanCard:hover,
+  .ltMiniDestCard:hover,
+  .ltMyShortcutList button:hover {
+    transform: none !important;
+  }
+
+  .ltHeroImage,
+  .ltDestinationPhoto,
+  .ltMiniDestPhoto,
+  .ltDayCover {
+    box-shadow: none !important;
+  }
+
+  .ltHeroVisual,
+  .ltHeroPanel,
+  .ltPurposeRail,
+  .ltRoleBand,
+  .ltPartnerHero,
+  .ltPartnerStats,
+  .ltPartnerPanel,
+  .ltDestinationCard,
+  .ltPlanCard,
+  .ltRecentPlans,
+  .ltPlannerForm,
+  .ltPlannerPreview,
+  .ltSelectedSummary,
+  .ltGeneratedPreview,
+  .ltFilterBar,
+  .ltTimelineDay,
+  .ltPlanHero,
+  .ltFactItem,
+  .ltDayCard,
+  .ltMarkdownDayBlock,
+  .ltMyHero,
+  .ltMyPanel,
+  .ltFilterFold,
+  .ltEmptyState {
+    box-shadow: none !important;
+  }
+
+  .ltHeroVisual {
+    min-height: auto !important;
+  }
+
+  .ltHeroImage.main,
+  .ltHeroImage {
+    min-height: 140px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .ltPageTitle {
+    margin-bottom: 14px !important;
+  }
+
+  .ltPlannerLayout,
+  .ltDestinationGrid,
+  .ltPlansGrid,
+  .ltDayCards,
+  .ltDaySlots {
+    gap: 10px !important;
+  }
+
+  .ltFormSection {
+    gap: 12px !important;
+  }
+
+  .ltPlannerPreview {
+    position: static !important;
+    max-height: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce), (max-width: 560px) {
+  .ltShell *,
+  .ltShell *::before,
+  .ltShell *::after {
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* LocalTrip mobile UX pass: mobile-only, isolated from desktop layout. */
+@media (max-width: 900px) {
+  .ltShell {
+    --mobile-edge: max(10px, env(safe-area-inset-left));
+  }
+
+  .ltShell .ltPage {
+    width: min(100% - 20px, 560px) !important;
+  }
+
+  .ltShell .ltNav {
+    max-height: 132px !important;
+    overflow: hidden !important;
+  }
+
+  .ltShell .ltNavInner {
+    width: 100% !important;
+    padding-inline: 10px !important;
+  }
+
+  .ltShell .ltBrand span,
+  .ltShell .ltNavUserCard strong {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .ltShell .ltServiceSwitchLinks,
+  .ltShell .ltNavLinks,
+  .ltStepBar,
+  .ltSegmented,
+  .ltInterestGroup div,
+  .ltOptionGroup div,
+  .ltSelectedTagRow,
+  .ltHeroFilters,
+  .ltPurposeChips,
+  .ltMiniDestList,
+  .ltGeneratedPreview .ltDayCards,
+  .ltDailyRouteBuilder {
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .ltStepBar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 180 !important;
+    margin: -4px 0 10px !important;
+    padding: 8px 0 !important;
+    background: linear-gradient(180deg, #f8fafc 72%, rgba(248, 250, 252, 0)) !important;
+  }
+
+  .ltStepBar button {
+    min-height: 38px !important;
+    border-radius: 10px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .ltPlannerForm,
+  .ltPlannerPreview,
+  .ltSelectedSummary,
+  .ltGeneratedPreview,
+  .ltFilterFold,
+  .ltDestinationCard,
+  .ltPlanCard,
+  .ltDayCard {
+    border-radius: 10px !important;
+  }
+
+  .ltAutocompleteDropdown {
+    max-height: min(44vh, 320px) !important;
+    overflow-y: auto !important;
+  }
+
+  .ltAutocompleteDropdown button {
+    min-height: 46px !important;
+    text-align: left !important;
+  }
+
+  .ltDailyRouteBuilder {
+    grid-auto-columns: minmax(272px, 82vw) !important;
+  }
+
+  .ltDailyRouteBuilder legend {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1 !important;
+    width: fit-content !important;
+    padding: 3px 8px !important;
+    border-radius: 999px !important;
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+    font-weight: 900 !important;
+  }
+
+  .ltFormSectionTitle {
+    align-items: start !important;
+    gap: 8px !important;
+  }
+
+  .ltFormSectionTitle strong,
+  .ltSelectedSummary h3,
+  .ltGeneratedPreview h2 {
+    font-size: 1rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .ltStepActions {
+    position: sticky !important;
+    bottom: calc(68px + env(safe-area-inset-bottom)) !important;
+    z-index: 170 !important;
+    justify-content: stretch !important;
+    padding: 8px 0 0 !important;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0), #f8fafc 34%) !important;
+  }
+
+  .ltStepActions button,
+  .ltStickyCta,
+  .ltPrimaryButton,
+  .ltSecondaryButton,
+  .ltGhostButton {
+    min-height: 46px !important;
+  }
+
+  .ltStepActions button {
+    flex: 1 1 0 !important;
+  }
+
+  .ltDestinationPhoto,
+  .ltDayCover {
+    aspect-ratio: 16 / 10 !important;
+  }
+
+  .ltDaySlot {
+    contain: layout paint !important;
+  }
+
+  .ltDaySlotBody p,
+  .ltDestinationBody p,
+  .ltPlanCard p {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .ltShell .ltNav {
+    max-height: 118px !important;
+  }
+
+  .ltShell .ltPage {
+    width: calc(100% - 16px) !important;
+    padding-top: 10px !important;
+  }
+
+  .ltPageTitle h1,
+  .ltHeroCopy h1,
+  .ltPartnerHero h1,
+  .ltMyHeroText h1 {
+    font-size: clamp(1.45rem, 7.2vw, 1.88rem) !important;
+  }
+
+  .ltPageTitle p,
+  .ltHeroCopy p,
+  .ltPartnerHero p {
+    font-size: 0.88rem !important;
+  }
+
+  .ltPlannerForm,
+  .ltPlannerPreview,
+  .ltSelectedSummary,
+  .ltGeneratedPreview,
+  .ltFilterBar,
+  .ltDestinationBody,
+  .ltPlanCard,
+  .ltDayCard {
+    padding: 12px !important;
+  }
+
+  .ltDailyRouteBuilder {
+    grid-auto-columns: minmax(258px, 84vw) !important;
+  }
+
+  .ltStepActions {
+    bottom: calc(58px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .ltStickyCta {
+    width: 100% !important;
+    bottom: calc(58px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .ltShell .ltNavLinks {
+    grid-auto-columns: minmax(66px, 1fr) !important;
+  }
+
+  .ltShell .ltNavLinks a {
+    min-width: 66px !important;
+    min-height: 42px !important;
+    font-size: 0.61rem !important;
+  }
+}
+
+/* Planner country/map polish */
+.ltCountrySwitch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ltCountrySwitch button {
+  min-width: 0;
+  min-height: 74px;
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  color: #334155;
+  padding: 12px 14px;
+  text-align: left;
+}
+
+.ltCountrySwitch button strong {
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 950;
+}
+
+.ltCountrySwitch button span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.ltCountrySwitch button.active {
+  border-color: rgba(16, 185, 129, 0.45);
+  background: linear-gradient(180deg, #ecfdf5, #ffffff);
+  box-shadow: 0 14px 34px rgba(16, 185, 129, 0.14);
+}
+
+.ltMapSearchLink {
+  width: fit-content;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3730a3;
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.ltMapSearchLink:hover {
+  background: #e0e7ff;
+}
+
+.ltPlannerLayout {
+  align-items: start;
+}
+
+.ltPlannerForm {
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.96)),
+    radial-gradient(circle at top right, rgba(16, 185, 129, 0.12), transparent 30%);
+}
+
+.ltPlannerPreview {
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: #ffffff;
+}
+
+.ltStepBar {
+  padding: 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.ltStepBar button {
+  border-radius: 13px;
+}
+
+.ltStepBar button.active {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.ltServiceSwitchLinks {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ltServiceSwitchLinks a.active,
+.ltServiceSwitch a.active {
+  background: #dff8ee;
+  color: #047857;
+}
+
+@media (min-width: 901px) {
+  .ltPlannerForm {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ltPlannerForm::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background: linear-gradient(90deg, #10b981, #38bdf8, #f59e0b);
+  }
+}
+
+@media (max-width: 560px) {
+  .ltCountrySwitch {
+    gap: 8px;
+  }
+
+  .ltCountrySwitch button {
+    min-height: 64px;
+    border-radius: 12px;
+    padding: 10px;
+  }
+
+  .ltServiceSwitchLinks {
+    grid-auto-columns: max-content !important;
+    grid-template-columns: none !important;
+  }
+}
+
+.workspaceGuestActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .workspaceTopbar {
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .workspaceUserTray {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .workspaceTopTabs {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .workspaceTopTabs .ghostButton.compact {
+    flex: 0 0 auto;
+  }
+
+.workspaceGuestActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

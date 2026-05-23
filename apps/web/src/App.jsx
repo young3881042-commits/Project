@@ -2,21 +2,26 @@ import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import LocalTripApp from './LocalTripApp.jsx';
+import ConnectionsApp from './ConnectionsApp.jsx';
 
 const AUTH_KEY = 'codex-workspace-auth';
 const LazyCodeEditor = lazy(() => import('./CodeEditor.jsx'));
-const LazyGeminiApp = lazy(() => import('./GeminiApp.jsx'));
-const LazyRagApp = lazy(() => import('./RagApp.jsx'));
 const SCHEDULER_KEY = 'codex-personal-scheduler-items';
 const AI_NOTE_KEY = 'codex-ai-note-blocks';
 const AI_NOTE_BOARDS_KEY = 'codex-ai-note-boards';
+const CONNECTION_SETTINGS_KEY = 'ai-assitant-connection-settings';
+const LEGACY_CONNECTION_SETTINGS_KEY = 'jupiter-ai-connection-settings';
+const DATA_INBOX_KEY = 'ai-assitant-data-inbox';
+const LEGACY_DATA_INBOX_KEY = 'jupiter-ai-data-inbox';
 const APP_SHORTCUTS = {
-  mainHub: { label: 'Home', path: '/' },
-  aiTrip: { label: '여행 추천', path: '/destinations' },
-  aiSchedule: { label: 'AI 일정 만들기', path: '/planner' },
-  personalScheduler: { label: '일정', path: '/scheduler' },
-  aiMemoBoard: { label: '노트', path: '/notes' },
-  adminWorkspace: { label: '관리자 배치', path: '/analysisadmin' }
+  mainHub: { label: '앱 홈', path: '/app' },
+  portfolio: { label: '포트폴리오', path: '/portfolio' },
+  aiTrip: { label: '장소 찾기', path: '/destinations' },
+  aiSchedule: { label: '일정 만들기', path: '/planner' },
+  personalScheduler: { label: '내 일정', path: '/scheduler' },
+  aiMemoBoard: { label: '메모', path: '/notes' },
+  dataConnections: { label: '연결', path: '/connections' },
+  adminWorkspace: { label: '관리', path: '/analysisadmin' }
 };
 const RECURRENCE_LABELS = {
   none: '반복 없음',
@@ -30,6 +35,71 @@ const DEFAULT_SCHEDULER_ITEMS = [
 function normalizeAuthSession(session) {
   if (!session) return null;
   return session.username === 'guestuser' && !session.isGuest ? { ...session, isGuest: true } : session;
+}
+
+function defaultConnectionSettings() {
+  return {
+    apiBaseUrl: '',
+    storageMode: 'local-first',
+    gmail: {
+      status: 'not-connected',
+      scope: 'metadata'
+    },
+    naver: {
+      status: 'manual',
+      email: '',
+      imapHost: 'imap.naver.com',
+      imapPort: '993',
+      security: 'SSL/TLS'
+    },
+    localMessages: {
+      status: 'native-required',
+      platform: 'android'
+    }
+  };
+}
+
+function readConnectionSettings() {
+  try {
+    const raw = localStorage.getItem(CONNECTION_SETTINGS_KEY) || localStorage.getItem(LEGACY_CONNECTION_SETTINGS_KEY);
+    const parsed = JSON.parse(raw || 'null');
+    const merged = { ...defaultConnectionSettings(), ...(parsed || {}) };
+    if (raw && !localStorage.getItem(CONNECTION_SETTINGS_KEY)) {
+      localStorage.setItem(CONNECTION_SETTINGS_KEY, JSON.stringify(merged));
+    }
+    return merged;
+  } catch {
+    return defaultConnectionSettings();
+  }
+}
+
+function saveConnectionSettings(settings) {
+  localStorage.setItem(CONNECTION_SETTINGS_KEY, JSON.stringify(settings));
+  window.dispatchEvent(new CustomEvent('ai-assitant:connection-settings-updated', { detail: settings }));
+}
+
+function readDataInbox() {
+  try {
+    const raw = localStorage.getItem(DATA_INBOX_KEY) || localStorage.getItem(LEGACY_DATA_INBOX_KEY) || '[]';
+    const parsed = JSON.parse(raw);
+    if (raw && !localStorage.getItem(DATA_INBOX_KEY)) {
+      localStorage.setItem(DATA_INBOX_KEY, JSON.stringify(Array.isArray(parsed) ? parsed : []));
+    }
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveDataInbox(items) {
+  localStorage.setItem(DATA_INBOX_KEY, JSON.stringify(items));
+  window.dispatchEvent(new CustomEvent('ai-assitant:data-inbox-updated', { detail: items }));
+}
+
+function apiUrlFor(path) {
+  if (!path || /^https?:\/\//i.test(path)) return path;
+  const baseUrl = readConnectionSettings().apiBaseUrl.trim().replace(/\/+$/, '');
+  return baseUrl ? `${baseUrl}${path.startsWith('/') ? path : `/${path}`}` : path;
 }
 
 export function addSchedulerItem(item) {
@@ -62,7 +132,7 @@ function authHeaders(token) {
 }
 
 async function requestJson(path, options = {}) {
-  const response = await fetch(path, options);
+  const response = await fetch(apiUrlFor(path), options);
   if (!response.ok) {
     if (response.status === 401 && !path.startsWith('/api/auth/')) {
       localStorage.removeItem(AUTH_KEY);
@@ -79,7 +149,7 @@ async function requestJson(path, options = {}) {
 }
 
 async function requestText(path, token) {
-  const response = await fetch(path, { headers: authHeaders(token) });
+  const response = await fetch(apiUrlFor(path), { headers: authHeaders(token) });
   if (!response.ok) {
     if (response.status === 401 && !path.startsWith('/api/auth/')) {
       localStorage.removeItem(AUTH_KEY);
@@ -740,47 +810,34 @@ function WorkspaceHeader({
   navigate,
   selectedPath,
   rightPanel,
-  setRightPanel,
   userMenuOpen,
   setUserMenuOpen,
-  onOpenLauncher,
   onOpenAccountEdit,
   onLogout
 }) {
   const isGuest = Boolean(auth.isGuest);
+  const admin = auth.role === 'ADMIN';
 
   return (
     <header className="workspaceTopbar">
       <section className="workspacePathCard">
-        <span className="panelEyebrow">Workspace</span>
-        <code className="workspacePathCode">{workspacePathFor(selectedPath)}</code>
+        <span className="panelEyebrow">{admin ? 'Admin Resources' : 'Workspace'}</span>
+        <code className="workspacePathCode">{admin ? 'docker://runtime-resources' : workspacePathFor(selectedPath)}</code>
       </section>
       <div className="workspaceUserTray">
         <div className="workspaceTopTabs">
+          <button type="button" className="ghostButton compact" onClick={() => navigate(APP_SHORTCUTS.mainHub.path)}>{APP_SHORTCUTS.mainHub.label}</button>
           <button type="button" className="ghostButton compact" onClick={() => navigate(APP_SHORTCUTS.aiTrip.path)}>{APP_SHORTCUTS.aiTrip.label}</button>
           <button type="button" className="ghostButton compact" onClick={() => navigate(APP_SHORTCUTS.personalScheduler.path)}>{APP_SHORTCUTS.personalScheduler.label}</button>
           <button type="button" className="ghostButton compact" onClick={() => navigate(APP_SHORTCUTS.aiMemoBoard.path)}>{APP_SHORTCUTS.aiMemoBoard.label}</button>
         </div>
-        <div className="workspaceTopTabs">
-          <button type="button" className={`ghostButton compact ${rightPanel === 'rag' ? 'active' : ''}`} onClick={() => setRightPanel('rag')}>RAG</button>
-          <button type="button" className={`ghostButton compact ${rightPanel === 'gemini' ? 'active' : ''}`} onClick={() => setRightPanel('gemini')}>LLM</button>
-          <button type="button" className={`ghostButton compact ${rightPanel === 'editor' ? 'active' : ''}`} onClick={() => setRightPanel('editor')}>파일 편집기</button>
-          {auth.role === 'ADMIN' ? (
-            <button type="button" className={`ghostButton compact ${rightPanel === 'monitor' ? 'active' : ''}`} onClick={() => setRightPanel('monitor')}>리소스</button>
-          ) : null}
-        </div>
-        {auth.launcherUrl ? (
-          <button type="button" className="ghostButton" onClick={onOpenLauncher}>
-            분석 환경
-          </button>
-        ) : null}
         {isGuest ? (
           <div className="workspaceGuestActions">
             <div className="workspaceUserButton guestLabel" aria-label="Guest session">
               <span>Guest</span>
               <strong>{auth.username}</strong>
             </div>
-            <button type="button" className="ghostButton compact" onClick={() => { localStorage.removeItem(AUTH_KEY); navigate('/'); }}>Login</button>
+            <button type="button" className="ghostButton compact" onClick={() => { localStorage.removeItem(AUTH_KEY); navigate(loginPathForCurrentLocation('/analysisadmin')); }}>Login</button>
           </div>
         ) : (
           <div className="userMenuWrap">
@@ -909,7 +966,7 @@ function FileList({
               draggable
               onDragStart={(event) => {
                 event.dataTransfer.effectAllowed = 'copy';
-                event.dataTransfer.setData('application/x-jupiter-workspace', JSON.stringify({
+                event.dataTransfer.setData('application/x-ai-assitant-workspace', JSON.stringify({
                   path: entry.path,
                   type: entry.type
                 }));
@@ -1360,7 +1417,7 @@ function WorkspaceApp({ navigate }) {
   const [contextMenu, setContextMenu] = useState(null);
   const [createDraft, setCreateDraft] = useState(null);
   const [activeMonitor, setActiveMonitor] = useState('grafana');
-  const [rightPanel, setRightPanel] = useState('gemini');
+  const [rightPanel, setRightPanel] = useState('monitor');
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [accountEditOpen, setAccountEditOpen] = useState(false);
   const [accountEditLoading, setAccountEditLoading] = useState(false);
@@ -1402,7 +1459,7 @@ function WorkspaceApp({ navigate }) {
 
   useEffect(() => {
     if (!auth?.token) {
-      setRightPanel('editor');
+      setRightPanel('monitor');
     }
   }, [auth?.token]);
 
@@ -1693,7 +1750,7 @@ function WorkspaceApp({ navigate }) {
     setNewPassword('');
     setConfirmPassword('');
     setCreateDraft(null);
-    setRightPanel('editor');
+    setRightPanel('monitor');
     setPythonOutput({
       file: '',
       command: '',
@@ -1921,87 +1978,22 @@ function WorkspaceApp({ navigate }) {
   }
 
   return (
-    <main className="workspaceBrowserShell">
+    <main className="workspaceBrowserShell monitorOnly">
       <input ref={uploadRef} type="file" hidden onChange={handleUpload} />
       <WorkspaceHeader
         auth={auth}
         navigate={navigate}
         selectedPath={selectedPath}
         rightPanel={rightPanel}
-        setRightPanel={setRightPanel}
         userMenuOpen={userMenuOpen}
         setUserMenuOpen={setUserMenuOpen}
-        onOpenLauncher={() => auth.launcherUrl && window.open(auth.launcherUrl, '_blank', 'noopener,noreferrer')}
         onOpenAccountEdit={openAccountEdit}
         onLogout={handleLogout}
       />
-      <FileList
-        currentTree={currentTree}
-        selectedPath={selectedPath}
-        selectedFile={selectedFile}
-        createDraft={createDraft}
-        setCreateDraft={setCreateDraft}
-        filter={filter}
-        onFilter={setFilter}
-        onOpen={handleOpenFile}
-        onOpenDir={handleSelectDir}
-        onRunPython={handleRunPython}
-        onRename={handleRename}
-        onRefresh={handleRefresh}
-        onGoParent={handleGoParent}
-        onNewFile={handleCreateFile}
-        onNewFolder={handleCreateFolder}
-        onUploadClick={() => uploadRef.current?.click()}
-        onContextMenu={openContextMenu}
-        contextMenu={contextMenu}
-      />
       <div className="rightPanelStack">
-        <div className={rightPanel === 'gemini' ? 'panelVisible' : 'panelHidden'}>
-          <Suspense fallback={<div className="previewState">AI 작업 패널을 불러오는 중입니다.</div>}>
-            <LazyGeminiApp
-              authToken={auth.token}
-              directoryPath={selectedPath}
-              filePath={selectedFile}
-              embedded
-            />
-          </Suspense>
+        <div className="panelVisible">
+          <AdminMonitorPanel authToken={auth.token} activeMonitor={activeMonitor} setActiveMonitor={setActiveMonitor} />
         </div>
-        <div className={rightPanel === 'rag' ? 'panelVisible' : 'panelHidden'}>
-          <Suspense fallback={<div className="previewState">RAG를 불러오는 중입니다.</div>}>
-            <LazyRagApp
-              authToken={auth.token}
-              directoryPath={selectedPath}
-              filePath={selectedFile}
-              title={selectedFile || selectedPath || 'workspace-rag'}
-              pageTitle={selectedFile ? `문서 검색 · ${labelForPath(selectedFile)}` : selectedPath ? `문서 검색 · ${labelForPath(selectedPath)}` : '워크스페이스 문서 검색'}
-              persistToWorkspace
-              defaultQuestion={selectedFile
-                ? `${labelForPath(selectedFile)} 기준으로 먼저 확인해야 할 리스크를 정리해줘.`
-                : '워크스페이스 문서 기준으로 먼저 확인해야 할 리스크를 정리해줘.'}
-              embedded
-            />
-          </Suspense>
-        </div>
-        <div className={rightPanel === 'editor' ? 'panelVisible' : 'panelHidden'}>
-          <EditorPanel
-            selectedFile={selectedFile}
-            content={content}
-            setContent={setContent}
-            loading={loadingFile}
-            error={error}
-            outputState={pythonOutput}
-            onSave={handleSave}
-            onDelete={handleDelete}
-            onDownload={handleDownload}
-            autoSave={autoSave}
-            saveStatus={saveStatus}
-          />
-        </div>
-        {auth.role === 'ADMIN' ? (
-          <div className={rightPanel === 'monitor' ? 'panelVisible' : 'panelHidden'}>
-            <AdminMonitorPanel authToken={auth.token} activeMonitor={activeMonitor} setActiveMonitor={setActiveMonitor} />
-          </div>
-        ) : null}
       </div>
       {auth.isGuest ? null : (
         <AccountEditDialog
@@ -2255,6 +2247,12 @@ function currentPath() {
   return `${path}${window.location.search || ''}`;
 }
 
+function loginPathForCurrentLocation(fallback = '/') {
+  const path = currentPath();
+  const redirect = path && !path.startsWith('/login') ? path : fallback;
+  return `/login?redirect=${encodeURIComponent(redirect || fallback)}`;
+}
+
 const PROJECT_BOARD_TABS = ['회사 작업', '내 작업', '현재 스프린트', '타임라인'];
 const MEMO_BOARD_SECTORS = [
   { id: 'project', label: '프로젝트 보드' },
@@ -2310,6 +2308,64 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
     status: column.id
   }))
 ));
+
+const ADMIN1_MEMO_LOGS = [
+  {
+    id: 'admin1-memo-20260523-ai-assitant-app-apk',
+    content: `# 2026-05-23 ai-assitant 앱 라우트와 설치 파일
+
+- [x] 앱 이름, PWA manifest, Docker image를 \`ai-assitant\` 기준으로 정리
+- [x] 기본 앱 라우트를 \`/app\`으로 고정하고 \`/\`은 \`/app\`으로 이동
+- [x] 모바일 홈을 일정, 메모, 여행, 연결 진입 중심으로 통일
+- [x] Android WebView 설치 파일 \`apps/mobile/android/build/ai-assitant-debug.apk\` 생성
+- [x] Docker API/Web 재빌드 및 배포 확인
+
+## 검증
+
+- [x] \`npm --prefix apps/web run build\`
+- [x] \`docker compose -f docker-compose.dev.yml up -d --build api web\`
+- [x] \`curl http://127.0.0.1/app\`
+- [x] \`curl http://127.0.0.1/manifest.webmanifest\`
+- [x] \`curl http://127.0.0.1/api/destinations?size=1\``
+  },
+  {
+    id: 'admin1-memo-20260523-portfolio-app-pwa',
+    content: `# 2026-05-23 포트폴리오 웹과 개인 비서 앱 분리
+
+- [x] 공개 루트는 포트폴리오 웹으로 둔다
+- [x] 실제 개인 AI 비서 홈은 \`/app\`으로 분리한다
+- [x] 기존 일정, 노트, 여행 추천 경로는 유지한다
+- [x] PWA manifest, 앱 아이콘, service worker 기반을 추가한다
+
+## 다음 점검
+
+- [ ] Docker web 재빌드 후 \`/\`, \`/app\`, \`/scheduler\`, \`/notes\`, \`/destinations\` 진입 확인
+- [ ] 모바일 Chrome에서 홈 화면 추가가 노출되는지 확인
+- [ ] 포트폴리오 문구와 실제 공개 링크를 배포 전 최종 조정`
+  },
+  {
+    id: 'admin1-memo-20260521-notes-login-css-docs',
+    content: `# 2026-05-21 노트/로그인/CSS/문서 정리
+
+- [x] 보드 선택 화면의 장문 안내 문구 제거
+- [x] 보드 추가 버튼을 상단 액션 중심으로 정리
+- [x] 메모 삭제 후 다음 메모 선택 또는 빈 상태 표시
+- [x] 로그인 버튼은 로그인 화면으로 이동하고 성공 후 원래 경로로 복귀
+- [x] CSS를 기능별 파일로 분리
+- [x] Docker 전용 문서로 정리하고 Kubernetes 파일 제거
+- [x] DB mount는 \`mariadb_data:/var/lib/mysql\` 유지 확인
+
+## 다음 점검
+
+- [ ] 모바일에서 줄 단위 Markdown 편집 터치감 확인
+- [ ] 보드/메모 삭제 흐름의 확인 메시지와 빈 상태 문구 다듬기
+- [ ] LocalTrip/Workspace 네비게이션 스타일 중복을 별도 navigation override 파일로 추가 정리`
+  }
+];
+
+function canDeleteMemoBoard(board) {
+  return Boolean(board && board.id !== 'project');
+}
 
 function BoardIcon({ type }) {
   const paths = {
@@ -2375,6 +2431,24 @@ function MemoNavIcon({ type }) {
         <path d="M4 13h7v6H4z" />
       </>
     ),
+    link: (
+      <>
+        <path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" />
+        <path d="M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20.1l1.1-1.1" />
+      </>
+    ),
+    mail: (
+      <>
+        <path d="M4 6h16v12H4z" />
+        <path d="m4 7 8 6 8-6" />
+      </>
+    ),
+    message: (
+      <>
+        <path d="M5 5h14v10H8l-3 3z" />
+        <path d="M8 9h8M8 12h5" />
+      </>
+    ),
     file: (
       <>
         <path d="M7 3h7l4 4v14H7z" />
@@ -2395,6 +2469,7 @@ function WorkspaceNavigator({ active, navigate }) {
   const items = [
     { key: 'schedule', label: APP_SHORTCUTS.personalScheduler.label, path: APP_SHORTCUTS.personalScheduler.path, icon: 'calendar' },
     { key: 'notes', label: APP_SHORTCUTS.aiMemoBoard.label, path: APP_SHORTCUTS.aiMemoBoard.path, icon: 'board' },
+    { key: 'connections', label: APP_SHORTCUTS.dataConnections.label, path: APP_SHORTCUTS.dataConnections.path, icon: 'link' },
     { key: 'trip', label: APP_SHORTCUTS.aiTrip.label, path: APP_SHORTCUTS.aiTrip.path, icon: 'trip' }
   ];
   const session = readStoredAuth();
@@ -2523,11 +2598,114 @@ function summarizeAdmin1Activity() {
   };
 }
 
+function PortfolioHomePage({ navigate }) {
+  useEffect(() => {
+    document.title = 'ai-assitant Portfolio';
+  }, []);
+
+  const portfolioLinks = [
+    {
+      title: '개인 AI 비서 앱',
+      detail: '일정, 메모, 여행 계획을 한곳에서 관리하는 실제 사용 화면',
+      action: '앱 열기',
+      path: '/app',
+      tone: 'assistant'
+    },
+    {
+      title: 'AI 여행 플래너',
+      detail: '장소 탐색부터 일정 생성, 저장 일정 확인까지 이어지는 워크플로',
+      action: '여행 보기',
+      path: '/destinations',
+      tone: 'travel'
+    },
+    {
+      title: '분석 워크스페이스',
+      detail: '파일 관리, RAG, 실행 환경을 Docker 기반으로 묶은 관리자 공간',
+      action: '관리 열기',
+      path: '/analysisadmin',
+      tone: 'workspace'
+    }
+  ];
+
+  return (
+    <main className="portfolioHome">
+      <nav className="portfolioNav" aria-label="portfolio navigation">
+        <button type="button" className="portfolioBrand" onClick={() => navigate('/portfolio')}>
+          <span>A</span>
+          <strong>ai-assitant</strong>
+        </button>
+        <div>
+          <button type="button" onClick={() => navigate('/app')}>앱</button>
+          <button type="button" onClick={() => navigate('/destinations')}>AI Trip</button>
+          <button type="button" onClick={() => navigate('/analysisadmin')}>Admin</button>
+        </div>
+      </nav>
+      <section className="portfolioHero">
+        <div className="portfolioHeroCopy">
+          <span className="portfolioEyebrow">Portfolio + Personal AI Assistant</span>
+          <h1>Docker로 운영하는 개인 AI 비서 워크스페이스</h1>
+          <p>
+            React, Spring Boot, MariaDB, Docker를 기반으로 일정, 노트, 여행 추천, 분석 워크스페이스를 하나의 서비스로 구성했습니다.
+            공개 화면은 포트폴리오로 쓰고, 실제 사용 화면은 앱처럼 분리합니다.
+          </p>
+          <div className="portfolioHeroActions">
+            <button type="button" onClick={() => navigate('/app')}>개인 앱 열기</button>
+            <button type="button" onClick={() => navigate('/destinations')}>AI Trip 보기</button>
+          </div>
+        </div>
+        <div className="portfolioDevice" aria-label="app preview">
+          <div className="portfolioDeviceTop">
+            <span />
+            <strong>오늘</strong>
+            <small>AI Assistant</small>
+          </div>
+          <div className="portfolioPreviewGrid">
+            <article>
+              <span>일정</span>
+              <strong>3</strong>
+              <small>오늘 처리할 일</small>
+            </article>
+            <article>
+              <span>노트</span>
+              <strong>12</strong>
+              <small>메모 보드</small>
+            </article>
+            <article>
+              <span>여행</span>
+              <strong>AI</strong>
+              <small>추천 코스</small>
+            </article>
+          </div>
+          <div className="portfolioPreviewList">
+            <span>09:00 여행 일정 확인</span>
+            <span>13:30 작업 로그 정리</span>
+            <span>20:00 내일 할 일 생성</span>
+          </div>
+        </div>
+      </section>
+      <section className="portfolioShowcase" aria-label="portfolio projects">
+        {portfolioLinks.map((item) => (
+          <button
+            key={item.path}
+            type="button"
+            className={`portfolioCard ${item.tone}`}
+            onClick={() => navigate(item.path)}
+          >
+            <span>{item.action}</span>
+            <strong>{item.title}</strong>
+            <p>{item.detail}</p>
+          </button>
+        ))}
+      </section>
+    </main>
+  );
+}
+
 function SpaceHomePage({ navigate }) {
   const [adminOverview, setAdminOverview] = useState(() => summarizeAdmin1Activity());
 
   useEffect(() => {
-    document.title = 'AI 개인일정 관리';
+    document.title = '개인 AI 비서';
   }, []);
 
   useEffect(() => {
@@ -2549,35 +2727,36 @@ function SpaceHomePage({ navigate }) {
     <main className="spaceHome">
       <section className={`spaceHero ${adminOverview ? 'hasAdminOverview' : ''}`}>
         <div className="spaceHeroCopy">
-          <span className="spaceEyebrow">내 작업 공간</span>
-          <h1>여행 준비와 하루 일정을 한곳에서 정리하세요</h1>
-          <strong className="spaceHeroLead">추천 장소를 보고, 일정을 만들고, 필요한 메모를 이어서 관리합니다.</strong>
-          <p>자주 쓰는 기능만 바로 열 수 있게 정리했습니다.</p>
+          <span className="spaceEyebrow">개인 AI 비서</span>
+          <h1>내 일을 한곳에</h1>
+          <strong className="spaceHeroLead">일정, 메모, 여행 계획을 바로 이어서 관리하세요.</strong>
+          <p>필요한 메뉴만 남겼습니다.</p>
           <div className="spaceHeroActions">
             <button type="button" onClick={() => navigate(APP_SHORTCUTS.personalScheduler.path)}><MemoNavIcon type="calendar" />{APP_SHORTCUTS.personalScheduler.label}</button>
             <button type="button" onClick={() => navigate(APP_SHORTCUTS.aiMemoBoard.path)}><MemoNavIcon type="board" />{APP_SHORTCUTS.aiMemoBoard.label}</button>
             <button type="button" onClick={() => navigate(APP_SHORTCUTS.aiTrip.path)}><MemoNavIcon type="trip" />{APP_SHORTCUTS.aiTrip.label}</button>
+            <button type="button" onClick={() => navigate(APP_SHORTCUTS.dataConnections.path)}><MemoNavIcon type="link" />{APP_SHORTCUTS.dataConnections.label}</button>
           </div>
         </div>
         {adminOverview ? (
           <aside className="adminOverviewPanel" aria-label="admin1 activity overview">
             <div className="adminOverviewHeader">
-              <span>admin1 운영 현황</span>
-              <strong>전체 작업 상태</strong>
+              <span>admin1</span>
+              <strong>운영 현황</strong>
             </div>
             <div className="adminOverviewStats">
               <article>
-                <span>오늘 일정</span>
+                <span>일정</span>
                 <strong>{adminOverview.todayCount}</strong>
                 <small>7일 미완료 {adminOverview.weekPendingCount}</small>
               </article>
               <article>
-                <span>체크리스트</span>
+                <span>체크</span>
                 <strong>{adminOverview.checklistDone}/{adminOverview.checklistTotal}</strong>
                 <small>관리 목표 {adminOverview.adminGoalCount}</small>
               </article>
               <article>
-                <span>여행 생성</span>
+                <span>여행</span>
                 <strong>{adminOverview.travelScheduleCount}</strong>
                 <small>스케줄 연결 항목</small>
               </article>
@@ -2590,16 +2769,16 @@ function SpaceHomePage({ navigate }) {
               ))}
             </div>
             <div className="adminOverviewNext">
-              <span>다음 확인</span>
+              <span>다음</span>
               <strong>{adminOverview.nextSchedule ? `${adminOverview.nextSchedule.date} ${adminOverview.nextSchedule.time}` : '대기 중인 일정 없음'}</strong>
-              <p>{adminOverview.nextSchedule?.title || '노트 보드와 여행 일정 생성 상태를 바로 열어 확인할 수 있습니다.'}</p>
+              <p>{adminOverview.nextSchedule?.title || '메모와 여행 계획을 바로 확인할 수 있습니다.'}</p>
             </div>
             <div className="adminOverviewActions">
-              <button type="button" onClick={() => navigate(APP_SHORTCUTS.personalScheduler.path)}><MemoNavIcon type="calendar" />일정 보기</button>
-              <button type="button" onClick={() => navigate(APP_SHORTCUTS.aiMemoBoard.path)}><MemoNavIcon type="board" />노트/체크</button>
-              <button type="button" onClick={() => navigate('/plans')}><MemoNavIcon type="trip" />여행 계획</button>
+              <button type="button" onClick={() => navigate(APP_SHORTCUTS.personalScheduler.path)}><MemoNavIcon type="calendar" />일정</button>
+              <button type="button" onClick={() => navigate(APP_SHORTCUTS.aiMemoBoard.path)}><MemoNavIcon type="board" />메모</button>
+              <button type="button" onClick={() => navigate('/plans')}><MemoNavIcon type="trip" />여행</button>
             </div>
-            <p className="adminOverviewMeta">{adminOverview.boardCount}개 보드 · {adminOverview.noteCount}개 노트 · 일반 메모 {adminOverview.memoCount}개</p>
+            <p className="adminOverviewMeta">보드 {adminOverview.boardCount} · 메모 {adminOverview.noteCount} · 일반 {adminOverview.memoCount}</p>
           </aside>
         ) : null}
       </section>
@@ -2622,9 +2801,7 @@ function AiNotePage({ navigate }) {
   const movedBlockResetTimerRef = useRef(null);
   const [contextMenu, setContextMenu] = useState(null);
   const [activeBoardId, setActiveBoardId] = useState('project');
-  const [memoViewMode, setMemoViewMode] = useState('preview');
-  const [memoActiveLine, setMemoActiveLine] = useState(0);
-  const previewTimerRef = useRef(null);
+  const [memoActiveLine, setMemoActiveLine] = useState(null);
   const session = readStoredAuth();
   const displayName = session?.username && session.username !== 'guestuser' ? session.username : 'Guest';
 
@@ -2643,10 +2820,16 @@ function AiNotePage({ navigate }) {
 
   useEffect(() => {
     if (session?.username !== 'admin1') return;
+    setBoards((current) => (
+      current.some((board) => board.id === 'memo')
+        ? current
+        : [...current, { id: 'memo', title: '메모 보드' }]
+    ));
     setBlocks((current) => {
       const existingIds = new Set(current.map((block) => block.id));
       const missingTasks = ADMIN1_BOARD_TASKS.filter((task) => !existingIds.has(task.id));
-      if (!missingTasks.length) return current;
+      const missingLogs = ADMIN1_MEMO_LOGS.filter((memo) => !existingIds.has(memo.id));
+      if (!missingTasks.length && !missingLogs.length) return current;
       return [
         ...missingTasks.map((task, index) => ({
           id: task.id,
@@ -2661,6 +2844,20 @@ function AiNotePage({ navigate }) {
           height: 120,
           x: 18 + (index % 3) * 24,
           y: 18 + Math.floor(index / 3) * 32
+        })),
+        ...missingLogs.map((memo, index) => ({
+          id: memo.id,
+          type: 'text',
+          content: memo.content,
+          sector: 'memo',
+          boardId: 'memo',
+          status: 'done',
+          parentId: '',
+          filePath: `memo-files/admin1/${memo.id}.md`,
+          width: 760,
+          height: 120,
+          x: 28 + (index % 2) * 44,
+          y: 28 + index * 82
         })),
         ...current
       ];
@@ -2693,6 +2890,25 @@ function AiNotePage({ navigate }) {
 
   const renameBoard = (id, title) => {
     setBoards((current) => current.map((board) => (board.id === id ? { ...board, title } : board)));
+  };
+
+  const deleteBoard = (id) => {
+    const targetBoard = boards.find((board) => board.id === id);
+    if (!canDeleteMemoBoard(targetBoard)) {
+      setFileStatus('프로젝트 보드는 작업 기준이라 삭제하지 않습니다.');
+      return;
+    }
+    if (!window.confirm(`${targetBoard.title} 보드를 삭제할까요? 보드 안의 메모도 함께 삭제됩니다.`)) {
+      return;
+    }
+    const nextBoard = boards.find((board) => board.id !== id) || null;
+    setBoards((current) => current.filter((board) => board.id !== id));
+    setBlocks((current) => current.filter((block) => (block.boardId || block.sector) !== id));
+    setActiveBoardId(nextBoard?.id || 'project');
+    setActiveId('');
+    setMemoActiveLine(null);
+    setNoteContentOpen(Boolean(nextBoard));
+    setFileStatus(`${targetBoard.title} 보드를 삭제했습니다.`);
   };
 
   const addBlock = (type, parentId = '', status = 'todo', boardId = activeBoardId) => {
@@ -2747,26 +2963,24 @@ function AiNotePage({ navigate }) {
     updateBlock(block.id, { content: noteBlockContentWithTitle(block, title) });
   };
 
-  const updateActiveBlockContent = (id, content) => {
-    setMemoViewMode('edit');
-    updateBlock(id, { content });
-    window.clearTimeout(previewTimerRef.current);
-    previewTimerRef.current = window.setTimeout(() => setMemoViewMode('preview'), 320);
-  };
-
   const updateActiveBlockLine = (block, lineIndex, value) => {
-    setMemoViewMode('edit');
     updateBlock(block.id, { content: updateMarkdownLine(block.content || '', lineIndex, value) });
   };
 
   const insertActiveBlockLine = (block, lineIndex) => {
     const next = insertMarkdownLine(block.content || '', lineIndex);
     updateBlock(block.id, { content: next.content });
-    setMemoActiveLine(next.lineIndex);
+    setMemoActiveLine(`${block.id}:${next.lineIndex}`);
   };
 
   const deleteBlock = (id) => {
-    setBlocks((current) => current.length > 1 ? current.filter((block) => block.id !== id) : current);
+    const targetBlock = blocks.find((block) => block.id === id);
+    const targetBoardId = targetBlock ? (targetBlock.boardId || targetBlock.sector) : activeBoardId;
+    const nextBlock = blocks.find((block) => block.id !== id && (block.boardId || block.sector) === targetBoardId);
+    setBlocks((current) => current.filter((block) => block.id !== id));
+    setActiveId(nextBlock?.id || '');
+    setMemoActiveLine(null);
+    setFileStatus(targetBlock ? `${noteBlockTitle(targetBlock)} 메모를 삭제했습니다.` : '메모를 삭제했습니다.');
   };
 
   const moveBlockToStatus = (id, status) => {
@@ -2806,9 +3020,8 @@ function AiNotePage({ navigate }) {
   const openBlockFile = async (block) => {
     const filePath = noteBlockFilePath(block);
     setActiveId(block.id);
-    setMemoActiveLine(0);
+    setMemoActiveLine(null);
     setNoteContentOpen(true);
-    setMemoViewMode('preview');
     setFileStatus('파일을 준비하는 중...');
     setBlocks((current) => current.map((item) => (item.id === block.id ? { ...item, filePath } : item)));
     const session = readStoredAuth();
@@ -2870,6 +3083,11 @@ function AiNotePage({ navigate }) {
   const activeBoard = boards.find((board) => board.id === activeBoardId) || boards[0];
   const boardBlocks = rootBlocks.filter((block) => (block.boardId || block.sector) === activeBoardId);
   const activeBlock = boardBlocks.find((block) => block.id === activeId) || boardBlocks[0] || null;
+  const boardMemoCount = (id) => rootBlocks.filter((block) => (block.boardId || block.sector) === id).length;
+  const recentMemoBlocks = rootBlocks
+    .filter((block) => (block.boardId || block.sector) !== 'project')
+    .slice(-4)
+    .reverse();
   const projectBlocksByStatus = PROJECT_BOARD_COLUMNS.reduce((grouped, column) => ({
     ...grouped,
     [column.id]: rootBlocks.filter((block) => (block.boardId || block.sector) === 'project' && block.status === column.id)
@@ -2893,6 +3111,61 @@ function AiNotePage({ navigate }) {
     setNoteContentOpen(true);
     addBlock('text', '', status, boardId);
     setContextMenu(null);
+  };
+  const renderMarkdownLineEditor = (block, line, index) => {
+    const lineKey = `${block.id}:${index}`;
+    const editing = memoActiveLine === lineKey;
+    const preview = line.trim() ? <MarkdownPreview markdown={line} /> : <span className="memoBlankLine">빈 줄</span>;
+    return (
+      <div
+        className={`memoPreviewLine ${editing ? 'editing' : ''}`}
+        key={`memo-line-${block.id}-${index}`}
+        onMouseEnter={() => setMemoActiveLine(lineKey)}
+        onMouseLeave={(event) => {
+          if (!event.currentTarget.contains(document.activeElement)) {
+            setMemoActiveLine(null);
+          }
+        }}
+      >
+        {editing ? (
+          <textarea
+            autoFocus
+            value={line}
+            rows={Math.max(1, Math.min(4, Math.ceil(Math.max(line.length, 1) / 80)))}
+            onChange={(event) => updateActiveBlockLine(block, index, event.target.value)}
+            onFocus={() => setMemoActiveLine(lineKey)}
+            onBlur={() => setMemoActiveLine(null)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                insertActiveBlockLine(block, index);
+              }
+              if (event.key === 'Escape') {
+                event.preventDefault();
+                event.currentTarget.blur();
+              }
+            }}
+            aria-label={`${index + 1}번째 Markdown 줄`}
+          />
+        ) : (
+          <div
+            className="memoPreviewLineRender"
+            role="button"
+            tabIndex={0}
+            onClick={() => setMemoActiveLine(lineKey)}
+            onFocus={() => setMemoActiveLine(lineKey)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                setMemoActiveLine(lineKey);
+              }
+            }}
+          >
+            {preview}
+          </div>
+        )}
+      </div>
+    );
   };
   const renderBoardCard = (block) => (
     <article
@@ -3469,6 +3742,10 @@ function SchedulerPage({ navigate, embedded = false }) {
             <MemoNavIcon type="plus" />
             <span>{quickAddOpen ? '닫기' : '일정 추가'}</span>
           </button>
+          <button type="button" className="schedulerCuteAdd secondary" onClick={() => navigate('/connections')}>
+            <MemoNavIcon type="link" />
+            <span>데이터 연결</span>
+          </button>
         </div>
         {quickAddOpen ? <form className="schedulerQuickAdd cute" onSubmit={submitDraft}>
           <label>
@@ -3649,6 +3926,16 @@ function SchedulerPage({ navigate, embedded = false }) {
   );
 }
 
+function ConnectionsPage({ navigate }) {
+  const session = readStoredAuth();
+  return (
+    <div className="connectionsWorkspaceShell">
+      <WorkspaceNavigator active="connections" navigate={navigate} />
+      <ConnectionsApp navigate={navigate} authToken={session?.token || ''} />
+    </div>
+  );
+}
+
 export default function App() {
   const [path, setPath] = useState(currentPath);
 
@@ -3669,6 +3956,13 @@ export default function App() {
 
   const routePath = path.split('?')[0];
 
+  useEffect(() => {
+    if (routePath === '/') {
+      window.history.replaceState({}, '', APP_SHORTCUTS.mainHub.path);
+      setPath(currentPath());
+    }
+  }, [routePath]);
+
   if (routePath === '/analysis' || routePath.startsWith('/analysis/')) {
     return <AnalysisFileEditorPage navigate={navigate} />;
   }
@@ -3681,11 +3975,23 @@ export default function App() {
     return <SchedulerPage navigate={navigate} />;
   }
 
+  if (routePath === '/connections') {
+    return <ConnectionsPage navigate={navigate} />;
+  }
+
   if (routePath === '/notes') {
     return <AiNotePage navigate={navigate} />;
   }
 
+  if (routePath === '/portfolio') {
+    return <PortfolioHomePage navigate={navigate} />;
+  }
+
   if (routePath === '/') {
+    return null;
+  }
+
+  if (routePath === '/app') {
     return <SpaceHomePage navigate={navigate} />;
   }
 

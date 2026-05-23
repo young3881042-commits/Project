@@ -387,7 +387,7 @@ function readStoredAuth() {
 }
 
 function isGuestSession(session) {
-  return Boolean(session?.isGuest) || session?.username === 'guestuser';
+  return !session || Boolean(session?.isGuest) || session?.username === 'guestuser';
 }
 
 function pickString(...values) {
@@ -1133,7 +1133,7 @@ function TravelWorkspaceNavigator({ path, navigate }) {
 
   return (
     <nav className="workspaceNavigator travelWorkspaceNavigator" aria-label="workspace navigator">
-      <button type="button" className="workspaceNavigatorBrand" onClick={() => navigate('/')}>
+      <button type="button" className="workspaceNavigatorBrand" onClick={() => navigate('/app')}>
         <TravelWorkspaceIcon type="home" />
         <span>Home</span>
       </button>
@@ -1314,7 +1314,7 @@ function usePlans(limit) {
 function LocalTripNav({ path, navigate }) {
   const travelItems = [
     {
-      label: '추천장소',
+      label: '장소',
       to: '/destinations',
       icon: (
         <>
@@ -1324,7 +1324,7 @@ function LocalTripNav({ path, navigate }) {
       )
     },
     {
-      label: '일정만들기',
+      label: '만들기',
       to: '/planner',
       icon: (
         <>
@@ -1337,7 +1337,7 @@ function LocalTripNav({ path, navigate }) {
       )
     },
     {
-      label: '내일정',
+      label: '내 일정',
       to: '/plans',
       icon: (
         <>
@@ -1362,11 +1362,13 @@ function LocalTripNav({ path, navigate }) {
     }
   ];
   const session = readStoredAuth();
+  const guest = isGuestSession(session);
+  const accountPath = guest ? '/login' : '/mypage';
 
   return (
     <aside className="ltNav">
       <div className="ltNavInner">
-        <a className="ltBrand" href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)}>
+        <a className="ltBrand" href="/app" onClick={(event) => routeClick(event, '/app', navigate)}>
           <strong aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
               <rect x="4" y="7" width="16" height="10" rx="3"></rect>
@@ -1381,13 +1383,13 @@ function LocalTripNav({ path, navigate }) {
           </strong>
           <span>
             여행 일정
-            <small>개인 맞춤 관광지 추천</small>
+            <small>장소·일정·메모</small>
           </span>
         </a>
         <div className="ltServiceSwitch" aria-label="서비스 이동">
           <span className="ltServiceSwitchTitle">서비스 이동</span>
           <div className="ltServiceSwitchLinks">
-            <a className={path === '/' ? 'active' : ''} href="/" onClick={(event) => routeClick(event, '/', navigate)}>홈</a>
+            <a className={path === '/app' ? 'active' : ''} href="/app" onClick={(event) => routeClick(event, '/app', navigate)}>홈</a>
             <a className={path.startsWith('/scheduler') ? 'active' : ''} href="/scheduler" onClick={(event) => routeClick(event, '/scheduler', navigate)}>일정</a>
             <a className={path.startsWith('/notes') ? 'active' : ''} href="/notes" onClick={(event) => routeClick(event, '/notes', navigate)}>노트</a>
             <a className={path.startsWith('/destinations') || path.startsWith('/planner') || path.startsWith('/plans') ? 'active' : ''} href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)}>여행</a>
@@ -1431,11 +1433,11 @@ function LocalTripNav({ path, navigate }) {
             ))}
           </div>
         </nav>
-        <a className="ltNavUserCard" href="/mypage" onClick={(event) => routeClick(event, '/mypage', navigate)}>
+        <a className="ltNavUserCard" href={accountPath} onClick={(event) => routeClick(event, accountPath, navigate)}>
           <span>{(session?.username || 'G').slice(0, 1).toUpperCase()}</span>
           <div>
-            <strong>{isGuestSession(session) ? 'Guest' : session?.username || '게스트'}</strong>
-            <small>{isGuestSession(session) ? '샘플 공간 이용 중' : session?.token ? `${session?.role || 'USER'} 계정 · 내 일정 관리` : '로그인 후 일정 저장'}</small>
+            <strong>{guest ? 'Guest' : session?.username || '게스트'}</strong>
+            <small>{guest ? '로그인' : `${session?.role || 'USER'} 계정 · 내 일정 관리`}</small>
           </div>
         </a>
       </div>
@@ -1720,21 +1722,21 @@ function HomePage({ navigate }) {
       <section className="ltHero ltValueHero">
         <div className="ltHeroCopy">
           <span className="ltEyebrow">Local-first Travel</span>
-          <h1>숨은 맛집과 현지 동선을 함께 보는 여행 일정</h1>
-          <p>블로그 목록처럼 흩어진 정보를 보여주는 대신, 현재 위치와 출발지·도착지를 기준으로 관광지, 식당, 카페 휴식까지 하루 코스로 묶습니다.</p>
+          <h1>장소부터 일정까지 간단하게</h1>
+          <p>추천 장소를 고르면 출발지와 도착지 기준으로 하루 동선을 만듭니다.</p>
           <HeroSearch query={query} setQuery={setQuery} navigate={navigate} />
           <div className="ltValuePoints" aria-label="서비스 차별점">
             <article>
-              <strong>현지 추천 경로</strong>
-              <span>인기 관광지 주변의 로컬 식당과 카페를 이동 순서로 연결합니다.</span>
+              <strong>로컬 동선</strong>
+              <span>관광지와 식당, 카페를 이동 순서로 묶습니다.</span>
             </article>
             <article>
-              <strong>위치 기반 탐색</strong>
-              <span>지도 검색과 실제 주소를 함께 써서 출발지·도착지 중심으로 일정을 만듭니다.</span>
+              <strong>주소 기준</strong>
+              <span>출발지와 도착지를 넣어 실제 이동에 맞춥니다.</span>
             </article>
             <article>
               <strong>일정 저장</strong>
-              <span>완성한 여행 코스를 내 일정과 메모로 이어서 관리합니다.</span>
+              <span>완성한 코스를 일정과 메모로 이어갑니다.</span>
             </article>
           </div>
         </div>
@@ -1750,15 +1752,15 @@ function HomePage({ navigate }) {
           </div>
           <div className="ltHeroPanel">
             <div>
-              <span>오늘 추천</span>
+              <span>추천</span>
               <strong>로컬 코스</strong>
             </div>
             <div>
-              <span>탐색 기준</span>
+              <span>기준</span>
               <strong>현재 위치</strong>
             </div>
             <div>
-              <span>저장 방식</span>
+              <span>저장</span>
               <strong>일정·노트</strong>
             </div>
           </div>
@@ -1809,9 +1811,9 @@ function DestinationsPage({ path, navigate }) {
   return (
     <main className="ltPage">
       <PageHeader
-        eyebrow="여행 추천"
-        title="어디로 갈지 고르기"
-        description="지역, 분위기, 동행 스타일에 맞는 국내 여행지를 편하게 찾아보세요."
+        eyebrow="장소 찾기"
+        title="갈 곳 고르기"
+        description="지역과 취향으로 추천 장소를 찾습니다."
       />
 
       <InlineNotice error={error} fallback={usingFallback} />
@@ -2027,7 +2029,7 @@ function PlannerPage({ path, navigate }) {
       <PageHeader
         eyebrow="일정 만들기"
         title="여행 코스 만들기"
-        description="나라와 장소, 날짜, 동행 스타일을 고르면 이동하기 쉬운 하루 코스로 정리합니다."
+        description="장소와 날짜를 고르면 하루 동선으로 정리합니다."
       />
 
       <InlineNotice error={error} fallback={usingFallback} />
@@ -2332,7 +2334,7 @@ function PlansPage({ navigate }) {
       <PageHeader
         eyebrow="내 일정"
         title="저장된 내 일정"
-        description="생성한 코스를 다시 열어보고 여행 스타일에 맞게 정렬할 수 있어요."
+        description="저장한 코스를 다시 열어보고 정렬합니다."
         actions={(
           <>
           <div className="ltSegmented compact" aria-label="일정 정렬">
@@ -2754,7 +2756,7 @@ function NotFoundPage({ navigate }) {
     <main className="ltPage">
       <section className="ltEmptyState large">
         <h1>페이지를 찾을 수 없습니다</h1>
-        <button type="button" className="ltPrimaryButton" onClick={() => navigate('/')}>홈으로 이동</button>
+        <button type="button" className="ltPrimaryButton" onClick={() => navigate('/app')}>홈으로 이동</button>
       </section>
     </main>
   );
@@ -2770,7 +2772,7 @@ function MyPage({ navigate }) {
   const logout = () => {
     localStorage.removeItem(AUTH_KEY);
     setSession(null);
-    navigate('/');
+    navigate('/app');
   };
 
   return (
@@ -2782,7 +2784,7 @@ function MyPage({ navigate }) {
         <div className="ltMyHeroText">
           <span className="ltEyebrow">My Page</span>
           <h1>{guest ? 'Guest 여행 공간' : `${session?.username || '여행자'}님의 여행 공간`}</h1>
-          <p>{guest ? '로그인 없이 샘플 일정과 추천 장소를 둘러보는 공간입니다.' : '저장한 일정과 여행 준비 상태를 한 곳에서 확인하고 다음 코스를 바로 이어서 만들 수 있습니다.'}</p>
+          <p>{guest ? '샘플 일정과 추천 장소를 둘러봅니다.' : '저장한 일정과 메모를 한곳에서 관리합니다.'}</p>
           <div className="ltMyHeroMeta">
             <span>{guest ? 'GUEST' : session?.role || 'USER'}</span>
             <span>{guest ? '샘플 모드' : 'ID/PW 로그인'}</span>

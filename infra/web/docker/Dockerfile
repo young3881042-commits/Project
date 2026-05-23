@@ -12,7 +12,7 @@ FROM nginx:1.27-alpine
 
 ENV WEB_PORT=80
 ENV WEB_HTTPS_PORT=443
-ENV VITE_API_PROXY=http://jupiter-api:8080
+ENV VITE_API_PROXY=http://api:8080
 
 RUN apk add --no-cache openssl \
   && mkdir -p /etc/nginx/ssl \

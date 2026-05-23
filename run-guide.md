@@ -1,9 +1,9 @@
-# Jupiter Workspace 실행 방법
+# ai-assitant 실행 방법
 
 실행 순서: **DB → API → Web**
 
 # 0. Docker base 배포 후 테스트
-main 이미지는 `/home/lezzs5103/vibeCoding`의 `vibecoding-*` 컨테이너입니다.
+main 이미지는 `/home/lezzs5103/vibeCoding`의 `ai-assitant-*` 이미지와 `vibecoding-*` compose 컨테이너입니다.
 
 ```bash
 cd /home/lezzs5103/vibeCoding
@@ -32,13 +32,3 @@ cp .env.example .env
 ## 1.3.2  Web 실행 (Docker)
 cd infra/web/docker
 docker compose up --build
-
-# 2. Kubernetes 배포 순서
-## 2.1 DB 배포
-kubectl apply -f infra/db/kubernetes/mariadb.yaml
-
-## 2.2 API 배포
-kubectl apply -k infra/api/kubernetes
-
-## 2.3 Web 배포
-kubectl apply -k infra/web/kubernetes

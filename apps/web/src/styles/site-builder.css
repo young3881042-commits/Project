@@ -1,0 +1,581 @@
+/* Easy MVP site builder landing */
+.builderShell,
+.builderShell * {
+  box-sizing: border-box;
+  letter-spacing: 0;
+}
+
+.builderShell {
+  min-height: 100vh;
+  background: #f6f8fb;
+  color: #111827;
+  font-family: "Pretendard", "SUIT", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+.builderNav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 0 max(24px, calc((100vw - 1180px) / 2));
+  border-bottom: 1px solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(18px);
+}
+
+.builderBrand,
+.builderNavLinks,
+.builderActionGrid,
+.builderControls,
+.builderPreviewTop,
+.builderWorkspace {
+  display: flex;
+  align-items: center;
+}
+
+.builderBrand {
+  gap: 10px;
+  color: #111827;
+  text-decoration: none;
+}
+
+.builderBrand span {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #00a878;
+  color: #fff;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.builderBrand strong {
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.builderNavLinks {
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.builderNavLinks a,
+.builderNav button,
+.builderPromptPanel button,
+.builderPreviewHero button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.builderNav button,
+.builderPromptPanel > button,
+.builderPreviewHero button {
+  border-color: #00a878;
+  background: #00a878;
+  color: #fff;
+}
+
+.builderHero,
+.builderWorkspace {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.builderHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 470px);
+  gap: 28px;
+  align-items: center;
+  padding: 56px 0 24px;
+}
+
+.builderHeroCopy {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.builderKicker {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 11px;
+  border-radius: 999px;
+  background: #e9f8f3;
+  color: #008c69;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.builderHeroCopy h1 {
+  max-width: 780px;
+  color: #0f172a;
+  font-size: 4.4rem;
+  line-height: 1.03;
+  font-weight: 900;
+}
+
+.builderHeroCopy p {
+  max-width: 690px;
+  color: #4b5563;
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+.builderImageHero {
+  width: min(1180px, calc(100% - 48px));
+  min-height: 360px;
+  margin: 0 auto 20px;
+  display: grid;
+  align-items: end;
+  overflow: hidden;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(6, 78, 59, 0.82) 0%, rgba(6, 78, 59, 0.42) 46%, rgba(15, 23, 42, 0.1) 100%),
+    url("https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1800&q=82") center/cover;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.1);
+}
+
+.builderImageHero div {
+  max-width: 720px;
+  display: grid;
+  gap: 12px;
+  padding: 36px;
+  color: #fff;
+}
+
+.builderImageHero span {
+  width: fit-content;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.builderImageHero h2 {
+  max-width: 16em;
+  color: #fff;
+  font-size: 2.45rem;
+  line-height: 1.12;
+  font-weight: 900;
+}
+
+.builderActionGrid {
+  align-items: stretch;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.builderActionGrid a {
+  min-width: 230px;
+  flex: 1 1 230px;
+  display: grid;
+  gap: 5px;
+  padding: 18px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #fff;
+  color: inherit;
+  text-decoration: none;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+}
+
+.builderActionGrid strong {
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.builderActionGrid span {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.builderPromptPanel,
+.builderPreview,
+.builderMvpPanel {
+  min-width: 0;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+}
+
+.builderPromptPanel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.builderPromptHeader {
+  display: grid;
+  gap: 4px;
+}
+
+.builderPromptHeader span,
+.builderPromptPanel label > span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.builderPromptHeader strong {
+  color: #111827;
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.builderPromptPanel label {
+  display: grid;
+  gap: 8px;
+}
+
+.builderPromptPanel textarea,
+.builderPromptPanel select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #111827;
+  font: inherit;
+  font-size: 16px;
+  outline: none;
+}
+
+.builderPromptPanel textarea {
+  min-height: 160px;
+  padding: 14px;
+  resize: vertical;
+  line-height: 1.58;
+}
+
+.builderPromptPanel select {
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.builderControls {
+  gap: 10px;
+}
+
+.builderControls label {
+  flex: 1 1 0;
+}
+
+.builderTemplateSelect {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.builderTemplateSelect button {
+  min-width: 0;
+  min-height: 38px;
+  border-color: transparent;
+  background: transparent;
+  color: #64748b;
+  padding: 0 8px;
+  font-size: 0.82rem;
+}
+
+.builderTemplateSelect button.active {
+  border-color: #b7eadf;
+  background: #ffffff;
+  color: #008c69;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.builderExamples {
+  display: grid;
+  gap: 8px;
+}
+
+.builderExamples button {
+  min-height: auto;
+  justify-content: flex-start;
+  padding: 10px 12px;
+  border-color: #e5e7eb;
+  background: #f8fafc;
+  color: #4b5563;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.builderWorkspace {
+  align-items: stretch;
+  gap: 22px;
+  padding: 14px 0 80px;
+}
+
+.builderPreview {
+  flex: 1 1 62%;
+  overflow: hidden;
+}
+
+.builderMvpPanel {
+  flex: 1 1 38%;
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 22px;
+}
+
+.builderPreviewTop {
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 54px;
+  padding: 0 18px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fbfdff;
+}
+
+.builderPreviewTop span {
+  color: #008c69;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.builderPreviewTop div {
+  display: flex;
+  gap: 6px;
+}
+
+.builderPreviewTop i {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.builderPreviewHero {
+  display: grid;
+  gap: 12px;
+  padding: 34px;
+  background:
+    linear-gradient(135deg, rgba(0, 168, 120, 0.12), transparent 36%),
+    #ffffff;
+}
+
+.builderPreview.booking .builderPreviewHero {
+  background:
+    linear-gradient(135deg, rgba(15, 118, 110, 0.14), transparent 34%),
+    linear-gradient(315deg, rgba(245, 158, 11, 0.16), transparent 32%),
+    #ffffff;
+}
+
+.builderPreview.simple .builderPreviewHero {
+  background:
+    linear-gradient(135deg, rgba(17, 24, 39, 0.08), transparent 34%),
+    linear-gradient(315deg, rgba(0, 168, 120, 0.1), transparent 32%),
+    #ffffff;
+}
+
+.builderPreviewHero span {
+  color: #008c69;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.builderPreviewHero h2,
+.builderMvpPanel h2 {
+  color: #111827;
+  font-size: 2.1rem;
+  line-height: 1.12;
+  font-weight: 900;
+}
+
+.builderPreviewHero p,
+.builderMvpPanel p {
+  color: #4b5563;
+  line-height: 1.62;
+}
+
+.builderPreviewHero button {
+  width: fit-content;
+  margin-top: 4px;
+}
+
+.builderPreviewGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: #e5e7eb;
+}
+
+.builderPreviewGrid article {
+  display: grid;
+  gap: 8px;
+  min-height: 132px;
+  padding: 18px;
+  background: #fff;
+}
+
+.builderPreviewGrid strong {
+  color: #00a878;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.builderPreviewGrid span {
+  color: #334155;
+  font-size: 0.92rem;
+  line-height: 1.46;
+  font-weight: 800;
+}
+
+.builderRoadmap {
+  display: grid;
+  gap: 10px;
+}
+
+.builderRoadmap article {
+  display: grid;
+  gap: 5px;
+  padding: 15px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.builderRoadmap strong {
+  color: #111827;
+  font-weight: 900;
+}
+
+@media (max-width: 980px) {
+  .builderNav {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 12px 18px;
+  }
+
+  .builderNavLinks {
+    grid-column: 1 / -1;
+    order: 3;
+    justify-content: stretch;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .builderNavLinks a {
+    min-width: 0;
+    padding-inline: 8px;
+    font-size: 0.82rem;
+  }
+
+  .builderHero {
+    grid-template-columns: 1fr;
+    padding-top: 34px;
+  }
+
+  .builderHeroCopy h1 {
+    font-size: 3rem;
+  }
+
+  .builderPreviewHero h2,
+  .builderMvpPanel h2 {
+    font-size: 1.8rem;
+  }
+
+  .builderWorkspace {
+    flex-direction: column;
+  }
+
+  .builderPreviewGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .builderImageHero h2 {
+    font-size: 1.9rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .builderHero,
+  .builderWorkspace,
+  .builderImageHero {
+    width: calc(100% - 24px);
+  }
+
+  .builderNav {
+    grid-template-columns: 1fr;
+  }
+
+  .builderNav button {
+    width: 100%;
+  }
+
+  .builderNavLinks {
+    grid-template-columns: 1fr;
+  }
+
+  .builderHeroCopy h1 {
+    font-size: 2.1rem;
+  }
+
+  .builderHeroCopy p {
+    font-size: 0.96rem;
+  }
+
+  .builderActionGrid,
+  .builderControls,
+  .builderTemplateSelect {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .builderActionGrid a {
+    min-width: 0;
+  }
+
+  .builderPromptPanel,
+  .builderMvpPanel {
+    padding: 16px;
+  }
+
+  .builderPreviewHero {
+    padding: 22px;
+  }
+
+  .builderPreviewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .builderImageHero {
+    min-height: 280px;
+  }
+
+  .builderImageHero div {
+    padding: 22px;
+  }
+
+  .builderImageHero h2 {
+    font-size: 1.45rem;
+  }
+}

@@ -1,18 +1,45 @@
-# LocalTrip 작업 체크리스트
+# ai-assitant 작업 체크리스트
 
 ## 운영 기준
 
-- 공개 메인 화면은 단순하게 유지한다.
-- 메인 화면에는 `개인 스케줄러`와 `AI Trip`만 노출한다.
+- 기본 앱 화면은 `/app`으로 사용한다.
+- 루트 `/`은 별도 메인 화면을 렌더링하지 않고 `/app`으로 넘긴다.
+- 포트폴리오 공개 화면은 `/portfolio`로 분리한다.
+- 개인 데이터 연결 화면은 `/connections`로 둔다.
+- 제품 모델은 `개인 AI 비서`, `개인 데이터 허브`, `일정/메모 중심`으로 정리한다.
+- 앱 홈에는 `오늘 일정`, `메모`, `개인 데이터 연결`, `장소/일정 추천`을 주요 진입점으로 노출한다.
 - guest/member 로그인 선택 UI는 메인 화면에 두지 않는다.
 - 작업 관리는 `admin1` 계정의 AI 메모 보드에서 진행한다.
+- 완료한 작업은 `admin1`의 `메모 보드`에 작업 로그로 남긴다.
 - 스케줄러는 AI 메모 보드의 메뉴로도 열 수 있어야 한다.
-- 배포, 커밋, push는 사람이 확인한 뒤 수동으로 진행한다.
+- Codex 작업은 시작 전 이 체크리스트를 확인하고, 완료 시 변경 로그와 필요한 후속 작업을 갱신한다.
+- 실행/배포 문서는 Docker 기준으로만 유지한다.
+- 모바일 설치 앱은 먼저 PWA 설치 흐름을 안정화하고, 로컬 메시지 접근이 필요해지는 시점에 Android/iOS 네이티브 권한을 붙일 수 있는 TWA 또는 Capacitor 구조를 검토한다.
+
+## 개선 방향
+
+1. 실제 제품을 개인 AI 비서로 전환한다.
+   사용자가 연결한 메일, 파일, 메시지, 메모, 일정을 개인 데이터 허브에 모으고 일정/메모 중심으로 요약, 검색, 추천한다.
+2. 라우팅 기준을 `/app`, `/portfolio`, `/connections`로 정리한다.
+   `/app`은 앱 홈, `/portfolio`는 외부 공유용 소개, `/connections`는 개인 데이터 연결과 권한 관리를 맡고 `/`은 `/app`으로 이동한다.
+3. 외부 데이터 연결은 공식 API와 사용자 동의 기반으로만 진행한다.
+   Gmail은 공식 Gmail API OAuth를 사용하고, 네이버 메일은 공식 메일 읽기 Open API가 확인되기 전까지 IMAP/앱 비밀번호 방식으로 둔다.
+4. 로컬 메시지는 웹/PWA 단독 접근 대상에서 제외한다.
+   SMS, 카카오톡, iMessage 같은 로컬 메시지는 Android/iOS 네이티브 권한과 플랫폼별 정책 검토가 필요한 후속 작업으로 관리한다.
+5. LLM 키는 로그인한 사용자별 키 등록을 기본 정책으로 둔다.
+   OpenAI/Gemini 키는 서버 공용 키로 대체하지 않고 사용자별 암호화 저장, 권한 범위, 삭제 기능을 설계한다.
+6. 앱화는 단계적으로 진행한다.
+   Docker Web → PWA 설치 → HTTPS/도메인 → Google Play TWA 또는 Capacitor 순서로 간다.
+7. 데이터 신뢰 기준을 명확히 한다.
+   Google scraping은 제외하고 TourAPI, 공식 API, OSM, Wikimedia, 직접 시드 데이터만 사용한다.
 
 ## 실제 사용 기능과 경로
 
 | 기능 | 경로 | 용도 |
 | --- | --- | --- |
+| 개인 AI 비서 홈 | `/app` | 오늘 일정, 메모, 개인 데이터 허브, 추천 액션 진입 |
+| 포트폴리오 웹 | `/portfolio` | 외부 공유, 기술 스택, 주요 기능 소개 |
+| 개인 데이터 연결 | `/connections` | Gmail OAuth, 네이버 IMAP/앱 비밀번호, 파일/향후 로컬 메시지 연결 관리 |
 | AI Trip | `/destinations`, `/planner`, `/plans`, `/mypage` | 장소 보기, AI 일정 만들기, 저장 일정 확인 |
 | 개인 스케줄러 | `/scheduler`, `/notes` 안의 스케줄러 메뉴 | 할 일, 반복 일정, 메모 연동 일정 관리 |
 | AI 메모 보드 | `/notes` | 작업 카드, 메모, 파일 연결, 스케줄러 메뉴 관리 |
@@ -29,26 +56,78 @@
 - [x] 메모 작성 후 짧은 텀으로 미리보기 전환되게 한다.
 - [x] 메모 블록 더블클릭 시 연결된 파일 편집기로 이동하게 한다.
 - [x] 예약 실행 문서, 스크립트, systemd 파일을 제거한다.
+- [x] 노트 보드 선택 화면에서 설명 문구를 제거하고 `보드 추가` 흐름만 남긴다.
+- [x] 노트 Markdown 편집을 기본 미리보기 + 줄 hover 입력 방식으로 단순화한다.
+- [x] 메모 보드와 메모를 화면에서 바로 삭제할 수 있게 한다.
+- [x] 로그인 계정 버튼이 세션 없음 상태에서 여행 추천으로 우회하지 않고 `/login`으로 이동하게 한다.
+- [x] README와 실행 문서를 Docker 중심 구조로 정리하고, 사용하지 않는 배포 매니페스트를 제거한다.
+- [x] 이번 작업 로그를 `admin1` 메모 보드 시드로 남긴다.
+- [x] 라우팅을 `/app` 앱 홈, `/portfolio` 포트폴리오 기준으로 정리했다.
+- [x] 기존 일정/메모/여행 추천 경로를 유지한 채 내부 홈 링크를 `/`으로 정리했다.
+- [x] PWA manifest, 앱 아이콘, service worker 기본 파일을 추가한다.
+- [x] 이번 포트폴리오/앱 분리 작업 로그를 `admin1` 메모 보드 시드로 남긴다.
+- [x] 문서 방향성을 `개인 AI 비서`, `개인 데이터 허브`, `일정/메모 중심`으로 갱신한다.
+- [x] 문서 기준 라우팅을 `/app` 앱 홈, `/portfolio` 포트폴리오, `/connections` 개인 데이터 연결로 정리한다.
+- [x] 실제 라우팅을 `/app` 앱 홈, `/portfolio` 포트폴리오 기준으로 변경하고 `/`은 `/app`으로 이동하게 한다.
+- [x] `/connections` 화면을 추가해 개인 서버 API, 사용자 OpenAI 키, Gmail, Naver IMAP, 로컬 메시지 연결 준비 상태를 제공한다.
+- [x] 앱 이름, PWA manifest, Docker 이미지명을 `ai-assitant` 기준으로 정리한다.
+- [x] 기본 앱 라우트를 `/app`으로 고정하고 루트 `/`은 별도 메인 화면 없이 `/app`으로 이동하게 한다.
+- [x] 모바일 앱 홈 UI를 기존 큰 히어로 대신 일정/메모/여행/연결 진입 중심의 균일한 버튼 레이아웃으로 정리한다.
+- [x] 휴대폰 설치 테스트용 Android WebView APK를 생성한다.
+- [ ] Gmail 연결은 공식 Gmail API OAuth 동의, 토큰 저장, 만료 갱신, 연결 해제 흐름으로 설계한다.
+- [ ] 네이버 메일 연결은 공식 메일 읽기 Open API 확인 전까지 IMAP/앱 비밀번호 입력 방식으로 설계한다.
+- [ ] 로컬 메시지 수집은 웹/PWA 직접 접근이 불가하므로 Android/iOS 네이티브 권한 기반 후속 작업으로 분리한다.
+- [x] 사용자별 OpenAI 키 등록, 마스킹 표시, 삭제와 Gemini OAuth 연결 상태 정책을 추가한다.
+- [ ] 사용자별 OpenAI/Gemini credential은 운영 배포 전 DB 암호화 저장으로 전환한다.
+- [x] 서버 공용 OpenAI/Gemini 키는 운영 사용자 요청의 기본 경로로 쓰지 않도록 제한한다.
+- [x] Docker API 컨테이너에 `/data/ai-assitant` 볼륨을 붙이고 대화 transcript/history를 사용자별로 남긴다.
+- [x] Codex 시작 시 `/data/ai-assitant`를 먼저 확인하도록 `AGENTS.md`에 운영 규칙을 추가한다.
+- [x] `/analysisadmin` 관리자 화면에서 LLM/RAG/분석 환경 시작 UI를 제거하고 실제 리소스 모니터링 중심으로 정리한다.
 - [ ] 빠른 지역 선택에서 한국/일본 지역 구분이 명확한지 점검한다.
 - [ ] 일정 생성 중 로딩 상태와 실패 메시지를 더 읽기 쉽게 정리한다.
 - [ ] 생성된 일정 상세에서 시간, 장소, 이동 팁, 식당/카페 추천 메뉴가 한눈에 읽히는지 확인한다.
 - [ ] 저장된 일정 목록에서 지역, 기간, 생성일, 대표 취향을 빠르게 비교할 수 있게 보강한다.
+- [x] 이전 단계에서 앱 모델과 내비게이션 용어를 포트폴리오 웹 `/`, 개인 비서 앱 `/app` 흐름으로 1차 정리했다.
+- [ ] 플래너 입력을 가볍게 시작할 수 있게 만들고 주소/시간은 선택 보강으로 둔다.
+- [ ] 일정 상세에 수정, 재생성, 내보내기, 공유, 삭제, 스케줄 저장 액션을 추가한다.
+- [ ] 여행지/관리자 지표에 데이터 출처, 최신 동기화 시각, 샘플 여부를 표시한다.
+- [ ] Google scraping은 사용하지 않고 TourAPI, 공식 API, OSM, Wikimedia 등 허용된 소스만 쓴다.
+- [ ] `admin1` 운영 점검 카드가 일반 사용자 노트처럼 보이지 않게 구분한다.
+- [ ] `/login` 진입, 로그인 성공 후 `/mypage` 이동, guest 상태의 계정 버튼 라우팅을 점검한다.
 - [ ] 모바일 실기기에서 `/planner`, `/plans`, `/plans/{id}`, `/notes` 스크롤과 버튼 위치를 확인한다.
+- [ ] HTTPS 도메인에서 PWA 설치 버튼과 홈 화면 아이콘을 확인한다.
+- [ ] Google Play 등록 전 TWA와 Capacitor 중 유지보수가 쉬운 방식을 결정한다.
 
 ## 수동 검증
 
-- [ ] `npm --prefix apps/web run build`
-- [ ] `docker compose -f docker-compose.dev.yml build web`
-- [ ] `docker compose -f docker-compose.dev.yml up -d web`
-- [ ] `docker compose -f docker-compose.dev.yml ps`
-- [ ] `docker compose -f docker-compose.dev.yml exec -T web nginx -t`
+- [x] `npm --prefix apps/web run build`
+- [x] `docker compose -f docker-compose.dev.yml build web`
+- [x] `docker compose -f docker-compose.dev.yml up -d --build api web`
+- [x] `docker compose -f docker-compose.dev.yml ps`
+- [x] `docker compose -f docker-compose.dev.yml exec -T web nginx -t`
+- [x] `/app` 개인 AI 비서 홈이 열리는지 확인한다.
+- [ ] `/` 진입 시 `/app`으로 이동하는지 확인한다.
+- [ ] `/portfolio` 포트폴리오 웹이 열리는지 확인한다.
+- [ ] `/connections` 개인 데이터 연결 화면이 열리는지 확인한다.
 - [ ] 운영 Web 로그에서 최신 `index-*.js`, `index-*.css`가 200으로 내려가는지 확인한다.
 - [ ] `/api/destinations?size=500` 응답이 50개를 초과하는지 확인한다.
 
 ## 변경 로그
 
+- 2026-05-23: 제품 방향성을 개인 AI 비서, 개인 데이터 허브, 일정/메모 중심으로 문서화했다.
+- 2026-05-23: 문서 기준 라우팅을 `/app` 앱 홈, `/portfolio` 포트폴리오, `/connections` 개인 데이터 연결로 갱신했다.
+- 2026-05-23: Gmail OAuth, 네이버 IMAP/앱 비밀번호, 로컬 메시지 네이티브 권한, 사용자별 OpenAI/Gemini 키 정책을 체크리스트에 추가했다.
+- 2026-05-23: 실제 라우팅을 `/app` 개인 AI 비서 홈, `/portfolio` 포트폴리오, `/connections` 개인 데이터 연결로 정리하고 `/`은 `/app`으로 이동하게 했다.
+- 2026-05-23: 사용자별 OpenAI/Gemini 연결 정책을 서버 공용 키 fallback 없이 동작하도록 정리했다.
+- 2026-05-23: `/data/ai-assitant` 볼륨과 사용자별 대화 transcript/history 저장 구조를 추가했다.
+- 2026-05-23: `/analysisadmin`에서 LLM/RAG/분석 환경 시작 UI를 제거하고 리소스 모니터링만 보이게 정리했다.
+- 2026-05-23: 앱 이름과 PWA/Docker 이미지명을 `ai-assitant`로 정리하고 기본 라우트를 `/app`으로 고정했다.
+- 2026-05-23: Android WebView 기반 `ai-assitant-debug.apk` 설치 파일을 추가했다.
+- 2026-05-23: PWA manifest, SVG 앱 아이콘, service worker 기본 파일을 추가했다.
+- 2026-05-23: 내부 홈 링크와 작업 로그 시드를 포트폴리오/앱 분리 기준으로 갱신했다.
 - 2026-05-20: 메인 화면을 `개인 스케줄러`, `AI Trip` 2개 진입점으로 단순화했다.
 - 2026-05-20: AI 메모 보드 메뉴에 스케줄러를 통합하고 `admin1` 작업 카드를 기본 구성에 추가했다.
 - 2026-05-20: 예약 실행 설명과 파일을 제거하고 수동 검증 기준으로 정리했다.
 - 2026-05-20: 장소 보기 기본 조회를 500개로 늘려 50개 제한을 해소했다.
 - 2026-05-20: AI 메모 보드는 제목 표시, 빠른 미리보기 전환, 더블클릭 파일 연결 동작으로 정리했다.
+- 2026-05-21: 노트 보드 선택 문구를 제거하고, 줄 hover Markdown 편집, 보드/메모 삭제, 로그인 라우팅, Docker 중심 문서 정리를 반영했다.

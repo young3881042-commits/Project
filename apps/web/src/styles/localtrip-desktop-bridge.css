@@ -1,0 +1,58 @@
+/* Final LocalTrip desktop repair */
+@media (min-width: 901px) {
+  body:has(.ltShell) {
+    background: #f7fafc;
+    overflow-x: hidden;
+  }
+
+  .ltShell {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 100vh;
+    margin: 0 !important;
+    display: grid !important;
+    grid-template-columns: 248px minmax(0, 1fr) !important;
+    align-items: start;
+    background: #f7fafc !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .ltShell .ltPage {
+    grid-column: 2;
+    width: min(1120px, calc(100% - 48px)) !important;
+    max-width: 1120px !important;
+    margin: 0 auto !important;
+    padding: 34px 0 72px !important;
+  }
+
+  .ltShell .ltHero {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 0.72fr) !important;
+    gap: 36px !important;
+    align-items: center !important;
+  }
+
+  .ltShell .ltHeroVisual {
+    display: grid !important;
+    grid-template-columns: 1fr 0.78fr !important;
+    grid-template-rows: 174px 174px !important;
+    min-height: 358px !important;
+  }
+
+  .ltShell .ltHeroVisual .ltHeroImage {
+    display: block !important;
+  }
+
+  .ltShell .ltDestinationGrid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+  }
+
+  .ltShell .ltPlansGrid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+  }
+
+  .ltShell .ltServiceGrid {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  }
+}

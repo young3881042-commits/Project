@@ -1,0 +1,1065 @@
+/* LocalTrip recommendation app refresh */
+body:has(.ltShell),
+body:has(.loginShell) {
+  background: #f7f8fa;
+}
+
+.ltShell,
+.ltShell * {
+  letter-spacing: 0 !important;
+}
+
+.ltShell {
+  --lt-green: #00a878;
+  --lt-green-dark: #008c69;
+  --lt-blue: #2563eb;
+  --lt-amber: #f59e0b;
+  --lt-ink: #111827;
+  --lt-body: #4b5563;
+  --lt-muted: #6b7280;
+  --lt-line: #e5e7eb;
+  --lt-soft: #f7f8fa;
+  --lt-mint: #e9f8f3;
+  min-height: 100vh;
+  background: #f7f8fa !important;
+  color: var(--lt-ink);
+}
+
+.ltNav {
+  top: 0;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid var(--lt-line);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: none;
+}
+
+.ltNavInner {
+  width: min(1120px, calc(100% - 32px));
+  min-height: 64px;
+}
+
+.ltBrand strong {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--lt-green);
+  color: #ffffff;
+}
+
+.ltBrand strong svg,
+.loginNav strong svg,
+.loginMascot svg {
+  width: 18px;
+  height: 18px;
+}
+
+.ltNavLinks {
+  width: auto;
+  padding: 3px;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.ltNavLinks a {
+  min-width: 82px;
+  min-height: 38px;
+  border-radius: 6px;
+  color: var(--lt-muted);
+  font-size: 0.9rem;
+}
+
+.ltNavLinks a:hover,
+.ltNavLinks a.active {
+  color: var(--lt-green-dark);
+}
+
+.ltNavAction,
+.ltPrimaryButton,
+.ltHeroActions a:first-child,
+.ltPlannerTeaser button,
+.ltPlannerForm button[type="submit"] {
+  border-radius: 8px;
+  background: var(--lt-green);
+}
+
+.ltNavAction:hover,
+.ltPrimaryButton:hover,
+.ltHeroActions a:first-child:hover,
+.ltPlannerTeaser button:hover,
+.ltPlannerForm button[type="submit"]:hover {
+  background: var(--lt-green-dark);
+}
+
+.ltSecondaryButton,
+.ltGhostButton,
+.ltTextButton,
+.ltBackButton,
+.ltHeroActions a:last-child,
+.ltPurposeChips button,
+.ltHeroFilters button,
+.ltSegmented button,
+.ltInterestGroup button,
+.ltOptionGroup button,
+.ltMyShortcutList button {
+  border-radius: 8px;
+}
+
+.ltPage {
+  width: min(1120px, calc(100% - 32px));
+  padding: 34px 0 72px;
+}
+
+.ltHero {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.72fr);
+  gap: 36px;
+  align-items: center;
+  margin-bottom: 18px;
+  padding: 18px 0 4px;
+}
+
+.ltEyebrow,
+.ltSectionEyebrow {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--lt-mint);
+  color: var(--lt-green-dark);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.ltHeroCopy h1 {
+  max-width: 650px;
+  margin-bottom: 14px;
+  color: var(--lt-ink);
+  font-size: 3.2rem;
+  line-height: 1.08;
+}
+
+.ltHeroCopy p {
+  max-width: 540px;
+  margin-bottom: 16px;
+  color: var(--lt-body);
+  font-size: 1.02rem;
+}
+
+.ltHeroSearch {
+  max-width: 630px;
+  margin: 20px 0 14px;
+  padding: 14px;
+  border: 1px solid var(--lt-line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.07);
+}
+
+.ltHeroSearchInput {
+  min-height: 54px;
+  border-radius: 8px;
+}
+
+.ltHeroSearchInput button {
+  border-radius: 6px;
+}
+
+.ltHeroVisual {
+  grid-template-columns: 1fr 0.78fr;
+  grid-template-rows: 174px 174px;
+  gap: 10px;
+  min-height: 358px;
+}
+
+.ltHeroImage,
+.ltDestinationPhoto,
+.ltMiniDestPhoto,
+.ltDayCover {
+  border-radius: 8px;
+}
+
+.ltHeroPanel {
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  border-radius: 8px;
+}
+
+.ltPurposeRail,
+.ltRoleBand,
+.ltServiceSection,
+.ltRequestFlow,
+.ltRegionLinks,
+.ltPartnerCta,
+.ltPartnerHero,
+.ltPartnerStats,
+.ltPartnerPanel,
+.ltDestinationCard,
+.ltPlanCard,
+.ltRecentPlans,
+.ltPlannerForm,
+.ltPlannerPreview,
+.ltSelectedSummary,
+.ltGeneratedPreview,
+.ltFilterBar,
+.ltTimelineDay,
+.ltPlanHero,
+.ltFactItem,
+.ltDayCard,
+.ltMarkdownDayBlock,
+.ltMyHero,
+.ltMyPanel,
+.ltFilterFold,
+.ltEmptyState {
+  border: 1px solid var(--lt-line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.ltPurposeRail {
+  margin: 18px 0;
+}
+
+.ltServiceSection {
+  margin: 18px 0 20px;
+  padding: 22px;
+}
+
+.ltServiceGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ltServiceCard {
+  min-height: 148px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 16px 12px;
+  border: 1px solid var(--lt-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--lt-ink);
+  text-align: left;
+}
+
+.ltServiceCard:hover {
+  border-color: rgba(0, 168, 120, 0.45);
+  background: #fbfffd;
+  transform: translateY(-2px);
+}
+
+.ltServiceIcon {
+  width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--lt-mint);
+  color: var(--lt-green-dark);
+}
+
+.ltServiceCard strong {
+  font-size: 0.98rem;
+  font-weight: 900;
+}
+
+.ltServiceCard span:last-child {
+  color: var(--lt-body);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.ltRequestFlow {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1fr);
+  gap: 22px;
+  margin: 42px 0 0;
+  padding: 26px;
+}
+
+.ltRequestFlowCopy {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 12px;
+}
+
+.ltRequestFlow h2,
+.ltRegionLinks h2,
+.ltPartnerCta h2 {
+  color: var(--lt-ink);
+  font-size: 1.8rem;
+  line-height: 1.18;
+}
+
+.ltRequestFlow p,
+.ltPartnerCta p {
+  color: var(--lt-body);
+  line-height: 1.66;
+}
+
+.ltRequestSteps {
+  display: grid;
+  gap: 10px;
+}
+
+.ltRequestStep {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 4px 12px;
+  align-items: start;
+  padding: 16px;
+  border: 1px solid var(--lt-line);
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.ltRequestStep > span {
+  grid-row: span 2;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--lt-green);
+  color: #fff;
+  font-weight: 900;
+}
+
+.ltRequestStep strong {
+  color: var(--lt-ink);
+  font-weight: 900;
+}
+
+.ltRequestStep p {
+  color: var(--lt-body);
+  line-height: 1.55;
+}
+
+.ltRegionLinks,
+.ltPartnerCta {
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+  padding: 26px;
+}
+
+.ltRegionGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ltRegionGrid button {
+  min-height: 42px;
+  border: 1px solid var(--lt-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--lt-body);
+  font-weight: 900;
+}
+
+.ltRegionGrid button:hover {
+  border-color: var(--lt-green);
+  color: var(--lt-green-dark);
+}
+
+.ltPartnerCta {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  background: #eef8f4;
+}
+
+.ltDestinationPhoto {
+  width: 100%;
+  margin: 0;
+}
+
+.ltPlanCard,
+.ltDestinationCard {
+  overflow: hidden;
+}
+
+.loginShell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
+  gap: 18px;
+  align-content: center;
+  width: min(1000px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0;
+  background: transparent;
+}
+
+.loginNav {
+  grid-column: 1 / -1;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.loginHeroPanel {
+  display: grid;
+  align-content: center;
+  gap: 16px;
+  min-height: 430px;
+  padding: 34px;
+  border: 1px solid var(--lt-line, #e5e7eb);
+  border-radius: 8px;
+  background: #fff;
+  color: #111827;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.07);
+}
+
+.loginHeroPanel > span {
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #e9f8f3;
+  color: #008c69;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.loginHeroPanel h2 {
+  max-width: 13em;
+  color: #111827;
+  font-size: 2.42rem;
+  line-height: 1.12;
+}
+
+.loginHeroPanel p {
+  color: #4b5563;
+  line-height: 1.66;
+}
+
+.loginHeroTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.loginHeroTags span {
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  color: #4b5563;
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.loginCard,
+.loginHint,
+.loginField input,
+.loginButton,
+.authSwitch,
+.authSwitch button {
+  border-radius: 8px;
+}
+
+.loginNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 16px;
+  border: 1px solid #dbe3ee;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.loginNav strong {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+  color: #ffffff;
+  flex: 0 0 auto;
+}
+
+.loginNav span {
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 900;
+  margin-right: auto;
+}
+
+.loginNav div {
+  display: inline-flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.loginNav button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 800;
+}
+
+.loginNav button.active {
+  border-color: #b7eadf;
+  background: #e8f5f3;
+  color: #0f766e;
+}
+
+.loginCardHeader {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.loginMascot {
+  width: 54px;
+  height: 54px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #e8f5f3;
+  color: #0f766e;
+}
+
+.loginMascot svg {
+  width: 24px;
+  height: 24px;
+}
+
+.loginCardHeader h1 {
+  color: #111827;
+  font-size: 1.5rem;
+  line-height: 1.15;
+}
+
+.loginCardHeader p {
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+@media (max-width: 700px) {
+  .loginNav {
+    padding: 10px 12px;
+  }
+
+  .loginNav span {
+    font-size: 0.95rem;
+  }
+
+  .loginNav button {
+    min-height: 36px;
+    padding: 0 10px;
+    font-size: 0.88rem;
+  }
+
+  .loginCardHeader {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .loginMascot {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  .loginMascot svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 980px) {
+  .ltHero,
+  .ltRequestFlow,
+  .ltPartnerCta {
+    grid-template-columns: 1fr;
+  }
+
+  .ltHeroCopy h1 {
+    font-size: 2.5rem;
+  }
+
+  .ltServiceGrid,
+  .ltRegionGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .loginShell {
+    grid-template-columns: 1fr;
+  }
+
+  .loginHeroPanel {
+    min-height: auto;
+  }
+
+  .loginHeroPanel h2 {
+    max-width: 18em;
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .ltNavInner {
+    width: calc(100% - 24px);
+    min-height: auto;
+    flex-wrap: wrap;
+    padding: 10px 0;
+  }
+
+  .ltNavLinks {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+
+  .ltNavLinks a {
+    flex: 0 0 auto;
+    min-width: 78px;
+  }
+
+  .ltNavAction {
+    min-height: 38px;
+    padding: 0 12px;
+  }
+
+  .ltPage {
+    width: calc(100% - 24px);
+    padding-top: 22px;
+  }
+
+  .ltHero {
+    gap: 18px;
+  }
+
+  .ltHeroCopy h1 {
+    font-size: 2.05rem;
+  }
+
+  .ltHeroCopy p {
+    font-size: 0.96rem;
+  }
+
+  .ltHeroSearchInput {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .ltHeroSearchInput button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .ltHeroVisual {
+    grid-template-columns: 1fr;
+    grid-template-rows: 210px auto;
+    min-height: auto;
+  }
+
+  .ltHeroVisual .ltHeroImage:not(.main) {
+    display: none;
+  }
+
+  .ltHeroImage.main {
+    grid-row: auto;
+  }
+
+  .ltHeroPanel {
+    position: static;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 8px;
+  }
+
+  .ltPurposeRail,
+  .ltRoleBand,
+  .ltRequestFlow,
+  .ltPartnerCta {
+    grid-template-columns: 1fr;
+  }
+
+  .ltServiceSection,
+  .ltRequestFlow,
+  .ltRegionLinks,
+  .ltPartnerCta {
+    padding: 18px;
+  }
+
+  .ltServiceGrid,
+  .ltRegionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ltServiceCard {
+    min-height: 134px;
+  }
+
+  .loginShell {
+    width: calc(100% - 24px);
+    align-content: start;
+    padding-top: 12px;
+  }
+
+  .loginHeroPanel {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .ltServiceGrid,
+  .ltRegionGrid,
+  .ltHeroPanel {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* LocalTrip recommendation polish */
+.ltDayCard {
+  gap: 18px;
+}
+
+.ltDaySlots {
+  gap: 10px;
+}
+
+.ltDayTimeline {
+  position: relative;
+  display: grid;
+  gap: 14px;
+}
+
+.ltDayTimeline::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 132px;
+  width: 2px;
+  background: linear-gradient(180deg, #b7eadf, #e2e8f0);
+}
+
+.ltDaySlot {
+  position: relative;
+  grid-template-columns: 132px minmax(0, 1fr);
+  padding: 16px;
+  background: #ffffff;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
+}
+
+.ltDaySlot.food {
+  border-color: #fed7aa;
+  background: #fffaf5;
+}
+
+.ltTimelineRail {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.ltTimelineRail time {
+  min-height: auto;
+  align-items: start;
+  justify-content: start;
+  padding: 0;
+  background: transparent;
+}
+
+.ltTimelineRail time span {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 11px;
+  border: 1px solid #b7eadf;
+  border-radius: 999px;
+  background: #ecfdf8;
+  color: #047857;
+  font-size: 0.82rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.ltTimelineRail i {
+  position: relative;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  background: #00a878;
+  color: #ffffff;
+  font-style: normal;
+  font-size: 0.78rem;
+  font-weight: 900;
+  box-shadow: 0 8px 20px rgba(0, 168, 120, 0.22);
+}
+
+.ltDaySlot.food .ltTimelineRail time span {
+  border-color: #fed7aa;
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.ltDaySlot.food .ltTimelineRail i {
+  background: #f97316;
+  box-shadow: 0 8px 20px rgba(249, 115, 22, 0.22);
+}
+
+.ltDaySlotBody {
+  gap: 10px;
+}
+
+.ltDaySlotBody > div:first-child {
+  display: grid;
+  gap: 5px;
+}
+
+.ltSlotTitleRow {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ltSlotTitleRow > span {
+  flex: none;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #ecfdf8;
+  color: #047857;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.ltDaySlot.food .ltSlotTitleRow > span {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.ltDaySlotMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ltDaySlotMeta span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.ltDaySlotMeta span + span::before {
+  content: "·";
+  margin-right: 6px;
+  color: #94a3b8;
+}
+
+.ltRecommendedMenu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.ltRecommendedMenu strong {
+  color: #334155;
+  font-size: 0.84rem;
+}
+
+.ltRecommendedMenu span {
+  color: #64748b;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.ltDayRouteCheck {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 14px;
+}
+
+.ltDayRouteCheck label {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.ltDayRouteCheck input {
+  width: 16px;
+  height: 16px;
+  accent-color: #0f766e;
+}
+
+.ltDayRouteCheck span {
+  color: #0f766e;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.ltDayRouteCheck strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #334155;
+  font-size: 0.86rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ltDayRouteCheck time {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.ltPlanTimelinePreview {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.ltPlanTimelinePreview div {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.ltPlanTimelinePreview time {
+  color: #047857;
+  font-size: 0.76rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.ltPlanTimelinePreview span {
+  min-width: 0;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ltPlanTimelinePreview em {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #ecfdf8;
+  color: #047857;
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.ltServiceSwitch {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.ltServiceSwitchTitle {
+  padding: 0 2px;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.ltServiceSwitchLinks {
+  display: grid;
+  gap: 6px;
+}
+
+.ltServiceSwitchLinks a,
+.ltServiceSwitch a {
+  min-height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.ltServiceSwitchLinks a:hover,
+.ltServiceSwitch a:hover {
+  color: #047857;
+  background: #ecfdf8;
+}
+
+.ltHeroCopy h1 {
+  max-width: 720px;
+}
+
+.ltPlannerTeaser p {
+  max-width: 560px;
+}
+
+@media (max-width: 700px) {
+  .ltDayTimeline::before {
+    left: 16px;
+  }
+
+  .ltDaySlot {
+    grid-template-columns: 1fr;
+    padding-left: 18px;
+  }
+
+  .ltTimelineRail {
+    grid-template-columns: auto auto;
+    align-items: center;
+  }
+
+  .ltTimelineRail time span {
+    width: fit-content;
+  }
+
+  .ltSlotTitleRow {
+    display: grid;
+    justify-content: stretch;
+  }
+
+  .ltPlanTimelinePreview div {
+    grid-template-columns: 1fr;
+  }
+
+  .ltDayRouteCheck {
+    grid-template-columns: 1fr;
+  }
+
+  .ltPlanTimelinePreview span {
+    white-space: normal;
+  }
+}

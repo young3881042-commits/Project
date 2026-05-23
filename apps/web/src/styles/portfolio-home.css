@@ -1,0 +1,381 @@
+/* Public portfolio entry and app split */
+.portfolioHome,
+.portfolioHome * {
+  box-sizing: border-box;
+  letter-spacing: 0;
+}
+
+.portfolioHome {
+  min-height: 100vh;
+  color: #0f172a;
+  background:
+    linear-gradient(90deg, rgba(248, 250, 252, 0.97) 0%, rgba(248, 250, 252, 0.9) 48%, rgba(248, 250, 252, 0.58) 100%),
+    url("https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=2200&q=84") center/cover fixed;
+}
+
+.portfolioNav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  width: min(1180px, calc(100% - 40px));
+  min-height: 70px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.portfolioBrand,
+.portfolioNav div {
+  display: inline-flex;
+  align-items: center;
+}
+
+.portfolioBrand {
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.portfolioBrand span {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #0f766e;
+  color: #fff;
+}
+
+.portfolioNav div {
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(14px);
+}
+
+.portfolioNav div button,
+.portfolioHeroActions button {
+  min-height: 38px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #334155;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.portfolioNav div button:hover {
+  background: #f1f5f9;
+  color: #0f766e;
+}
+
+.portfolioHero {
+  width: min(1180px, calc(100% - 40px));
+  min-height: calc(100vh - 70px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 420px);
+  gap: clamp(28px, 5vw, 74px);
+  align-items: center;
+  padding: 42px 0 30px;
+}
+
+.portfolioHeroCopy {
+  display: grid;
+  gap: 18px;
+}
+
+.portfolioEyebrow {
+  width: fit-content;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 11px;
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  border-radius: 8px;
+  background: rgba(240, 253, 250, 0.88);
+  color: #0f766e;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.portfolioHero h1 {
+  max-width: 780px;
+  color: #0f172a;
+  font-size: clamp(2.65rem, 6vw, 5.4rem);
+  line-height: 1.02;
+  font-weight: 950;
+}
+
+.portfolioHero p {
+  max-width: 720px;
+  color: #475569;
+  font-size: clamp(1rem, 2vw, 1.18rem);
+  line-height: 1.68;
+  font-weight: 650;
+}
+
+.portfolioHeroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.portfolioHeroActions button {
+  min-height: 48px;
+  padding: 0 18px;
+  border-color: #cbd5e1;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.portfolioHeroActions button:first-child {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #fff;
+}
+
+.portfolioDevice {
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid rgba(203, 213, 225, 0.78);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.18);
+  backdrop-filter: blur(18px);
+}
+
+.portfolioDeviceTop {
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.portfolioDeviceTop span {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #111827;
+}
+
+.portfolioDeviceTop strong,
+.portfolioDeviceTop small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portfolioDeviceTop small {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.portfolioPreviewGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.portfolioPreviewGrid article,
+.portfolioPreviewList span {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.portfolioPreviewGrid article {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+}
+
+.portfolioPreviewGrid span,
+.portfolioPreviewGrid small {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.portfolioPreviewGrid strong {
+  color: #0f172a;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.portfolioPreviewList {
+  display: grid;
+  gap: 8px;
+}
+
+.portfolioPreviewList span {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.portfolioShowcase {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 0 0 58px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.portfolioCard {
+  min-height: 220px;
+  display: grid;
+  align-content: end;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #fff;
+  color: inherit;
+  padding: 20px;
+  text-align: left;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+}
+
+.portfolioCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.16;
+  background:
+    linear-gradient(135deg, #0f766e, transparent 48%),
+    linear-gradient(315deg, #2563eb, transparent 38%);
+}
+
+.portfolioCard.workspace::before {
+  background:
+    linear-gradient(135deg, #111827, transparent 48%),
+    linear-gradient(315deg, #2563eb, transparent 38%);
+}
+
+.portfolioCard.travel::before {
+  background:
+    linear-gradient(135deg, #0284c7, transparent 48%),
+    linear-gradient(315deg, #10b981, transparent 38%);
+}
+
+.portfolioCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+.portfolioCard span {
+  width: fit-content;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 9px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #0f766e;
+  font-size: 0.76rem;
+  font-weight: 950;
+}
+
+.portfolioCard strong {
+  color: #111827;
+  font-size: 1.28rem;
+  line-height: 1.2;
+  font-weight: 950;
+}
+
+.portfolioCard p {
+  color: #475569;
+  line-height: 1.55;
+  font-weight: 650;
+}
+
+.portfolioCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(15, 118, 110, 0.34);
+  box-shadow: 0 22px 42px rgba(15, 23, 42, 0.12);
+}
+
+@media (max-width: 880px) {
+  .portfolioHero,
+  .portfolioShowcase {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolioHero {
+    min-height: auto;
+    padding-top: 34px;
+  }
+}
+
+@media (max-width: 560px) {
+  .portfolioHome {
+    background:
+      linear-gradient(180deg, rgba(248, 250, 252, 0.94) 0%, rgba(248, 250, 252, 0.98) 64%, #f8fafc 100%),
+      url("https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1200&q=84") center top/auto 42vh no-repeat;
+  }
+
+  .portfolioNav,
+  .portfolioHero,
+  .portfolioShowcase {
+    width: calc(100% - 24px);
+  }
+
+  .portfolioNav {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 0;
+  }
+
+  .portfolioNav div {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .portfolioHero h1 {
+    font-size: clamp(2.35rem, 13vw, 3.4rem);
+  }
+
+  .portfolioHeroActions,
+  .portfolioHeroActions button {
+    width: 100%;
+  }
+
+  .portfolioHeroActions {
+    display: grid;
+  }
+
+  .portfolioDevice {
+    border-radius: 18px;
+    padding: 12px;
+  }
+
+  .portfolioPreviewGrid {
+    grid-template-columns: 1fr;
+  }
+}

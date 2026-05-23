@@ -26,6 +26,8 @@ public record AppProperties(
         String mariadbUsername,
         String mariadbPassword,
         String workspaceNode,
+        String assistantDataRoot,
+        String conversationRoot,
         String workspaceRoot,
         String snapshotRoot,
         String ragRoot,

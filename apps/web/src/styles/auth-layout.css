@@ -1,0 +1,750 @@
+/* Final mobile-first auth and page cleanup */
+.loginShell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  grid-template-columns: minmax(0, 430px);
+  justify-content: center;
+  align-content: center;
+  gap: 18px;
+  padding: clamp(16px, 4vw, 34px);
+  background:
+    radial-gradient(circle at 16% 12%, rgba(187, 247, 208, 0.72), transparent 28%),
+    linear-gradient(180deg, #fbfffd 0%, #eef8f3 100%);
+}
+
+.loginHeroPanel {
+  display: none;
+}
+
+.loginCard {
+  width: 100%;
+  padding: clamp(22px, 5vw, 34px);
+  border: 1px solid rgba(134, 239, 172, 0.72);
+  border-radius: 34px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 24px 58px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(18px);
+}
+
+.loginCard .sidebarEyebrow {
+  width: fit-content;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 0.72rem;
+}
+
+.loginCard h1 {
+  margin-top: 16px;
+  color: #10251d;
+  font-size: clamp(1.62rem, 5vw, 2.15rem);
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.loginCard p {
+  color: #64748b;
+  line-height: 1.65;
+}
+
+.authSwitch {
+  margin-top: 22px;
+  padding: 5px;
+  border: 1px solid #d7f5e3;
+  border-radius: 999px;
+  background: #f1fbf6;
+}
+
+.authSwitch button {
+  min-height: 42px;
+  border-radius: 999px;
+  color: #64748b;
+  font-weight: 900;
+}
+
+.authSwitch button.active {
+  color: #063f2e;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(16, 185, 129, 0.16);
+}
+
+.providerButtons {
+  margin-top: 16px;
+  gap: 10px;
+}
+
+.providerButton {
+  min-height: 50px;
+  justify-content: center;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.providerButton small {
+  margin-left: auto;
+  color: #94a3b8;
+  font-size: 0.68rem;
+}
+
+.loginDivider {
+  margin: 18px 0 14px;
+}
+
+.loginField {
+  margin-top: 12px;
+}
+
+.loginField input {
+  min-height: 54px;
+  border-radius: 20px;
+  background: #fbfffd;
+  font-size: 1rem;
+}
+
+.passwordGuide {
+  margin-top: 12px;
+  gap: 7px;
+}
+
+.passwordGuide span {
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 0.76rem;
+}
+
+.loginButton {
+  width: 100%;
+  min-height: 56px;
+  margin-top: 16px;
+  border-radius: 20px;
+  font-size: 1rem;
+}
+
+.loginHint,
+.loginNotice {
+  margin-top: 12px;
+  border-radius: 18px;
+  font-size: 0.86rem;
+}
+
+.loginFineprint {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 0.82rem;
+}
+
+.ltHero,
+.ltPlannerShell,
+.ltDestinationGrid,
+.ltPlansGrid,
+.ltMyGrid {
+  gap: clamp(14px, 3vw, 22px);
+}
+
+.ltTopbar {
+  border-bottom: 1px solid rgba(226, 232, 240, 0.78);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(18px);
+}
+
+.ltBrandText span,
+.ltHeroKicker,
+.ltSectionEyebrow {
+  letter-spacing: 0;
+}
+
+.ltFold > summary {
+  min-height: 52px;
+  border-radius: 18px;
+}
+
+@media (min-width: 960px) {
+  .loginShell {
+    grid-template-columns: minmax(0, 430px) minmax(0, 430px);
+  }
+
+  .loginHeroPanel {
+    display: grid;
+    min-height: 620px;
+    align-content: space-between;
+    padding: 34px;
+    border-radius: 34px;
+    background:
+      linear-gradient(160deg, rgba(6, 95, 70, 0.94), rgba(20, 184, 166, 0.82)),
+      url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80');
+    background-size: cover;
+    background-position: center;
+    color: #fff;
+    box-shadow: 0 24px 58px rgba(15, 23, 42, 0.16);
+  }
+
+  .loginHeroPanel p {
+    color: rgba(255, 255, 255, 0.82);
+  }
+}
+
+@media (max-width: 720px) {
+  .loginShell {
+    align-content: start;
+    padding: 14px;
+  }
+
+  .loginCard {
+    border-radius: 30px;
+  }
+
+  .loginCard h1 {
+    max-width: 11em;
+  }
+
+  .providerButtons {
+    grid-template-columns: 1fr;
+  }
+
+  .ltHero {
+    padding-top: 18px;
+  }
+
+  .ltDestinationGrid,
+  .ltPlansGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cm-activeLine {
+  background: rgba(49, 130, 246, 0.06) !important;
+}
+
+.assistantPanel {
+  padding: 22px;
+  gap: 16px;
+}
+
+.assistantHeaderMinimal {
+  align-items: center;
+}
+
+.assistantHeaderMinimal .assistantPathPill {
+  max-width: 100%;
+}
+
+.assistantHeaderMinimal .assistantHeaderActions {
+  margin-left: auto;
+}
+
+.assistantStream {
+  padding-right: 2px;
+}
+
+.assistantBubble.user {
+  background: #f4f8fd;
+}
+
+.assistantBubble.assistant,
+.assistantBubble.loading,
+.assistantDocumentCard,
+.assistantHeroCard {
+  background: #ffffff;
+}
+
+.ragSavedPath {
+  color: #174ea6;
+}
+
+@media (max-width: 980px) {
+  .workspaceBrowserShell {
+    height: auto;
+    min-height: 100vh;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  .workspaceTopbar {
+    grid-template-columns: 1fr;
+  }
+
+  .workspaceUserTray {
+    justify-self: stretch;
+    justify-content: flex-start;
+  }
+}
+
+.loginShell {
+  background:
+    radial-gradient(circle at top left, rgba(49, 130, 246, 0.16), transparent 30%),
+    linear-gradient(180deg, #eff5ff 0%, #f7faff 100%);
+}
+
+.loginCard {
+  width: min(460px, 100%);
+  padding: 32px;
+  border: 1px solid #d8e4f2;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 28px 60px rgba(15, 23, 42, 0.1);
+}
+
+.loginCard h1 {
+  color: #191f28;
+  font-size: 1.8rem;
+  line-height: 1.2;
+}
+
+.loginCard p,
+.loginField span {
+  color: #5f6b7a;
+}
+
+.loginField input {
+  background: #f8fbff;
+  border: 1px solid #d8e4f2;
+  color: #191f28;
+}
+
+.loginField input::placeholder {
+  color: #97a3b5;
+}
+
+.authSwitch button {
+  background: #f6f9fd;
+  border-color: #d8e4f2;
+  color: #5f6b7a;
+}
+
+.authSwitch button.active {
+  background: #ebf3ff;
+  border-color: #bfd6f8;
+  color: #1b64da;
+}
+
+.loginButton {
+  background: linear-gradient(180deg, #4b9dff 0%, #3182f6 100%);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 16px 30px rgba(49, 130, 246, 0.22);
+}
+
+.loginHint {
+  border-color: #f3d0cc;
+  background: #fff7f5;
+  color: #9f1c1c;
+}
+
+.workspaceTopbar {
+  align-items: stretch;
+}
+
+.workspacePathCard {
+  min-width: 0;
+}
+
+.workspaceUserTray {
+  justify-self: stretch;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.workspaceTopTabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.userMenuWrap {
+  position: relative;
+}
+
+.workspaceUserButton {
+  min-width: 140px;
+  display: grid;
+  gap: 4px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #ffffff;
+  color: var(--ink);
+  text-align: left;
+  box-shadow: var(--shadow);
+}
+
+.workspaceUserButton span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.workspaceUserButton strong {
+  font-size: 0.98rem;
+}
+
+.workspaceUserButton.open {
+  border-color: #bfd6f8;
+  background: #eef5ff;
+}
+
+.userMenuDropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 40;
+  min-width: 150px;
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.12);
+}
+
+.userMenuDropdown button {
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--ink);
+  text-align: left;
+}
+
+.userMenuDropdown button:hover {
+  background: #f2f7ff;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(8px);
+}
+
+.accountDialog {
+  width: min(460px, 100%);
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+  border: 1px solid #d8e4f2;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 28px 60px rgba(15, 23, 42, 0.14);
+}
+
+.accountDialogHeader,
+.accountDialogFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.accountDialogHeader {
+  align-items: flex-start;
+}
+
+.accountDialogBody {
+  display: grid;
+  gap: 12px;
+}
+
+@media (max-width: 980px) {
+  .workspaceUserTray {
+    justify-content: flex-start;
+  }
+
+  .workspaceTopTabs {
+    width: 100%;
+  }
+
+  .accountDialogHeader,
+  .accountDialogFooter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Product layout refinements */
+.workspaceBrowserShell {
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 20px;
+  padding: 22px;
+}
+
+.workspaceTopbar {
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.workspacePathCard {
+  padding: 16px 18px;
+}
+
+.workspacePathCode {
+  min-height: 38px;
+  font-size: 0.88rem;
+}
+
+.workspaceTopTabs {
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.workspaceTopTabs .ghostButton.compact {
+  padding: 10px 14px;
+  border-radius: 13px;
+}
+
+.browserListPanel,
+.browserPreviewPanel,
+.assistantPanel {
+  border-radius: 26px;
+}
+
+.browserListPanel {
+  padding: 18px;
+  gap: 14px;
+}
+
+.entryList {
+  gap: 8px;
+}
+
+.entryRow {
+  min-height: 54px;
+  border-radius: 16px;
+}
+
+.rightPanelStack {
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.panelVisible,
+.panelVisible > * {
+  min-height: 0;
+  height: 100%;
+}
+
+.ragPanel {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.llmPanel {
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+}
+
+.assistantHeaderMinimal {
+  gap: 14px;
+}
+
+.assistantPathPill {
+  min-width: 220px;
+  max-width: 46%;
+}
+
+.assistantStream {
+  min-height: 0;
+  padding-right: 6px;
+}
+
+.assistantEmpty {
+  min-height: 280px;
+  padding: 34px;
+}
+
+.assistantComposer {
+  padding: 14px;
+}
+
+.assistantComposer textarea {
+  min-height: 92px;
+}
+
+.llmControlPanel {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(248, 251, 255, 0.96), rgba(255, 255, 255, 0.9));
+}
+
+.llmProviderGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.llmProviderButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: #ffffff;
+  color: var(--ink);
+  text-align: left;
+}
+
+.llmProviderButton.active {
+  border-color: rgba(49, 130, 246, 0.24);
+  background: #edf5ff;
+  color: #1d4f9c;
+}
+
+.llmProviderButton:disabled {
+  opacity: 0.58;
+  cursor: default;
+}
+
+.llmProviderButton span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.llmSettingsRow {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.2fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.llmSettingsRow label {
+  display: grid;
+  gap: 7px;
+}
+
+.llmSettingsRow label span,
+.llmProviderMessage {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.llmSettingsRow input,
+.llmKeyForm input {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #f8fbff;
+  color: var(--ink);
+}
+
+.llmKeyActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.llmKeyForm {
+  min-width: min(100%, 420px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.llmUsageGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.llmUsageCard {
+  display: grid;
+  gap: 6px;
+  min-height: 112px;
+  padding: 17px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.llmUsageCard.primary {
+  background:
+    radial-gradient(circle at top right, rgba(49, 130, 246, 0.12), transparent 42%),
+    #ffffff;
+}
+
+.llmUsageCard span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.llmUsageCard strong {
+  color: var(--ink);
+  font-size: 1.8rem;
+  letter-spacing: -0.05em;
+}
+
+.llmUsageCard small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.llmEmpty h2,
+.assistantEmpty h2 {
+  color: var(--ink);
+  font-size: 1.35rem;
+  letter-spacing: -0.04em;
+}
+
+@media (max-width: 1280px) {
+  .workspaceBrowserShell,
+  .workspaceTopbar {
+    grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  }
+
+  .assistantPathPill {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 980px) {
+  .workspaceBrowserShell,
+  .workspaceTopbar {
+    grid-template-columns: 1fr;
+  }
+
+  .llmSettingsRow,
+  .llmUsageGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .llmKeyActions,
+  .assistantHeaderActions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 700px) {
+  .workspaceBrowserShell {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .llmProviderGrid,
+  .llmKeyForm {
+    grid-template-columns: 1fr;
+  }
+}

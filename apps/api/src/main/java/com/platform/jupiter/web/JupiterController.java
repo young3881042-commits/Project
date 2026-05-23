@@ -368,7 +368,7 @@ public class JupiterController {
                 <body>
                 <script>
                 if (window.opener) {
-                  window.opener.postMessage({ type: 'jupiter-gemini-oauth', status: 'success' }, window.location.origin);
+                  window.opener.postMessage({ type: 'ai-assitant-gemini-oauth', status: 'success' }, window.location.origin);
                   window.close();
                 }
                 </script>

@@ -6,7 +6,9 @@ RUN if [ -x ./gradlew ]; then ./gradlew bootJar --no-daemon; else gradle bootJar
 FROM node:20-alpine AS codex-cli
 RUN npm install -g @openai/codex \
     && mkdir -p /out \
-    && cp "$(find /usr/local/lib/node_modules/@openai/codex -path '*/vendor/*/codex/codex' -type f | head -n 1)" /out/codex \
+    && CODEX_BIN="$(find /usr/local/lib/node_modules/@openai/codex \( -path '*/vendor/*/bin/codex' -o -path '*/vendor/*/codex/codex' \) -type f | head -n 1)" \
+    && test -n "$CODEX_BIN" \
+    && cp "$CODEX_BIN" /out/codex \
     && chmod +x /out/codex
 
 FROM eclipse-temurin:17-jre

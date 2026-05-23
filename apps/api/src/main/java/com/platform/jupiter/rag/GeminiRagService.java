@@ -3,7 +3,6 @@ package com.platform.jupiter.rag;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.platform.jupiter.chat.ChatCredentialService;
-import com.platform.jupiter.config.AppProperties;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -23,12 +22,10 @@ public class GeminiRagService {
     private final ChatCredentialService chatCredentialService;
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
-    private final AppProperties appProperties;
 
-    public GeminiRagService(ChatCredentialService chatCredentialService, ObjectMapper objectMapper, AppProperties appProperties) {
+    public GeminiRagService(ChatCredentialService chatCredentialService, ObjectMapper objectMapper) {
         this.chatCredentialService = chatCredentialService;
         this.objectMapper = objectMapper;
-        this.appProperties = appProperties;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(20))
                 .build();
@@ -37,7 +34,7 @@ public class GeminiRagService {
     public String generate(String prompt, String username) throws IOException, InterruptedException {
         try {
             String geminiToken = chatCredentialService.resolveGeminiAuthorization(username)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Gemini is not configured for this server"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, ChatCredentialService.CONNECT_GEMINI_ACCOUNT_MESSAGE));
             String payload = objectMapper.writeValueAsString(buildGeminiPayload(prompt));
             return callChatApi(
                     "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
@@ -46,7 +43,7 @@ public class GeminiRagService {
                     "Gemini request failed");
         } catch (ResponseStatusException geminiError) {
             String openAiApiKey = chatCredentialService.resolveOpenAiApiKey(username)
-                    .orElseGet(() -> appProperties.openAiApiKey() == null ? "" : appProperties.openAiApiKey().trim());
+                    .orElse("");
             if (openAiApiKey.isBlank()) {
                 throw geminiError;
             }

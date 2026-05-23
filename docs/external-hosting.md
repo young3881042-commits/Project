@@ -2,34 +2,29 @@
 
 Recommended public exposure:
 
-- `studio.example.com` -> `http://<node-or-lb>:31080`
-- `nexus.example.com` -> `http://<node-or-lb>:30693`
-- `db.example.com` is not recommended publicly; use Adminer behind access control if needed
-
-Why the gateway exists:
-
-- `/` routes to the React app
-- `/api` routes to Spring Boot
-- `/docs` routes to Spring static docs
+- `studio.example.com` -> Docker web endpoint
+- `api.example.com` -> Docker API endpoint
+- `nexus.example.com` -> Docker Nexus endpoint, only when access control is ready
+- Do not expose the database directly to the public internet
 
 Reverse proxy guidance:
 
-- Preserve the gateway path prefix
-- Allow WebSocket upgrade headers
-- Forward `X-Forwarded-Proto` and `Host`
-- Keep timeouts generous enough for long-running terminal sessions
+- Route `/` to the React web service.
+- Route `/api` to the Spring Boot API service.
+- Route `/docs` to the API static docs path when docs are needed.
+- Preserve `Host` and `X-Forwarded-Proto` headers.
+- Keep timeouts generous enough for long-running terminal or file operations.
 
 TLS placement:
 
-- Put TLS termination in the external load balancer or edge proxy
-- Forward plain HTTP to `jupiter-gateway:8080` inside the cluster
+- Terminate TLS at the edge proxy.
+- Forward plain HTTP to the Docker service network.
 
 DNS model:
 
-- One public hostname for the gateway is enough
-- Extra UI services can stay on NodePort if they are only used for internal access
+- One public hostname for the web gateway is enough for normal use.
+- Extra service hostnames should stay internal unless they have authentication and rate limits.
 
 Operational caveat:
 
-- If Kubernetes nodes do not trust the Nexus HTTP registry, custom image pulls can fail with `ImagePullBackOff`
-- Use `/apps/99.debug/03.enable-nexus-http-registry.sh` to configure containerd for `192.168.45.101:32050`
+- Keep Docker endpoint ports and reverse proxy targets documented in `docs/service-access.md`.

@@ -107,6 +107,8 @@ class WorkspaceExecutionServiceTest {
                 "jupiter",
                 "jupiter",
                 "node01",
+                "/data/jupiter-assistant",
+                "/data/jupiter-assistant/conversations",
                 "/workspace",
                 "/snapshots",
                 "/tmp/rag",

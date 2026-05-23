@@ -44,7 +44,9 @@ app:
   mariadb-username: ${APP_MARIADB_USERNAME:jupiter}
   mariadb-password: ${APP_MARIADB_PASSWORD:jupiter123}
   workspace-node: ${APP_WORKSPACE_NODE:node02}
-  workspace-root: ${APP_WORKSPACE_ROOT:/workspace}
+  assistant-data-root: ${APP_ASSISTANT_DATA_ROOT:/data/jupiter-assistant}
+  conversation-root: ${APP_CONVERSATION_ROOT:/data/jupiter-assistant/conversations}
+  workspace-root: ${APP_WORKSPACE_ROOT:/data/jupiter-assistant/workspace}
   snapshot-root: ${APP_SNAPSHOT_ROOT:/snapshots}
   rag-root: ${APP_RAG_ROOT:/tmp/jupiter-rag}
   rag-source-root: ${APP_RAG_SOURCE_ROOT:/tmp/jupiter-rag/source}

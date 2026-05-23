@@ -1,0 +1,693 @@
+.browserSidebar,
+.browserListPanel,
+.browserPreviewPanel {
+  background: var(--panel);
+  border-color: rgba(104, 120, 143, 0.12);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.sidebarHead,
+.browserListPanel,
+.browserPreviewPanel {
+  padding: 22px;
+}
+
+.treeRootLabel,
+.treeRow,
+.entryRow,
+.ghostButton,
+.iconButton,
+.runButton,
+.ragTopButton,
+.providerButton {
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.treeRootLabel,
+.treeToggle,
+.entryRow,
+.ghostButton,
+.iconButton,
+.panelTop input,
+.listFilterGroup input,
+.loginField input,
+.loginButton,
+.inlineNameInput,
+.ragTopButton,
+.assistantSuggestion,
+.assistantDocumentCard,
+.assistantHeroCard,
+.assistantComposer textarea {
+  border-radius: 18px;
+}
+
+.treeRootLabel,
+.treeToggle,
+.entryRow,
+.ghostButton,
+.iconButton,
+.panelTop input,
+.listFilterGroup input,
+.loginField input,
+.inlineNameInput,
+.ragTopButton,
+.assistantSuggestion,
+.assistantDocumentCard,
+.assistantHeroCard,
+.assistantComposer textarea {
+  border: 1px solid rgba(104, 120, 143, 0.14);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.ghostButton,
+.iconButton,
+.ragTopButton,
+.assistantSuggestion {
+  color: #344051;
+}
+
+.ghostButton.active,
+.iconButton.primary,
+.ragTopButton.primary,
+.sendButton,
+.ragSendButton {
+  background: linear-gradient(180deg, #4b9dff 0%, #3182f6 100%);
+  border-color: transparent;
+  box-shadow: 0 14px 28px rgba(49, 130, 246, 0.24);
+}
+
+.ghostButton:hover,
+.iconButton:hover,
+.ragTopButton:hover,
+.assistantSuggestion:hover,
+.entryRow:hover,
+.treeRootLabel:hover,
+.treeRow:hover {
+  transform: translateY(-1px);
+  background: #f3f8ff;
+}
+
+.ghostButton.active,
+.treeRootLabel.selected,
+.treeRow.selected,
+.entryRow.active {
+  background: #edf5ff;
+  color: #1d4f9c;
+  border-color: rgba(49, 130, 246, 0.18);
+}
+
+.workspaceBrowserShell {
+  gap: 16px;
+  padding: 18px;
+}
+
+.sidebarHead {
+  gap: 14px;
+  border-bottom: 1px solid rgba(104, 120, 143, 0.12);
+}
+
+.sidebarEyebrow,
+.panelEyebrow,
+.assistantLabel {
+  color: #2b72d9;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sidebarHead h1,
+.panelTop h2,
+.editorHeader h2,
+.assistantHeader h1 {
+  color: #191f28;
+  letter-spacing: -0.04em;
+}
+
+.panelSubcopy,
+.previewEmpty p,
+.emptyNotice,
+.previewState,
+.assistantSubcopy {
+  color: #6b7684;
+}
+
+.entryRow {
+  padding: 10px 12px;
+  gap: 10px;
+}
+
+.entryType {
+  background: #eef4fb;
+  color: #5d6b7d;
+}
+
+.entryType.dir {
+  background: #e8f1ff;
+  color: #2160c4;
+}
+
+.rightPanelTabs {
+  gap: 10px;
+  padding: 2px 2px 4px;
+}
+
+.assistantShell {
+  height: 100%;
+}
+
+.assistantPanel {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid rgba(104, 120, 143, 0.12);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 255, 0.92)),
+    radial-gradient(circle at top right, rgba(49, 130, 246, 0.08), transparent 32%);
+  box-shadow: var(--shadow);
+}
+
+.assistantPanel.dragging {
+  border-color: rgba(49, 130, 246, 0.45);
+  box-shadow: 0 24px 56px rgba(49, 130, 246, 0.16);
+}
+
+.assistantHeader,
+.chatHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.assistantHeaderActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.assistantBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: #edf5ff;
+  color: #2367cd;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.assistantHero {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.assistantHeroCard {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  background: linear-gradient(180deg, rgba(243, 248, 255, 0.94), rgba(255, 255, 255, 0.96));
+}
+
+.assistantHeroCard strong,
+.assistantDocumentCard strong,
+.assistantCitationTop strong {
+  font-size: 0.96rem;
+}
+
+.assistantHeroCard p,
+.assistantDocumentCard p,
+.assistantCitationCard p,
+.assistantEmpty p {
+  color: #6b7684;
+  line-height: 1.6;
+}
+
+.assistantSuggestionRail,
+.assistantDocumentRail {
+  display: flex;
+  gap: 10px;
+  overflow: auto;
+  padding-bottom: 2px;
+}
+
+.assistantSuggestion {
+  flex: 0 0 auto;
+  padding: 12px 16px;
+  text-align: left;
+  color: #344051;
+}
+
+.assistantDocumentCard {
+  flex: 0 0 240px;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  background: #fbfdff;
+}
+
+.assistantDocumentCard span {
+  color: #4b87dd;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.assistantStream {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  gap: 14px;
+  padding-right: 4px;
+}
+
+.assistantEmpty {
+  display: grid;
+  gap: 8px;
+  place-items: center;
+  min-height: 220px;
+  padding: 28px;
+  border: 1px dashed rgba(49, 130, 246, 0.22);
+  border-radius: 24px;
+  background: rgba(247, 250, 255, 0.84);
+  text-align: center;
+}
+
+.assistantTurn {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.assistantAvatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.assistantAvatar.user {
+  background: #eef4fb;
+  color: #344051;
+}
+
+.assistantAvatar.assistant {
+  background: linear-gradient(180deg, #4b9dff, #3182f6);
+  color: #fff;
+}
+
+.assistantBubble {
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid rgba(104, 120, 143, 0.12);
+  border-radius: 22px;
+  background: #fff;
+}
+
+.assistantBubble.user {
+  background: #f4f8fd;
+}
+
+.assistantBubble.loading {
+  background: #f8fbff;
+}
+
+.assistantRichText,
+.assistantPre {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.72;
+  font-family: inherit;
+}
+
+.assistantMetaLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: #7d8795;
+  font-size: 0.82rem;
+}
+
+.assistantCitationGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.assistantCitationCard {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid rgba(49, 130, 246, 0.12);
+  border-radius: 18px;
+  background: #f8fbff;
+}
+
+.assistantCitationTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #2367cd;
+}
+
+.assistantComposer {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(104, 120, 143, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.assistantComposer textarea {
+  width: 100%;
+  min-height: 98px;
+  resize: vertical;
+  padding: 16px 18px;
+  color: #191f28;
+  background: #f8fbff;
+}
+
+.assistantComposerBar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  color: #6b7684;
+  font-size: 0.84rem;
+}
+
+.weatherRagCard {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid rgba(124, 198, 255, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(124, 198, 255, 0.09), rgba(255, 255, 255, 0.02));
+}
+
+.weatherRagHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.weatherRagHead span,
+.weatherRagCard p {
+  color: #6b7684;
+}
+
+.cm-editor,
+.cm-theme,
+.cm-scroller {
+  background: #fbfdff !important;
+}
+
+.cm-editor {
+  border-radius: 22px;
+}
+
+.cm-activeLine {
+  background: rgba(49, 130, 246, 0.05) !important;
+}
+
+@media (max-width: 980px) {
+  .assistantPanel {
+    min-height: 680px;
+    padding: 18px;
+  }
+
+  .assistantHeader,
+  .assistantComposerBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .assistantHero {
+    grid-template-columns: 1fr;
+  }
+}
+
+:root {
+  --bg: #f5f7fb;
+  --panel: #ffffff;
+  --panel-soft: #f8fbff;
+  --panel-strong: #eef4fb;
+  --line: #dbe5f0;
+  --ink: #191f28;
+  --muted: #5f6b7a;
+  --accent: #3182f6;
+  --accent-strong: #1b64da;
+  --accent-deep: #0f4fbf;
+  --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(49, 130, 246, 0.1), transparent 26%),
+    linear-gradient(180deg, #f8fbff 0%, #f3f6fb 100%);
+  color: var(--ink);
+}
+
+.workspaceBrowserShell {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(360px, 0.92fr) minmax(0, 1.48fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 18px;
+  padding: 20px;
+}
+
+.workspaceTopbar {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(360px, 0.92fr) minmax(0, 1.48fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.workspacePathCard,
+.workspaceUserCard {
+  display: grid;
+  gap: 8px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow);
+}
+
+.workspacePathCode,
+.assistantPathPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 14px;
+  border: 1px solid #cfe0f4;
+  border-radius: 16px;
+  background: #f8fbff;
+  color: #174ea6;
+  font: 600 0.95rem/1.4 "IBM Plex Mono", "JetBrains Mono", monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workspaceUserTray {
+  display: flex;
+  justify-self: end;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.workspaceUserCard {
+  min-width: 164px;
+}
+
+.workspaceUserCard span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.workspaceUserCard strong {
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.browserListPanel,
+.browserPreviewPanel,
+.assistantPanel {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: var(--line);
+  box-shadow: var(--shadow);
+}
+
+.browserListPanel {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.browserPreviewPanel {
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.panelTop input,
+.loginField input,
+.inlineNameInput,
+.assistantComposer textarea,
+.settingsPanel input,
+.settingsPanel textarea,
+.ragControls input {
+  background: #f8fbff;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.panelTop input::placeholder,
+.assistantComposer textarea::placeholder,
+.loginField input::placeholder {
+  color: #8a94a6;
+}
+
+.ghostButton,
+.iconButton,
+.runButton,
+.contextMenu button {
+  background: #ffffff;
+  border-color: var(--line);
+  color: #334155;
+}
+
+.ghostButton:hover,
+.iconButton:hover,
+.runButton:hover,
+.contextMenu button:hover,
+.entryRow:hover {
+  background: #f2f7ff;
+}
+
+.contextMenu .dangerMenuAction {
+  color: #b42318;
+}
+
+.contextMenu .dangerMenuAction:hover {
+  background: #fff3f2;
+}
+
+.ghostButton.active {
+  background: #ebf3ff;
+  border-color: #bed4f7;
+  color: #1b64da;
+}
+
+.sendButton,
+.ragSendButton,
+.actionIconButton.primary {
+  background: linear-gradient(180deg, #4b9dff 0%, #3182f6 100%);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 12px 26px rgba(49, 130, 246, 0.22);
+}
+
+.entryRow {
+  background: #ffffff;
+  border-color: var(--line);
+}
+
+.entryRow.active {
+  background: #eef5ff;
+  border-color: #c8dbfb;
+}
+
+.entryMain,
+.entryMeta strong,
+.editorHeader h2,
+.assistantBubble,
+.assistantRichText,
+.assistantPre,
+.citationCard strong,
+.contextMenu button,
+.previewEmpty,
+.previewState {
+  color: var(--ink);
+}
+
+.entryType,
+.entrySize,
+.statusMeta,
+.assistantComposerBar,
+.assistantMetaLine,
+.assistantHeroCard p,
+.assistantDocumentCard p,
+.assistantCitationCard p,
+.panelSubcopy,
+.emptyNotice {
+  color: var(--muted);
+}
+
+.entryType {
+  background: #eef4fb;
+}
+
+.entryType.dir {
+  background: #e8f1ff;
+  color: #2160c4;
+}
+
+.previewEmpty,
+.previewState,
+.outputBlock,
+.contextMenu,
+.citationCard,
+.assistantBubble,
+.assistantCitationCard,
+.assistantComposer {
+  background: #ffffff;
+  border-color: var(--line);
+}
+
+.previewError,
+.ragInlineError,
+.outputBlock.error {
+  background: #fff3f2;
+  border-color: #fecaca;
+  color: #b42318;
+}
+
+.editorCodeWrap,
+.monitorFrame {
+  border-color: var(--line);
+  background: #ffffff;
+}
+
+.cm-editor,
+.cm-theme,
+.cm-scroller,
+.editorCodeWrap .cm-editor,
+.editorCodeWrap .cm-scroller {
+  background: #ffffff !important;
+  color: var(--ink) !important;
+}
+
+.cm-gutters {
+  background: #f8fbff !important;
+  border-right: 1px solid var(--line) !important;
+  color: #8a94a6 !important;
+}

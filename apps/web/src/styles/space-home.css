@@ -1,0 +1,1670 @@
+/* NASA space main page */
+.ltShell:has(.spaceHome) {
+  display: block !important;
+  min-height: 100vh !important;
+  background: #030712 !important;
+}
+
+.ltShell:has(.spaceHome) .ltNav,
+.ltShell:has(.spaceHome) .ltFooter {
+  display: none !important;
+}
+
+.spaceHome {
+  min-height: 100vh;
+  display: grid;
+  place-items: stretch;
+  overflow-x: hidden;
+  color: #17202f;
+  background:
+    linear-gradient(90deg, rgba(248, 250, 252, 0.96) 0%, rgba(248, 250, 252, 0.88) 48%, rgba(248, 250, 252, 0.28) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(241, 245, 249, 0.92) 100%),
+    url("https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=2200&q=80") center/cover no-repeat;
+}
+
+.spaceHome::before,
+.spaceHome::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.spaceHome::before {
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(16, 185, 129, 0.16), transparent 25%),
+    radial-gradient(circle at 78% 18%, rgba(59, 130, 246, 0.14), transparent 24%);
+}
+
+.spaceHome::after {
+  inset: auto 0 0;
+  height: 34vh;
+  background: linear-gradient(180deg, transparent, rgba(248, 250, 252, 0.92));
+}
+
+.spaceHero {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 48px, 1180px);
+  min-height: 100vh;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 720px);
+  align-items: center;
+  padding: 72px 0;
+}
+
+.spaceHero.hasAdminOverview {
+  grid-template-columns: minmax(0, 1.02fr) minmax(360px, 0.68fr);
+  gap: clamp(28px, 5vw, 72px);
+}
+
+.spaceHeroCopy {
+  display: grid;
+  gap: 22px;
+  align-content: center;
+}
+
+.spaceEyebrow {
+  width: fit-content;
+  padding: 9px 12px;
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  border-radius: 999px;
+  background: rgba(236, 253, 245, 0.86);
+  color: #047857;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  backdrop-filter: blur(14px);
+}
+
+.spaceHeroCopy h1 {
+  max-width: 760px;
+  color: #0f172a;
+  font-size: clamp(2.45rem, 7vw, 5.8rem);
+  line-height: 1.12;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-shadow: none;
+  overflow: visible;
+}
+
+.spaceHeroCopy p {
+  max-width: 640px;
+  color: #475569;
+  font-size: clamp(1rem, 2.2vw, 1.28rem);
+  line-height: 1.72;
+}
+
+.spaceHeroLead {
+  max-width: 640px;
+  color: #111827;
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  line-height: 1.45;
+  font-weight: 900;
+  text-shadow: none;
+}
+
+.spaceHeroSupport {
+  color: rgba(255, 255, 255, 0.72) !important;
+  font-size: clamp(0.95rem, 1.8vw, 1.08rem) !important;
+}
+
+.spaceHeroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.spaceHeroActions button {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 18px;
+  border: 1px solid #dbe3ee;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #334155;
+  font-weight: 800;
+  backdrop-filter: blur(16px);
+}
+
+.spaceHeroActions .memoNavIcon {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  background: rgba(15, 23, 42, 0.06);
+  color: currentColor;
+}
+
+.spaceHeroActions .memoNavIcon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.spaceHeroActions button:first-child {
+  border-color: rgba(16, 185, 129, 0.44);
+  background: #10b981;
+  color: #fff;
+  box-shadow: 0 20px 54px rgba(16, 185, 129, 0.22);
+}
+
+.spaceHeroActions button:hover {
+  transform: translateY(-1px);
+  background: #fff;
+}
+
+.spaceHeroActions button:first-child:hover {
+  background: #047857;
+}
+
+.adminOverviewPanel {
+  display: grid;
+  gap: 14px;
+  align-self: center;
+  padding: 18px;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.14);
+  backdrop-filter: blur(18px);
+}
+
+.adminOverviewHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.adminOverviewHeader span,
+.adminOverviewNext span,
+.adminOverviewStats span {
+  color: #047857;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.adminOverviewHeader strong {
+  color: #0f172a;
+  font-size: 1.18rem;
+}
+
+.adminOverviewStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.adminOverviewStats article {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.adminOverviewStats strong {
+  color: #0f172a;
+  font-size: 1.42rem;
+  line-height: 1;
+}
+
+.adminOverviewStats small,
+.adminOverviewMeta,
+.adminOverviewNext p {
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.adminOverviewStrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.adminOverviewStrip span {
+  min-width: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #065f46;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.adminOverviewNext {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #eff6ff;
+}
+
+.adminOverviewNext strong {
+  color: #1d4ed8;
+}
+
+.adminOverviewActions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.adminOverviewActions button {
+  min-width: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  font-weight: 900;
+}
+
+.adminOverviewActions button:hover {
+  border-color: rgba(16, 185, 129, 0.38);
+  background: #f0fdf4;
+  color: #047857;
+}
+
+.adminOverviewActions .memoNavIcon {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  background: #eef2f7;
+}
+
+.adminOverviewActions .memoNavIcon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.adminOverviewMeta {
+  font-size: 0.84rem;
+}
+
+.spaceSideStack {
+  align-self: end;
+  display: grid;
+  gap: 14px;
+}
+
+.spaceMissionPanel {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  background: rgba(2, 6, 23, 0.46);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(18px);
+}
+
+.spaceMissionPanel div {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.spaceMissionPanel span {
+  color: #93c5fd;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.spaceMissionPanel strong {
+  color: #fff;
+  font-size: 1.08rem;
+}
+
+@media (max-width: 900px) {
+  .spaceHome {
+    background-position: 60% center;
+  }
+
+  .spaceHero {
+    width: min(100% - 32px, 720px);
+    grid-template-columns: 1fr;
+    align-content: center;
+    padding: 44px 0;
+  }
+
+  .spaceHero.hasAdminOverview {
+    grid-template-columns: 1fr;
+  }
+
+  .spaceSideStack {
+    width: 100%;
+    align-self: auto;
+  }
+
+  .adminOverviewPanel {
+    align-self: auto;
+  }
+
+  .spaceMissionPanel {
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .spaceHome {
+    min-height: 100svh;
+    background:
+      linear-gradient(180deg, rgba(248, 250, 252, 0.92) 0%, rgba(248, 250, 252, 0.96) 62%, rgba(241, 245, 249, 1) 100%),
+      url("https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1400&q=80") 55% top/auto 54vh no-repeat,
+      #f8fafc;
+  }
+
+  .spaceHero {
+    min-height: 100svh;
+    width: min(100% - 28px, 520px);
+    align-content: end;
+    padding: 40px 0 24px;
+  }
+
+  .spaceHeroCopy {
+    gap: 16px;
+  }
+
+  .spaceHeroCopy h1 {
+    font-size: clamp(2.2rem, 13vw, 3.7rem);
+    line-height: 1.14;
+  }
+
+  .spaceHeroCopy p {
+    font-size: 0.98rem;
+  }
+
+  .spaceHeroActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .spaceHeroActions button {
+    width: 100%;
+  }
+
+  .adminOverviewStats,
+  .adminOverviewStrip,
+  .adminOverviewActions {
+    grid-template-columns: 1fr;
+  }
+
+  .spaceSideStack {
+    gap: 12px;
+  }
+
+  .spaceMissionPanel {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+}
+
+.projectBoardShell,
+.projectBoardShell * {
+  box-sizing: border-box;
+}
+
+.projectBoardShell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 268px minmax(0, 1fr);
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(241, 245, 249, 0.96)),
+    #f8fafc;
+  color: #1f2937;
+  font-family: Inter, "Pretendard Variable", "Apple SD Gothic Neo", system-ui, sans-serif;
+}
+
+.projectSidebar {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto auto auto auto 1fr;
+  align-content: start;
+  gap: 20px;
+  padding: 24px 18px;
+  border-right: 1px solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px);
+}
+
+.projectWorkspaceMark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 6px;
+}
+
+.projectWorkspaceMark > span {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #111827;
+  color: #fff;
+  font-weight: 900;
+}
+
+.projectWorkspaceMark div,
+.projectSidebarGroup {
+  display: grid;
+  gap: 4px;
+}
+
+.projectWorkspaceMark strong {
+  font-size: 0.98rem;
+}
+
+.projectWorkspaceMark small,
+.projectSidebarGroup > span,
+.projectBreadcrumb {
+  color: #6b7280;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.projectSidebarSearch {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f9fafb;
+  color: #6b7280;
+  text-align: left;
+}
+
+.projectSidebarGroup {
+  gap: 8px;
+}
+
+.projectSidebarGroup button,
+.projectSidebarFooter button {
+  width: 100%;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: #374151;
+  text-align: left;
+}
+
+.projectSidebarGroup button:hover,
+.projectSidebarFooter button:hover {
+  background: #f3f4f6;
+}
+
+.projectSidebarGroup em {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.projectSidebarFooter {
+  align-self: end;
+  display: grid;
+  gap: 8px;
+  padding-top: 18px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.projectBoardPage {
+  position: relative;
+  min-width: 0;
+  padding: 30px clamp(20px, 4vw, 48px) 42px;
+  overflow: hidden;
+}
+
+.projectTopbar,
+.projectBoardHero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.projectTopbar h1 {
+  margin-top: 4px;
+  color: #111827;
+  font-size: clamp(2rem, 4vw, 3.7rem);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.projectTopActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+}
+
+.projectTopActions button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: #4b5563;
+}
+
+.projectTopActions button:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.projectTopActions svg,
+.projectFloatingNote svg {
+  width: 19px;
+  height: 19px;
+}
+
+.projectBoardHero {
+  margin-top: 34px;
+}
+
+.projectBoardHero h2 {
+  margin-top: 18px;
+  color: #111827;
+  font-size: clamp(1.45rem, 3vw, 2.3rem);
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.projectViewTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.projectViewTabs button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #6b7280;
+  font-weight: 750;
+}
+
+.projectViewTabs button.active,
+.projectViewTabs button:hover {
+  border-color: #e5e7eb;
+  background: #fff;
+  color: #111827;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.projectNewItemButton {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: #111827;
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 18px 34px rgba(17, 24, 39, 0.18);
+}
+
+.projectFloatingNote {
+  position: absolute;
+  top: 126px;
+  right: clamp(22px, 4vw, 54px);
+  z-index: 3;
+  min-width: min(280px, calc(100vw - 44px));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 22px 58px rgba(15, 23, 42, 0.13);
+}
+
+.projectFloatingNote > span {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.projectFloatingNote div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.projectFloatingNote strong {
+  color: #111827;
+  font-size: 0.9rem;
+}
+
+.projectFloatingNote p {
+  color: #6b7280;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.projectKanban {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(230px, 1fr));
+  gap: 16px;
+  overflow-x: auto;
+  padding: 6px 2px 20px;
+}
+
+.projectKanbanColumn {
+  min-height: 520px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.07);
+}
+
+.projectKanbanColumn header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+}
+
+.projectKanbanColumn header div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.projectKanbanColumn strong {
+  color: #111827;
+  font-size: 0.96rem;
+}
+
+.projectKanbanColumn small {
+  min-width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-weight: 800;
+}
+
+.projectStatusIcon {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--status-color) 13%, white);
+  color: var(--status-color);
+  font-size: 0.8rem;
+  font-weight: 900;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--status-color) 28%, transparent);
+}
+
+.projectTaskList {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.projectTaskCard {
+  width: 100%;
+  min-height: 74px;
+  padding: 15px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #fff;
+  color: #1f2937;
+  font-weight: 760;
+  line-height: 1.35;
+  text-align: left;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+}
+
+.projectTaskCard:hover {
+  transform: translateY(-1px);
+  border-color: #d1d5db;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.09);
+}
+
+.memoBoardCard {
+  position: absolute;
+  display: grid;
+  gap: 10px;
+  align-content: center;
+  resize: both;
+  overflow: auto;
+  cursor: pointer;
+}
+
+.memoBoardCard.active {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12), 0 16px 32px rgba(15, 23, 42, 0.09);
+}
+
+.memoBoardCard.dragging {
+  opacity: 0.58;
+  cursor: grabbing;
+  user-select: none;
+}
+
+.memoMoveHandle {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 26px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dbe3ee;
+  border-radius: 7px;
+  background: rgba(248, 250, 252, 0.96);
+  color: #64748b;
+  padding: 0;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.memoMoveHandle:active {
+  cursor: grabbing;
+}
+
+.memoCardName {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #1f2937;
+  font: inherit;
+  font-weight: 760;
+  line-height: 1.35;
+  outline: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.memoBoardCard .memoCardName {
+  padding-left: 24px;
+}
+
+.memoCardName:focus {
+  color: #047857;
+}
+
+.memoCardTop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.memoCardTop span {
+  flex: 1;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.memoCardTop select,
+.memoCardTop button,
+.memoCardPath input {
+  min-height: 30px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.memoCardTop select {
+  flex: 1;
+  min-width: 92px;
+  padding: 0 8px;
+}
+
+.memoCardTop button {
+  padding: 0 8px;
+}
+
+.memoContextMenu {
+  position: fixed;
+  z-index: 2000;
+  min-width: 170px;
+  padding: 8px;
+  border: 1px solid #dbe3ee;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.16);
+}
+
+.memoContextMenu button {
+  width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  text-align: left;
+  font: inherit;
+  font-weight: 850;
+}
+
+.memoContextMenu button:hover {
+  background: #e8f7f2;
+  color: #047857;
+}
+
+.memoBoardCard textarea {
+  width: 100%;
+  min-height: 86px;
+  border: 0;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #1f2937;
+  padding: 10px;
+  resize: vertical;
+  font: inherit;
+  font-weight: 760;
+  line-height: 1.45;
+}
+
+.memoBoardCard textarea:focus,
+.memoCardPath input:focus {
+  outline: 2px solid rgba(16, 185, 129, 0.24);
+}
+
+.memoCardPath {
+  display: grid;
+  gap: 5px;
+}
+
+.memoCardPath span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.memoCardPath input {
+  width: 100%;
+  padding: 0 8px;
+}
+
+@media (max-width: 980px) {
+  .projectBoardShell {
+    grid-template-columns: 1fr;
+  }
+
+  .projectSidebar {
+    min-height: auto;
+    grid-template-columns: 1fr;
+    border-right: 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .projectSidebarGroup {
+    display: none;
+  }
+
+  .projectSidebarFooter {
+    align-self: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .projectFloatingNote {
+    position: static;
+    margin-top: 22px;
+  }
+
+  .projectKanban {
+    grid-template-columns: repeat(4, minmax(250px, 72vw));
+  }
+}
+
+@media (max-width: 560px) {
+  .projectBoardPage {
+    padding: 22px 16px 30px;
+  }
+
+  .projectTopbar,
+  .projectBoardHero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .projectTopActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .projectNewItemButton {
+    width: 100%;
+  }
+
+  .projectKanbanColumn {
+    min-height: 430px;
+  }
+}
+
+.aiNoteShell,
+.aiNoteShell * {
+  box-sizing: border-box;
+}
+
+.aiNoteShell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  background: #f6f8fb;
+  color: #1f2937;
+}
+
+.aiNoteSidebar {
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 18px;
+  border-right: 1px solid #dbe3ee;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.aiNoteHomeButton,
+.aiNoteSideGroup a,
+.aiNoteSideGroup button {
+  min-height: 38px;
+  border: 1px solid #dbe3ee;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #334155;
+  padding: 0 12px;
+  font: inherit;
+  font-weight: 800;
+  text-align: left;
+}
+
+.aiNoteHomeButton,
+.aiNoteSideGroup a:hover,
+.aiNoteSideGroup button:hover {
+  background: #e8f1ff;
+  color: #1d4ed8;
+}
+
+.aiNoteSideGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.aiNoteSideGroup span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.aiNoteSideGroup a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.aiNotePage {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 32px 0 48px;
+}
+
+.aiNoteBoardPanel {
+  position: relative;
+  margin-bottom: 24px;
+  padding: 24px;
+  border: 1px solid #dbe3ee;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 18px 42px rgba(31, 41, 55, 0.08);
+}
+
+.aiNoteBoardPanel .projectTopbar h1 {
+  font-size: clamp(1.9rem, 4vw, 3.1rem);
+}
+
+.aiNoteBoardPanel .projectFloatingNote {
+  top: 94px;
+  right: 24px;
+}
+
+.aiNoteBoardPanel .projectKanban {
+  grid-template-columns: repeat(4, minmax(210px, 1fr));
+}
+
+.aiNoteBoardPanel .projectKanbanColumn {
+  min-height: 360px;
+}
+
+.aiNoteHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+  align-items: center;
+  gap: 18px;
+}
+
+.aiNotePageIcon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #e8f1ff;
+  color: #2563eb;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.aiNoteHero h1 {
+  margin-top: 10px;
+  color: #0f172a;
+  font-size: clamp(2.15rem, 5vw, 4rem);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.aiNoteHero p {
+  max-width: 640px;
+  margin-top: 10px;
+  color: #64748b;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.aiNoteStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.aiNoteStats article,
+.aiNoteEditor,
+.aiNotePreview {
+  border: 1px solid #dbe3ee;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 42px rgba(31, 41, 55, 0.08);
+}
+
+.aiNoteStats article {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+}
+
+.aiNoteStats span {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.aiNoteStats strong {
+  color: #0f172a;
+  font-size: 1.25rem;
+}
+
+.aiNoteWorkspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+  align-items: start;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.aiNoteEditor,
+.aiNotePreview {
+  min-width: 0;
+  padding: 16px;
+}
+
+.aiNoteToolbar,
+.aiNotePreviewHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.aiNoteToolbar strong,
+.aiNotePreviewHeader span {
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.aiNoteToolbar div {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.aiNoteToolbar button,
+.aiNotePreviewHeader button {
+  min-height: 34px;
+  border: 1px solid #dbe3ee;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #334155;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.aiNoteBlocks {
+  display: grid;
+  gap: 12px;
+}
+
+.aiNoteBlock {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  cursor: default;
+}
+
+.aiNoteBlock.active {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.aiNoteBlock.dragging {
+  opacity: 0.58;
+  border-style: dashed;
+}
+
+.aiNoteBlockHandle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.aiNoteBlockHandle select,
+.aiNoteBlockHandle button {
+  min-height: 30px;
+  border: 1px solid #dbe3ee;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #334155;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.aiNoteBlockHandle button:disabled {
+  opacity: 0.42;
+}
+
+.aiNoteBlockHandle .aiNoteDragHandle {
+  width: 32px;
+  padding: 0;
+  cursor: grab;
+}
+
+.aiNoteBlockHandle .aiNoteDragHandle:active {
+  cursor: grabbing;
+}
+
+.aiNoteBlockHandle span {
+  min-width: 0;
+  flex: 1;
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aiNoteBlock textarea {
+  width: 100%;
+  min-height: 92px;
+  border: 0;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #1f2937;
+  padding: 12px;
+  font: inherit;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+}
+
+.aiNoteBlock textarea:focus {
+  box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.32);
+}
+
+.aiNoteScheduleHint {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.aiNoteFileStatus {
+  width: fit-content;
+  padding: 8px 10px;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8 !important;
+  font-size: 0.82rem !important;
+  font-weight: 800;
+}
+
+.aiNotePreview {
+  position: sticky;
+  top: 18px;
+}
+
+.aiNotePreviewBody {
+  display: grid;
+  gap: 12px;
+}
+
+.aiNotePreviewBlock {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  color: inherit;
+  text-align: left;
+}
+
+.aiNotePreviewBlock.schedule {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.aiNotePreviewBlock h3,
+.aiNotePreviewBlock h4,
+.aiNotePreviewBlock p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+
+.aiNotePreviewBlock h3 {
+  color: #0f172a;
+  font-size: 1.2rem;
+}
+
+.aiNotePreviewBlock h4 {
+  color: #1f2937;
+  font-size: 1.05rem;
+}
+
+.aiNotePreviewBlock p {
+  color: #334155;
+  line-height: 1.55;
+}
+
+.aiNotePreviewBlock small {
+  color: #64748b;
+  font-size: 0.76rem;
+}
+
+.aiNoteDetailMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.aiNoteDetailMeta span {
+  width: fit-content;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #e8f1ff;
+  color: #1d4ed8;
+  padding: 0 9px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.aiNoteScheduleDetail {
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  background: #eff6ff;
+}
+
+.aiNoteScheduleDetail strong {
+  color: #0f172a;
+}
+
+.aiNoteScheduleDetail time {
+  color: #1d4ed8;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.aiNoteScheduleDetail button {
+  width: fit-content;
+  min-height: 30px;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #fff;
+  color: #1d4ed8;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.aiNotePreviewEmpty {
+  padding: 18px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.aiNotePreviewBlock p.checked {
+  color: #64748b;
+  text-decoration: line-through;
+}
+
+.aiNoteScheduleBadge {
+  width: fit-content;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 0 9px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+@media (max-width: 980px) {
+  .aiNoteShell {
+    grid-template-columns: 1fr;
+  }
+
+  .aiNoteSidebar {
+    position: sticky;
+    z-index: 20;
+    min-height: auto;
+    padding: 10px 12px;
+    border-right: 0;
+    border-bottom: 1px solid #dbe3ee;
+  }
+
+  .aiNoteSideGroup {
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .aiNotePage {
+    width: min(100% - 24px, 720px);
+    padding: 24px 0 34px;
+  }
+
+  .aiNoteHero,
+  .aiNoteWorkspace {
+    grid-template-columns: 1fr;
+  }
+
+  .aiNotePreview {
+    position: static;
+  }
+
+  .aiNoteBoardPanel {
+    padding: 16px;
+  }
+
+  .aiNoteBoardPanel .projectFloatingNote {
+    position: static;
+    margin-top: 18px;
+  }
+
+  .aiNoteBoardPanel .projectKanban {
+    grid-template-columns: repeat(4, minmax(240px, 78vw));
+  }
+}
+
+@media (max-width: 560px) {
+  .aiNoteStats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .aiNoteStats article,
+  .aiNoteEditor,
+  .aiNotePreview {
+    border-radius: 14px;
+  }
+
+  .aiNoteToolbar,
+  .aiNotePreviewHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .aiNoteToolbar div,
+  .aiNoteToolbar button,
+  .aiNotePreviewHeader button {
+    width: 100%;
+  }
+
+  .aiNoteBlockHandle {
+    display: grid;
+    grid-template-columns: 1fr repeat(4, auto);
+  }
+
+  .aiNoteBlockHandle span {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ai-assitant app home */
+.spaceHome {
+  min-height: 100dvh;
+  place-items: start stretch;
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+.spaceHome::before,
+.spaceHome::after {
+  display: none;
+}
+
+.spaceHero,
+.spaceHero.hasAdminOverview {
+  width: min(100% - 32px, 1040px);
+  min-height: auto;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  align-items: start;
+  padding: 24px 0 40px;
+}
+
+.spaceHeroCopy {
+  gap: 14px;
+  padding: 16px 0 4px;
+}
+
+.spaceEyebrow {
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #0f766e;
+  font-size: 0.78rem;
+  letter-spacing: 0;
+  text-transform: none;
+  backdrop-filter: none;
+}
+
+.spaceHeroCopy h1 {
+  max-width: 620px;
+  color: #0f172a;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  line-height: 1.08;
+  font-weight: 900;
+}
+
+.spaceHeroLead {
+  max-width: 680px;
+  color: #334155;
+  font-size: clamp(1rem, 2.2vw, 1.25rem);
+  line-height: 1.55;
+  font-weight: 800;
+}
+
+.spaceHeroCopy p {
+  max-width: 620px;
+  color: #64748b;
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+.spaceHeroActions {
+  width: min(100%, 720px);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.spaceHeroActions button {
+  min-width: 0;
+  min-height: 52px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.spaceHeroActions button:first-child {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.spaceHeroActions button:hover,
+.spaceHeroActions button:first-child:hover {
+  transform: none;
+}
+
+.adminOverviewPanel {
+  width: 100%;
+  align-self: start;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+@media (max-width: 720px) {
+  .spaceHero,
+  .spaceHero.hasAdminOverview {
+    width: min(100% - 24px, 520px);
+    padding: 18px 0 28px;
+  }
+
+  .spaceHeroActions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .spaceHeroActions button {
+    justify-content: flex-start;
+  }
+
+  .adminOverviewStats,
+  .adminOverviewStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .spaceHeroActions {
+    grid-template-columns: 1fr;
+  }
+
+  .adminOverviewStats,
+  .adminOverviewStrip {
+    grid-template-columns: 1fr;
+  }
+}

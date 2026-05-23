@@ -43,7 +43,7 @@ public class CodexRagService {
 
     public String generate(String prompt, String username) throws IOException, InterruptedException {
         String apiKey = chatCredentialService.resolveOpenAiApiKey(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "OpenAI API key is not configured"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, ChatCredentialService.CONNECT_OPENAI_API_KEY_MESSAGE));
         String payload = objectMapper.writeValueAsString(buildPayload(prompt));
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(normalizeBaseUrl(appProperties.codexApiBaseUrl()) + "/chat/completions"))
@@ -56,7 +56,7 @@ public class CodexRagService {
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_GATEWAY,
-                    "Codex request failed. Check OpenAI/Codex key and model settings.");
+                    "Codex 요청에 실패했습니다. 개인 API 키를 연결하세요.");
         }
         JsonNode root = objectMapper.readTree(response.body());
         chatUsageService.recordUsage(username, "openai", codexModel(), extractUsage(root));

@@ -9,6 +9,9 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.time.Duration;
@@ -18,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +67,10 @@ public class ChatService {
         String title = resolveTitle(request);
         List<ChatMessage> transcriptMessages = new ArrayList<>(request.messages());
         transcriptMessages.add(new ChatMessage("assistant", assistantMessage));
-        fileService.writeWorkspaceFile(transcriptPath, renderTranscript(request, transcriptMessages, title, now), username, admin);
+        String transcript = maskSensitive(renderTranscript(request, transcriptMessages, title, now));
+        fileService.writeWorkspaceFile(transcriptPath, transcript, username, admin);
+        writeConversationArchive(username, transcriptPath, transcript);
+        appendConversationHistory(username, request, transcriptPath, title, now, modelResult.usage(), transcriptMessages);
         return new ChatResponse(assistantMessage, transcriptPath, title, now, modelResult.usage());
     }
 
@@ -84,12 +91,12 @@ public class ChatService {
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 if (response.statusCode() == 429) {
                     log.warn("Model API 429 status from provider={}, body={}", request.providerId(), summarize(maskSensitive(response.body())));
-                    throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "OpenAI API 사용량 한도 또는 모델 접근 권한 문제로 요청에 실패했습니다. 서버 관리자에게 문의하세요.");
+                    throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "개인 API 키의 사용량 한도 또는 모델 접근 권한 문제로 요청에 실패했습니다. 개인 API 키를 연결하세요.");
                 }
                 log.warn("Model API request failed from provider={}, status={}, body={}", request.providerId(), response.statusCode(), summarize(maskSensitive(response.body())));
                 throw new ResponseStatusException(
                         HttpStatus.BAD_GATEWAY,
-                        "Model API request failed. Check provider, model, and key settings.");
+                        "모델 API 요청에 실패했습니다. 개인 API 키를 연결하세요.");
             }
             JsonNode root = objectMapper.readTree(response.body());
             String content = extractAssistantMessage(root);
@@ -195,7 +202,7 @@ public class ChatService {
         builder.append("- saved_at: ").append(savedAt).append("\n");
         builder.append("- provider: ").append(request.providerId().trim()).append("\n");
         builder.append("- model: ").append(request.model().trim()).append("\n");
-        builder.append("- api_base: ").append(normalizeBaseUrl(request.baseUrl())).append("\n");
+        builder.append("- api_base: ").append(maskSensitive(normalizeBaseUrl(request.baseUrl()))).append("\n");
         builder.append("- directory: ").append(request.directoryPath() == null || request.directoryPath().isBlank() ? "/" : request.directoryPath().trim()).append("\n");
         builder.append("\n");
         if (request.systemPrompt() != null && !request.systemPrompt().isBlank()) {
@@ -208,6 +215,120 @@ public class ChatService {
             builder.append(message.content().trim()).append("\n\n");
         }
         return builder.toString().trim() + "\n";
+    }
+
+    private void writeConversationArchive(String username, String transcriptPath, String transcript) {
+        Path userRoot = conversationUserRoot(username);
+        Path target = resolveConversationPath(userRoot.resolve("transcripts").normalize(), transcriptPath);
+        Path latest = userRoot.resolve("latest.md").normalize();
+        if (!latest.startsWith(userRoot)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid latest conversation path");
+        }
+        try {
+            Path parent = target.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Files.writeString(
+                    target,
+                    transcript,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING,
+                    StandardOpenOption.WRITE);
+            Files.writeString(
+                    latest,
+                    transcript,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING,
+                    StandardOpenOption.WRITE);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to write conversation archive", e);
+        }
+    }
+
+    private void appendConversationHistory(
+            String username,
+            ChatRequest request,
+            String transcriptPath,
+            String title,
+            Instant savedAt,
+            ChatUsage usage,
+            List<ChatMessage> messages) {
+        Path userRoot = conversationUserRoot(username);
+        Path historyFile = userRoot.resolve("history.jsonl").normalize();
+        if (!historyFile.startsWith(userRoot)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid conversation history path");
+        }
+        try {
+            Files.createDirectories(userRoot);
+            Map<String, Object> event = new LinkedHashMap<>();
+            event.put("savedAt", savedAt.toString());
+            event.put("title", maskSensitive(title));
+            event.put("provider", request.providerId().trim());
+            event.put("model", request.model().trim());
+            event.put("apiBase", maskSensitive(normalizeBaseUrl(request.baseUrl())));
+            event.put("workspaceTranscriptPath", transcriptPath);
+            event.put("messages", messages.stream()
+                    .map(message -> Map.of(
+                            "role", message.role().trim(),
+                            "content", maskSensitive(message.content().trim())))
+                    .toList());
+            event.put("usage", Map.of(
+                    "inputTokens", usage.inputTokens(),
+                    "outputTokens", usage.outputTokens(),
+                    "totalTokens", usage.totalTokens()));
+            Files.writeString(
+                    historyFile,
+                    objectMapper.writeValueAsString(event) + "\n",
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND,
+                    StandardOpenOption.WRITE);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to append conversation history", e);
+        }
+    }
+
+    private Path conversationUserRoot(String username) {
+        return conversationRoot().resolve(conversationUsername(username)).normalize();
+    }
+
+    private Path conversationRoot() {
+        String configured = appProperties.conversationRoot();
+        if (configured == null || configured.isBlank()) {
+            String assistantRoot = appProperties.assistantDataRoot();
+            if (assistantRoot == null || assistantRoot.isBlank()) {
+                configured = "/data/jupiter-assistant/conversations";
+            } else {
+                configured = Path.of(assistantRoot.trim()).resolve("conversations").toString();
+            }
+        }
+        return Path.of(configured.trim()).normalize();
+    }
+
+    private Path resolveConversationPath(Path root, String relativePath) {
+        if (relativePath == null || relativePath.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Conversation transcript path is required");
+        }
+        Path relative = Path.of(relativePath.replace('\\', '/')).normalize();
+        if (relative.isAbsolute()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid conversation transcript path");
+        }
+        Path resolved = root.resolve(relative).normalize();
+        if (!resolved.startsWith(root)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid conversation transcript path");
+        }
+        return resolved;
+    }
+
+    private String conversationUsername(String username) {
+        if (username == null || username.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Conversation user is required");
+        }
+        String normalized = username.trim().toLowerCase(Locale.ROOT);
+        if (!normalized.matches("[a-zA-Z0-9._-]+")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid conversation user");
+        }
+        return normalized;
     }
 
     private String normalizeBaseUrl(String baseUrl) {
@@ -225,28 +346,24 @@ public class ChatService {
         String providerId = request.providerId() == null ? "" : request.providerId().trim().toLowerCase();
         if ("openai".equals(providerId)) {
             return chatCredentialService.resolveOpenAiApiKey(username)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "OpenAI API key is not configured"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, ChatCredentialService.CONNECT_OPENAI_API_KEY_MESSAGE));
         }
         if ("gemini".equals(providerId)) {
             return chatCredentialService.resolveGeminiAuthorization(username)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Gemini is not configured for this server"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, ChatCredentialService.CONNECT_GEMINI_ACCOUNT_MESSAGE));
         }
         String normalizedBaseUrl = normalizeBaseUrl(request.baseUrl()).toLowerCase();
         String model = request.model() == null ? "" : request.model().trim().toLowerCase();
         if (normalizedBaseUrl.contains("api.openai.com") || model.startsWith("gpt-") || model.startsWith("o1") || model.startsWith("o3") || model.startsWith("o4")) {
             return chatCredentialService.resolveOpenAiApiKey(username)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "OpenAI API key is not configured"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, ChatCredentialService.CONNECT_OPENAI_API_KEY_MESSAGE));
         }
         if (normalizedBaseUrl.contains("x.ai") || model.startsWith("grok")) {
-            String apiKey = appProperties.grokApiKey();
-            if (apiKey == null || apiKey.isBlank()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Server Grok API key is not configured");
-            }
-            return apiKey;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ChatCredentialService.CONNECT_PERSONAL_API_KEY_MESSAGE + " Grok 사용자 키 연결은 아직 지원되지 않습니다.");
         }
         if (normalizedBaseUrl.contains("generativelanguage.googleapis.com") || model.startsWith("gemini")) {
             return chatCredentialService.resolveGeminiAuthorization(username)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Gemini is not configured for this server"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, ChatCredentialService.CONNECT_GEMINI_ACCOUNT_MESSAGE));
         }
         return "";
     }
@@ -266,10 +383,13 @@ public class ChatService {
             return "";
         }
         return value
+                .replaceAll("(?i)(\"(?:api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|password)\"\\s*:\\s*\")[^\"]+(\")", "$1[REDACTED]$2")
+                .replaceAll("(?i)\\b(api[_-]?key|access_token|refresh_token|client_secret|token|password)=([^\\s&]+)", "$1=[REDACTED]")
                 .replaceAll("(?i)authorization\\s*:\\s*bearer\\s+[A-Za-z0-9._\\-]+", "authorization: bearer [REDACTED]")
                 .replaceAll("(?i)bearer\\s+[A-Za-z0-9._\\-]+", "bearer [REDACTED]")
+                .replaceAll("(?i)sk-proj-[A-Za-z0-9_-]+", "sk-proj-[REDACTED]")
                 .replaceAll("(?i)sk-[A-Za-z0-9_-]+", "sk-[REDACTED]")
-                .replaceAll("(?i)sk-proj-[A-Za-z0-9_-]+", "sk-proj-[REDACTED]");
+                .replaceAll("AIza[0-9A-Za-z_-]{20,}", "AIza[REDACTED]");
     }
 
     private String summarize(String value) {
