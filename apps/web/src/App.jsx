@@ -2321,6 +2321,20 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260523-planner-generate-status',
+    content: `# 2026-05-23 플래너 생성 상태 메시지 개선
+
+- [x] \`/planner\` 일정 생성 중 진행 카드를 추가
+- [x] 장소 후보 확인, 시간표 구성, 일정 저장 단계를 안내
+- [x] 실패 시 API 키 필요/서버 지연 메시지를 사용자용 문장으로 정리
+- [x] 실패 후 입력값 유지와 다시 생성 흐름 유지
+
+## 검증
+
+- [x] \`npm --prefix apps/web run build\`
+- [x] Docker web 재배포 후 \`/planner\` 확인`
+  },
+  {
     id: 'admin1-memo-20260523-planner-connect-simple',
     content: `# 2026-05-23 플래너와 연결 화면 단순화
 

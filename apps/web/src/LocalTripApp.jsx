@@ -631,6 +631,55 @@ function PlannerProgressiveCard({ index, title, summary, complete, active, onTog
   );
 }
 
+function plannerGenerateErrorMessage(error) {
+  const text = pickString(error?.message, error);
+  if (!text) {
+    return '일정을 만들지 못했습니다. 입력값을 확인한 뒤 다시 시도해 주세요.';
+  }
+  if (/openai|api\s*key|개인 api 키|키가 필요|401|403/i.test(text)) {
+    return '개인 OpenAI API 키가 필요합니다. 연결 화면의 고급 설정에서 키를 저장한 뒤 다시 시도해 주세요.';
+  }
+  if (/timeout|timed out|network|failed to fetch|502|503|504/i.test(text)) {
+    return '서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.';
+  }
+  if (text.length > 140) {
+    return `${text.slice(0, 140)}...`;
+  }
+  return text;
+}
+
+function PlannerGenerateStatus({ generating, error }) {
+  if (!generating && !error) return null;
+
+  if (generating) {
+    return (
+      <div className="ltGenerateStatus running" role="status" aria-live="polite">
+        <span className="ltGenerateSpinner" aria-hidden="true" />
+        <div>
+          <strong>여행 일정을 만들고 있습니다</strong>
+          <p>선택한 장소와 취향을 바탕으로 하루 동선, 식당, 카페를 정리합니다.</p>
+          <div className="ltGenerateSteps" aria-label="생성 진행 상태">
+            <span>장소 후보 확인</span>
+            <span>시간표 구성</span>
+            <span>일정 저장</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="ltGenerateStatus error" role="alert" aria-live="assertive">
+      <span className="ltGenerateErrorIcon" aria-hidden="true">!</span>
+      <div>
+        <strong>일정을 만들지 못했습니다</strong>
+        <p>{error}</p>
+        <small>입력한 장소와 날짜는 유지됩니다. 내용을 줄이거나 잠시 후 다시 생성해 보세요.</small>
+      </div>
+    </div>
+  );
+}
+
 function parseTimeRange(...values) {
   const text = pickString(...values);
   const match = text.match(/(\d{1,2}:\d{2})\s*(?:-|~|–|—|to)\s*(\d{1,2}:\d{2})/i);
@@ -2064,7 +2113,7 @@ function PlannerPage({ path, navigate }) {
         navigate(`/plans/${encodeURIComponent(plan.id)}`);
       }
     } catch (submitError) {
-      setGenerateError(submitError.message);
+      setGenerateError(plannerGenerateErrorMessage(submitError));
     } finally {
       setGenerating(false);
     }
@@ -2326,9 +2375,9 @@ function PlannerPage({ path, navigate }) {
             <div className="ltStepActions">
               <button type="button" onClick={() => setActiveStep(2)}>이전</button>
             </div>
-            {generateError ? <div className="ltInlineNotice error"><strong>생성 실패</strong><span>{generateError}</span></div> : null}
+            <PlannerGenerateStatus generating={generating} error={generateError} />
             <button type="submit" className="ltPrimaryButton ltStickyCta" disabled={generating || selectedDestinationIds.length === 0}>
-              {generating ? '일정 생성 중' : 'AI 일정 만들기'}
+              {generating ? '생성 중입니다' : generateError ? '다시 생성하기' : 'AI 일정 만들기'}
             </button>
           </div> : null}
         </form>

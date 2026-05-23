@@ -162,11 +162,105 @@
   min-width: 0;
 }
 
+.ltGenerateStatus {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  border: 1px solid #d8e3dc;
+  border-radius: 8px;
+  background: #f7fbf8;
+  color: #24352f;
+  padding: 14px;
+}
+
+.ltGenerateStatus strong,
+.ltGenerateStatus p,
+.ltGenerateStatus small {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ltGenerateStatus strong {
+  font-size: 0.98rem;
+  font-weight: 900;
+}
+
+.ltGenerateStatus p {
+  margin: 5px 0 0;
+  color: #5f6e67;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.ltGenerateStatus small {
+  margin-top: 7px;
+  color: #7a4a0b;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.ltGenerateStatus.error {
+  border-color: #fecdd3;
+  background: #fff7f8;
+  color: #9f1239;
+}
+
+.ltGenerateSpinner,
+.ltGenerateErrorIcon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+}
+
+.ltGenerateSpinner {
+  border: 3px solid #d7e7df;
+  border-top-color: #24564a;
+  animation: ltGenerateSpin 0.85s linear infinite;
+}
+
+.ltGenerateErrorIcon {
+  background: #ffe4e6;
+  color: #be123c;
+  font-weight: 900;
+}
+
+.ltGenerateSteps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 11px;
+}
+
+.ltGenerateSteps span {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #dfe8e2;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #375448;
+  padding: 0 10px;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+@keyframes ltGenerateSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 780px) {
   .ltProgressiveTrigger,
   .ltProgressiveMeta,
   .ltInlinePlannerGrid,
-  .ltDailyRouteBuilder.compact fieldset {
+  .ltDailyRouteBuilder.compact fieldset,
+  .ltGenerateStatus {
     grid-template-columns: 1fr;
   }
 
