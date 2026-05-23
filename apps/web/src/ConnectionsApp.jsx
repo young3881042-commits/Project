@@ -131,6 +131,19 @@ function apiUrlFor(path, settings) {
   return baseUrl ? `${baseUrl}${path.startsWith('/') ? path : `/${path}`}` : path;
 }
 
+function normalizeApiBaseUrl(value) {
+  const trimmed = String(value || '').trim().replace(/\/+$/, '');
+  if (!trimmed) return '';
+
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.origin === window.location.origin) return '';
+    return `${parsed.origin}${parsed.pathname.replace(/\/+$/, '')}`;
+  } catch {
+    return trimmed;
+  }
+}
+
 async function api(path, { token, settings, headers, json = true, ...init } = {}) {
   const response = await fetch(apiUrlFor(path, settings || DEFAULT_SETTINGS), {
     ...init,
@@ -348,12 +361,19 @@ export default function ConnectionsApp({ navigate, authToken }) {
     persistInboxItems(DEFAULT_INBOX_ITEMS);
   };
 
+  const handleApiBaseUrlBlur = () => {
+    persistSettings((current) => ({
+      ...current,
+      apiBaseUrl: normalizeApiBaseUrl(current.apiBaseUrl)
+    }));
+  };
+
   return (
     <main className="connectionsShell">
       <header className="connectionsHero">
         <div>
           <span className="connectionsEyebrow">Personal data hub</span>
-          <h1>개인 데이터 연결</h1>
+          <h1>연결</h1>
           <p>개인 서버 API, 사용자별 LLM 키, 메일, 로컬 메시지 권한을 한 화면에서 관리합니다.</p>
         </div>
         <div className="connectionsHeroActions">
@@ -396,7 +416,8 @@ export default function ConnectionsApp({ navigate, authToken }) {
             <input
               value={settings.apiBaseUrl}
               onChange={(event) => persistSettings((current) => ({ ...current, apiBaseUrl: event.target.value }))}
-              placeholder="https://api.example.com"
+              onBlur={handleApiBaseUrlBlur}
+              placeholder="비워두면 현재 서버 /api"
               inputMode="url"
             />
           </label>
@@ -412,8 +433,8 @@ export default function ConnectionsApp({ navigate, authToken }) {
             </div>
           </div>
           <div className="connectionsDataShape">
-            <code>{CONNECTION_SETTINGS_KEY}</code>
-            <span>설정은 localStorage에 저장되고 변경 이벤트로 다른 화면에 전달됩니다.</span>
+            <code>{settings.apiBaseUrl || '/api'}</code>
+            <span>같은 서버를 쓰면 빈 값으로 저장해서 URL을 짧게 유지합니다.</span>
           </div>
         </article>
 

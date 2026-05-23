@@ -1107,6 +1107,12 @@ function TravelWorkspaceIcon({ type }) {
         <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z" />
         <path d="M9 3v15M15 6v15" />
       </>
+    ),
+    link: (
+      <>
+        <path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" />
+        <path d="M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20.1l1.1-1.1" />
+      </>
     )
   };
 
@@ -1121,11 +1127,15 @@ function TravelWorkspaceIcon({ type }) {
 
 function TravelWorkspaceNavigator({ path, navigate }) {
   const items = [
-    { key: 'schedule', label: '일정', path: '/scheduler', icon: 'calendar' },
-    { key: 'notes', label: '노트', path: '/notes', icon: 'board' },
-    { key: 'trip', label: '여행 추천', path: '/destinations', icon: 'trip' }
+    { key: 'schedule', label: '내 일정', path: '/scheduler', icon: 'calendar' },
+    { key: 'notes', label: '메모', path: '/notes', icon: 'board' },
+    { key: 'trip', label: '장소 찾기', path: '/destinations', icon: 'trip' },
+    { key: 'connections', label: '연결', path: '/connect', icon: 'link' }
   ];
-  const active = path.startsWith('/scheduler') ? 'schedule' : path.startsWith('/notes') ? 'notes' : 'trip';
+  const active = path.startsWith('/scheduler') ? 'schedule'
+    : path.startsWith('/notes') ? 'notes'
+      : path.startsWith('/connect') || path.startsWith('/connections') ? 'connections'
+        : 'trip';
   const session = readStoredAuth();
   const guest = isGuestSession(session);
   const accountPath = guest ? '/login' : '/mypage';
@@ -1389,10 +1399,10 @@ function LocalTripNav({ path, navigate }) {
         <div className="ltServiceSwitch" aria-label="서비스 이동">
           <span className="ltServiceSwitchTitle">서비스 이동</span>
           <div className="ltServiceSwitchLinks">
-            <a className={path === '/app' ? 'active' : ''} href="/app" onClick={(event) => routeClick(event, '/app', navigate)}>홈</a>
-            <a className={path.startsWith('/scheduler') ? 'active' : ''} href="/scheduler" onClick={(event) => routeClick(event, '/scheduler', navigate)}>일정</a>
-            <a className={path.startsWith('/notes') ? 'active' : ''} href="/notes" onClick={(event) => routeClick(event, '/notes', navigate)}>노트</a>
-            <a className={path.startsWith('/destinations') || path.startsWith('/planner') || path.startsWith('/plans') ? 'active' : ''} href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)}>여행</a>
+            <a className={path.startsWith('/scheduler') ? 'active' : ''} href="/scheduler" onClick={(event) => routeClick(event, '/scheduler', navigate)}>내 일정</a>
+            <a className={path.startsWith('/notes') ? 'active' : ''} href="/notes" onClick={(event) => routeClick(event, '/notes', navigate)}>메모</a>
+            <a className={path.startsWith('/destinations') || path.startsWith('/planner') || path.startsWith('/plans') ? 'active' : ''} href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)}>장소 찾기</a>
+            <a className={path.startsWith('/connect') || path.startsWith('/connections') ? 'active' : ''} href="/connect" onClick={(event) => routeClick(event, '/connect', navigate)}>연결</a>
           </div>
         </div>
         <nav className="ltNavLinks" aria-label="여행 일정 메뉴">

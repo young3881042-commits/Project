@@ -20,9 +20,15 @@ const APP_SHORTCUTS = {
   aiSchedule: { label: '일정 만들기', path: '/planner' },
   personalScheduler: { label: '내 일정', path: '/scheduler' },
   aiMemoBoard: { label: '메모', path: '/notes' },
-  dataConnections: { label: '연결', path: '/connections' },
+  dataConnections: { label: '연결', path: '/connect' },
   adminWorkspace: { label: '관리', path: '/analysisadmin' }
 };
+const PRIMARY_SHORTCUTS = [
+  { key: 'schedule', shortcut: 'personalScheduler', icon: 'calendar' },
+  { key: 'notes', shortcut: 'aiMemoBoard', icon: 'board' },
+  { key: 'trip', shortcut: 'aiTrip', icon: 'trip' },
+  { key: 'connections', shortcut: 'dataConnections', icon: 'link' }
+];
 const RECURRENCE_LABELS = {
   none: '반복 없음',
   daily: '매일',
@@ -826,10 +832,14 @@ function WorkspaceHeader({
       </section>
       <div className="workspaceUserTray">
         <div className="workspaceTopTabs">
-          <button type="button" className="ghostButton compact" onClick={() => navigate(APP_SHORTCUTS.mainHub.path)}>{APP_SHORTCUTS.mainHub.label}</button>
-          <button type="button" className="ghostButton compact" onClick={() => navigate(APP_SHORTCUTS.aiTrip.path)}>{APP_SHORTCUTS.aiTrip.label}</button>
-          <button type="button" className="ghostButton compact" onClick={() => navigate(APP_SHORTCUTS.personalScheduler.path)}>{APP_SHORTCUTS.personalScheduler.label}</button>
-          <button type="button" className="ghostButton compact" onClick={() => navigate(APP_SHORTCUTS.aiMemoBoard.path)}>{APP_SHORTCUTS.aiMemoBoard.label}</button>
+          {PRIMARY_SHORTCUTS.map((item) => {
+            const shortcut = APP_SHORTCUTS[item.shortcut];
+            return (
+              <button key={item.key} type="button" className="ghostButton compact" onClick={() => navigate(shortcut.path)}>
+                {shortcut.label}
+              </button>
+            );
+          })}
         </div>
         {isGuest ? (
           <div className="workspaceGuestActions">
@@ -2466,12 +2476,11 @@ function MemoNavIcon({ type }) {
 }
 
 function WorkspaceNavigator({ active, navigate }) {
-  const items = [
-    { key: 'schedule', label: APP_SHORTCUTS.personalScheduler.label, path: APP_SHORTCUTS.personalScheduler.path, icon: 'calendar' },
-    { key: 'notes', label: APP_SHORTCUTS.aiMemoBoard.label, path: APP_SHORTCUTS.aiMemoBoard.path, icon: 'board' },
-    { key: 'connections', label: APP_SHORTCUTS.dataConnections.label, path: APP_SHORTCUTS.dataConnections.path, icon: 'link' },
-    { key: 'trip', label: APP_SHORTCUTS.aiTrip.label, path: APP_SHORTCUTS.aiTrip.path, icon: 'trip' }
-  ];
+  const items = PRIMARY_SHORTCUTS.map((item) => ({
+    key: item.key,
+    icon: item.icon,
+    ...APP_SHORTCUTS[item.shortcut]
+  }));
   const session = readStoredAuth();
   const isGuest = !session || session.isGuest || session.username === 'guestuser';
   const accountPath = isGuest ? '/login' : '/mypage';
@@ -2732,10 +2741,15 @@ function SpaceHomePage({ navigate }) {
           <strong className="spaceHeroLead">일정, 메모, 여행 계획을 바로 이어서 관리하세요.</strong>
           <p>필요한 메뉴만 남겼습니다.</p>
           <div className="spaceHeroActions">
-            <button type="button" onClick={() => navigate(APP_SHORTCUTS.personalScheduler.path)}><MemoNavIcon type="calendar" />{APP_SHORTCUTS.personalScheduler.label}</button>
-            <button type="button" onClick={() => navigate(APP_SHORTCUTS.aiMemoBoard.path)}><MemoNavIcon type="board" />{APP_SHORTCUTS.aiMemoBoard.label}</button>
-            <button type="button" onClick={() => navigate(APP_SHORTCUTS.aiTrip.path)}><MemoNavIcon type="trip" />{APP_SHORTCUTS.aiTrip.label}</button>
-            <button type="button" onClick={() => navigate(APP_SHORTCUTS.dataConnections.path)}><MemoNavIcon type="link" />{APP_SHORTCUTS.dataConnections.label}</button>
+            {PRIMARY_SHORTCUTS.map((item) => {
+              const shortcut = APP_SHORTCUTS[item.shortcut];
+              return (
+                <button key={item.key} type="button" onClick={() => navigate(shortcut.path)}>
+                  <MemoNavIcon type={item.icon} />
+                  {shortcut.label}
+                </button>
+              );
+            })}
           </div>
         </div>
         {adminOverview ? (
@@ -3742,7 +3756,7 @@ function SchedulerPage({ navigate, embedded = false }) {
             <MemoNavIcon type="plus" />
             <span>{quickAddOpen ? '닫기' : '일정 추가'}</span>
           </button>
-          <button type="button" className="schedulerCuteAdd secondary" onClick={() => navigate('/connections')}>
+          <button type="button" className="schedulerCuteAdd secondary" onClick={() => navigate(APP_SHORTCUTS.dataConnections.path)}>
             <MemoNavIcon type="link" />
             <span>데이터 연결</span>
           </button>
@@ -3957,8 +3971,8 @@ export default function App() {
   const routePath = path.split('?')[0];
 
   useEffect(() => {
-    if (routePath === '/') {
-      window.history.replaceState({}, '', APP_SHORTCUTS.mainHub.path);
+    if (routePath === '/' || routePath === '/connections') {
+      window.history.replaceState({}, '', routePath === '/' ? APP_SHORTCUTS.mainHub.path : APP_SHORTCUTS.dataConnections.path);
       setPath(currentPath());
     }
   }, [routePath]);
@@ -3975,7 +3989,7 @@ export default function App() {
     return <SchedulerPage navigate={navigate} />;
   }
 
-  if (routePath === '/connections') {
+  if (routePath === '/connect') {
     return <ConnectionsPage navigate={navigate} />;
   }
 
@@ -3987,7 +4001,7 @@ export default function App() {
     return <PortfolioHomePage navigate={navigate} />;
   }
 
-  if (routePath === '/') {
+  if (routePath === '/' || routePath === '/connections') {
     return null;
   }
 

@@ -19,7 +19,7 @@ ai-assitant는 개인 모바일 기기나 설치 앱에서 내 서버와 외부 
 - Spring Boot 기반 API 서버
 - MariaDB 기반 DB 구성
 - Docker 실행 구조
-- `/` 개인 AI 비서 홈, `/portfolio` 포트폴리오, `/connections` 개인 데이터 연결 화면
+- `/app` 개인 AI 비서 홈, `/portfolio` 포트폴리오, `/connect` 개인 데이터 연결 화면
 - 일정/메모 중심의 개인 데이터 허브
 - Gmail, 네이버 메일, 파일, 향후 로컬 메시지 연결 설계
 - 로그인 사용자별 OpenAI/Gemini 키 등록 구조
@@ -36,7 +36,7 @@ ai-assitant는 개인 모바일 기기나 설치 앱에서 내 서버와 외부 
 - `/`을 기본 앱 홈으로 사용
 - 오늘 일정, 최근 메모, 연결된 개인 데이터, 추천 액션을 한 화면에서 확인
 - `/portfolio`는 외부 공유용 포트폴리오로 분리
-- `/connections`에서 개인 데이터 연결과 권한 상태 관리
+- `/connect`에서 개인 데이터 연결과 권한 상태 관리
 
 ### 2. Web UI
 - React + Vite 기반 프론트엔드
@@ -120,7 +120,7 @@ ai-assitant는 개인 모바일 기기나 설치 앱에서 내 서버와 외부 
 
 ## 개인 AI 비서 앱과 LocalTrip AI
 
-ai-assitant의 제품 방향은 `개인 AI 비서`, `개인 데이터 허브`, `일정/메모 중심`입니다. 기본 앱 홈은 `/app`으로 사용하고, 웹 루트 `/`는 `/app`으로 이동합니다. 포트폴리오 공개 화면은 `/portfolio`, 개인 데이터 연결 화면은 `/connections`로 분리합니다.
+ai-assitant의 제품 방향은 `개인 AI 비서`, `개인 데이터 허브`, `일정/메모 중심`입니다. 기본 앱 홈은 `/app`으로 사용하고, 웹 루트 `/`는 `/app`으로 이동합니다. 포트폴리오 공개 화면은 `/portfolio`, 개인 데이터 연결 화면은 `/connect`로 분리합니다.
 
 LocalTrip AI는 이 개인 AI 비서 안에 들어가는 여행 일정 생성 기능입니다. 한국관광공사 TourAPI 연동을 준비한 일정 생성 MVP이며, 기존 분석 워크스페이스는 `/analysisadmin`에 유지합니다.
 
@@ -157,7 +157,7 @@ LocalTrip AI는 이 개인 AI 비서 안에 들어가는 여행 일정 생성 �
 
 - 개인 AI 비서 앱: `http://192.168.45.101:31088/app`
 - 포트폴리오 Web: `http://192.168.45.101:31088/portfolio`
-- 개인 데이터 연결: `http://192.168.45.101:31088/connections`
+- 개인 데이터 연결: `http://192.168.45.101:31088/connect`
 - LocalTrip AI: `http://192.168.45.101:31088/destinations`
 - ai-assitant 분석 워크스페이스: `http://192.168.45.101:31088/analysisadmin`
 - API: `http://192.168.45.101:31090`
@@ -264,7 +264,7 @@ python3 /root/scripts/localtrip_collect_tourapi.py mock-export
 
 ### 향후 확장 계획
 
-- `/connections` 기반 Gmail OAuth 연결
+- `/connect` 기반 Gmail OAuth 연결
 - 네이버 메일 IMAP/앱 비밀번호 연결
 - Android/iOS 네이티브 권한 기반 로컬 메시지 수집 검토
 - 사용자별 OpenAI/Gemini 키 등록과 관리
@@ -334,7 +334,7 @@ python3 /root/scripts/localtrip_collect_tourapi.py mock-export
 
 #### 플랫폼 확장
 - [ ] 사용자별 RAG 데이터 분리 구조
-- [ ] `/` 개인 AI 비서 홈, `/portfolio` 포트폴리오, `/connections` 개인 데이터 연결 라우팅 정리
+- [ ] `/app` 개인 AI 비서 홈, `/portfolio` 포트폴리오, `/connect` 개인 데이터 연결 라우팅 정리
 - [ ] Gmail 공식 API OAuth 연결
 - [ ] 네이버 메일 IMAP/앱 비밀번호 연결
 - [ ] 로컬 메시지 Android/iOS 네이티브 권한 검토

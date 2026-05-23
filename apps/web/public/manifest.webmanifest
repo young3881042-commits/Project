@@ -31,6 +31,11 @@
       "name": "AI Trip",
       "short_name": "여행",
       "url": "/destinations"
+    },
+    {
+      "name": "연결",
+      "short_name": "연결",
+      "url": "/connect"
     }
   ]
 }
