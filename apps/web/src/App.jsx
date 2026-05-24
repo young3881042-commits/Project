@@ -2326,6 +2326,21 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260524-apps-route-alias',
+    content: `# 2026-05-24 /apps 앱 홈 라우트 보정
+
+- [x] \`/apps\`로 들어와도 여행 NotFound 화면 대신 \`/app\` 앱 홈으로 이동
+- [x] Nginx에서도 \`/\`, \`/apps\`, \`/connections\`를 각각 기준 경로로 리다이렉트
+- [x] React 라우터에도 같은 별칭 처리를 남겨 정적 fallback 상황을 보강
+- [x] Docker web/API 재배포 후 공개 URL에서 \`/apps\`, \`/app\`, API 응답 확인
+
+## 검증
+
+- [x] \`npm --prefix apps/web run build\`
+- [x] \`docker compose -f docker-compose.dev.yml up -d --build api web\`
+- [x] \`http://34.42.232.172/apps\` 확인`
+  },
+  {
     id: 'admin1-memo-20260524-home-memo-connect-apk',
     content: `# 2026-05-24 홈 화면 메모 중심 개편과 APK 갱신
 
@@ -4086,13 +4101,18 @@ export default function App() {
   };
 
   const routePath = path.split('?')[0];
+  const redirectPath = routePath === '/' || routePath === '/apps'
+    ? APP_SHORTCUTS.mainHub.path
+    : routePath === '/connections'
+      ? APP_SHORTCUTS.dataConnections.path
+      : '';
 
   useEffect(() => {
-    if (routePath === '/' || routePath === '/connections') {
-      window.history.replaceState({}, '', routePath === '/' ? APP_SHORTCUTS.mainHub.path : APP_SHORTCUTS.dataConnections.path);
+    if (redirectPath) {
+      window.history.replaceState({}, '', redirectPath);
       setPath(currentPath());
     }
-  }, [routePath]);
+  }, [redirectPath]);
 
   if (routePath === '/analysis' || routePath.startsWith('/analysis/')) {
     return <AnalysisFileEditorPage navigate={navigate} />;
@@ -4118,7 +4138,7 @@ export default function App() {
     return <PortfolioHomePage navigate={navigate} />;
   }
 
-  if (routePath === '/' || routePath === '/connections') {
+  if (redirectPath) {
     return null;
   }
 

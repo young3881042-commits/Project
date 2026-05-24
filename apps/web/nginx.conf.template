@@ -19,6 +19,18 @@ server {
     return 200 "ok\n";
   }
 
+  location = / {
+    return 302 /app;
+  }
+
+  location = /apps {
+    return 302 /app;
+  }
+
+  location = /connections {
+    return 302 /connect;
+  }
+
   location ~ (^|/)\.(?!well-known/) {
     return 404;
   }

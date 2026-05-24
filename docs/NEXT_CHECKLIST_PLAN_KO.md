@@ -90,6 +90,9 @@
 - [x] `/app` 홈 배경을 복잡한 사진 대신 그리드 그라데이션으로 바꾸고 이미지 출처 텍스트를 제거한다.
 - [x] Android WebView APK 시작 경로를 `/app`으로 맞추고 설치 파일을 다시 생성한다.
 - [x] 이번 홈 화면 메모 중심 개편과 APK 갱신 작업 로그를 `admin1` 메모 보드 시드로 남긴다.
+- [x] `/apps` 오입력 경로를 `/app` 앱 홈으로 이동하게 한다.
+- [x] Nginx에서 `/`, `/apps`, `/connections` 기준 경로를 서버 리다이렉트로 정리한다.
+- [x] 이번 `/apps` 라우트 보정 작업 로그를 `admin1` 메모 보드 시드로 남긴다.
 - [ ] Gmail 연결은 공식 Gmail API OAuth 동의, 토큰 저장, 만료 갱신, 연결 해제 흐름으로 설계한다.
 - [ ] 네이버 메일 연결은 공식 메일 읽기 Open API 확인 전까지 IMAP/앱 비밀번호 입력 방식으로 설계한다.
 - [ ] 로컬 메시지 수집은 웹/PWA 직접 접근이 불가하므로 Android/iOS 네이티브 권한 기반 후속 작업으로 분리한다.
@@ -128,11 +131,12 @@
 - [x] Docker Android SDK 이미지에서 APK를 재생성하고 내부 시작 URL이 `/app`인지 확인한다.
 - [x] Docker web에서 `/app`, `/manifest.webmanifest`, `/downloads/ai-assitant-debug.apk`를 확인한다.
 - [x] Docker web에서 API `/api/destinations?size=1` 응답을 확인한다.
-- [ ] `/` 진입 시 `/app`으로 이동하는지 확인한다.
-- [ ] `/portfolio` 포트폴리오 웹이 열리는지 확인한다.
-- [ ] `/connect` 개인 데이터 연결 화면이 열리는지 확인한다.
-- [ ] 운영 Web 로그에서 최신 `index-*.js`, `index-*.css`가 200으로 내려가는지 확인한다.
-- [ ] `/api/destinations?size=500` 응답이 50개를 초과하는지 확인한다.
+- [x] `/apps` 진입 시 `/app` 앱 홈으로 이동하는지 확인한다.
+- [x] `/` 진입 시 `/app`으로 이동하는지 확인한다.
+- [x] `/portfolio` 포트폴리오 웹이 열리는지 확인한다.
+- [x] `/connect` 개인 데이터 연결 화면이 열리는지 확인한다.
+- [x] 운영 Web 로그에서 최신 `index-*.js`, `index-*.css`가 200으로 내려가는지 확인한다.
+- [x] `/api/destinations?size=500` 응답이 50개를 초과하는지 확인한다.
 
 ## 변경 로그
 
@@ -154,6 +158,7 @@
 - 2026-05-24: `/app`, `/portfolio`, `/connect`, 여행 화면의 문구를 간결하게 정리하고 Wikimedia Commons CC0 사진 기반 배경/프리뷰 비주얼을 적용했다.
 - 2026-05-24: `/app` 홈 액션을 3개로 줄이고 연결 기능을 메모 카드 내부 액션으로 이동했으며, 사진 배경을 그리드 그라데이션 배경으로 교체했다.
 - 2026-05-24: Android WebView APK 시작 경로를 `/app`으로 맞추고 설치 파일을 다시 생성해 `/downloads/ai-assitant-debug.apk`로 배치했다.
+- 2026-05-24: `/apps`로 접속해도 `/app` 앱 홈으로 이동하도록 React 라우트 별칭과 Nginx 리다이렉트를 추가했다.
 - 2026-05-23: PWA manifest, SVG 앱 아이콘, service worker 기본 파일을 추가했다.
 - 2026-05-23: 내부 홈 링크와 작업 로그 시드를 포트폴리오/앱 분리 기준으로 갱신했다.
 - 2026-05-20: 메인 화면을 `개인 스케줄러`, `AI Trip` 2개 진입점으로 단순화했다.

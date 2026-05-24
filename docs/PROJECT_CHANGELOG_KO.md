@@ -328,6 +328,21 @@ apps/mobile/android/build/ai-assitant-debug.apk
 - Docker Android SDK 이미지에서 `scripts/build_android_apk.sh` 실행
 - APK 내부 WebView URL이 `http://192.168.45.101/app`인지 확인
 
+## 17. 2026-05-24 /apps 앱 홈 라우트 보정
+
+변경 내용:
+
+- `/apps`로 접속했을 때 여행 NotFound 화면으로 떨어지지 않고 `/app` 앱 홈으로 이동하게 했습니다.
+- Nginx에서도 `/`, `/apps`, `/connections`를 각각 `/app`, `/app`, `/connect`로 리다이렉트하게 했습니다.
+- React 라우터에도 같은 별칭 처리를 남겨 정적 fallback 상황을 보강했습니다.
+- `admin1` 메모 보드 시드와 작업 체크리스트에 이번 라우트 보정 로그를 남겼습니다.
+
+검증:
+
+- `npm --prefix apps/web run build`
+- `docker compose -f docker-compose.dev.yml up -d --build api web`
+- Docker web `nginx -t`, `/apps`, `/app`, API `/api/destinations?size=1` 확인
+
 ## 8. 2026-05-21 노트와 문서 정리
 
 이번 변경에서는 노트 보드 흐름을 더 가볍게 만들고, 작업 문서를 Docker 기준으로 정리했습니다.
