@@ -292,6 +292,21 @@ apps/mobile/android/build/ai-assitant-debug.apk
 - 실패 시 원문 에러를 그대로 노출하지 않고 API 키 필요, 서버 지연 등 사용자가 이해할 수 있는 메시지로 정리합니다.
 - 실패 후에도 입력값은 유지하고 같은 버튼에서 다시 생성할 수 있게 했습니다.
 
+## 15. 2026-05-24 메모 우선 연결과 Android APK 갱신
+
+변경 내용:
+
+- `/connect`의 첫 선택지를 메모 보드로 바꾸고, 이메일과 문자는 후속 연결로 이동했습니다.
+- Android WebView 앱의 시작 URL을 `/notes`로 바꿔 설치 후 바로 메모 보드가 열리게 했습니다.
+- Docker Android SDK 이미지에서도 `scripts/build_android_apk.sh`를 실행할 수 있도록 SDK 기본 경로와 release 복사 흐름을 보강했습니다.
+- 새 APK를 `apps/mobile/android/release/ai-assitant-debug.apk`에 생성하고, Docker 웹에서 받을 수 있도록 `/downloads/ai-assitant-debug.apk` 공개 경로에도 배치합니다.
+
+검증:
+
+- `npm --prefix apps/web run build`
+- `scripts/build_android_apk.sh`
+- Docker web 재배포 후 `/connect`, `/notes`, `/downloads/ai-assitant-debug.apk` 확인
+
 ## 8. 2026-05-21 노트와 문서 정리
 
 이번 변경에서는 노트 보드 흐름을 더 가볍게 만들고, 작업 문서를 Docker 기준으로 정리했습니다.

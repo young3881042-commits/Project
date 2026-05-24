@@ -77,6 +77,8 @@
 - [x] 개인 데이터 연결 기본 URL을 `/connect`로 줄이고 기존 `/connections`는 `/connect`로 이동하게 한다.
 - [x] 앱 홈, 워크스페이스, 여행 화면, PWA manifest의 공통 바로가기를 `내 일정`, `메모`, `장소 찾기`, `연결` 4개로 통일한다.
 - [x] `/connect` 화면을 이메일/문자 중심으로 단순화하고 API/LLM 키는 고급 설정으로 내린다.
+- [x] `/connect` 첫 연결 대상을 메모 보드로 바꾸고 Android 앱 시작 경로를 `/notes`로 맞춘다.
+- [x] Android 설치용 APK를 다시 생성하고 Docker 웹 공개 다운로드 경로에 배치한다.
 - [ ] Gmail 연결은 공식 Gmail API OAuth 동의, 토큰 저장, 만료 갱신, 연결 해제 흐름으로 설계한다.
 - [ ] 네이버 메일 연결은 공식 메일 읽기 Open API 확인 전까지 IMAP/앱 비밀번호 입력 방식으로 설계한다.
 - [ ] 로컬 메시지 수집은 웹/PWA 직접 접근이 불가하므로 Android/iOS 네이티브 권한 기반 후속 작업으로 분리한다.
@@ -108,7 +110,10 @@
 - [x] `docker compose -f docker-compose.dev.yml up -d --build api web`
 - [x] `docker compose -f docker-compose.dev.yml ps`
 - [x] `docker compose -f docker-compose.dev.yml exec -T web nginx -t`
+- [x] `scripts/build_android_apk.sh`
 - [x] `/app` 개인 AI 비서 홈이 열리는지 확인한다.
+- [x] `/connect` 첫 화면이 메모 연결로 열리는지 확인한다.
+- [x] `/downloads/ai-assitant-debug.apk`가 내려가는지 확인한다.
 - [ ] `/` 진입 시 `/app`으로 이동하는지 확인한다.
 - [ ] `/portfolio` 포트폴리오 웹이 열리는지 확인한다.
 - [ ] `/connect` 개인 데이터 연결 화면이 열리는지 확인한다.
@@ -129,6 +134,7 @@
 - 2026-05-23: 연결 URL을 `/connect`로 정리하고 공통 바로가기 4개 구성을 화면별로 통일했다.
 - 2026-05-23: `/planner` 날짜·동선 입력을 클릭형 보강 카드로 정리하고, `/connect`를 이메일/문자 중심으로 단순화했다.
 - 2026-05-23: `/planner` 일정 생성 중 진행 안내와 실패 원인/조치 메시지를 읽기 쉽게 정리했다.
+- 2026-05-24: `/connect` 첫 연결을 메모 보드로 바꾸고 Android WebView APK 시작 경로를 `/notes`로 갱신했다.
 - 2026-05-23: PWA manifest, SVG 앱 아이콘, service worker 기본 파일을 추가했다.
 - 2026-05-23: 내부 홈 링크와 작업 로그 시드를 포트폴리오/앱 분리 기준으로 갱신했다.
 - 2026-05-20: 메인 화면을 `개인 스케줄러`, `AI Trip` 2개 진입점으로 단순화했다.

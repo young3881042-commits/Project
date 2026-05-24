@@ -3,8 +3,12 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_DIR="${ROOT_DIR}/apps/mobile/android"
-BUILD_DIR="${APP_DIR}/build"
-SDK_HOME="${ANDROID_HOME:-/opt/android-sdk}"
+BUILD_DIR="${ANDROID_BUILD_DIR:-${APP_DIR}/build}"
+RELEASE_DIR="${ANDROID_RELEASE_DIR:-${APP_DIR}/release}"
+SDK_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/opt/android-sdk}}"
+if [[ ! -d "${SDK_HOME}" && -d /opt/android-sdk-linux ]]; then
+  SDK_HOME=/opt/android-sdk-linux
+fi
 PLATFORM="${SDK_HOME}/platforms/android-35"
 BUILD_TOOLS="${SDK_HOME}/build-tools/35.0.0"
 PACKAGE_NAME="com.platform.aiassitant"
@@ -61,4 +65,6 @@ keytool -genkeypair \
   "${BUILD_DIR}/ai-assitant-aligned.apk"
 
 "${BUILD_TOOLS}/apksigner" verify "${BUILD_DIR}/ai-assitant-debug.apk"
-echo "${BUILD_DIR}/ai-assitant-debug.apk"
+mkdir -p "${RELEASE_DIR}"
+cp "${BUILD_DIR}/ai-assitant-debug.apk" "${RELEASE_DIR}/ai-assitant-debug.apk"
+echo "${RELEASE_DIR}/ai-assitant-debug.apk"

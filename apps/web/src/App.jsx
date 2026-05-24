@@ -2321,6 +2321,21 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260524-memo-first-android-apk',
+    content: `# 2026-05-24 메모 우선 연결과 Android APK
+
+- [x] \`/connect\` 첫 연결 대상을 메모 보드로 변경
+- [x] Android WebView 앱 시작 경로를 \`/notes\`로 변경
+- [x] Docker Android SDK 이미지로 설치용 APK를 다시 생성
+- [x] 웹에서 받을 수 있도록 APK 다운로드 파일을 공개 경로에 배치
+
+## 검증
+
+- [x] \`npm --prefix apps/web run build\`
+- [x] \`scripts/build_android_apk.sh\`
+- [x] Docker web 재배포 후 \`/connect\`, \`/notes\`, APK 다운로드 경로 확인`
+  },
+  {
     id: 'admin1-memo-20260523-planner-generate-status',
     content: `# 2026-05-23 플래너 생성 상태 메시지 개선
 

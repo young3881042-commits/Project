@@ -134,6 +134,12 @@ function ConnectionIcon({ type }) {
         <path d="m4 7 8 6 8-6" />
       </>
     ),
+    note: (
+      <>
+        <path d="M6 4h12v16H6z" />
+        <path d="M9 8h6M9 12h6M9 16h3" />
+      </>
+    ),
     phone: (
       <>
         <path d="M8 3h8v18H8z" />
@@ -184,7 +190,7 @@ export default function ConnectionsApp({ navigate, authToken }) {
   const [providerLoading, setProviderLoading] = useState(false);
   const [savingOpenAi, setSavingOpenAi] = useState(false);
   const [message, setMessage] = useState('');
-  const [activeSource, setActiveSource] = useState('email');
+  const [activeSource, setActiveSource] = useState('memo');
 
   const openAiProvider = useMemo(
     () => providers.find((provider) => provider.id === 'openai'),
@@ -286,11 +292,11 @@ export default function ConnectionsApp({ navigate, authToken }) {
         <div>
           <span className="connectionsEyebrow">Personal data</span>
           <h1>연결</h1>
-          <p>이메일과 문자만 먼저 연결합니다. 세부 설정은 필요할 때만 열어봅니다.</p>
+          <p>처음 연결은 메모 보드로 시작합니다. 이메일과 문자는 필요할 때 이어서 붙입니다.</p>
         </div>
         <div className="connectionsHeroActions">
-          <button type="button" className="connectionsGhostButton" onClick={() => navigate?.('/scheduler')}>
-            내 일정
+          <button type="button" className="connectionsGhostButton" onClick={() => navigate?.('/notes')}>
+            메모 열기
           </button>
         </div>
       </header>
@@ -298,6 +304,18 @@ export default function ConnectionsApp({ navigate, authToken }) {
       {message ? <p className="connectionsNotice">{message}</p> : null}
 
       <section className="connectionsChoiceGrid" aria-label="연결할 데이터 선택">
+        <button
+          type="button"
+          className={activeSource === 'memo' ? 'active' : ''}
+          onClick={() => setActiveSource('memo')}
+        >
+          <ConnectionIcon type="note" />
+          <span>
+            <strong>메모</strong>
+            <small>AI 메모 보드</small>
+          </span>
+          <StatusPill tone="ok">기본 연결</StatusPill>
+        </button>
         <button
           type="button"
           className={activeSource === 'email' ? 'active' : ''}
@@ -325,7 +343,26 @@ export default function ConnectionsApp({ navigate, authToken }) {
       </section>
 
       <section className="connectionsPanel connectionsSimplePanel">
-        {activeSource === 'email' ? (
+        {activeSource === 'memo' ? (
+          <>
+            <SectionHeader icon="note" eyebrow="Memo" title="메모 보드" action={<StatusPill tone="ok">기본 연결</StatusPill>}>
+              Docker 웹과 Android 앱의 첫 연결 대상입니다.
+            </SectionHeader>
+            <div className="connectionsReadiness">
+              <span>현재 상태</span>
+              <strong>AI 메모 보드로 연결됨</strong>
+              <small>처음 실행하면 메모 보드에서 작업 로그, 개인 메모, 일정 후보를 이어서 관리합니다.</small>
+            </div>
+            <div className="connectionsButtonRow">
+              <button type="button" className="connectionsPrimaryButton" onClick={() => navigate?.('/notes')}>
+                메모 보드 열기
+              </button>
+              <button type="button" className="connectionsGhostButton" onClick={() => navigate?.('/scheduler')}>
+                내 일정
+              </button>
+            </div>
+          </>
+        ) : activeSource === 'email' ? (
           <>
             <SectionHeader icon="mail" eyebrow="Email" title="이메일" action={<StatusPill tone={emailReady ? 'ok' : 'warn'}>{emailReady ? '설정됨' : '대기'}</StatusPill>}>
               메일에서 예약, 결제, 일정 후보를 찾는 연결입니다.
