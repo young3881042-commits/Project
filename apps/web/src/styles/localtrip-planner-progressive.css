@@ -277,3 +277,93 @@
     padding: 12px;
   }
 }
+
+/* Product copy and visual refresh */
+.ltHomePage .ltHero {
+  min-height: 72vh;
+}
+
+.ltHeroCopy h1,
+.ltPageTitle h1,
+.ltPlanHeroMain h1 {
+  color: #111827;
+  text-wrap: balance;
+}
+
+.ltHeroSearch,
+.ltFilterBar,
+.ltPlannerForm,
+.ltPlannerPreview,
+.ltPlanCard,
+.ltDestinationCard,
+.ltMyHero,
+.ltMyPanel {
+  border-radius: 8px !important;
+}
+
+.ltServiceCard,
+.ltDestinationCard,
+.ltPlanCard {
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+}
+
+.ltServiceCard:hover,
+.ltDestinationCard:hover,
+.ltPlanCard:hover {
+  transform: translateY(-2px);
+}
+
+.ltServiceIcon,
+.ltTabIcon,
+.ltPageIcon {
+  border-radius: 8px;
+}
+
+.ltHeroFilters button:last-child,
+.ltPrimaryButton,
+.ltStickyCta,
+.ltStepActions button:last-child {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #ffffff;
+}
+
+.ltHeroFilters button:last-child:hover,
+.ltPrimaryButton:hover,
+.ltStickyCta:hover,
+.ltStepActions button:last-child:hover {
+  background: #0b5f59;
+  border-color: #0b5f59;
+}
+
+.ltStepBar button.active,
+.ltSegmented button.active {
+  border-color: #0f766e;
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.ltPlanOpenHint,
+.ltTextButton {
+  color: #0f766e;
+}
+
+.ltPlannerPreview {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.98)),
+    #ffffff;
+}
+
+@media (max-width: 760px) {
+  .ltHomePage .ltHero {
+    min-height: auto;
+  }
+
+  .ltPageTitle {
+    margin-top: 12px;
+  }
+
+  .ltFilterFold[open] .ltFilterBar {
+    display: grid;
+  }
+}

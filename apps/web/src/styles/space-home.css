@@ -17,9 +17,9 @@
   overflow-x: hidden;
   color: #17202f;
   background:
-    linear-gradient(90deg, rgba(248, 250, 252, 0.96) 0%, rgba(248, 250, 252, 0.88) 48%, rgba(248, 250, 252, 0.28) 100%),
+    linear-gradient(90deg, rgba(248, 250, 252, 0.98) 0%, rgba(248, 250, 252, 0.9) 52%, rgba(248, 250, 252, 0.34) 100%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(241, 245, 249, 0.92) 100%),
-    url("https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=2200&q=80") center/cover no-repeat;
+    url("https://commons.wikimedia.org/wiki/Special:Redirect/file/Coffee-desk-laptop-notebook%20%2824244320481%29.jpg?width=2200") center/cover no-repeat;
 }
 
 .spaceHome::before,
@@ -32,9 +32,7 @@
 
 .spaceHome::before {
   inset: 0;
-  background:
-    radial-gradient(circle at 18% 20%, rgba(16, 185, 129, 0.16), transparent 25%),
-    radial-gradient(circle at 78% 18%, rgba(59, 130, 246, 0.14), transparent 24%);
+  background: linear-gradient(115deg, rgba(15, 118, 110, 0.12), rgba(37, 99, 235, 0.08) 46%, transparent 72%);
 }
 
 .spaceHome::after {
@@ -47,7 +45,7 @@
   position: relative;
   z-index: 1;
   width: min(100% - 48px, 1180px);
-  min-height: 100vh;
+  min-height: 92vh;
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 720px);
@@ -57,6 +55,11 @@
 
 .spaceHero.hasAdminOverview {
   grid-template-columns: minmax(0, 1.02fr) minmax(360px, 0.68fr);
+  gap: clamp(28px, 5vw, 72px);
+}
+
+.spaceHero:has(.spaceHeroVisualPanel) {
+  grid-template-columns: minmax(0, 1.02fr) minmax(300px, 0.56fr);
   gap: clamp(28px, 5vw, 72px);
 }
 
@@ -105,6 +108,13 @@
   line-height: 1.45;
   font-weight: 900;
   text-shadow: none;
+}
+
+.spacePhotoCredit {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.76rem !important;
+  line-height: 1.4 !important;
 }
 
 .spaceHeroSupport {
@@ -161,6 +171,61 @@
 
 .spaceHeroActions button:first-child:hover {
   background: #047857;
+}
+
+.spaceHeroVisualPanel {
+  align-self: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.spaceVisualCard {
+  min-height: 118px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px 14px;
+  align-content: center;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid rgba(203, 213, 225, 0.86);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 20px 54px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(18px);
+}
+
+.spaceVisualCard .memoNavIcon {
+  grid-row: span 2;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border: 1px solid rgba(15, 118, 110, 0.14);
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.spaceVisualCard.schedule .memoNavIcon {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.spaceVisualCard.travel .memoNavIcon {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.spaceVisualCard span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.spaceVisualCard strong {
+  color: #0f172a;
+  font-size: 1.1rem;
+  line-height: 1.24;
 }
 
 .adminOverviewPanel {
@@ -355,6 +420,10 @@
     grid-template-columns: 1fr;
   }
 
+  .spaceHero:has(.spaceHeroVisualPanel) {
+    grid-template-columns: 1fr;
+  }
+
   .spaceSideStack {
     width: 100%;
     align-self: auto;
@@ -375,7 +444,7 @@
     min-height: 100svh;
     background:
       linear-gradient(180deg, rgba(248, 250, 252, 0.92) 0%, rgba(248, 250, 252, 0.96) 62%, rgba(241, 245, 249, 1) 100%),
-      url("https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1400&q=80") 55% top/auto 54vh no-repeat,
+      url("https://commons.wikimedia.org/wiki/Special:Redirect/file/Coffee-desk-laptop-notebook%20%2824244320481%29.jpg?width=1200") 55% top/auto 54vh no-repeat,
       #f8fafc;
   }
 
@@ -402,6 +471,15 @@
   .spaceHeroActions {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .spaceHeroVisualPanel {
+    gap: 8px;
+  }
+
+  .spaceVisualCard {
+    min-height: 86px;
+    padding: 14px;
   }
 
   .spaceHeroActions button {

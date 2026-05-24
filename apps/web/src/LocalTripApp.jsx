@@ -267,11 +267,11 @@ const REQUEST_STEPS = [
   },
   {
     title: 'AI 코스 확인',
-    description: '여행 일정이 관광지 후보와 하루 동선을 큰 시간 블록으로 정리합니다.'
+    description: '선택한 장소를 하루 동선과 큰 시간 블록으로 정리합니다.'
   },
   {
-    title: '내 일정 저장',
-    description: '마음에 드는 내 일정을 저장하고 다시 확인합니다.'
+    title: '여행 코스 저장',
+    description: '마음에 드는 코스를 저장하고 다시 확인합니다.'
   }
 ];
 
@@ -298,8 +298,8 @@ const USER_ROLES = [
     to: '/destinations'
   },
   {
-    title: 'AI 일정',
-    label: '일정생성',
+    title: '코스 만들기',
+    label: '코스생성',
     description: '선택한 관광지를 바탕으로 무리 없는 여행 코스를 만듭니다.',
     to: '/planner'
   },
@@ -656,12 +656,12 @@ function PlannerGenerateStatus({ generating, error }) {
       <div className="ltGenerateStatus running" role="status" aria-live="polite">
         <span className="ltGenerateSpinner" aria-hidden="true" />
         <div>
-          <strong>여행 일정을 만들고 있습니다</strong>
+          <strong>여행 코스를 만들고 있습니다</strong>
           <p>선택한 장소와 취향을 바탕으로 하루 동선, 식당, 카페를 정리합니다.</p>
           <div className="ltGenerateSteps" aria-label="생성 진행 상태">
             <span>장소 후보 확인</span>
             <span>시간표 구성</span>
-            <span>일정 저장</span>
+            <span>코스 저장</span>
           </div>
         </div>
       </div>
@@ -1002,11 +1002,11 @@ function addPlanToScheduler(plan) {
     const firstSlot = plan.itinerary?.[0]?.items?.[0];
     const nextItem = {
       id,
-      title: plan.title || `${plan.destinationName || '여행'} 일정`,
+      title: plan.title || `${plan.destinationName || '여행'} 코스`,
       date: plan.startDate || new Date().toISOString().slice(0, 10),
       time: firstSlot?.startTime || '09:00',
       type: '여행',
-      memo: `${plan.destinationName || plan.destinationRegion || '여행'} · ${formatDaysLabel(plan.days)} · ${plan.summary || '여행 일정에서 생성한 계획'}`,
+      memo: `${plan.destinationName || plan.destinationRegion || '여행'} · ${formatDaysLabel(plan.days)} · ${plan.summary || '여행 코스에서 생성한 계획'}`,
       done: false,
       source: 'travel-plan',
       planId: plan.id || plan.key || ''
@@ -1463,8 +1463,8 @@ function LocalTripNav({ path, navigate }) {
             </svg>
           </strong>
           <span>
-            여행 일정
-            <small>장소·일정·메모</small>
+            여행 코스
+            <small>장소·동선·저장</small>
           </span>
         </a>
         <div className="ltServiceSwitch" aria-label="서비스 이동">
@@ -1476,7 +1476,7 @@ function LocalTripNav({ path, navigate }) {
             <a className={path.startsWith('/connect') || path.startsWith('/connections') ? 'active' : ''} href="/connect" onClick={(event) => routeClick(event, '/connect', navigate)}>연결</a>
           </div>
         </div>
-        <nav className="ltNavLinks" aria-label="여행 일정 메뉴">
+        <nav className="ltNavLinks" aria-label="여행 코스 메뉴">
           <div className="ltNavGroup">
             <span className="ltNavGroupTitle">여행</span>
             {travelItems.map((item) => (
@@ -1635,7 +1635,7 @@ function InlineNotice({ error, fallback }) {
   return (
     <div className="ltInlineNotice">
       <strong>{fallback ? '실데이터 대기' : '요청 실패'}</strong>
-      <span>{error || '여행 일정 API 데이터가 아직 준비되지 않았습니다. 실데이터 시드를 먼저 적용해 주세요.'}</span>
+      <span>{error || '추천 장소 데이터가 준비되는 중입니다. 잠시 후 다시 확인해 주세요.'}</span>
     </div>
   );
 }
@@ -1650,7 +1650,7 @@ function HeroSearch({ query, setQuery, navigate }) {
   return (
     <form className="ltHeroSearch" onSubmit={submit}>
       <label>
-        <span>어디로 떠나고 싶으세요?</span>
+        <span>어떤 여행을 찾고 있나요?</span>
         <div className="ltHeroSearchInput">
           <Icon>
             <circle cx="11" cy="11" r="7"></circle>
@@ -1659,7 +1659,7 @@ function HeroSearch({ query, setQuery, navigate }) {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="예: 제주 가족 여행, 도쿄 맛집, 교토 역사 코스"
+            placeholder="예: 제주 가족 여행, 도쿄 맛집, 교토 산책"
           />
           <button type="submit">찾기</button>
         </div>
@@ -1668,7 +1668,7 @@ function HeroSearch({ query, setQuery, navigate }) {
         <button type="button" onClick={() => navigate('/destinations?query=서울')}>서울</button>
         <button type="button" onClick={() => navigate('/destinations?query=도쿄')}>도쿄</button>
         <button type="button" onClick={() => navigate('/destinations?query=가족')}>가족 여행</button>
-        <button type="button" onClick={() => navigate('/planner')}>AI 일정 만들기</button>
+        <button type="button" onClick={() => navigate('/planner')}>코스 만들기</button>
       </div>
     </form>
   );
@@ -1693,7 +1693,7 @@ function PurposeRail({ navigate }) {
     <section className="ltPurposeRail" aria-label="추천 목적">
       <div>
         <span>빠른 추천</span>
-        <strong>자주 찾는 여행 테마</strong>
+          <strong>지금 고르기 좋은 테마</strong>
       </div>
       <div className="ltPurposeChips">
         {QUICK_PURPOSES.map((purpose) => (
@@ -1716,8 +1716,8 @@ function ServiceCategoryGrid({ navigate }) {
       <div className="ltSectionHeader compact">
         <div>
           <span className="ltSectionEyebrow">추천 카테고리</span>
-          <h2>여행 취향에 맞는 관광지를 바로 찾으세요</h2>
-          <p>테마를 선택하면 관련 장소와 일정 만들기로 이어집니다.</p>
+          <h2>취향에 맞는 장소를 빠르게 좁히세요</h2>
+          <p>테마를 고르면 장소 목록과 코스 만들기로 바로 이어집니다.</p>
         </div>
       </div>
       <div className="ltServiceGrid">
@@ -1743,10 +1743,10 @@ function RequestFlowSection({ navigate }) {
       <section className="ltRequestFlow" aria-label="추천 진행 방식">
       <div className="ltRequestFlowCopy">
         <span className="ltSectionEyebrow">이용 흐름</span>
-        <h2>관광지를 고르고, AI가 하루 동선으로 묶습니다</h2>
-        <p>여행 일정은 지역, 취향, 이동수단, 여행 속도를 함께 보고 실제로 움직이기 쉬운 코스를 만듭니다.</p>
+        <h2>장소를 고르면 하루 동선으로 묶습니다</h2>
+        <p>지역, 취향, 이동수단, 여행 속도를 함께 보고 움직이기 쉬운 코스를 만듭니다.</p>
         <button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>
-          AI 일정 만들기
+          코스 만들기
         </button>
       </div>
       <div className="ltRequestSteps">
@@ -1803,8 +1803,8 @@ function HomePage({ navigate }) {
       <section className="ltHero ltValueHero">
         <div className="ltHeroCopy">
           <span className="ltEyebrow">Local-first Travel</span>
-          <h1>장소부터 일정까지 간단하게</h1>
-          <p>추천 장소를 고르면 출발지와 도착지 기준으로 하루 동선을 만듭니다.</p>
+          <h1>취향을 말하면 코스가 됩니다</h1>
+          <p>갈 곳을 고르면 출발지와 도착지 기준으로 움직이기 쉬운 하루 동선을 만듭니다.</p>
           <HeroSearch query={query} setQuery={setQuery} navigate={navigate} />
           <div className="ltValuePoints" aria-label="서비스 차별점">
             <article>
@@ -1816,7 +1816,7 @@ function HomePage({ navigate }) {
               <span>출발지와 도착지를 넣어 실제 이동에 맞춥니다.</span>
             </article>
             <article>
-              <strong>일정 저장</strong>
+              <strong>코스 저장</strong>
               <span>완성한 코스를 일정과 메모로 이어갑니다.</span>
             </article>
           </div>
@@ -1842,7 +1842,7 @@ function HomePage({ navigate }) {
             </div>
             <div>
               <span>저장</span>
-              <strong>일정·노트</strong>
+              <strong>일정·메모</strong>
             </div>
           </div>
         </div>
@@ -1893,15 +1893,15 @@ function DestinationsPage({ path, navigate }) {
     <main className="ltPage">
       <PageHeader
         eyebrow="장소 찾기"
-        title="갈 곳 고르기"
-        description="지역과 취향으로 추천 장소를 찾습니다."
+        title="취향에 맞는 장소 찾기"
+        description="지역, 테마, 동행 기준으로 여행 후보를 빠르게 좁힙니다."
       />
 
       <InlineNotice error={error} fallback={usingFallback} />
 
-      <details className="ltFold ltFilterFold">
+      <details className="ltFold ltFilterFold" open>
         <summary>
-          <span>검색과 필터</span>
+          <span>조건 고르기</span>
           <strong>{filtered.length}곳</strong>
         </summary>
         <section className="ltFilterBar">
@@ -1927,7 +1927,7 @@ function DestinationsPage({ path, navigate }) {
       </details>
 
       {loading ? <EmptyState title="장소를 불러오는 중입니다" description="추천 장소와 이미지를 정리하고 있어요." /> : null}
-      {!loading && !filtered.length ? <EmptyState title="조건에 맞는 장소가 없습니다" description="검색어를 줄이거나 다른 지역, 스타일을 선택해보세요." /> : null}
+      {!loading && !filtered.length ? <EmptyState title="조건에 맞는 장소가 없습니다" description="검색어를 줄이거나 다른 지역, 테마를 선택해보세요." /> : null}
       <div className="ltDestinationGrid">
         {filtered.map((destination) => (
           <DestinationCard key={destination.id} destination={destination} navigate={navigate} />
@@ -2123,14 +2123,14 @@ function PlannerPage({ path, navigate }) {
     <main className="ltPage">
       <PageHeader
         eyebrow="일정 만들기"
-        title="여행 코스 만들기"
-        description="장소와 날짜를 고르면 하루 동선으로 정리합니다."
+        title="장소를 일정으로 묶기"
+        description="고른 장소, 날짜, 출발·도착지를 바탕으로 움직이기 쉬운 동선을 만듭니다."
       />
 
       <InlineNotice error={error} fallback={usingFallback} />
 
       <div className="ltStepBar" aria-label="일정 생성 단계">
-        <button type="button" className={activeStep === 1 ? 'active' : selectedDestinationIds.length ? 'done' : ''} onClick={() => setActiveStep(1)}>1 나라·장소</button>
+        <button type="button" className={activeStep === 1 ? 'active' : selectedDestinationIds.length ? 'done' : ''} onClick={() => setActiveStep(1)}>1 장소</button>
         <button type="button" className={activeStep === 2 ? 'active' : routeInfoComplete ? 'done' : ''} disabled={!selectedDestinationIds.length} onClick={() => setActiveStep(2)}>2 날짜·동선</button>
         <button type="button" className={activeStep === 3 ? 'active' : selectedInterests.length ? 'done' : ''} disabled={!routeInfoComplete} onClick={() => setActiveStep(3)}>3 취향</button>
       </div>
@@ -2140,7 +2140,7 @@ function PlannerPage({ path, navigate }) {
           {activeStep === 1 ? <div className="ltFormSection">
             <div className="ltFormSectionTitle">
               <span>Step 1</span>
-              <strong>나라와 장소</strong>
+              <strong>장소 고르기</strong>
             </div>
             <div className="ltCountrySwitch" aria-label="여행 국가">
               {COUNTRY_OPTIONS.map((option) => (
@@ -2202,7 +2202,7 @@ function PlannerPage({ path, navigate }) {
             </div>
             </div>
             <div className="ltStepActions">
-              <button type="button" disabled={!selectedDestinationIds.length} onClick={() => setActiveStep(2)}>장소 완료</button>
+              <button type="button" disabled={!selectedDestinationIds.length} onClick={() => setActiveStep(2)}>날짜 입력하기</button>
             </div>
           </div> : null}
 
@@ -2344,7 +2344,7 @@ function PlannerPage({ path, navigate }) {
             </div>
             <div className="ltStepActions">
               <button type="button" onClick={() => setActiveStep(1)}>이전</button>
-              <button type="button" disabled={!routeInfoComplete} onClick={() => setActiveStep(3)}>취향 선택</button>
+              <button type="button" disabled={!routeInfoComplete} onClick={() => setActiveStep(3)}>취향 고르기</button>
             </div>
           </div> : null}
 
@@ -2377,7 +2377,7 @@ function PlannerPage({ path, navigate }) {
             </div>
             <PlannerGenerateStatus generating={generating} error={generateError} />
             <button type="submit" className="ltPrimaryButton ltStickyCta" disabled={generating || selectedDestinationIds.length === 0}>
-              {generating ? '생성 중입니다' : generateError ? '다시 생성하기' : 'AI 일정 만들기'}
+              {generating ? '코스 만드는 중' : generateError ? '다시 만들기' : '코스 만들기'}
             </button>
           </div> : null}
         </form>
@@ -2431,9 +2431,9 @@ function PlansPage({ navigate }) {
   return (
     <main className="ltPage">
       <PageHeader
-        eyebrow="내 일정"
-        title="저장된 내 일정"
-        description="저장한 코스를 다시 열어보고 정렬합니다."
+        eyebrow="내 여행"
+        title="저장한 여행 코스"
+        description="만든 코스를 다시 열고 일자별 동선을 확인합니다."
         actions={(
           <>
           <div className="ltSegmented compact" aria-label="일정 정렬">
@@ -2442,7 +2442,7 @@ function PlansPage({ navigate }) {
             <button type="button" className={sortMode === 'reviews' ? 'active' : ''} onClick={() => setSortMode('reviews')}>후기순</button>
             <button type="button" className={sortMode === 'latest' ? 'active' : ''} onClick={() => setSortMode('latest')}>최신순</button>
           </div>
-          <button type="button" className="ltIconButton" onClick={reload} aria-label="일정 새로고침">
+          <button type="button" className="ltIconButton" onClick={reload} aria-label="여행 코스 새로고침">
             <Icon size={18}>
               <path d="M21 12a9 9 0 0 1-15.3 6.4"></path>
               <path d="M3 12A9 9 0 0 1 18.3 5.6"></path>
@@ -2455,12 +2455,12 @@ function PlansPage({ navigate }) {
       />
 
       {error ? <div className="ltInlineNotice error"><strong>요청 실패</strong><span>{error}</span></div> : null}
-      {loading ? <EmptyState title="일정을 불러오는 중입니다" description="저장된 코스를 정리하고 있어요." /> : null}
+      {loading ? <EmptyState title="여행 코스를 불러오는 중입니다" description="저장된 코스를 정리하고 있어요." /> : null}
       {!loading && !plans.length ? (
         <EmptyState
-          title="아직 저장된 일정이 없습니다"
-          description="관심 장소를 고르고 AI 일정 만들기로 첫 코스를 저장해보세요."
-          action={<button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>새 일정 만들기</button>}
+          title="아직 저장한 코스가 없습니다"
+          description="관심 장소를 고르고 첫 여행 코스를 저장해보세요."
+          action={<button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>새 코스 만들기</button>}
         />
       ) : null}
       <div className="ltPlansGrid">
@@ -2633,7 +2633,7 @@ function MarkdownPlanBlocks({ plan }) {
     );
   }
   return (
-    <div className="ltMarkdownPlan" aria-label="여행 일정">
+    <div className="ltMarkdownPlan" aria-label="여행 코스">
       {dayBlocks.map((day) => (
         <section className="ltMarkdownDayBlock" key={day.day}>
           <div className="ltMarkdownDayHeader">
@@ -2683,7 +2683,7 @@ function PlanDayCards({ plan }) {
   }
 
   return (
-    <div className="ltDayCards" aria-label="일자별 여행 일정">
+    <div className="ltDayCards" aria-label="일자별 여행 코스">
       {itinerary.map((day) => (
         <section className="ltDayCard" key={day.day}>
           <div className="ltDayCardHeader">
@@ -2881,16 +2881,16 @@ function MyPage({ navigate }) {
           {(session?.username || 'U').slice(0, 1).toUpperCase()}
         </div>
         <div className="ltMyHeroText">
-          <span className="ltEyebrow">My Page</span>
-          <h1>{guest ? 'Guest 여행 공간' : `${session?.username || '여행자'}님의 여행 공간`}</h1>
-          <p>{guest ? '샘플 일정과 추천 장소를 둘러봅니다.' : '저장한 일정과 메모를 한곳에서 관리합니다.'}</p>
+          <span className="ltEyebrow">My Space</span>
+          <h1>{guest ? 'Guest 공간' : `${session?.username || '사용자'}님의 비서`}</h1>
+          <p>{guest ? '샘플 코스와 추천 장소를 둘러봅니다.' : '저장한 일정, 메모, 여행 코스를 한곳에서 확인합니다.'}</p>
           <div className="ltMyHeroMeta">
             <span>{guest ? 'GUEST' : session?.role || 'USER'}</span>
             <span>{guest ? '샘플 모드' : 'ID/PW 로그인'}</span>
           </div>
         </div>
         <div className="ltMyActions">
-          <button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>새 일정 만들기</button>
+          <button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>새 코스 만들기</button>
           {guest ? (
             <button type="button" className="ltGhostButton" onClick={() => navigate('/login')}>회원 로그인</button>
           ) : (
@@ -2899,9 +2899,9 @@ function MyPage({ navigate }) {
         </div>
       </section>
 
-      <section className="ltMyStats" aria-label="내 여행 요약">
-        <StatCard label="계정 등급" value={guest ? 'GUEST' : session?.role || 'USER'} hint="여행 공간 권한" />
-        <StatCard label="저장 일정" value={plansLoading ? '-' : `${plans.length}개`} hint="보관함 기준" />
+      <section className="ltMyStats" aria-label="내 공간 요약">
+        <StatCard label="계정 등급" value={guest ? 'GUEST' : session?.role || 'USER'} hint="내 공간 권한" />
+        <StatCard label="저장 코스" value={plansLoading ? '-' : `${plans.length}개`} hint="여행 보관함" />
         <StatCard label="추천 장소" value={destinationsLoading ? '-' : `${destinations.length}곳`} hint="현재 노출 가능" />
         <StatCard label="로그인 방식" value={guest ? 'Guest' : 'ID/PW'} hint={guest ? '샘플 공간' : '로컬 계정'} />
       </section>
@@ -2919,7 +2919,7 @@ function MyPage({ navigate }) {
             {recentPlans.length ? recentPlans.map((plan) => (
               <PlanCard key={plan.key} plan={plan} navigate={navigate} />
             )) : (
-              <EmptyState title="최근 일정이 없습니다" description="새 일정 만들기로 첫 여행 코스를 저장해보세요." />
+              <EmptyState title="최근 코스가 없습니다" description="새 코스 만들기로 첫 여행을 저장해보세요." />
             )}
           </div>
         </details>
@@ -2949,8 +2949,8 @@ function MyPage({ navigate }) {
           ) : null}
           <div className="ltMyShortcutList">
             <button type="button" onClick={() => navigate('/destinations')}>장소 둘러보기</button>
-            <button type="button" onClick={() => navigate('/planner')}>AI 일정 만들기</button>
-            <button type="button" onClick={() => navigate('/plans')}>내 일정 보기</button>
+            <button type="button" onClick={() => navigate('/planner')}>새 코스 만들기</button>
+            <button type="button" onClick={() => navigate('/plans')}>저장한 여행 보기</button>
           </div>
         </details>
       </section>
@@ -2998,9 +2998,9 @@ function LoginPage({ navigate }) {
     <main className="ltPage ltLoginPage">
       <section className="ltLoginPanel">
         <div className="ltSectionHeader">
-          <span className="ltEyebrow">Member Access</span>
-          <h1>{authMode === 'signup' ? '회원가입' : '회원 로그인'}</h1>
-          <p>일정과 여행 정보를 내 계정에 저장하려면 로그인하세요.</p>
+          <span className="ltEyebrow">My Assistant</span>
+          <h1>{authMode === 'signup' ? '내 공간 만들기' : '내 비서에 로그인'}</h1>
+          <p>메모, 일정, 여행 코스를 이어서 보려면 로그인하세요.</p>
         </div>
         <form className="ltMemberLoginForm" onSubmit={submitAuth}>
           <label>
@@ -3012,7 +3012,7 @@ function LoginPage({ navigate }) {
             <input type="password" value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} placeholder="password" autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'} />
           </label>
           <button type="submit" className="ltPrimaryButton" disabled={authLoading}>
-            {authLoading ? '처리 중...' : authMode === 'signup' ? '회원가입' : 'Login'}
+            {authLoading ? '처리 중...' : authMode === 'signup' ? '계정 만들기' : '로그인'}
           </button>
           {authError ? <p className="ltAuthError">{authError}</p> : null}
           <button
@@ -3038,8 +3038,8 @@ function AppShell({ path, navigate, children }) {
       <LocalTripNav path={path} navigate={navigate} />
       {children}
       <footer className="ltFooter">
-        <span>여행 일정</span>
-        <span>여행자 · 추천 엔진 · 운영자</span>
+        <span>여행 코스</span>
+        <span>장소 · 동선 · 저장</span>
       </footer>
     </div>
   );
@@ -3047,7 +3047,7 @@ function AppShell({ path, navigate, children }) {
 
 export default function LocalTripApp({ path, navigate }) {
   useEffect(() => {
-    document.title = '여행 일정';
+    document.title = '여행 코스';
   }, [path]);
 
   const normalizedPath = path || '/';

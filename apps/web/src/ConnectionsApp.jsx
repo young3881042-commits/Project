@@ -290,13 +290,13 @@ export default function ConnectionsApp({ navigate, authToken }) {
     <main className="connectionsShell simple">
       <header className="connectionsHero">
         <div>
-          <span className="connectionsEyebrow">Personal data</span>
-          <h1>연결</h1>
-          <p>처음 연결은 메모 보드로 시작합니다. 이메일과 문자는 필요할 때 이어서 붙입니다.</p>
+          <span className="connectionsEyebrow">Data Hub</span>
+          <h1>내 데이터 연결</h1>
+          <p>메모는 바로 쓰고, 메일과 문자는 필요한 순간 일정 후보로 가져옵니다.</p>
         </div>
         <div className="connectionsHeroActions">
           <button type="button" className="connectionsGhostButton" onClick={() => navigate?.('/notes')}>
-            메모 열기
+            메모로 가기
           </button>
         </div>
       </header>
@@ -312,7 +312,7 @@ export default function ConnectionsApp({ navigate, authToken }) {
           <ConnectionIcon type="note" />
           <span>
             <strong>메모</strong>
-            <small>AI 메모 보드</small>
+            <small>생각과 할 일의 기본 공간</small>
           </span>
           <StatusPill tone="ok">기본 연결</StatusPill>
         </button>
@@ -324,7 +324,7 @@ export default function ConnectionsApp({ navigate, authToken }) {
           <ConnectionIcon type="mail" />
           <span>
             <strong>이메일</strong>
-            <small>Gmail 또는 네이버 메일</small>
+            <small>예약과 결제 메일 후보</small>
           </span>
           <StatusPill tone={emailReady ? 'ok' : 'warn'}>{emailReady ? '설정됨' : '대기'}</StatusPill>
         </button>
@@ -336,7 +336,7 @@ export default function ConnectionsApp({ navigate, authToken }) {
           <ConnectionIcon type="phone" />
           <span>
             <strong>문자</strong>
-            <small>휴대폰 SMS 권한</small>
+            <small>택배와 예약 문자 후보</small>
           </span>
           <StatusPill tone={messageReady ? 'ok' : 'neutral'}>{messageReady ? '연결됨' : '준비 중'}</StatusPill>
         </button>
@@ -346,16 +346,16 @@ export default function ConnectionsApp({ navigate, authToken }) {
         {activeSource === 'memo' ? (
           <>
             <SectionHeader icon="note" eyebrow="Memo" title="메모 보드" action={<StatusPill tone="ok">기본 연결</StatusPill>}>
-              Docker 웹과 Android 앱의 첫 연결 대상입니다.
+              아이디어와 할 일을 가장 먼저 모으는 공간입니다.
             </SectionHeader>
             <div className="connectionsReadiness">
               <span>현재 상태</span>
               <strong>AI 메모 보드로 연결됨</strong>
-              <small>처음 실행하면 메모 보드에서 작업 로그, 개인 메모, 일정 후보를 이어서 관리합니다.</small>
+              <small>작업 로그, 개인 메모, 일정 후보를 보드별로 이어서 관리합니다.</small>
             </div>
             <div className="connectionsButtonRow">
               <button type="button" className="connectionsPrimaryButton" onClick={() => navigate?.('/notes')}>
-                메모 보드 열기
+                메모 열기
               </button>
               <button type="button" className="connectionsGhostButton" onClick={() => navigate?.('/scheduler')}>
                 내 일정
@@ -365,13 +365,13 @@ export default function ConnectionsApp({ navigate, authToken }) {
         ) : activeSource === 'email' ? (
           <>
             <SectionHeader icon="mail" eyebrow="Email" title="이메일" action={<StatusPill tone={emailReady ? 'ok' : 'warn'}>{emailReady ? '설정됨' : '대기'}</StatusPill>}>
-              메일에서 예약, 결제, 일정 후보를 찾는 연결입니다.
+              예약, 결제, 일정 후보를 메일에서 찾는 연결입니다.
             </SectionHeader>
             <div className="connectionsProviderList">
               <article>
                 <div>
                   <strong>Gmail</strong>
-                  <p>Google OAuth 연결 준비 상태를 저장합니다.</p>
+                  <p>읽기 권한 동의 후 일정 후보만 가져옵니다.</p>
                 </div>
                 <button
                   type="button"
@@ -381,13 +381,13 @@ export default function ConnectionsApp({ navigate, authToken }) {
                     gmail: { ...current.gmail, status: 'ready', connected: false, lastCheckedAt: new Date().toISOString() }
                   }))}
                 >
-                  Gmail 준비
+                  Gmail 연결 준비
                 </button>
               </article>
               <article className="connectionsProviderWithField">
                 <div>
                   <strong>네이버 메일</strong>
-                  <p>메일 주소만 먼저 저장하고, 앱 비밀번호는 서버 저장 기능 연결 후 입력합니다.</p>
+                  <p>메일 주소를 먼저 저장하고 앱 비밀번호 연결은 다음 단계에서 진행합니다.</p>
                 </div>
                 <label className="connectionsField">
                   <span>이메일</span>
@@ -404,12 +404,12 @@ export default function ConnectionsApp({ navigate, authToken }) {
         ) : (
           <>
             <SectionHeader icon="phone" eyebrow="SMS" title="문자" action={<StatusPill tone="neutral">{sourceStatusLabel(settings.localMessages.status)}</StatusPill>}>
-              택배, 인증, 예약 문자를 일정 후보로 쓰기 위한 연결입니다.
+              택배, 예약 문자를 일정 후보로 쓰기 위한 연결입니다.
             </SectionHeader>
             <div className="connectionsReadiness">
               <span>현재 상태</span>
               <strong>휴대폰 앱 권한 필요</strong>
-              <small>웹/PWA만으로는 SMS를 직접 읽을 수 없어 Android/iOS 네이티브 권한 연결 단계에서 활성화됩니다.</small>
+              <small>문자 접근은 휴대폰 권한이 필요한 단계에서 활성화됩니다.</small>
             </div>
             <div className="connectionsButtonRow">
               <button
@@ -420,7 +420,7 @@ export default function ConnectionsApp({ navigate, authToken }) {
                   localMessages: { ...current.localMessages, status: 'native-required', connected: false, lastCheckedAt: new Date().toISOString() }
                 }))}
               >
-                문자 연결 대기
+                문자 연동 확인
               </button>
             </div>
           </>
@@ -435,7 +435,7 @@ export default function ConnectionsApp({ navigate, authToken }) {
         <div className="connectionsAdvancedGrid">
           <article className="connectionsPanel">
             <SectionHeader icon="server" eyebrow="Server" title="API 서버">
-              비워두면 현재 웹 앱과 같은 origin의 API를 사용합니다.
+              비워두면 현재 웹 앱과 같은 서버를 사용합니다.
             </SectionHeader>
             <label className="connectionsField">
               <span>API 서버 주소</span>
@@ -464,7 +464,7 @@ export default function ConnectionsApp({ navigate, authToken }) {
                 </button>
               )}
             >
-              여행계획 생성에 쓸 사용자 키를 저장합니다.
+              코스 생성에 쓸 사용자 키를 저장합니다.
             </SectionHeader>
             <dl className="connectionsMetaList">
               <div>

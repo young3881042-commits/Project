@@ -9,8 +9,8 @@
   min-height: 100vh;
   color: #0f172a;
   background:
-    linear-gradient(90deg, rgba(248, 250, 252, 0.97) 0%, rgba(248, 250, 252, 0.9) 48%, rgba(248, 250, 252, 0.58) 100%),
-    url("https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=2200&q=84") center/cover fixed;
+    linear-gradient(90deg, rgba(248, 250, 252, 0.98) 0%, rgba(248, 250, 252, 0.92) 48%, rgba(248, 250, 252, 0.62) 100%),
+    url("https://commons.wikimedia.org/wiki/Special:Redirect/file/Coffee-desk-laptop-notebook%20%2824244320481%29.jpg?width=2200") center/cover fixed;
 }
 
 .portfolioNav {
@@ -82,13 +82,13 @@
 
 .portfolioHero {
   width: min(1180px, calc(100% - 40px));
-  min-height: calc(100vh - 70px);
+  min-height: calc(86svh - 70px);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(330px, 420px);
-  gap: clamp(28px, 5vw, 74px);
-  align-items: center;
-  padding: 42px 0 30px;
+  grid-template-columns: minmax(0, 880px);
+  gap: 22px;
+  align-content: center;
+  padding: 36px 0 24px;
 }
 
 .portfolioHeroCopy {
@@ -134,10 +134,29 @@
 
 .portfolioHeroActions button {
   min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 0 18px;
   border-color: #cbd5e1;
   background: #fff;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.portfolioHeroActions .memoNavIcon,
+.portfolioCard .memoNavIcon {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border: 1px solid rgba(15, 118, 110, 0.14);
+  background: rgba(240, 253, 250, 0.9);
+  color: currentColor;
+}
+
+.portfolioHeroActions .memoNavIcon svg,
+.portfolioCard .memoNavIcon svg {
+  width: 15px;
+  height: 15px;
 }
 
 .portfolioHeroActions button:first-child {
@@ -147,15 +166,40 @@
 }
 
 .portfolioDevice {
+  width: min(720px, 100%);
   min-width: 0;
   display: grid;
   gap: 16px;
   padding: 18px;
   border: 1px solid rgba(203, 213, 225, 0.78);
-  border-radius: 28px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 28px 70px rgba(15, 23, 42, 0.18);
   backdrop-filter: blur(18px);
+}
+
+.portfolioDevicePhoto {
+  min-height: 164px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.46)),
+    url("https://commons.wikimedia.org/wiki/Special:Redirect/file/Scroll%20on%20Desk.jpg?width=1600") center/cover;
+}
+
+.portfolioDevicePhoto span {
+  margin: 14px;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f766e;
+  font-size: 0.78rem;
+  font-weight: 900;
 }
 
 .portfolioDeviceTop {
@@ -287,11 +331,12 @@
   z-index: 1;
 }
 
-.portfolioCard span {
+.portfolioCard > span {
   width: fit-content;
   min-height: 28px;
   display: inline-flex;
   align-items: center;
+  gap: 7px;
   padding: 0 9px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.88);
@@ -335,7 +380,7 @@
   .portfolioHome {
     background:
       linear-gradient(180deg, rgba(248, 250, 252, 0.94) 0%, rgba(248, 250, 252, 0.98) 64%, #f8fafc 100%),
-      url("https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1200&q=84") center top/auto 42vh no-repeat;
+      url("https://commons.wikimedia.org/wiki/Special:Redirect/file/Coffee-desk-laptop-notebook%20%2824244320481%29.jpg?width=1200") center top/auto 42vh no-repeat;
   }
 
   .portfolioNav,

@@ -5,7 +5,7 @@
   color: #111827;
   background:
     linear-gradient(90deg, rgba(248, 250, 252, 0.98) 0%, rgba(248, 250, 252, 0.9) 54%, rgba(248, 250, 252, 0.5) 100%),
-    url("https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=2200&q=80") center/cover no-repeat;
+    url("https://commons.wikimedia.org/wiki/Special:Redirect/file/Coffee-desk-laptop-notebook%20%2824244320481%29.jpg?width=2200") center/cover no-repeat;
 }
 
 .spaceHome::before,
@@ -22,6 +22,11 @@
 
 .spaceHero.hasAdminOverview {
   grid-template-columns: minmax(0, 1fr) minmax(330px, 390px) !important;
+  gap: clamp(24px, 5vw, 56px) !important;
+}
+
+.spaceHero:has(.spaceHeroVisualPanel) {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px) !important;
   gap: clamp(24px, 5vw, 56px) !important;
 }
 
@@ -61,7 +66,7 @@
 .spaceHeroActions {
   width: min(100%, 520px);
   display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   gap: 8px !important;
   margin-top: 4px;
 }
@@ -225,7 +230,8 @@
 
 @media (max-width: 900px) {
   .spaceHero,
-  .spaceHero.hasAdminOverview {
+  .spaceHero.hasAdminOverview,
+  .spaceHero:has(.spaceHeroVisualPanel) {
     grid-template-columns: 1fr !important;
     width: min(100% - 28px, 680px) !important;
     min-height: auto !important;
@@ -245,7 +251,7 @@
   .spaceHome {
     background:
       linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(248, 250, 252, 0.98) 100%),
-      url("https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80") center top/auto 42vh no-repeat,
+      url("https://commons.wikimedia.org/wiki/Special:Redirect/file/Coffee-desk-laptop-notebook%20%2824244320481%29.jpg?width=1200") center top/auto 42vh no-repeat,
       #f8fafc;
   }
 

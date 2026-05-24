@@ -29,6 +29,11 @@ const PRIMARY_SHORTCUTS = [
   { key: 'trip', shortcut: 'aiTrip', icon: 'trip' },
   { key: 'connections', shortcut: 'dataConnections', icon: 'link' }
 ];
+const PHOTO_CREDITS = [
+  'Coffee-desk-laptop-notebook: www.Pixel.la Free Stock Photos, CC0',
+  'Scroll on Desk: Stocksnap, CC0',
+  'Seoul by night: Syced, CC0'
+];
 const RECURRENCE_LABELS = {
   none: '반복 없음',
   daily: '매일',
@@ -632,19 +637,19 @@ function AuthScreen({ mode, setMode, username, setUsername, password, setPasswor
   return (
     <main className="loginShell">
       <section className="loginCard">
-        <span className="sidebarEyebrow">Workspace Access</span>
-        <h1>등록된 계정으로 작업공간을 엽니다</h1>
+        <span className="sidebarEyebrow">Workspace</span>
+        <h1>작업공간 로그인</h1>
         <p>관리자가 발급한 계정으로 로그인하세요.</p>
         <label className="loginField">
           <span>ID</span>
           <input value={username} onChange={(event) => setUsername(event.target.value)} placeholder="my-id" />
         </label>
         <label className="loginField">
-          <span>Password</span>
+          <span>비밀번호</span>
           <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="password" />
         </label>
         <button type="button" className="loginButton" onClick={onSubmit} disabled={disabled}>
-          {loading ? '처리 중...' : 'Login'}
+          {loading ? '처리 중...' : '로그인'}
         </button>
         {error || validationError ? <div className="loginHint">{error || validationError}</div> : null}
       </section>
@@ -847,7 +852,7 @@ function WorkspaceHeader({
               <span>Guest</span>
               <strong>{auth.username}</strong>
             </div>
-            <button type="button" className="ghostButton compact" onClick={() => { localStorage.removeItem(AUTH_KEY); navigate(loginPathForCurrentLocation('/analysisadmin')); }}>Login</button>
+            <button type="button" className="ghostButton compact" onClick={() => { localStorage.removeItem(AUTH_KEY); navigate(loginPathForCurrentLocation('/analysisadmin')); }}>로그인</button>
           </div>
         ) : (
           <div className="userMenuWrap">
@@ -2218,7 +2223,7 @@ function AnalysisFileEditorPage({ navigate }) {
           <section className="analysisEditSurface">
             <div className="analysisPaneHeader">
               <strong>작성</strong>
-              <span>{isMarkdownFile ? '작성 후 미리보기로 자동 전환' : 'Text'}</span>
+              <span>{isMarkdownFile ? '작성하면 바로 미리보기' : 'Text'}</span>
             </div>
             <div className="analysisCodeWrap">
               <Suspense fallback={<div className="editorLoading">편집기를 불러오는 중입니다.</div>}>
@@ -2241,7 +2246,7 @@ function AnalysisFileEditorPage({ navigate }) {
                 <button type="button" onClick={() => setEditorView('edit')}>수정</button>
               </div>
               <article className="analysisMarkdownBody">
-                {content.trim() ? markdownPreviewBlocks(content) : <p>Markdown 내용을 작성하면 여기에 적용된 결과가 표시됩니다.</p>}
+                {content.trim() ? markdownPreviewBlocks(content) : <p>내용을 작성하면 미리보기가 표시됩니다.</p>}
               </article>
             </section>
           ) : null}
@@ -2320,6 +2325,20 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 ));
 
 const ADMIN1_MEMO_LOGS = [
+  {
+    id: 'admin1-memo-20260524-web-copy-visual-refresh',
+    content: `# 2026-05-24 웹 문구와 비주얼 리프레시
+
+- [x] \`/app\`, \`/portfolio\`, \`/connect\`, 여행 화면의 핵심 문구를 더 짧고 선명하게 정리
+- [x] Wikimedia Commons CC0 사진을 배경/비주얼 자산으로 교체
+- [x] 버튼과 카드 아이콘 톤을 더 앱처럼 보이게 조정
+- [x] 모바일 반응형에서 첫 화면 문구와 주요 액션이 먼저 보이도록 점검
+
+## 검증
+
+- [ ] \`npm --prefix apps/web run build\`
+- [ ] Docker web/API 재배포 후 주요 URL 확인`
+  },
   {
     id: 'admin1-memo-20260524-memo-first-android-apk',
     content: `# 2026-05-24 메모 우선 연결과 Android APK
@@ -2502,6 +2521,18 @@ function MemoNavIcon({ type }) {
         <path d="M8 9h8M8 12h5" />
       </>
     ),
+    spark: (
+      <>
+        <path d="M12 3l1.6 5.1L19 10l-5.4 1.9L12 17l-1.6-5.1L5 10l5.4-1.9z" />
+        <path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" />
+      </>
+    ),
+    shield: (
+      <>
+        <path d="M12 3l7 3v5c0 4.5-3 7.7-7 10-4-2.3-7-5.5-7-10V6z" />
+        <path d="m9 12 2 2 4-5" />
+      </>
+    ),
     file: (
       <>
         <path d="M7 3h7l4 4v14H7z" />
@@ -2658,24 +2689,27 @@ function PortfolioHomePage({ navigate }) {
   const portfolioLinks = [
     {
       title: '개인 AI 비서 앱',
-      detail: '일정, 메모, 여행 계획을 한곳에서 관리하는 실제 사용 화면',
-      action: '앱 열기',
+      detail: '메모, 일정, 데이터 연결을 한 화면에서 이어 쓰는 실제 앱',
+      action: '앱 시작',
       path: '/app',
-      tone: 'assistant'
+      tone: 'assistant',
+      icon: 'spark'
     },
     {
-      title: 'AI 여행 플래너',
-      detail: '장소 탐색부터 일정 생성, 저장 일정 확인까지 이어지는 워크플로',
-      action: '여행 보기',
+      title: '여행 코스 만들기',
+      detail: '갈 곳을 고르면 움직이기 쉬운 하루 동선으로 정리',
+      action: '장소 찾기',
       path: '/destinations',
-      tone: 'travel'
+      tone: 'travel',
+      icon: 'trip'
     },
     {
-      title: '분석 워크스페이스',
-      detail: '파일 관리, RAG, 실행 환경을 Docker 기반으로 묶은 관리자 공간',
-      action: '관리 열기',
+      title: '운영 워크스페이스',
+      detail: '파일, 리소스, 작업 로그를 운영 기준으로 확인하는 관리자 공간',
+      action: '관리 보기',
       path: '/analysisadmin',
-      tone: 'workspace'
+      tone: 'workspace',
+      icon: 'shield'
     }
   ];
 
@@ -2687,29 +2721,32 @@ function PortfolioHomePage({ navigate }) {
           <strong>ai-assitant</strong>
         </button>
         <div>
-          <button type="button" onClick={() => navigate('/app')}>앱</button>
-          <button type="button" onClick={() => navigate('/destinations')}>AI Trip</button>
-          <button type="button" onClick={() => navigate('/analysisadmin')}>Admin</button>
+          <button type="button" onClick={() => navigate('/app')}>앱 홈</button>
+          <button type="button" onClick={() => navigate('/destinations')}>여행</button>
+          <button type="button" onClick={() => navigate('/analysisadmin')}>운영</button>
         </div>
       </nav>
       <section className="portfolioHero">
         <div className="portfolioHeroCopy">
-          <span className="portfolioEyebrow">Portfolio + Personal AI Assistant</span>
-          <h1>Docker로 운영하는 개인 AI 비서 워크스페이스</h1>
+          <span className="portfolioEyebrow">Personal AI Workspace</span>
+          <h1>메모, 일정, 여행을 한곳에</h1>
           <p>
-            React, Spring Boot, MariaDB, Docker를 기반으로 일정, 노트, 여행 추천, 분석 워크스페이스를 하나의 서비스로 구성했습니다.
-            공개 화면은 포트폴리오로 쓰고, 실제 사용 화면은 앱처럼 분리합니다.
+            적어둔 생각을 일정으로 옮기고, 여행 코스까지 이어서 관리하는 개인 AI 비서입니다.
+            공개 포트폴리오와 실제 앱 화면을 분리해 바로 써볼 수 있게 만들었습니다.
           </p>
           <div className="portfolioHeroActions">
-            <button type="button" onClick={() => navigate('/app')}>개인 앱 열기</button>
-            <button type="button" onClick={() => navigate('/destinations')}>AI Trip 보기</button>
+            <button type="button" onClick={() => navigate('/app')}><MemoNavIcon type="spark" />앱 시작</button>
+            <button type="button" onClick={() => navigate('/destinations')}><MemoNavIcon type="trip" />장소 찾기</button>
           </div>
         </div>
         <div className="portfolioDevice" aria-label="app preview">
           <div className="portfolioDeviceTop">
             <span />
-            <strong>오늘</strong>
+            <strong>오늘의 흐름</strong>
             <small>AI Assistant</small>
+          </div>
+          <div className="portfolioDevicePhoto">
+            <span>메모에서 일정까지</span>
           </div>
           <div className="portfolioPreviewGrid">
             <article>
@@ -2718,7 +2755,7 @@ function PortfolioHomePage({ navigate }) {
               <small>오늘 처리할 일</small>
             </article>
             <article>
-              <span>노트</span>
+              <span>메모</span>
               <strong>12</strong>
               <small>메모 보드</small>
             </article>
@@ -2729,9 +2766,9 @@ function PortfolioHomePage({ navigate }) {
             </article>
           </div>
           <div className="portfolioPreviewList">
-            <span>09:00 여행 일정 확인</span>
-            <span>13:30 작업 로그 정리</span>
-            <span>20:00 내일 할 일 생성</span>
+            <span>09:00 오늘 일정 확인</span>
+            <span>13:30 메모를 작업으로 정리</span>
+            <span>20:00 주말 코스 저장</span>
           </div>
         </div>
       </section>
@@ -2743,7 +2780,7 @@ function PortfolioHomePage({ navigate }) {
             className={`portfolioCard ${item.tone}`}
             onClick={() => navigate(item.path)}
           >
-            <span>{item.action}</span>
+            <span><MemoNavIcon type={item.icon} />{item.action}</span>
             <strong>{item.title}</strong>
             <p>{item.detail}</p>
           </button>
@@ -2779,10 +2816,10 @@ function SpaceHomePage({ navigate }) {
     <main className="spaceHome">
       <section className={`spaceHero ${adminOverview ? 'hasAdminOverview' : ''}`}>
         <div className="spaceHeroCopy">
-          <span className="spaceEyebrow">개인 AI 비서</span>
-          <h1>내 일을 한곳에</h1>
-          <strong className="spaceHeroLead">일정, 메모, 여행 계획을 바로 이어서 관리하세요.</strong>
-          <p>필요한 메뉴만 남겼습니다.</p>
+          <span className="spaceEyebrow">AI Home</span>
+          <h1>오늘 할 일을 바로 이어서</h1>
+          <strong className="spaceHeroLead">메모, 일정, 여행 코스를 한 화면에서 정리합니다.</strong>
+          <p>생각은 메모로 남기고, 해야 할 일은 일정으로 옮기고, 떠날 곳은 코스로 저장하세요.</p>
           <div className="spaceHeroActions">
             {PRIMARY_SHORTCUTS.map((item) => {
               const shortcut = APP_SHORTCUTS[item.shortcut];
@@ -2794,6 +2831,7 @@ function SpaceHomePage({ navigate }) {
               );
             })}
           </div>
+          <p className="spacePhotoCredit">{PHOTO_CREDITS[0]}</p>
         </div>
         {adminOverview ? (
           <aside className="adminOverviewPanel" aria-label="admin1 activity overview">
@@ -2837,7 +2875,25 @@ function SpaceHomePage({ navigate }) {
             </div>
             <p className="adminOverviewMeta">보드 {adminOverview.boardCount} · 메모 {adminOverview.noteCount} · 일반 {adminOverview.memoCount}</p>
           </aside>
-        ) : null}
+        ) : (
+          <aside className="spaceHeroVisualPanel" aria-label="assistant preview">
+            <article className="spaceVisualCard memo">
+              <MemoNavIcon type="board" />
+              <span>Memo</span>
+              <strong>생각을 바로 보드에</strong>
+            </article>
+            <article className="spaceVisualCard schedule">
+              <MemoNavIcon type="calendar" />
+              <span>Schedule</span>
+              <strong>오늘 일정만 선명하게</strong>
+            </article>
+            <article className="spaceVisualCard travel">
+              <MemoNavIcon type="trip" />
+              <span>Trip</span>
+              <strong>갈 곳은 코스로 저장</strong>
+            </article>
+          </aside>
+        )}
       </section>
     </main>
   );
@@ -2853,6 +2909,7 @@ function AiNotePage({ navigate }) {
   const [fileStatus, setFileStatus] = useState('');
   const [draggingBlockId, setDraggingBlockId] = useState('');
   const [movingBlock, setMovingBlock] = useState(null);
+  const [memoViewMode] = useState('edit');
   const freeformBoardRef = useRef(null);
   const movedBlockRef = useRef(false);
   const movedBlockResetTimerRef = useRef(null);
@@ -2975,7 +3032,7 @@ function AiNotePage({ navigate }) {
     const nextBlock = {
       id: nextId,
       type: blockType,
-      content: blockType === 'file' ? '새 텍스트 파일' : blockType === 'checklist' ? '# 새 체크리스트\n\n- [ ] 첫 번째 항목' : '새 Markdown 글',
+      content: blockType === 'file' ? '새 텍스트 파일' : blockType === 'checklist' ? '# 새 체크리스트\n\n- [ ] 첫 번째 항목' : '새 메모',
       sector: boardId,
       boardId,
       status,
@@ -3014,6 +3071,10 @@ function AiNotePage({ navigate }) {
 
   const updateBlock = (id, patch) => {
     setBlocks((current) => current.map((block) => (block.id === id ? { ...block, ...patch } : block)));
+  };
+
+  const updateActiveBlockContent = (id, content) => {
+    updateBlock(id, { content });
   };
 
   const updateBlockTitle = (block, title) => {
@@ -3398,8 +3459,8 @@ function AiNotePage({ navigate }) {
         <section className="aiNoteBoardPanel" onContextMenu={(event) => noteContentOpen && openContextMenu(event, 'todo')}>
           <header className="projectTopbar">
             <div>
-              <span className="projectBreadcrumb">Home / 노트</span>
-              <h1>노트</h1>
+              <span className="projectBreadcrumb">Home / 메모</span>
+              <h1>메모</h1>
             </div>
             <div className="projectTopActions" aria-label="workspace actions">
               <button type="button" onClick={() => setWorkspaceMode('scheduler')} title="일정"><MemoNavIcon type="calendar" /></button>
@@ -3424,8 +3485,8 @@ function AiNotePage({ navigate }) {
             {noteContentOpen ? (
               <div className="memoBoardCreateActions">
                 <button type="button" className="projectNewItemButton ghost" onClick={() => setNoteContentOpen(false)}>보드 선택</button>
-                <button type="button" className="projectNewItemButton iconAdd" onClick={() => { setNoteContentOpen(true); addBlock('text', '', 'todo', activeBoardId); }} title="글 생성">
-                  <MemoNavIcon type="plus" /><span>새글</span>
+                <button type="button" className="projectNewItemButton iconAdd" onClick={() => { setNoteContentOpen(true); addBlock('text', '', 'todo', activeBoardId); }} title="메모 생성">
+                  <MemoNavIcon type="plus" /><span>새 메모</span>
                 </button>
               </div>
             ) : null}
@@ -3434,8 +3495,8 @@ function AiNotePage({ navigate }) {
             <section className="notePadStart">
               <div>
                 <span>Boards</span>
-                <strong>보드를 선택하고 새글을 작성하세요.</strong>
-                <p>Markdown 글 작성과 미리보기만 남겨 노트 흐름을 단순하게 정리했습니다.</p>
+                <strong>보드를 선택하고 메모를 남기세요.</strong>
+                <p>아이디어, 할 일, 일정 후보를 보드별로 정리합니다.</p>
               </div>
               <div>
                 {boards.map((board) => (
@@ -3480,17 +3541,17 @@ function AiNotePage({ navigate }) {
                   />
                 </div>
                 <div>
-                  <span className="memoEditorModeLabel">Markdown</span>
+                  <span className="memoEditorModeLabel">Preview</span>
                 </div>
               </header>
               <div className="memoMarkdownComposer">
                 <textarea
                   value={activeBlock.content || ''}
                   onChange={(event) => updateActiveBlockContent(activeBlock.id, event.target.value)}
-                  placeholder="# 제목&#10;&#10;Markdown으로 글을 작성하세요."
+                  placeholder="# 제목&#10;&#10;오늘 떠오른 생각을 적어보세요."
                 />
                 <article className="memoInlinePreview">
-                  {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : <p>내용을 작성하면 오른쪽에 미리보기가 표시됩니다.</p>}
+                  {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : <p>내용을 작성하면 미리보기가 표시됩니다.</p>}
                 </article>
               </div>
             </section>
@@ -3733,7 +3794,7 @@ function SchedulerPage({ navigate, embedded = false }) {
         <div>
           <span>Today</span>
           <h2>오늘 일정</h2>
-          <p>{today} · {todayItems.length}개</p>
+          <p>{today} · 할 일 {todayItems.length}개</p>
         </div>
         <button
           type="button"
@@ -3785,7 +3846,7 @@ function SchedulerPage({ navigate, embedded = false }) {
           <div>
             <span className="schedulerPageIcon"><MemoNavIcon type="calendar" /></span>
             <h1>{schedulerTitle}</h1>
-            <p>오늘 해야 할 일과 여행 준비를 한곳에서 정리합니다.</p>
+            <p>메모에서 나온 할 일과 약속을 날짜별로 모읍니다.</p>
           </div>
           <div className="schedulerStats">
             <article><span>오늘 달성률</span><strong>{todayCompletionRate}%</strong><small>{todayDoneCount}/{todayItems.length}</small></article>
@@ -3801,13 +3862,13 @@ function SchedulerPage({ navigate, embedded = false }) {
           </button>
           <button type="button" className="schedulerCuteAdd secondary" onClick={() => navigate(APP_SHORTCUTS.dataConnections.path)}>
             <MemoNavIcon type="link" />
-            <span>데이터 연결</span>
+            <span>연결에서 가져오기</span>
           </button>
         </div>
         {quickAddOpen ? <form className="schedulerQuickAdd cute" onSubmit={submitDraft}>
           <label>
             <span>할 일</span>
-            <input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="예: 경주 일정 확인" />
+            <input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="예: 오후 회의 준비" />
           </label>
           <div className="schedulerFormGrid">
             <label>
@@ -3847,7 +3908,7 @@ function SchedulerPage({ navigate, embedded = false }) {
             </select>
           </label>
           <label>
-            <span>노트</span>
+            <span>메모</span>
             <textarea value={draft.memo} onChange={(event) => setDraft((current) => ({ ...current, memo: event.target.value }))} placeholder="필요한 내용을 짧게 적어주세요." />
           </label>
           <button type="submit"><MemoNavIcon type="plus" /> 저장</button>
@@ -3950,7 +4011,7 @@ function SchedulerPage({ navigate, embedded = false }) {
               <span>이름</span>
               <span>분류</span>
               <span>날짜</span>
-              <span>노트</span>
+              <span>메모</span>
               <span />
             </div>
             {visibleItems.map((item) => (

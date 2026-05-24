@@ -1,7 +1,7 @@
 {
   "name": "ai-assitant",
   "short_name": "ai-assitant",
-  "description": "개인 일정, 메모, 여행 추천, 분석 워크스페이스를 묶은 AI 비서 앱",
+  "description": "메모, 일정, 여행 코스를 한곳에서 이어 쓰는 개인 AI 워크스페이스",
   "start_url": "/app",
   "scope": "/",
   "display": "standalone",
@@ -28,8 +28,8 @@
       "url": "/notes"
     },
     {
-      "name": "AI Trip",
-      "short_name": "여행",
+      "name": "여행 코스",
+      "short_name": "코스",
       "url": "/destinations"
     },
     {
