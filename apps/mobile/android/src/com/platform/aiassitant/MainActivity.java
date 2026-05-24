@@ -9,7 +9,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 public final class MainActivity extends Activity {
-    private static final String APP_URL = "http://192.168.45.101/notes";
+    private static final String APP_URL = "http://192.168.45.101/app";
     private WebView webView;
 
     @Override

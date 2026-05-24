@@ -307,6 +307,27 @@ apps/mobile/android/build/ai-assitant-debug.apk
 - `scripts/build_android_apk.sh`
 - Docker web 재배포 후 `/connect`, `/notes`, `/downloads/ai-assitant-debug.apk` 확인
 
+## 16. 2026-05-24 홈 화면 메모 중심 개편과 APK 갱신
+
+변경 내용:
+
+- `/app` 홈 왼쪽 빠른 액션에서 `연결`을 제거하고 `내 일정`, `메모`, `여행 코스` 3개로 정리했습니다.
+- `연결` 액션은 오른쪽 메모 카드 내부의 소형 버튼으로 이동했습니다.
+- 오른쪽 기능 카드는 메모를 가장 큰 주 카드로 두고, 일정과 여행 코스는 보조 카드로 배치해 시각적 서열을 만들었습니다.
+- 복잡한 노트북 사진 배경과 화면 하단 이미지 출처 텍스트를 제거하고, 밝은 그리드 그라데이션 배경으로 교체했습니다.
+- Android WebView 앱 시작 URL을 `/app`으로 맞춰 설치 후 수정된 홈 화면이 열리도록 했습니다.
+- 새 APK를 `apps/mobile/android/release/ai-assitant-debug.apk`에 생성하고 `/downloads/ai-assitant-debug.apk` 공개 경로에 다시 배치했습니다.
+
+검증:
+
+- `npm --prefix apps/web run build`
+- `docker compose -f docker-compose.dev.yml build web`
+- `docker compose -f docker-compose.dev.yml up -d --build api web`
+- Docker web `nginx -t`, `/app`, `/manifest.webmanifest`, `/downloads/ai-assitant-debug.apk` 확인
+- Docker web에서 API `/api/destinations?size=1` 응답 확인
+- Docker Android SDK 이미지에서 `scripts/build_android_apk.sh` 실행
+- APK 내부 WebView URL이 `http://192.168.45.101/app`인지 확인
+
 ## 8. 2026-05-21 노트와 문서 정리
 
 이번 변경에서는 노트 보드 흐름을 더 가볍게 만들고, 작업 문서를 Docker 기준으로 정리했습니다.

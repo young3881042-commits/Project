@@ -29,10 +29,10 @@ const PRIMARY_SHORTCUTS = [
   { key: 'trip', shortcut: 'aiTrip', icon: 'trip' },
   { key: 'connections', shortcut: 'dataConnections', icon: 'link' }
 ];
-const PHOTO_CREDITS = [
-  'Coffee-desk-laptop-notebook: www.Pixel.la Free Stock Photos, CC0',
-  'Scroll on Desk: Stocksnap, CC0',
-  'Seoul by night: Syced, CC0'
+const SPACE_HOME_SHORTCUTS = [
+  { key: 'schedule', label: '내 일정', path: '/scheduler', icon: 'calendar' },
+  { key: 'notes', label: '메모', path: '/notes', icon: 'board' },
+  { key: 'trip', label: '여행 코스', path: '/destinations', icon: 'trip' }
 ];
 const RECURRENCE_LABELS = {
   none: '반복 없음',
@@ -2326,6 +2326,25 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260524-home-memo-connect-apk',
+    content: `# 2026-05-24 홈 화면 메모 중심 개편과 APK 갱신
+
+- [x] \`/app\` 홈 빠른 액션을 내 일정, 메모, 여행 코스 3개로 축소
+- [x] 연결 액션을 메모 카드 내부 버튼으로 이동
+- [x] 메모 카드를 가장 큰 주 카드로 두고 일정/여행 카드는 보조 카드로 정리
+- [x] 복잡한 사진 배경과 출처 텍스트를 제거하고 그리드 그라데이션 배경으로 교체
+- [x] Android WebView 시작 경로를 \`/app\`으로 변경하고 APK 재생성
+
+## 검증
+
+- [x] \`npm --prefix apps/web run build\`
+- [x] \`docker compose -f docker-compose.dev.yml build web\`
+- [x] \`docker compose -f docker-compose.dev.yml up -d --build api web\`
+- [x] Docker web \`/app\`, \`/manifest.webmanifest\`, \`/downloads/ai-assitant-debug.apk\` 확인
+- [x] Docker web에서 API \`/api/destinations?size=1\` 응답 확인
+- [x] Docker Android SDK 이미지로 \`scripts/build_android_apk.sh\` 실행`
+  },
+  {
     id: 'admin1-memo-20260524-web-copy-visual-refresh',
     content: `# 2026-05-24 웹 문구와 비주얼 리프레시
 
@@ -2814,86 +2833,80 @@ function SpaceHomePage({ navigate }) {
 
   return (
     <main className="spaceHome">
-      <section className={`spaceHero ${adminOverview ? 'hasAdminOverview' : ''}`}>
+      <section className="spaceHero">
         <div className="spaceHeroCopy">
           <span className="spaceEyebrow">AI Home</span>
           <h1>오늘 할 일을 바로 이어서</h1>
           <strong className="spaceHeroLead">메모, 일정, 여행 코스를 한 화면에서 정리합니다.</strong>
           <p>생각은 메모로 남기고, 해야 할 일은 일정으로 옮기고, 떠날 곳은 코스로 저장하세요.</p>
           <div className="spaceHeroActions">
-            {PRIMARY_SHORTCUTS.map((item) => {
-              const shortcut = APP_SHORTCUTS[item.shortcut];
+            {SPACE_HOME_SHORTCUTS.map((shortcut) => {
               return (
-                <button key={item.key} type="button" onClick={() => navigate(shortcut.path)}>
-                  <MemoNavIcon type={item.icon} />
+                <button key={shortcut.key} type="button" onClick={() => navigate(shortcut.path)}>
+                  <MemoNavIcon type={shortcut.icon} />
                   {shortcut.label}
                 </button>
               );
             })}
           </div>
-          <p className="spacePhotoCredit">{PHOTO_CREDITS[0]}</p>
         </div>
-        {adminOverview ? (
-          <aside className="adminOverviewPanel" aria-label="admin1 activity overview">
-            <div className="adminOverviewHeader">
-              <span>admin1</span>
-              <strong>운영 현황</strong>
-            </div>
-            <div className="adminOverviewStats">
-              <article>
-                <span>일정</span>
-                <strong>{adminOverview.todayCount}</strong>
-                <small>7일 미완료 {adminOverview.weekPendingCount}</small>
-              </article>
-              <article>
-                <span>체크</span>
-                <strong>{adminOverview.checklistDone}/{adminOverview.checklistTotal}</strong>
-                <small>관리 목표 {adminOverview.adminGoalCount}</small>
-              </article>
-              <article>
-                <span>여행</span>
-                <strong>{adminOverview.travelScheduleCount}</strong>
-                <small>스케줄 연결 항목</small>
-              </article>
-            </div>
-            <div className="adminOverviewStrip">
-              {PROJECT_BOARD_COLUMNS.map((column) => (
-                <span key={column.id}>
-                  {column.title} <strong>{adminOverview.statusCounts[column.id] || 0}</strong>
-                </span>
-              ))}
-            </div>
-            <div className="adminOverviewNext">
-              <span>다음</span>
-              <strong>{adminOverview.nextSchedule ? `${adminOverview.nextSchedule.date} ${adminOverview.nextSchedule.time}` : '대기 중인 일정 없음'}</strong>
-              <p>{adminOverview.nextSchedule?.title || '메모와 여행 계획을 바로 확인할 수 있습니다.'}</p>
-            </div>
-            <div className="adminOverviewActions">
-              <button type="button" onClick={() => navigate(APP_SHORTCUTS.personalScheduler.path)}><MemoNavIcon type="calendar" />일정</button>
-              <button type="button" onClick={() => navigate(APP_SHORTCUTS.aiMemoBoard.path)}><MemoNavIcon type="board" />메모</button>
-              <button type="button" onClick={() => navigate('/plans')}><MemoNavIcon type="trip" />여행</button>
-            </div>
-            <p className="adminOverviewMeta">보드 {adminOverview.boardCount} · 메모 {adminOverview.noteCount} · 일반 {adminOverview.memoCount}</p>
-          </aside>
-        ) : (
-          <aside className="spaceHeroVisualPanel" aria-label="assistant preview">
-            <article className="spaceVisualCard memo">
+        <aside className="spaceFeaturePanel" aria-label="assistant feature shortcuts">
+          <article className="spaceFeatureCard memo">
+            <div className="spaceFeatureHeader">
               <MemoNavIcon type="board" />
               <span>Memo</span>
-              <strong>생각을 바로 보드에</strong>
-            </article>
-            <article className="spaceVisualCard schedule">
+            </div>
+            <strong>생각을 바로 보드에</strong>
+            <p>메모를 쓰고 필요한 데이터 연결은 같은 흐름에서 붙입니다.</p>
+            <div className="spaceFeatureMeta">
+              <span>보드 {adminOverview.boardCount}</span>
+              <span>메모 {adminOverview.noteCount}</span>
+            </div>
+            <div className="spaceFeatureActions">
+              <button type="button" className="spaceFeaturePrimaryAction" onClick={() => navigate('/notes')}>
+                메모 열기
+              </button>
+              <button type="button" className="spaceFeatureLinkAction" onClick={() => navigate('/connect')} aria-label="메모 데이터 연결 열기" title="메모 데이터 연결">
+                <MemoNavIcon type="link" />
+                연결
+              </button>
+            </div>
+          </article>
+          <article className="spaceFeatureCard schedule">
+            <div className="spaceFeatureHeader">
               <MemoNavIcon type="calendar" />
               <span>Schedule</span>
-              <strong>오늘 일정만 선명하게</strong>
-            </article>
-            <article className="spaceVisualCard travel">
+            </div>
+            <strong>오늘 일정만 선명하게</strong>
+            <p>{adminOverview.nextSchedule?.title || '메모에서 나온 할 일을 날짜별로 모읍니다.'}</p>
+            <div className="spaceFeatureMeta">
+              <span>오늘 {adminOverview.todayCount}</span>
+              <span>7일 미완료 {adminOverview.weekPendingCount}</span>
+            </div>
+            <div className="spaceFeatureActions">
+              <button type="button" className="spaceFeatureSecondaryAction" onClick={() => navigate('/scheduler')}>
+                일정 보기
+              </button>
+            </div>
+          </article>
+          <article className="spaceFeatureCard travel">
+            <div className="spaceFeatureHeader">
               <MemoNavIcon type="trip" />
               <span>Trip</span>
-              <strong>갈 곳은 코스로 저장</strong>
-            </article>
-          </aside>
-        )}
+            </div>
+            <strong>갈 곳은 코스로 저장</strong>
+            <p>찾은 장소를 여행 코스로 묶고 일정에 이어 붙입니다.</p>
+            <div className="spaceFeatureMeta">
+              <span>저장 코스 {adminOverview.travelScheduleCount}</span>
+              <span>장소 추천</span>
+            </div>
+            <div className="spaceFeatureActions">
+              <button type="button" className="spaceFeatureSecondaryAction" onClick={() => navigate('/destinations')}>
+                코스 찾기
+              </button>
+            </div>
+          </article>
+        </aside>
       </section>
     </main>
   );
