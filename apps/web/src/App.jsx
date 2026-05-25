@@ -20,14 +20,12 @@ const APP_SHORTCUTS = {
   aiSchedule: { label: '일정 만들기', path: '/planner' },
   personalScheduler: { label: '내 일정', path: '/scheduler' },
   aiMemoBoard: { label: '메모', path: '/notes' },
-  dataConnections: { label: '연결', path: '/connect' },
   adminWorkspace: { label: '관리', path: '/analysisadmin' }
 };
 const PRIMARY_SHORTCUTS = [
   { key: 'schedule', shortcut: 'personalScheduler', icon: 'calendar' },
   { key: 'notes', shortcut: 'aiMemoBoard', icon: 'board' },
-  { key: 'trip', shortcut: 'aiTrip', icon: 'trip' },
-  { key: 'connections', shortcut: 'dataConnections', icon: 'link' }
+  { key: 'trip', shortcut: 'aiTrip', icon: 'trip' }
 ];
 const SPACE_HOME_SHORTCUTS = [
   { key: 'schedule', label: '내 일정', path: '/scheduler', icon: 'calendar' },
@@ -2340,6 +2338,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260525-nav-scheduler-trim',
+    content: `# 2026-05-25 공통 메뉴와 일정 액션 정리
+
+- [x] 공통 상단 메뉴에서 외부 데이터 진입 탭 제거
+- [x] 앱 홈 메모 카드의 별도 데이터 진입 버튼 제거
+- [x] 일정 화면 하단 액션은 일정 추가만 남김
+- [x] 모바일 메모 보드 탭을 일반 문서 흐름에 놓아 프로필 영역과 겹치지 않게 조정`
+  },
+  {
     id: 'admin1-memo-20260525-notes-mobile-editor-window',
     content: `# 2026-05-25 메모 모바일 작성창 정리
 
@@ -2971,10 +2978,6 @@ function SpaceHomePage({ navigate }) {
             <div className="spaceFeatureActions">
               <button type="button" className="spaceFeaturePrimaryAction" onClick={() => navigate('/notes')}>
                 메모 열기
-              </button>
-              <button type="button" className="spaceFeatureLinkAction" onClick={() => navigate('/connect')} aria-label="일상 연동 열기" title="일상 연동">
-                <MemoNavIcon type="link" />
-                연동
               </button>
             </div>
           </article>
@@ -4201,10 +4204,6 @@ function SchedulerPage({ navigate, embedded = false }) {
             <MemoNavIcon type="plus" />
             <span>{quickAddOpen ? '닫기' : '일정 추가'}</span>
           </button>
-          <button type="button" className="schedulerCuteAdd secondary" onClick={() => navigate(APP_SHORTCUTS.dataConnections.path)}>
-            <MemoNavIcon type="link" />
-            <span>메모 연동하기</span>
-          </button>
         </div>
         {quickAddOpen ? <form className="schedulerQuickAdd cute" onSubmit={submitDraft}>
           <label>
@@ -4417,7 +4416,7 @@ export default function App() {
   const redirectPath = routePath === '/' || routePath === '/apps'
     ? APP_SHORTCUTS.mainHub.path
     : routePath === '/connections'
-      ? APP_SHORTCUTS.dataConnections.path
+      ? '/connect'
       : '';
 
   useEffect(() => {

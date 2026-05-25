@@ -281,18 +281,6 @@
   color: #ffffff !important;
 }
 
-.spaceFeatureLinkAction {
-  min-width: 92px;
-  color: #0f766e !important;
-}
-
-.spaceFeatureLinkAction .memoNavIcon {
-  width: 22px;
-  height: 22px;
-  min-width: 22px;
-  background: #ecfdf5;
-}
-
 .spaceFeatureSecondaryAction {
   width: 100%;
 }

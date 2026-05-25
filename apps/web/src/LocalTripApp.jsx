@@ -1341,13 +1341,11 @@ function TravelWorkspaceNavigator({ path, navigate }) {
   const items = [
     { key: 'schedule', label: '내 일정', path: '/scheduler', icon: 'calendar' },
     { key: 'notes', label: '메모', path: '/notes', icon: 'board' },
-    { key: 'trip', label: '장소 찾기', path: '/destinations', icon: 'trip' },
-    { key: 'connections', label: '연결', path: '/connect', icon: 'link' }
+    { key: 'trip', label: '장소 찾기', path: '/destinations', icon: 'trip' }
   ];
   const active = path.startsWith('/scheduler') ? 'schedule'
     : path.startsWith('/notes') ? 'notes'
-      : path.startsWith('/connect') || path.startsWith('/connections') ? 'connections'
-        : 'trip';
+      : 'trip';
   const session = readStoredAuth();
   const guest = isGuestSession(session);
   const accountPath = guest ? '/login' : '/mypage';
@@ -1614,7 +1612,6 @@ function LocalTripNav({ path, navigate }) {
             <a className={path.startsWith('/scheduler') ? 'active' : ''} href="/scheduler" onClick={(event) => routeClick(event, '/scheduler', navigate)}>내 일정</a>
             <a className={path.startsWith('/notes') ? 'active' : ''} href="/notes" onClick={(event) => routeClick(event, '/notes', navigate)}>메모</a>
             <a className={path.startsWith('/destinations') || path.startsWith('/planner') || path.startsWith('/plans') ? 'active' : ''} href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)}>장소 찾기</a>
-            <a className={path.startsWith('/connect') || path.startsWith('/connections') ? 'active' : ''} href="/connect" onClick={(event) => routeClick(event, '/connect', navigate)}>연결</a>
           </div>
         </div>
         <nav className="ltNavLinks" aria-label="여행 코스 메뉴">

@@ -31,11 +31,6 @@
       "name": "여행 코스",
       "short_name": "코스",
       "url": "/destinations"
-    },
-    {
-      "name": "연결",
-      "short_name": "연결",
-      "url": "/connect"
     }
   ]
 }

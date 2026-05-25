@@ -26,17 +26,6 @@
   color: #fff;
 }
 
-.schedulerCuteAdd.secondary {
-  border-color: #cbd5e1;
-  background: #fff;
-  color: #334155;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-}
-
-.schedulerCuteAdd.secondary .memoNavIcon {
-  background: #0f766e;
-}
-
 .schedulerQuickAdd.cute {
   position: relative;
   overflow: hidden;
