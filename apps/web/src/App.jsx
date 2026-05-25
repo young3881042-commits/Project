@@ -20,12 +20,14 @@ const APP_SHORTCUTS = {
   aiSchedule: { label: '일정 만들기', path: '/planner' },
   personalScheduler: { label: '내 일정', path: '/scheduler' },
   aiMemoBoard: { label: '메모', path: '/notes' },
+  dataConnections: { label: '연결', path: '/connect' },
   adminWorkspace: { label: '관리', path: '/analysisadmin' }
 };
 const PRIMARY_SHORTCUTS = [
   { key: 'schedule', shortcut: 'personalScheduler', icon: 'calendar' },
   { key: 'notes', shortcut: 'aiMemoBoard', icon: 'board' },
-  { key: 'trip', shortcut: 'aiTrip', icon: 'trip' }
+  { key: 'trip', shortcut: 'aiTrip', icon: 'trip' },
+  { key: 'connections', shortcut: 'dataConnections', icon: 'link' }
 ];
 const SPACE_HOME_SHORTCUTS = [
   { key: 'schedule', label: '내 일정', path: '/scheduler', icon: 'calendar' },
@@ -2338,6 +2340,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260525-connection-nav-restore',
+    content: `# 2026-05-25 연결 메뉴 복구
+
+- [x] 공통 상단 메뉴에 연결 탭 다시 노출
+- [x] 여행 화면 서비스 이동 메뉴에 연결 링크 다시 노출
+- [x] 일정 화면 하단 메모 연동 버튼은 제거 상태 유지
+- [x] 앱 홈 메모 카드의 별도 연동 버튼은 제거 상태 유지`
+  },
+  {
     id: 'admin1-memo-20260525-nav-scheduler-trim',
     content: `# 2026-05-25 공통 메뉴와 일정 액션 정리
 
@@ -4416,7 +4427,7 @@ export default function App() {
   const redirectPath = routePath === '/' || routePath === '/apps'
     ? APP_SHORTCUTS.mainHub.path
     : routePath === '/connections'
-      ? '/connect'
+      ? APP_SHORTCUTS.dataConnections.path
       : '';
 
   useEffect(() => {
