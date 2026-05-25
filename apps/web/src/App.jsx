@@ -514,7 +514,12 @@ function markdownPreviewLines(markdown) {
     if (line.startsWith('## ')) return <h4 key={key}>{line.slice(3)}</h4>;
     if (/^\s*[-*]\s+\[[ xX]\]\s+/.test(line)) {
       const checked = /^\s*[-*]\s+\[[xX]\]\s+/.test(line);
-      return <p key={key} className={checked ? 'checked' : ''}>{checked ? '✓ ' : '□ '}{line.replace(/^\s*[-*]\s+\[[ xX]\]\s+/, '')}</p>;
+      return (
+        <label key={key} className="markdownTaskLine">
+          <input type="checkbox" checked={checked} readOnly />
+          <span>{line.replace(/^\s*[-*]\s+\[[ xX]\]\s+/, '')}</span>
+        </label>
+      );
     }
     if (/^\s*[-*]\s+/.test(line)) return <p key={key}>• {line.replace(/^\s*[-*]\s+/, '')}</p>;
     return line.trim() ? <p key={key}>{line}</p> : <br key={key} />;
@@ -532,7 +537,16 @@ function MarkdownPreview({ markdown, compact = false }) {
       className={compact ? 'markdownRender compact' : 'markdownRender'}
       components={{
         a: ({ node, ...props }) => <a {...props} target="_blank" rel="noreferrer" />,
-        input: ({ node, ...props }) => <input {...props} readOnly />
+        ul: ({ node, className, ...props }) => <ul className={className || ''} {...props} />,
+        ol: ({ node, className, ...props }) => <ol className={className || ''} {...props} />,
+        li: ({ node, className, ...props }) => <li className={className || ''} {...props} />,
+        input: ({ node, ...props }) => (
+          <input
+            {...props}
+            className={`markdownCheckbox ${props.checked ? 'checked' : ''}`}
+            readOnly
+          />
+        )
       }}
     >
       {markdown || ''}
@@ -2326,6 +2340,43 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260525-notes-markdown-shortcuts',
+    content: `# 2026-05-25 메모 Markdown 렌더링과 상단 바로가기 보정
+
+- [x] \`/notes\` 상세 보기에서 \`react-markdown\`과 \`remark-gfm\` 기준 체크박스 렌더링 보강
+- [x] 수정 화면에 굵게, 체크, 목록을 넣는 간단한 Markdown 툴바 추가
+- [x] textarea 폰트, 줄간격, 여백을 모바일 입력 기준으로 정리
+- [x] 모바일 상단 바로가기를 가로 스크롤 탭으로 복구
+- [x] 현재 보드가 아닌 작업 카드 제목이 상세 상단에 크게 뜨는 선택 로직 보정`
+  },
+  {
+    id: 'admin1-memo-20260525-notes-mobile-simple',
+    content: `# 2026-05-25 메모 모바일 UI 단순화
+
+- [x] \`/notes\` 상단 breadcrumb, 상태 플로팅 카드, 보드 선택 안내 문구 제거
+- [x] 모바일에서 워크스페이스 내비게이션과 드래그 핸들을 숨기고 메모 카드를 리스트형으로 고정
+- [x] 편집 중 미리보기 패널을 숨겨 입력 공간 확대
+- [x] 마지막 CSS override 파일로 메모 화면 스타일 우선순위 정리
+
+## 다음 확인
+
+- [ ] 휴대폰에서 보드 선택, 새 메모, 수정, 삭제 버튼 겹침 여부 확인`
+  },
+  {
+    id: 'admin1-memo-20260525-trip-detail-actions',
+    content: `# 2026-05-25 AI Trip 일정 상세 액션과 하루 흐름 요약
+
+- [x] \`/plans/{id}\` 상세 상단에 일자별 출발지, 도착지, 식사/카페 횟수, 이동 팁을 요약하는 하루 흐름 영역 추가
+- [x] 상세 액션 바에 수정, 다시 만들기, 스케줄 저장, 내보내기, 공유, 삭제 버튼 추가
+- [x] 수정/다시 만들기에서 현재 코스 정보를 플래너 초안으로 넘겨 이어서 조정 가능하게 변경
+- [x] 체크리스트와 변경 로그에 AI Trip 상세 UX 작업 완료 기록 반영
+
+## 다음 확인
+
+- [ ] 모바일에서 \`/plans/{id}\` 액션 바가 두 줄 안에서 겹치지 않는지 확인
+- [ ] 플래너 초안으로 넘어간 뒤 지역/장소 후보가 실제 저장 코스와 충분히 가깝게 잡히는지 확인`
+  },
+  {
     id: 'admin1-memo-20260525-mobile-memo-trip-direction',
     content: `# 2026-05-25 모바일 메모 UX와 제품 방향 재정리
 
@@ -2883,8 +2934,7 @@ function SpaceHomePage({ navigate }) {
         <div className="spaceHeroCopy">
           <span className="spaceEyebrow">App Home</span>
           <h1>오늘 할 일을 바로 이어서</h1>
-          <strong className="spaceHeroLead">메모, 일정, 여행 코스를 한 화면에서 정리합니다.</strong>
-          <p>생각은 메모로 남기고, 해야 할 일은 일정으로 옮기고, 떠날 곳은 코스로 저장하세요.</p>
+          <strong className="spaceHeroLead">흩어진 생각과 일정을 한눈에. 메모를 쓰고, 일정을 계획하고, 다음 여행 코스까지 이 화면 하나로 가볍게 정리해보세요.</strong>
           <div className="spaceHeroActions">
             {SPACE_HOME_SHORTCUTS.map((shortcut) => {
               return (
@@ -2903,7 +2953,7 @@ function SpaceHomePage({ navigate }) {
               <span>Memo</span>
             </div>
             <strong>생각을 바로 보드에</strong>
-            <p>메모를 쓰고 필요한 데이터 연결은 같은 흐름에서 붙입니다.</p>
+            <p>오늘 떠오른 아이디어를 기록하고, 필요한 일정과 유연하게 연결해보세요.</p>
             <div className="spaceFeatureMeta">
               <span>보드 {adminOverview.boardCount}</span>
               <span>메모 {adminOverview.noteCount}</span>
@@ -2912,9 +2962,9 @@ function SpaceHomePage({ navigate }) {
               <button type="button" className="spaceFeaturePrimaryAction" onClick={() => navigate('/notes')}>
                 메모 열기
               </button>
-              <button type="button" className="spaceFeatureLinkAction" onClick={() => navigate('/connect')} aria-label="메모 데이터 연결 열기" title="메모 데이터 연결">
+              <button type="button" className="spaceFeatureLinkAction" onClick={() => navigate('/connect')} aria-label="일상 연동 열기" title="일상 연동">
                 <MemoNavIcon type="link" />
-                연결
+                연동
               </button>
             </div>
           </article>
@@ -2924,7 +2974,7 @@ function SpaceHomePage({ navigate }) {
               <span>Schedule</span>
             </div>
             <strong>오늘 일정만 선명하게</strong>
-            <p>{adminOverview.nextSchedule?.title || '메모에서 나온 할 일을 날짜별로 모읍니다.'}</p>
+            <p>메모 속 숨은 할 일들을 모아 오늘 하루를 선명하게 채워드려요.</p>
             <div className="spaceFeatureMeta">
               <span>오늘 {adminOverview.todayCount}</span>
               <span>7일 미완료 {adminOverview.weekPendingCount}</span>
@@ -2941,7 +2991,7 @@ function SpaceHomePage({ navigate }) {
               <span>Trip</span>
             </div>
             <strong>갈 곳은 코스로 저장</strong>
-            <p>찾은 장소를 여행 코스로 묶고 일정에 이어 붙입니다.</p>
+            <p>가고 싶은 장소들을 모아 나만의 완벽한 여행 동선을 짜보세요.</p>
             <div className="spaceFeatureMeta">
               <span>저장 코스 {adminOverview.travelScheduleCount}</span>
               <span>장소 추천</span>
@@ -2969,6 +3019,7 @@ function AiNotePage({ navigate }) {
   const [draggingBlockId, setDraggingBlockId] = useState('');
   const [movingBlock, setMovingBlock] = useState(null);
   const freeformBoardRef = useRef(null);
+  const memoTextareaRef = useRef(null);
   const movedBlockRef = useRef(false);
   const movedBlockResetTimerRef = useRef(null);
   const [contextMenu, setContextMenu] = useState(null);
@@ -2978,7 +3029,6 @@ function AiNotePage({ navigate }) {
   const [editingTitleId, setEditingTitleId] = useState('');
   const [editingBoardId, setEditingBoardId] = useState('');
   const session = readStoredAuth();
-  const displayName = session?.username && session.username !== 'guestuser' ? session.username : 'Guest';
 
   useEffect(() => {
     document.title = '메모';
@@ -3048,9 +3098,10 @@ function AiNotePage({ navigate }) {
   useEffect(() => {
     if (!blocks.length) return;
     if (!activeId || !blocks.some((block) => block.id === activeId)) {
-      setActiveId(blocks[0].id);
+      const firstBoardBlock = blocks.find((block) => (block.boardId || block.sector) === activeBoardId);
+      setActiveId((firstBoardBlock || blocks[0]).id);
     }
-  }, [activeId, blocks]);
+  }, [activeBoardId, activeId, blocks]);
 
   const addBoard = () => {
     const nextIndex = boards.length + 1;
@@ -3144,6 +3195,44 @@ function AiNotePage({ navigate }) {
 
   const updateActiveBlockContent = (id, content) => {
     updateBlock(id, { content });
+  };
+
+  const applyMarkdownTool = (block, tool) => {
+    if (!block || block.type === 'checklist') return;
+    const textarea = memoTextareaRef.current;
+    const content = block.content || '';
+    const start = textarea?.selectionStart ?? content.length;
+    const end = textarea?.selectionEnd ?? content.length;
+    const selected = content.slice(start, end);
+    let insert = '';
+    let nextCursor = start;
+
+    if (tool === 'bold') {
+      const text = selected || '강조할 내용';
+      insert = `**${text}**`;
+      nextCursor = selected ? start + insert.length : start + 2;
+    } else if (tool === 'check') {
+      const text = selected || '할 일';
+      insert = text
+        .split('\n')
+        .map((line) => `- [ ] ${line.replace(/^\s*[-*]\s+(\[[ xX]\]\s+)?/, '').trim() || '할 일'}`)
+        .join('\n');
+      nextCursor = start + insert.length;
+    } else {
+      const text = selected || '목록';
+      insert = text
+        .split('\n')
+        .map((line) => `- ${line.replace(/^\s*[-*]\s+(\[[ xX]\]\s+)?/, '').trim() || '목록'}`)
+        .join('\n');
+      nextCursor = start + insert.length;
+    }
+
+    const nextContent = `${content.slice(0, start)}${insert}${content.slice(end)}`;
+    updateActiveBlockContent(block.id, nextContent);
+    window.setTimeout(() => {
+      memoTextareaRef.current?.focus();
+      memoTextareaRef.current?.setSelectionRange(nextCursor, nextCursor);
+    }, 0);
   };
 
   const updateBlockTitle = (block, title) => {
@@ -3565,7 +3654,6 @@ function AiNotePage({ navigate }) {
         <section className="aiNoteBoardPanel" onContextMenu={(event) => noteContentOpen && openContextMenu(event, 'todo')}>
           <header className="projectTopbar">
             <div>
-              <span className="projectBreadcrumb">Home / 메모</span>
               <h1>메모</h1>
             </div>
             <div className="projectTopActions" aria-label="workspace actions">
@@ -3647,11 +3735,6 @@ function AiNotePage({ navigate }) {
           ) : null}
           {!noteContentOpen ? (
             <section className="notePadStart">
-              <div>
-                <span>Boards</span>
-                <strong>보드를 선택하고 메모를 남기세요.</strong>
-                <p>아이디어, 할 일, 일정 후보를 보드별로 정리합니다.</p>
-              </div>
               <div className="notePadBoardGrid">
                 {boards.map((board) => (
                   <article className="notePadBoardCard" key={board.id}>
@@ -3683,13 +3766,6 @@ function AiNotePage({ navigate }) {
             </section>
           ) : (
             <>
-          <aside className="projectFloatingNote" aria-label="recent comment">
-            <span><BoardIcon type="bell" /></span>
-            <div>
-              <strong>{displayName}</strong>
-              <p>{fileStatus || '메모 보드 작업 중'}</p>
-            </div>
-          </aside>
           {activeBlock ? (
             <section
               className={`memoInlineEditor ${editingBlockId === activeBlock.id ? 'editing' : 'previewing'}`}
@@ -3698,7 +3774,6 @@ function AiNotePage({ navigate }) {
             >
               <header>
                 <div>
-                  <span>선택한 메모</span>
                   {editingBlockId === activeBlock.id ? (
                     <input
                       value={noteBlockTitle(activeBlock)}
@@ -3723,15 +3798,29 @@ function AiNotePage({ navigate }) {
               {editingBlockId === activeBlock.id ? (
                 <div className="memoMarkdownComposer">
                   {activeBlock.type === 'checklist' ? renderChecklistEditor(activeBlock) : (
-                    <textarea
-                      autoFocus
-                      value={activeBlock.content || ''}
-                      onChange={(event) => updateActiveBlockContent(activeBlock.id, event.target.value)}
-                      placeholder="# 제목&#10;&#10;오늘 떠오른 생각을 적어보세요."
-                    />
+                    <>
+                      <div className="memoMarkdownToolbar" aria-label="메모 서식">
+                        <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'bold')}>
+                          <strong>B</strong>
+                        </button>
+                        <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'check')}>
+                          체크
+                        </button>
+                        <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'list')}>
+                          목록
+                        </button>
+                      </div>
+                      <textarea
+                        ref={memoTextareaRef}
+                        autoFocus
+                        value={activeBlock.content || ''}
+                        onChange={(event) => updateActiveBlockContent(activeBlock.id, event.target.value)}
+                        placeholder="메모"
+                      />
+                    </>
                   )}
                   <article className="memoInlinePreview">
-                    {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : <p>내용을 작성하면 미리보기가 표시됩니다.</p>}
+                    {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : null}
                   </article>
                 </div>
               ) : (
@@ -3748,7 +3837,7 @@ function AiNotePage({ navigate }) {
                     }
                   }}
                 >
-                  {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : <p>새 메모를 눌러 내용을 적어보세요.</p>}
+                  {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : <p>비어 있음</p>}
                 </article>
               )}
             </section>
@@ -3924,6 +4013,11 @@ function SchedulerPage({ navigate, embedded = false }) {
   const selectedDateItems = expandedItems.filter((item) => item.date === selectedDate);
   const selectedDateDoneCount = selectedDateItems.filter((item) => item.done).length;
   const selectedDateCompletionRate = selectedDateItems.length ? Math.round((selectedDateDoneCount / selectedDateItems.length) * 100) : 0;
+  const selectedDateStatusLabel = selectedDateItems.length
+    ? `${selectedDate} · ${selectedDateItems.length}개 일정 · 달성률 ${selectedDateCompletionRate}%`
+    : selectedDate === today
+      ? '오늘 예정된 일정이 없어요. 가벼운 하루를 즐겨보세요! 🍀'
+      : `${selectedDate}은 아직 비어 있어요. 천천히 채워보세요.`;
 
   const moveCalendarMonth = (offset) => {
     const [year, month] = calendarMonth.split('-').map(Number);
@@ -4032,7 +4126,7 @@ function SchedulerPage({ navigate, embedded = false }) {
             ))}
         </div>
       ) : (
-        <div className="schedulerNoToday">오늘 등록된 일정이 없습니다.</div>
+        <div className="schedulerNoToday">오늘 예정된 일정이 없어요. 가벼운 하루를 즐겨보세요! 🍀</div>
       )}
     </aside>
   );
@@ -4043,7 +4137,7 @@ function SchedulerPage({ navigate, embedded = false }) {
           <div>
             <span className="schedulerPageIcon"><MemoNavIcon type="calendar" /></span>
             <h1>{schedulerTitle}</h1>
-            <p>메모에서 나온 할 일과 약속을 날짜별로 모읍니다.</p>
+            <p>기록에서 찾아낸 소중한 할 일과 약속들을 보기 쉽게 모았어요.</p>
           </div>
           <div className="schedulerStats">
             <article><span>오늘 달성률</span><strong>{todayCompletionRate}%</strong><small>{todayDoneCount}/{todayItems.length}</small></article>
@@ -4059,7 +4153,7 @@ function SchedulerPage({ navigate, embedded = false }) {
           </button>
           <button type="button" className="schedulerCuteAdd secondary" onClick={() => navigate(APP_SHORTCUTS.dataConnections.path)}>
             <MemoNavIcon type="link" />
-            <span>연결에서 가져오기</span>
+            <span>메모 연동하기</span>
           </button>
         </div>
         {quickAddOpen ? <form className="schedulerQuickAdd cute" onSubmit={submitDraft}>
@@ -4116,7 +4210,7 @@ function SchedulerPage({ navigate, embedded = false }) {
             <div className="schedulerCalendarHeader">
               <div>
                 <h2>달력</h2>
-                <p>{selectedDate} · {selectedDateItems.length}개 일정 · 달성률 {selectedDateCompletionRate}%</p>
+                <p>{selectedDateStatusLabel}</p>
               </div>
               <div className="schedulerCalendarControls">
                 <button type="button" onClick={() => moveCalendarMonth(-1)}>{'<'}</button>
@@ -4186,7 +4280,7 @@ function SchedulerPage({ navigate, embedded = false }) {
                     </button>
                   );
                 })}
-                {weekItems.length ? null : <p className="schedulerEmptyInline">금주에 등록된 일정이 없습니다.</p>}
+                {weekItems.length ? null : <p className="schedulerEmptyInline">이번 주는 아직 여유가 있어요. 천천히 채워보세요.</p>}
               </div>
             </div>
           </div>
@@ -4223,7 +4317,7 @@ function SchedulerPage({ navigate, embedded = false }) {
                 <button type="button" className="schedulerDelete" onClick={() => deleteVisibleItem(item)}>{item.recurring ? '반복삭제' : '삭제'}</button>
               </article>
             ))}
-            {visibleItems.length ? null : <p className="schedulerEmpty">표시할 일정이 없습니다.</p>}
+            {visibleItems.length ? null : <p className="schedulerEmpty">이 날은 비어 있어요. 하고 싶은 일을 하나 적어보세요.</p>}
           </div>
         </section>
       </section>

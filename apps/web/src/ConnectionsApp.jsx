@@ -104,13 +104,13 @@ async function api(path, { token, settings, headers, json = true, ...init } = {}
 
 function sourceStatusLabel(status) {
   const labels = {
-    ready: '연결 준비',
+    ready: '바로 시작',
     manual: '수동 설정',
-    'native-required': '네이티브 권한 필요',
+    'native-required': '휴대폰 권한 필요',
     sample: '샘플',
     'permission-required': '권한 필요'
   };
-  return labels[status] || status || '대기';
+  return labels[status] || status || '천천히 준비';
 }
 
 function ConnectionIcon({ type }) {
@@ -290,9 +290,9 @@ export default function ConnectionsApp({ navigate, authToken }) {
     <main className="connectionsShell simple">
       <header className="connectionsHero">
         <div>
-          <span className="connectionsEyebrow">Data Hub</span>
-          <h1>내 데이터 연결</h1>
-          <p>메모는 바로 쓰고, 메일과 문자는 필요한 순간 일정 후보로 가져옵니다.</p>
+          <span className="connectionsEyebrow">Daily Sync</span>
+          <h1>스마트한 일상 연동</h1>
+          <p>기록은 더 가볍게, 흩어진 메일과 문자 속 일정은 알아서 쏙쏙 챙겨 드릴게요.</p>
         </div>
         <div className="connectionsHeroActions">
           <button type="button" className="connectionsGhostButton" onClick={() => navigate?.('/notes')}>
@@ -303,7 +303,7 @@ export default function ConnectionsApp({ navigate, authToken }) {
 
       {message ? <p className="connectionsNotice">{message}</p> : null}
 
-      <section className="connectionsChoiceGrid" aria-label="연결할 데이터 선택">
+      <section className="connectionsChoiceGrid" aria-label="연동할 일상 선택">
         <button
           type="button"
           className={activeSource === 'memo' ? 'active' : ''}
@@ -312,9 +312,9 @@ export default function ConnectionsApp({ navigate, authToken }) {
           <ConnectionIcon type="note" />
           <span>
             <strong>메모</strong>
-            <small>생각과 할 일의 기본 공간</small>
+            <small>아이디어가 시작되는 곳</small>
           </span>
-          <StatusPill tone="ok">기본 연결</StatusPill>
+          <StatusPill tone="ok">바로 사용</StatusPill>
         </button>
         <button
           type="button"
@@ -324,9 +324,9 @@ export default function ConnectionsApp({ navigate, authToken }) {
           <ConnectionIcon type="mail" />
           <span>
             <strong>이메일</strong>
-            <small>예약과 결제 메일 후보</small>
+            <small>메일 속 예약 정보 가져오기</small>
           </span>
-          <StatusPill tone={emailReady ? 'ok' : 'warn'}>{emailReady ? '설정됨' : '대기'}</StatusPill>
+          <StatusPill tone={emailReady ? 'ok' : 'warn'}>{emailReady ? '준비됐어요' : '곧 만나요'}</StatusPill>
         </button>
         <button
           type="button"
@@ -336,22 +336,22 @@ export default function ConnectionsApp({ navigate, authToken }) {
           <ConnectionIcon type="phone" />
           <span>
             <strong>문자</strong>
-            <small>택배와 예약 문자 후보</small>
+            <small>문자 속 중요한 일정 챙기기</small>
           </span>
-          <StatusPill tone={messageReady ? 'ok' : 'neutral'}>{messageReady ? '연결됨' : '준비 중'}</StatusPill>
+          <StatusPill tone={messageReady ? 'ok' : 'neutral'}>{messageReady ? '챙기는 중' : '곧 만나요'}</StatusPill>
         </button>
       </section>
 
       <section className="connectionsPanel connectionsSimplePanel">
         {activeSource === 'memo' ? (
           <>
-            <SectionHeader icon="note" eyebrow="Memo" title="메모 보드" action={<StatusPill tone="ok">기본 연결</StatusPill>}>
-              아이디어와 할 일을 가장 먼저 모으는 공간입니다.
+            <SectionHeader icon="note" eyebrow="Memo" title="메모 보드" action={<StatusPill tone="ok">바로 사용</StatusPill>}>
+              오늘 떠오른 생각을 적고, 필요한 일정을 자연스럽게 이어보세요.
             </SectionHeader>
             <div className="connectionsReadiness">
               <span>현재 상태</span>
-              <strong>메모 보드로 연결됨</strong>
-              <small>작업 로그, 개인 메모, 일정 후보를 보드별로 이어서 관리합니다.</small>
+              <strong>메모에서 바로 시작할 수 있어요</strong>
+              <small>아이디어, 할 일, 약속을 보드별로 가볍게 정리해보세요.</small>
             </div>
             <div className="connectionsButtonRow">
               <button type="button" className="connectionsPrimaryButton" onClick={() => navigate?.('/notes')}>
@@ -364,14 +364,14 @@ export default function ConnectionsApp({ navigate, authToken }) {
           </>
         ) : activeSource === 'email' ? (
           <>
-            <SectionHeader icon="mail" eyebrow="Email" title="이메일" action={<StatusPill tone={emailReady ? 'ok' : 'warn'}>{emailReady ? '설정됨' : '대기'}</StatusPill>}>
-              예약, 결제, 일정 후보를 메일에서 찾는 연결입니다.
+            <SectionHeader icon="mail" eyebrow="Email" title="이메일" action={<StatusPill tone={emailReady ? 'ok' : 'warn'}>{emailReady ? '준비됐어요' : '곧 만나요'}</StatusPill>}>
+              예약과 결제 메일 속 중요한 일정을 알아서 챙겨드릴게요.
             </SectionHeader>
             <div className="connectionsProviderList">
               <article>
                 <div>
                   <strong>Gmail</strong>
-                  <p>읽기 권한 동의 후 일정 후보만 가져옵니다.</p>
+                  <p>필요한 권한만 받고, 중요한 약속만 살펴볼게요.</p>
                 </div>
                 <button
                   type="button"
@@ -381,13 +381,13 @@ export default function ConnectionsApp({ navigate, authToken }) {
                     gmail: { ...current.gmail, status: 'ready', connected: false, lastCheckedAt: new Date().toISOString() }
                   }))}
                 >
-                  Gmail 연결 준비
+                  Gmail 준비하기
                 </button>
               </article>
               <article className="connectionsProviderWithField">
                 <div>
                   <strong>네이버 메일</strong>
-                  <p>메일 주소를 먼저 저장하고 앱 비밀번호 연결은 다음 단계에서 진행합니다.</p>
+                  <p>메일 주소를 저장해두면 다음 단계에서 예약 일정을 더 쉽게 챙길 수 있어요.</p>
                 </div>
                 <label className="connectionsField">
                   <span>이메일</span>
@@ -404,12 +404,12 @@ export default function ConnectionsApp({ navigate, authToken }) {
         ) : (
           <>
             <SectionHeader icon="phone" eyebrow="SMS" title="문자" action={<StatusPill tone="neutral">{sourceStatusLabel(settings.localMessages.status)}</StatusPill>}>
-              택배, 예약 문자를 일정 후보로 쓰기 위한 연결입니다.
+              택배와 예약 문자 속 중요한 약속을 놓치지 않게 도와드릴게요.
             </SectionHeader>
             <div className="connectionsReadiness">
               <span>현재 상태</span>
-              <strong>휴대폰 앱 권한 필요</strong>
-              <small>문자 접근은 휴대폰 권한이 필요한 단계에서 활성화됩니다.</small>
+              <strong>휴대폰 권한이 필요해요</strong>
+              <small>설치 앱에서 허용하면 중요한 문자를 일정처럼 챙길 수 있어요.</small>
             </div>
             <div className="connectionsButtonRow">
               <button

@@ -354,6 +354,168 @@
     #ffffff;
 }
 
+.ltPlanActionBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.ltPlanActionBar .ltSecondaryButton {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.ltPlanActionBar .ltSecondaryButton.danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+  background: #fff7f7;
+}
+
+.ltPlanActionBar .ltSecondaryButton.danger:hover {
+  border-color: #fca5a5;
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.ltPlanActionBar p {
+  flex-basis: 100%;
+  margin: 2px 0 0;
+  color: #0f766e;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.ltRouteOverview {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.ltRouteOverviewHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: end;
+}
+
+.ltRouteOverviewHeader h2 {
+  margin: 3px 0 0;
+  color: #0f172a;
+  font-size: 1.18rem;
+}
+
+.ltRouteOverviewHeader p {
+  max-width: 360px;
+  margin: 0;
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.ltRouteSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.ltRouteSummaryCard {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.ltRouteSummaryTop,
+.ltRoutePills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.ltRouteSummaryTop {
+  justify-content: space-between;
+}
+
+.ltRouteSummaryTop span,
+.ltRouteSummaryTop strong,
+.ltRoutePills span {
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.ltRouteSummaryTop span {
+  background: #ecfdf8;
+  color: #047857;
+}
+
+.ltRouteSummaryTop strong {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.ltRouteEndpoints {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+}
+
+.ltRouteEndpoints > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.ltRouteEndpoints > div:last-child {
+  text-align: right;
+}
+
+.ltRouteEndpoints small {
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.ltRouteEndpoints b {
+  min-width: 0;
+  color: #0f172a;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.ltRouteEndpoints svg {
+  color: #0f766e;
+}
+
+.ltRoutePills span {
+  max-width: 100%;
+  background: #fff7ed;
+  color: #c2410c;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 760px) {
   .ltHomePage .ltHero {
     min-height: auto;
@@ -365,5 +527,47 @@
 
   .ltFilterFold[open] .ltFilterBar {
     display: grid;
+  }
+
+  .ltPlanActionBar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 10px;
+  }
+
+  .ltPlanActionBar .ltSecondaryButton {
+    width: 100%;
+    min-width: 0;
+    padding: 0 8px;
+    font-size: 0.8rem;
+  }
+
+  .ltPlanActionBar p {
+    grid-column: 1 / -1;
+  }
+
+  .ltRouteOverview {
+    padding: 12px;
+  }
+
+  .ltRouteOverviewHeader {
+    display: grid;
+    gap: 5px;
+  }
+
+  .ltRouteSummaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ltRouteEndpoints {
+    grid-template-columns: 1fr;
+  }
+
+  .ltRouteEndpoints svg {
+    transform: rotate(90deg);
+  }
+
+  .ltRouteEndpoints > div:last-child {
+    text-align: left;
   }
 }

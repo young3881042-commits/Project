@@ -4,6 +4,7 @@ const AUTH_KEY = 'codex-workspace-auth';
 const SCHEDULER_KEY = 'codex-personal-scheduler-items';
 const LOCALTRIP_DAY_CHECK_KEY = 'localtrip-day-route-checks';
 const LOCALTRIP_DAY_ROUTE_KEY = 'localtrip-day-route-inputs';
+const LOCALTRIP_PLANNER_DRAFT_KEY = 'localtrip-planner-draft';
 
 function commonsImage(fileName, width = 1200) {
   return `https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(fileName)}?width=${width}`;
@@ -126,7 +127,7 @@ const FALLBACK_DESTINATIONS = [
     id: 'seoul-seongsu',
     name: '성수 카페거리',
     region: '서울',
-    summary: '로스터리, 편집숍, 갤러리를 짧은 도보 동선으로 묶는 서울 동부 상권입니다.',
+    summary: '로스터리, 편집숍, 갤러리를 짧은 도보 산책으로 즐기기 좋은 서울 동부 상권입니다.',
     tags: ['카페', '커플', '사진'],
     category: '카페',
     rating: 4.8,
@@ -226,11 +227,11 @@ const GYEONGJU_FALLBACK_ITINERARY = [
     items: [
       { startTime: '09:30', endTime: '10:40', title: '첨성대', category: '관광지', location: '경주 역사유적지구', description: '경주 도심 여행의 중심이 되는 신라 천문대와 주변 산책로입니다.', travelTimeFromPrevious: '' },
       { startTime: '11:00', endTime: '12:00', title: '동궁과 월지 근처 산책', category: '산책, 관광지', location: '첨성대 동쪽', description: '동궁과 월지 주변 녹지와 유적 동선을 가볍게 걸어보는 코스입니다.', travelTimeFromPrevious: '도보 20분' },
-      { startTime: '12:10', endTime: '13:20', title: '별채반 교동쌈밥', category: '식당, 한식', location: '교촌마을·첨성대 근처', description: '쌈밥과 경주 한식 구성이 좋아 여러 명이 함께 먹기 편한 점심 후보입니다.', recommendedMenu: '교동쌈밥, 불고기 정식', travelTimeFromPrevious: '이동 10분' },
+      { startTime: '12:10', endTime: '13:20', title: '별채반 교동쌈밥', category: '식당, 한식', location: '교촌마을·첨성대 근처', description: '쌈밥과 경주 한식 구성이 좋아 여러 명이 함께 먹기 편한 점심 장소예요.', recommendedMenu: '교동쌈밥, 불고기 정식', travelTimeFromPrevious: '이동 10분' },
       { startTime: '14:00', endTime: '15:20', title: '국립경주박물관', category: '관광지, 박물관', location: '월성 동쪽', description: '신라 유물과 역사 흐름을 실내에서 차분히 볼 수 있는 오후 코스입니다.', travelTimeFromPrevious: '이동 25분' },
       { startTime: '15:40', endTime: '16:30', title: '카페 능', category: '카페, 디저트', location: '교촌마을·월정교 근처', description: '한옥 분위기에서 쉬어가기 좋은 카페로 도보 여행 중 휴식 포인트가 됩니다.', recommendedMenu: '아메리카노, 계절 디저트', travelTimeFromPrevious: '이동 20분' },
       { startTime: '17:00', endTime: '18:00', title: '교촌마을', category: '관광지, 산책', location: '월정교 북쪽', description: '한옥 마을과 전통문화 거리 분위기를 함께 느끼는 저녁 전 산책 코스입니다.', travelTimeFromPrevious: '도보 15분' },
-      { startTime: '18:20', endTime: '19:30', title: '교리김밥 본점', category: '식당, 분식', location: '교촌마을 인근', description: '가볍지만 경주 로컬 감성이 있는 저녁 후보로 이동 부담이 적습니다.', recommendedMenu: '교리김밥, 잔치국수', travelTimeFromPrevious: '이동 10분' },
+      { startTime: '18:20', endTime: '19:30', title: '교리김밥 본점', category: '식당, 분식', location: '교촌마을 인근', description: '가볍지만 경주 로컬 감성이 있어 저녁으로 들르기 좋아요.', recommendedMenu: '교리김밥, 잔치국수', travelTimeFromPrevious: '이동 10분' },
       { startTime: '20:00', endTime: '20:50', title: '동궁과 월지 야경', category: '야경, 산책', location: '월성 동쪽', description: '수면에 비치는 야경이 좋아 경주 밤 산책의 대표 마무리 코스입니다.', travelTimeFromPrevious: '이동 20분' }
     ]
   },
@@ -240,7 +241,7 @@ const GYEONGJU_FALLBACK_ITINERARY = [
     summary: '호수 산책, 카페, 보문단지 체험을 거쳐 여유 있게 마무리하는 일정입니다.',
     items: [
       { startTime: '09:30', endTime: '10:30', title: '보문호 산책', category: '산책, 관광지', location: '보문관광단지', description: '호수 둘레를 따라 걷기 좋은 아침 산책 코스입니다.', travelTimeFromPrevious: '' },
-      { startTime: '10:50', endTime: '11:40', title: '엘로우 카페', category: '카페, 브런치', location: '보문호 근처', description: '보문호 주변에서 가볍게 쉬어가기 좋은 카페 후보입니다.', recommendedMenu: '라떼, 브런치 플레이트', travelTimeFromPrevious: '이동 15분' },
+      { startTime: '10:50', endTime: '11:40', title: '엘로우 카페', category: '카페, 브런치', location: '보문호 근처', description: '보문호 주변에서 가볍게 쉬어가기 좋은 카페예요.', recommendedMenu: '라떼, 브런치 플레이트', travelTimeFromPrevious: '이동 15분' },
       { startTime: '12:00', endTime: '13:10', title: '맷돌순두부', category: '식당, 한식', location: '보문단지 근처', description: '따뜻한 순두부 메뉴로 마지막 날 점심을 편하게 해결하기 좋습니다.', recommendedMenu: '순두부찌개, 해물파전', travelTimeFromPrevious: '이동 10분' },
       { startTime: '13:40', endTime: '15:00', title: '경주월드 또는 보문단지', category: '관광지, 액티비티', location: '보문관광단지', description: '동행 성향에 따라 놀이공원 또는 보문단지 산책으로 선택할 수 있는 코스입니다.', travelTimeFromPrevious: '이동 20분' },
       { startTime: '15:20', endTime: '16:00', title: '기념품/로컬샵', category: '쇼핑, 로컬샵', location: '보문단지·황리단길 이동 동선', description: '찰보리빵, 지역 소품, 여행 기념품을 챙기는 마무리 쇼핑 시간입니다.', travelTimeFromPrevious: '이동 20분' },
@@ -284,6 +285,14 @@ const JAPAN_REGION_KEYWORDS = ['도쿄', '오사카', '교토', '후쿠오카', 
 
 function countryForDestination(destination) {
   const text = [destination?.region, destination?.name, destination?.summary, destination?.category]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return JAPAN_REGION_KEYWORDS.some((keyword) => text.includes(keyword.toLowerCase())) ? 'japan' : 'korea';
+}
+
+function countryForPlan(plan) {
+  const text = [plan?.destinationRegion, plan?.destinationName, plan?.title, plan?.summary]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
@@ -659,7 +668,7 @@ function PlannerGenerateStatus({ generating, error }) {
           <strong>여행 코스를 만들고 있습니다</strong>
           <p>선택한 장소와 취향을 바탕으로 하루 동선, 식당, 카페를 정리합니다.</p>
           <div className="ltGenerateSteps" aria-label="생성 진행 상태">
-            <span>장소 후보 확인</span>
+            <span>가고 싶은 곳 확인</span>
             <span>시간표 구성</span>
             <span>코스 저장</span>
           </div>
@@ -1029,6 +1038,12 @@ function formatDate(value) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
 }
 
+function formatLongDate(value) {
+  if (!value) return '날짜 미정';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
 function formatDaysLabel(value) {
   const days = Number(value);
   return Number.isFinite(days) && days > 0 ? `${days}일` : '일정 미정';
@@ -1061,6 +1076,132 @@ function scheduleBlockLabel(time, index = 0) {
   if (!label) return `코스 ${index + 1}`;
   if (label.length <= 12) return label;
   return `${label.slice(0, 12)}...`;
+}
+
+function planRouteEndpoint(item, fallback = '장소 미정') {
+  return pickString(item?.location, item?.place, item?.title) || fallback;
+}
+
+function planRouteTime(item, index = 0, type = 'start') {
+  if (!item) return '시간 미정';
+  const parsed = parseTimeRange(item.time);
+  if (type === 'end') {
+    return item.endTime || parsed.endTime || scheduleBlockLabel(item.time, index);
+  }
+  return item.startTime || parsed.startTime || scheduleBlockLabel(item.time, index);
+}
+
+function foodStopCount(items = []) {
+  return items.filter((item) => /식당|점심|저녁|한식|분식|브런치/.test(`${item.category} ${item.title} ${item.tags?.join(' ') || ''}`)).length;
+}
+
+function cafeStopCount(items = []) {
+  return items.filter((item) => /카페|디저트/.test(`${item.category} ${item.title} ${item.tags?.join(' ') || ''}`)).length;
+}
+
+function planTextFilename(plan) {
+  const base = `${plan?.title || plan?.destinationName || 'travel-plan'}`
+    .replace(/[\\/:*?"<>|]+/g, '')
+    .replace(/\s+/g, '-')
+    .slice(0, 48);
+  return `${base || 'travel-plan'}.txt`;
+}
+
+function buildPlanShareText(plan) {
+  const firstDay = plan?.itinerary?.[0];
+  const firstItem = firstDay?.items?.[0];
+  const lastItem = firstDay?.items?.[firstDay.items.length - 1];
+  const route = firstItem && lastItem
+    ? `${planRouteEndpoint(firstItem)} -> ${planRouteEndpoint(lastItem)}`
+    : plan?.destinationName || plan?.destinationRegion || '여행 코스';
+  return [
+    plan?.title || '여행 코스',
+    `${plan?.destinationRegion || plan?.destinationName || '지역 미정'} · ${formatDaysLabel(plan?.days)} · ${formatLongDate(plan?.startDate)}`,
+    route,
+    plan?.summary || ''
+  ].filter(Boolean).join('\n');
+}
+
+function buildPlanExportText(plan) {
+  const header = [
+    plan?.title || '여행 코스',
+    `지역: ${plan?.destinationRegion || plan?.destinationName || '지역 미정'}`,
+    `기간: ${formatDaysLabel(plan?.days)} · ${formatLongDate(plan?.startDate)}`,
+    `동행/속도: ${plan?.travelers || '미정'} · ${plan?.pace || '미정'}`,
+    plan?.summary || ''
+  ].filter(Boolean).join('\n');
+  const days = (plan?.itinerary || []).map((day) => {
+    const items = (day.items || []).map((item, index) => {
+      const time = item.startTime && item.endTime ? `${item.startTime}-${item.endTime}` : scheduleBlockLabel(item.time, index);
+      return [
+        `- ${time} ${item.title}`,
+        item.location || item.place ? `  장소: ${item.location || item.place}` : '',
+        item.travelTimeFromPrevious ? `  이동: ${item.travelTimeFromPrevious}` : '',
+        item.recommendedMenu ? `  추천 메뉴: ${item.recommendedMenu}` : '',
+        item.description || item.note ? `  메모: ${item.description || item.note}` : ''
+      ].filter(Boolean).join('\n');
+    }).join('\n');
+    return [`\n## ${day.day}일차 ${day.title || ''}`.trim(), day.summary || '', items].filter(Boolean).join('\n');
+  }).join('\n');
+  return `${header}\n${days}`.trim();
+}
+
+function writePlannerDraft(plan, mode = 'edit') {
+  if (!plan) return;
+  const dayRoutes = (plan.itinerary || []).map((day) => {
+    const items = day.items || [];
+    const firstItem = items[0];
+    const lastItem = items[items.length - 1];
+    return {
+      day: Number(day.day) || 1,
+      startPlace: planRouteEndpoint(firstItem, ''),
+      startAddress: firstItem?.location || firstItem?.place || '',
+      endPlace: planRouteEndpoint(lastItem, ''),
+      endAddress: lastItem?.location || lastItem?.place || ''
+    };
+  });
+  const notes = [
+    mode === 'regenerate' ? '이전 코스를 바탕으로 다시 생성합니다.' : '저장된 코스를 바탕으로 수정합니다.',
+    plan.summary || '',
+    ...((plan.itinerary || []).map((day) => `${day.day}일차: ${(day.items || []).map((item) => item.title).join(' -> ')}`))
+  ].filter(Boolean).join('\n');
+  localStorage.setItem(LOCALTRIP_PLANNER_DRAFT_KEY, JSON.stringify({
+    savedAt: Date.now(),
+    mode,
+    country: countryForPlan(plan),
+    destinationName: plan.destinationName,
+    destinationRegion: plan.destinationRegion,
+    startDate: plan.startDate || '',
+    days: plan.days || Math.max(dayRoutes.length, 1),
+    travelers: plan.travelers || '커플',
+    pace: plan.pace || '보통',
+    interests: plan.interests || [],
+    notes,
+    dayRoutes
+  }));
+}
+
+function readPlannerDraft(enabled) {
+  if (!enabled) return null;
+  try {
+    const raw = localStorage.getItem(LOCALTRIP_PLANNER_DRAFT_KEY);
+    if (!raw) return null;
+    const draft = JSON.parse(raw);
+    return draft && typeof draft === 'object' ? draft : null;
+  } catch {
+    return null;
+  }
+}
+
+function destinationMatchesDraft(destination, draft) {
+  const region = `${draft?.destinationRegion || ''}`.trim();
+  const name = `${draft?.destinationName || ''}`.trim();
+  if (!region && !name) return false;
+  return [destination?.name, destination?.region, destination?.summary]
+    .filter(Boolean)
+    .some((value) => (
+      (region && `${value}`.includes(region)) || (name && `${value}`.includes(name))
+    ));
 }
 
 function cleanScheduleTitle(title) {
@@ -1634,8 +1775,8 @@ function InlineNotice({ error, fallback }) {
   if (!error && !fallback) return null;
   return (
     <div className="ltInlineNotice">
-      <strong>{fallback ? '실데이터 대기' : '요청 실패'}</strong>
-      <span>{error || '추천 장소 데이터가 준비되는 중입니다. 잠시 후 다시 확인해 주세요.'}</span>
+      <strong>{fallback ? '잠시만요' : '요청 실패'}</strong>
+      <span>{error || '추천 장소를 불러오고 있어요. 잠시 후 다시 확인해 주세요.'}</span>
     </div>
   );
 }
@@ -1743,7 +1884,7 @@ function RequestFlowSection({ navigate }) {
       <section className="ltRequestFlow" aria-label="추천 진행 방식">
       <div className="ltRequestFlowCopy">
         <span className="ltSectionEyebrow">이용 흐름</span>
-        <h2>장소를 고르면 하루 동선으로 묶습니다</h2>
+        <h2>장소를 고르면 하루 흐름을 그려드릴게요</h2>
         <p>지역, 취향, 이동수단, 여행 속도를 함께 보고 움직이기 쉬운 코스를 만듭니다.</p>
         <button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>
           코스 만들기
@@ -1786,7 +1927,7 @@ function PartnerCta({ navigate }) {
       <div>
         <span className="ltSectionEyebrow">운영자 도구</span>
         <h2>추천 장소와 생성 일정을 운영 화면에서 점검하세요</h2>
-        <p>장소 데이터, 태그 품질, 내 일정 테스트를 한 화면에서 확인할 수 있습니다.</p>
+        <p>장소 노출, 태그 품질, 내 일정 테스트를 한 화면에서 확인해보세요.</p>
       </div>
       <button type="button" className="ltSecondaryButton" onClick={() => navigate('/partners')}>
         운영 화면 보기
@@ -1809,7 +1950,7 @@ function HomePage({ navigate }) {
           <div className="ltValuePoints" aria-label="서비스 차별점">
             <article>
               <strong>로컬 동선</strong>
-              <span>관광지와 식당, 카페를 이동 순서로 묶습니다.</span>
+              <span>관광지와 식당, 카페를 자연스러운 이동 순서로 이어드려요.</span>
             </article>
             <article>
               <strong>하루 동선</strong>
@@ -1894,7 +2035,7 @@ function DestinationsPage({ path, navigate }) {
       <PageHeader
         eyebrow="장소 찾기"
         title="취향에 맞는 장소 찾기"
-        description="지역, 테마, 동행 기준으로 여행 후보를 빠르게 좁힙니다."
+        description="지역, 테마, 동행에 맞춰 끌리는 장소를 빠르게 골라보세요."
       />
 
       <InlineNotice error={error} fallback={usingFallback} />
@@ -1941,25 +2082,26 @@ function PlannerPage({ path, navigate }) {
   const { destinations, error, usingFallback } = useDestinations();
   const params = new URLSearchParams(path.split('?')[1] || '');
   const initialDestination = params.get('destination') || '';
-  const [country, setCountry] = useState('korea');
+  const plannerDraft = useMemo(() => readPlannerDraft(params.get('draft')), [path]);
+  const [country, setCountry] = useState(plannerDraft?.country || 'korea');
   const [selectedDestinationIds, setSelectedDestinationIds] = useState(initialDestination ? [initialDestination] : []);
-  const [destSearch, setDestSearch] = useState('');
+  const [destSearch, setDestSearch] = useState(plannerDraft?.destinationName || plannerDraft?.destinationRegion || '');
   const [showSuggestions, setShowDestSuggestions] = useState(false);
-  const [startDate, setStartDate] = useState('');
-  const [days, setDays] = useState(3);
-  const [travelers, setTravelers] = useState('커플');
+  const [startDate, setStartDate] = useState(plannerDraft?.startDate || '');
+  const [days, setDays] = useState(plannerDraft?.days || 3);
+  const [travelers, setTravelers] = useState(plannerDraft?.travelers || '커플');
   const [transportType, setTransportType] = useState('대중교통');
-  const [pace, setPace] = useState('보통');
+  const [pace, setPace] = useState(plannerDraft?.pace || '보통');
   const [budget, setBudget] = useState('보통');
   const [exportFormat, setExportFormat] = useState('텍스트');
-  const [selectedInterests, setSelectedInterests] = useState(['맛집', '역사']);
-  const [notes, setNotes] = useState('');
+  const [selectedInterests, setSelectedInterests] = useState(plannerDraft?.interests?.length ? plannerDraft.interests : ['맛집', '역사']);
+  const [notes, setNotes] = useState(plannerDraft?.notes || '');
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState('');
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const [activeStep, setActiveStep] = useState(1);
   const [activeRouteField, setActiveRouteField] = useState('dates');
-  const [dayRoutes, setDayRoutes] = useState([{ day: 1, startPlace: '', startAddress: '', endPlace: '', endAddress: '' }]);
+  const [dayRoutes, setDayRoutes] = useState(plannerDraft?.dayRoutes?.length ? plannerDraft.dayRoutes : [{ day: 1, startPlace: '', startAddress: '', endPlace: '', endAddress: '' }]);
   const validDayCount = Number.isFinite(Number(days)) && Number(days) >= 1 && Number(days) <= 7;
   const routeInfoComplete = Boolean(startDate) && validDayCount;
   const dailyRouteCount = dayRoutes.filter((route) => (
@@ -1984,6 +2126,14 @@ function PlannerPage({ path, navigate }) {
       setSelectedDestinationIds((current) => [...new Set([...current, initialDestination])]);
     }
   }, [initialDestination]);
+
+  useEffect(() => {
+    if (!plannerDraft || initialDestination || !destinations.length) return;
+    const matches = destinations.filter((destination) => destinationMatchesDraft(destination, plannerDraft)).slice(0, 3);
+    if (!matches.length) return;
+    setCountry(countryForDestination(matches[0]));
+    setSelectedDestinationIds(matches.map((destination) => destination.id));
+  }, [destinations, initialDestination, plannerDraft]);
 
   useEffect(() => {
     setSelectedDestinationIds((current) => {
@@ -2102,8 +2252,8 @@ function PlannerPage({ path, navigate }) {
     <main className="ltPage">
       <PageHeader
         eyebrow="일정 만들기"
-        title="장소를 일정으로 묶기"
-        description="고른 장소와 날짜, 일자별 출발지·도착지만으로 움직이기 쉬운 동선을 만듭니다."
+        title="장소들을 모아 여행 동선 짜기"
+        description="가고 싶은 장소와 날짜만 콕 집어주세요. 가장 물 흐르듯 자연스러운 동선을 만들어 드릴게요."
       />
 
       <InlineNotice error={error} fallback={usingFallback} />
@@ -2119,7 +2269,7 @@ function PlannerPage({ path, navigate }) {
           {activeStep === 1 ? <div className="ltFormSection">
             <div className="ltFormSectionTitle">
               <span>Step 1</span>
-              <strong>장소 고르기</strong>
+              <strong>어디로 떠나시나요?</strong>
             </div>
             <div className="ltCountrySwitch" aria-label="여행 국가">
               {COUNTRY_OPTIONS.map((option) => (
@@ -2149,7 +2299,7 @@ function PlannerPage({ path, navigate }) {
                     setShowDestSuggestions(true);
                   }}
                   onFocus={() => setShowDestSuggestions(true)}
-                  placeholder={country === 'japan' ? '도쿄, 오사카, 교토...' : '서울, 제주, 경주...'}
+                  placeholder="가고 싶은 도시나 장소를 검색해보세요"
                 />
                 {showSuggestions && filteredSuggestions.length > 0 && (
                   <div className="ltAutocompleteDropdown">
@@ -2379,8 +2529,8 @@ function PlansPage({ navigate }) {
       {loading ? <EmptyState title="여행 코스를 불러오는 중입니다" description="저장된 코스를 정리하고 있어요." /> : null}
       {!loading && !plans.length ? (
         <EmptyState
-          title="아직 저장한 코스가 없습니다"
-          description="관심 장소를 고르고 첫 여행 코스를 저장해보세요."
+          title="아직 저장한 코스가 없어요"
+          description="가고 싶은 곳을 하나 골라 첫 여행 흐름을 만들어보세요."
           action={<button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>새 코스 만들기</button>}
         />
       ) : null}
@@ -2467,7 +2617,7 @@ function PartnerPage({ navigate }) {
           <div className="ltSectionHeader compact">
             <div>
               <h2>대표 노출 장소</h2>
-              <p>여행자 홈과 검색 결과에 먼저 보여줄 후보입니다.</p>
+              <p>여행자에게 먼저 보여주기 좋은 장소를 골라보세요.</p>
             </div>
           </div>
           <div className="ltPartnerDestList">
@@ -2549,7 +2699,7 @@ function MarkdownPlanBlocks({ plan }) {
           <line x1="12" y1="8" x2="12" y2="12"></line>
           <line x1="12" y1="16" x2="12.01" y2="16"></line>
         </svg>
-        <p>일정 상세 내역이 아직 생성되지 않았거나 불러올 수 없습니다.</p>
+        <p>아직 보여드릴 일정이 없어요. 다시 한 번 코스를 만들어보세요.</p>
       </div>
     );
   }
@@ -2668,7 +2818,170 @@ function PlanDayCards({ plan }) {
 }
 
 function PlanRouteFacts({ plan }) {
-  return null;
+  const itinerary = plan?.itinerary || [];
+  if (!itinerary.length) {
+    return null;
+  }
+
+  return (
+    <section className="ltRouteOverview" aria-label="일자별 동선 요약">
+      <div className="ltRouteOverviewHeader">
+        <div>
+          <span className="ltEyebrow">Route</span>
+          <h2>하루 흐름</h2>
+        </div>
+        <p>출발, 도착, 식사와 카페 포인트를 먼저 확인합니다.</p>
+      </div>
+      <div className="ltRouteSummaryGrid">
+        {itinerary.map((day) => {
+          const items = day.items || [];
+          const firstItem = items[0];
+          const lastItem = items[items.length - 1];
+          const moveTips = items.map((item) => item.travelTimeFromPrevious).filter(Boolean).slice(0, 2);
+          return (
+            <article className="ltRouteSummaryCard" key={`route-${day.day}`}>
+              <div className="ltRouteSummaryTop">
+                <span>{day.day}일차</span>
+                <strong>{items.length}곳</strong>
+              </div>
+              <div className="ltRouteEndpoints">
+                <div>
+                  <small>{planRouteTime(firstItem, 0, 'start')}</small>
+                  <b>{planRouteEndpoint(firstItem, '출발지 미정')}</b>
+                </div>
+                <Icon size={17}>
+                  <path d="M5 12h14"></path>
+                  <path d="m12 5 7 7-7 7"></path>
+                </Icon>
+                <div>
+                  <small>{planRouteTime(lastItem, Math.max(items.length - 1, 0), 'end')}</small>
+                  <b>{planRouteEndpoint(lastItem, '도착지 미정')}</b>
+                </div>
+              </div>
+              <div className="ltRoutePills">
+                <span>식사 {foodStopCount(items)}회</span>
+                <span>카페 {cafeStopCount(items)}회</span>
+                {moveTips.length ? <span>{moveTips.join(' · ')}</span> : null}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function PlanDetailActions({ plan, navigate, onDeleted }) {
+  const [status, setStatus] = useState('');
+  const [busyAction, setBusyAction] = useState('');
+
+  const openPlannerDraft = (mode) => {
+    writePlannerDraft(plan, mode);
+    navigate(`/planner?draft=plan${mode === 'regenerate' ? '&mode=regenerate' : ''}`);
+  };
+
+  const saveToScheduler = () => {
+    addPlanToScheduler(plan);
+    setStatus('스케줄러에 저장했습니다.');
+  };
+
+  const exportText = () => {
+    const blob = new Blob([buildPlanExportText(plan)], { type: 'text/plain;charset=utf-8' });
+    const href = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = href;
+    anchor.download = planTextFilename(plan);
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(href);
+    setStatus('텍스트 파일로 내보냈습니다.');
+  };
+
+  const sharePlan = async () => {
+    const text = buildPlanShareText(plan);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: plan.title, text });
+        setStatus('공유 화면을 열었습니다.');
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      setStatus('공유할 내용을 클립보드에 복사했습니다.');
+    } catch (shareError) {
+      setStatus(shareError?.name === 'AbortError' ? '' : '공유를 완료하지 못했습니다.');
+    }
+  };
+
+  const deletePlan = async () => {
+    if (!plan?.id || !window.confirm('이 여행 코스를 삭제할까요?')) return;
+    setBusyAction('delete');
+    setStatus('');
+    try {
+      await localTripRequest(`/api/travel-plans/${encodeURIComponent(plan.id)}`, { method: 'DELETE' });
+      setStatus('여행 코스를 삭제했습니다.');
+      onDeleted?.();
+    } catch (deleteError) {
+      setStatus(deleteError.message || '삭제하지 못했습니다.');
+    } finally {
+      setBusyAction('');
+    }
+  };
+
+  return (
+    <section className="ltPlanActionBar" aria-label="여행 코스 액션">
+      <button type="button" className="ltSecondaryButton" onClick={() => openPlannerDraft('edit')}>
+        <Icon size={17}>
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+        </Icon>
+        수정
+      </button>
+      <button type="button" className="ltSecondaryButton" onClick={() => openPlannerDraft('regenerate')}>
+        <Icon size={17}>
+          <path d="M21 12a9 9 0 0 1-15.3 6.4"></path>
+          <path d="M3 12A9 9 0 0 1 18.3 5.6"></path>
+          <path d="M3 18v-5h5"></path>
+          <path d="M21 6v5h-5"></path>
+        </Icon>
+        다시 만들기
+      </button>
+      <button type="button" className="ltSecondaryButton" onClick={saveToScheduler}>
+        <Icon size={17}>
+          <path d="M5 5h14v15H5z"></path>
+          <path d="M8 3v4M16 3v4M5 10h14"></path>
+        </Icon>
+        스케줄 저장
+      </button>
+      <button type="button" className="ltSecondaryButton" onClick={exportText}>
+        <Icon size={17}>
+          <path d="M12 3v12"></path>
+          <path d="m7 10 5 5 5-5"></path>
+          <path d="M5 21h14"></path>
+        </Icon>
+        내보내기
+      </button>
+      <button type="button" className="ltSecondaryButton" onClick={sharePlan}>
+        <Icon size={17}>
+          <circle cx="18" cy="5" r="3"></circle>
+          <circle cx="6" cy="12" r="3"></circle>
+          <circle cx="18" cy="19" r="3"></circle>
+          <path d="m8.6 13.5 6.8 4"></path>
+          <path d="m15.4 6.5-6.8 4"></path>
+        </Icon>
+        공유
+      </button>
+      <button type="button" className="ltSecondaryButton danger" onClick={deletePlan} disabled={busyAction === 'delete'}>
+        <Icon size={17}>
+          <path d="M3 6h18"></path>
+          <path d="M8 6V4h8v2"></path>
+          <path d="M19 6 18 20H6L5 6"></path>
+        </Icon>
+        {busyAction === 'delete' ? '삭제 중' : '삭제'}
+      </button>
+      {status ? <p>{status}</p> : null}
+    </section>
+  );
 }
 
 function PlanDetailPage({ planId, navigate }) {
@@ -2715,7 +3028,7 @@ function PlanDetailPage({ planId, navigate }) {
         </button>
       </div>
 
-      {loading ? <div className="ltEmptyState" style={{ padding: '100px' }}>일정을 불러오는 중입니다...</div> : null}
+      {loading ? <div className="ltEmptyState" style={{ padding: '100px' }}>일정을 불러오고 있어요...</div> : null}
       {error ? <div className="ltInlineNotice error"><strong>로드 실패</strong><span>{error}</span></div> : null}
       
       {plan ? (
@@ -2745,6 +3058,7 @@ function PlanDetailPage({ planId, navigate }) {
               </div>
             </div>
           </section>
+          <PlanDetailActions plan={plan} navigate={navigate} onDeleted={() => navigate('/plans')} />
           <PlanRouteFacts plan={plan} />
           
           <div className="ltSectionHeader" style={{ marginTop: '48px', marginBottom: '24px' }}>
@@ -2761,7 +3075,7 @@ function NotFoundPage({ navigate }) {
   return (
     <main className="ltPage">
       <section className="ltEmptyState large">
-        <h1>페이지를 찾을 수 없습니다</h1>
+        <h1>앗, 길을 찾지 못했어요</h1>
         <button type="button" className="ltPrimaryButton" onClick={() => navigate('/app')}>홈으로 이동</button>
       </section>
     </main>
@@ -2826,7 +3140,7 @@ function MyPage({ navigate }) {
             {recentPlans.length ? recentPlans.map((plan) => (
               <PlanCard key={plan.key} plan={plan} navigate={navigate} />
             )) : (
-              <EmptyState title="최근 코스가 없습니다" description="새 코스 만들기로 첫 여행을 저장해보세요." />
+              <EmptyState title="최근 코스가 없어요" description="새 코스 만들기로 첫 여행을 가볍게 시작해보세요." />
             )}
           </div>
         </details>
