@@ -232,90 +232,6 @@ body:has(.aiNoteShell) {
     min-height: 100svh !important;
   }
 
-  .aiNoteShell > .workspaceNavigator {
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 80 !important;
-    min-height: auto !important;
-    display: grid !important;
-    grid-template-columns: auto minmax(0, 1fr) auto !important;
-    gap: 6px !important;
-    align-items: center !important;
-    padding: 8px 10px !important;
-    border-bottom: 1px solid #e5e7eb !important;
-    background: #ffffff !important;
-    box-shadow: none !important;
-    overflow: hidden !important;
-  }
-
-  .aiNoteShell > .workspaceNavigator .workspaceNavigatorBrand,
-  .aiNoteShell > .workspaceNavigator .workspaceNavigatorAccount {
-    min-width: 38px !important;
-    width: 38px !important;
-    min-height: 38px !important;
-    display: inline-grid !important;
-    place-items: center !important;
-    padding: 0 !important;
-    border: 1px solid #e5e7eb !important;
-    border-radius: 8px !important;
-    background: #ffffff !important;
-    box-shadow: none !important;
-  }
-
-  .aiNoteShell > .workspaceNavigator .workspaceNavigatorBrand span,
-  .aiNoteShell > .workspaceNavigator .workspaceNavigatorAccount strong,
-  .aiNoteShell > .workspaceNavigator .workspaceNavigatorAccount small {
-    display: none !important;
-  }
-
-  .aiNoteShell > .workspaceNavigator .workspaceNavigatorAccount > span {
-    width: 28px !important;
-    height: 28px !important;
-    border-radius: 8px !important;
-  }
-
-  .aiNoteShell > .workspaceNavigator .workspaceNavigatorLinks {
-    min-width: 0 !important;
-    width: 100% !important;
-    display: flex !important;
-    gap: 6px !important;
-    justify-self: stretch !important;
-    padding: 0 2px !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    overflow-x: auto !important;
-    scrollbar-width: none !important;
-  }
-
-  .aiNoteShell > .workspaceNavigator .workspaceNavigatorLinks::-webkit-scrollbar {
-    display: none !important;
-  }
-
-  .aiNoteShell > .workspaceNavigator .workspaceNavigatorLinks a {
-    flex: 0 0 auto !important;
-    min-height: 38px !important;
-    gap: 5px !important;
-    padding: 0 9px !important;
-    border: 1px solid #e5e7eb !important;
-    border-radius: 8px !important;
-    background: #ffffff !important;
-    font-size: 0.78rem !important;
-    box-shadow: none !important;
-  }
-
-  .aiNoteShell > .workspaceNavigator .workspaceNavigatorLinks a.active {
-    border-color: #bfdbfe !important;
-    background: #eff6ff !important;
-    color: #1d4ed8 !important;
-  }
-
-  .aiNoteShell > .workspaceNavigator .memoNavIcon {
-    width: 24px !important;
-    height: 24px !important;
-    min-width: 24px !important;
-  }
-
   .aiNotePage {
     width: 100% !important;
     padding: 0 0 22px !important;
@@ -335,7 +251,7 @@ body:has(.aiNoteShell) {
 
   .memoBoardNavigator {
     position: sticky !important;
-    top: 55px !important;
+    top: 112px !important;
     z-index: 42 !important;
     display: flex !important;
     gap: 6px !important;
