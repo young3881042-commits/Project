@@ -2340,6 +2340,16 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260525-notes-mobile-editor-window',
+    content: `# 2026-05-25 메모 모바일 작성창 정리
+
+- [x] 모바일 \`/notes\`에서 상단 메모 제목, 보드 선택, 새 메모 버튼 덩어리 숨김
+- [x] 보드 탭 바로 아래 메모 목록이 먼저 보이도록 순서 정리
+- [x] 보드 아래 \`+\` 버튼으로 새 글을 만들고 바로 작성창을 띄움
+- [x] 메모 보기와 수정은 모바일에서 별도 창처럼 뜨게 보정
+- [x] 삭제는 카드 우클릭 메뉴 중심으로 처리하고 모바일 작성창의 삭제 버튼 노출 제거`
+  },
+  {
     id: 'admin1-memo-20260525-notes-markdown-shortcuts',
     content: `# 2026-05-25 메모 Markdown 렌더링과 상단 바로가기 보정
 
@@ -3028,6 +3038,7 @@ function AiNotePage({ navigate }) {
   const [editingBlockId, setEditingBlockId] = useState('');
   const [editingTitleId, setEditingTitleId] = useState('');
   const [editingBoardId, setEditingBoardId] = useState('');
+  const [memoWindowOpen, setMemoWindowOpen] = useState(false);
   const session = readStoredAuth();
 
   useEffect(() => {
@@ -3141,7 +3152,7 @@ function AiNotePage({ navigate }) {
     setFileStatus(`${targetBoard.title} 보드를 삭제했습니다.`);
   };
 
-  const addBlock = (type, parentId = '', status = 'todo', boardId = activeBoardId) => {
+  const addBlock = (type, parentId = '', status = 'todo', boardId = activeBoardId, options = {}) => {
     const nextId = `note-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const extension = type === 'file' ? 'txt' : 'md';
     const blockType = ['file', 'checklist'].includes(type) ? type : 'text';
@@ -3161,8 +3172,9 @@ function AiNotePage({ navigate }) {
     };
     setBlocks((current) => [...current, nextBlock]);
     setActiveId(nextBlock.id);
-    setEditingBlockId(nextBlock.id);
+    setEditingBlockId(options.edit === false ? '' : nextBlock.id);
     setEditingTitleId('');
+    setMemoWindowOpen(Boolean(options.openWindow));
     setFileStatus(`${noteBlockTitle(nextBlock)} 항목을 추가했습니다.`);
   };
 
@@ -3242,6 +3254,7 @@ function AiNotePage({ navigate }) {
   const beginBlockEdit = (block) => {
     if (!block) return;
     openBlockFile(block);
+    setMemoWindowOpen(true);
     setEditingBlockId(block.id);
     setEditingTitleId('');
     setMemoActiveLine(null);
@@ -3251,7 +3264,21 @@ function AiNotePage({ navigate }) {
   const finishBlockEdit = () => {
     setEditingBlockId('');
     setEditingTitleId('');
+    setMemoWindowOpen(false);
     setFileStatus('메모를 저장했습니다.');
+  };
+
+  const openMemoWindow = (block) => {
+    if (!block) return;
+    openBlockFile(block);
+    setMemoWindowOpen(true);
+  };
+
+  const closeMemoWindow = () => {
+    setMemoWindowOpen(false);
+    setEditingBlockId('');
+    setEditingTitleId('');
+    setMemoActiveLine(null);
   };
 
   const updateActiveBlockLine = (block, lineIndex, value) => {
@@ -3273,6 +3300,7 @@ function AiNotePage({ navigate }) {
     setMemoActiveLine(null);
     setEditingBlockId('');
     setEditingTitleId('');
+    setMemoWindowOpen(false);
     setFileStatus(targetBlock ? `${noteBlockTitle(targetBlock)} 메모를 삭제했습니다.` : '메모를 삭제했습니다.');
   };
 
@@ -3399,12 +3427,12 @@ function AiNotePage({ navigate }) {
   };
   const createTextFileBlock = (status = 'todo', boardId = activeBoardId) => {
     setNoteContentOpen(true);
-    addBlock('file', '', status, boardId);
+    addBlock('file', '', status, boardId, { openWindow: true });
     setContextMenu(null);
   };
   const createChecklistBlock = (status = 'todo', boardId = activeBoardId) => {
     setNoteContentOpen(true);
-    addBlock('text', '', status, boardId);
+    addBlock('text', '', status, boardId, { openWindow: true });
     setContextMenu(null);
   };
   const renderCardTitle = (block) => {
@@ -3523,7 +3551,7 @@ function AiNotePage({ navigate }) {
           window.clearTimeout(movedBlockResetTimerRef.current);
           return;
         }
-        openBlockFile(block);
+        openMemoWindow(block);
       }}
       onDoubleClick={(event) => {
         event.preventDefault();
@@ -3580,7 +3608,7 @@ function AiNotePage({ navigate }) {
       }}
       onDragEnd={() => setDraggingBlockId('')}
       onContextMenu={(event) => openBlockContextMenu(event, block)}
-      onClick={() => openBlockFile(block)}
+      onClick={() => openMemoWindow(block)}
       onDoubleClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -3651,7 +3679,10 @@ function AiNotePage({ navigate }) {
         {workspaceMode === 'scheduler' ? (
           <SchedulerPage navigate={navigate} embedded />
         ) : (
-        <section className="aiNoteBoardPanel" onContextMenu={(event) => noteContentOpen && openContextMenu(event, 'todo')}>
+        <section
+          className={`aiNoteBoardPanel ${memoWindowOpen ? 'memoWindowIsOpen' : ''}`}
+          onContextMenu={(event) => noteContentOpen && openContextMenu(event, 'todo')}
+        >
           <header className="projectTopbar">
             <div>
               <h1>메모</h1>
@@ -3703,7 +3734,7 @@ function AiNotePage({ navigate }) {
             {noteContentOpen ? (
               <div className="memoBoardCreateActions">
                 <button type="button" className="projectNewItemButton ghost" onClick={() => setNoteContentOpen(false)}>보드 선택</button>
-                <button type="button" className="projectNewItemButton iconAdd" onClick={() => { setNoteContentOpen(true); addBlock('text', '', 'todo', activeBoardId); }} title="메모 생성">
+                <button type="button" className="projectNewItemButton iconAdd" onClick={() => { setNoteContentOpen(true); addBlock('text', '', 'todo', activeBoardId, { openWindow: true }); }} title="메모 생성">
                   <MemoNavIcon type="plus" /><span>새 메모</span>
                 </button>
               </div>
@@ -3720,6 +3751,7 @@ function AiNotePage({ navigate }) {
                     setActiveBoardId(board.id);
                     setEditingBlockId('');
                     setEditingTitleId('');
+                    setMemoWindowOpen(false);
                   }}
                 >
                   <MemoNavIcon type="board" />
@@ -3792,6 +3824,9 @@ function AiNotePage({ navigate }) {
                   ) : (
                     <button type="button" onClick={() => beginBlockEdit(activeBlock)}>수정</button>
                   )}
+                  {memoWindowOpen ? (
+                    <button type="button" className="memoWindowCloseButton" onClick={closeMemoWindow}>닫기</button>
+                  ) : null}
                   <button type="button" className="memoDangerButton compact" onClick={() => deleteBlock(activeBlock.id)}>삭제</button>
                 </div>
               </header>
@@ -3883,6 +3918,21 @@ function AiNotePage({ navigate }) {
               onContextMenu={(event) => openContextMenu(event, 'todo')}
             >
               {boardBlocks.map(renderBoardCard)}
+              <button
+                type="button"
+                className="memoBoardAddNoteTile"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setNoteContentOpen(true);
+                  addBlock('text', '', 'todo', activeBoardId, { openWindow: true });
+                }}
+                aria-label="새 글 작성"
+                title="새 글 작성"
+              >
+                <MemoNavIcon type="plus" />
+                <span>새 글</span>
+              </button>
             </section>
           )}
           {contextMenu ? (
@@ -3891,7 +3941,7 @@ function AiNotePage({ navigate }) {
                 <button type="button" className="dangerMenuAction" onClick={() => { deleteBlock(contextMenu.blockId); setContextMenu(null); }}>삭제</button>
               ) : (
                 <>
-                  <button type="button" onClick={() => { setNoteContentOpen(true); addBlock('text', '', contextMenu.status, contextMenu.boardId); setContextMenu(null); }}>새글 작성</button>
+                  <button type="button" onClick={() => { setNoteContentOpen(true); addBlock('text', '', contextMenu.status, contextMenu.boardId, { openWindow: true }); setContextMenu(null); }}>새글 작성</button>
                 </>
               )}
             </div>
