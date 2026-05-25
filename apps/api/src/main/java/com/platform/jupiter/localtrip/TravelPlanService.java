@@ -248,8 +248,6 @@ public class TravelPlanService {
             "- 속도: %s\n" +
             "- 이동수단: %s\n" +
             "- 예산: %s\n" +
-            "- 전체 출발지: %s / 주소: %s / 출발 시간: %s\n" +
-            "- 최종 목적지: %s / 주소: %s / 도착 시간: %s\n" +
             "- 일자별 출발/도착 조건:\n%s\n" +
             "- 메모: %s\n" +
             "- 우선 사용할 장소 후보: %s\n\n" +
@@ -272,12 +270,6 @@ public class TravelPlanService {
             plan.getPace(),
             defaultText(request.transportType(), "대중교통"),
             defaultText(request.budgetLevel(), "보통"),
-            defaultText(request.startPlace(), "미정"),
-            defaultText(request.startAddress(), "미정"),
-            defaultText(request.departureTime(), "미정"),
-            defaultText(request.endPlace(), "미정"),
-            defaultText(request.endAddress(), "미정"),
-            defaultText(request.arrivalTime(), "미정"),
             dailyRouteContext,
             defaultText(request.memo(), "없음"),
             candidateNames.isBlank() ? "지역 대표 명소" : candidateNames,
@@ -296,10 +288,10 @@ public class TravelPlanService {
                         route.day() == null ? 1 : route.day(),
                         defaultText(route.startPlace(), "미정"),
                         defaultText(route.startAddress(), "미정"),
-                        defaultText(route.departureTime(), defaultText(request.departureTime(), "미정")),
+                        defaultText(route.departureTime(), "미정"),
                         defaultText(route.endPlace(), "미정"),
                         defaultText(route.endAddress(), "미정"),
-                        defaultText(route.arrivalTime(), defaultText(request.arrivalTime(), "미정"))))
+                        defaultText(route.arrivalTime(), "미정")))
                 .collect(java.util.stream.Collectors.joining("\n"));
     }
 

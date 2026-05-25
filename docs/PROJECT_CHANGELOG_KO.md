@@ -32,14 +32,14 @@ Workspace는 파일 읽기/쓰기, Python 실행, LLM 자동 수정, 업로드 �
 
 기존 Python 실행 제한은 코드에 20초로 고정되어 있어, pandas/openpyxl/httpx 등을 쓰는 분석 스크립트가 오래 걸리면 중간에 끊길 수 있었습니다.
 
-현재 제품 방향에서는 이 절을 운영 기록으로만 봅니다. 사용자별 CPU 분할, 리소스 모니터링 확대, README식 운영 TODO는 모바일 메모/일정 UX의 핵심 작업 큐에 넣지 않고 필요할 때 Docker 운영 점검으로 분리합니다.
+현재 제품 방향에서는 이 절을 과거 운영 기록으로만 봅니다. README식 운영 TODO는 모바일 메모/일정 UX의 핵심 작업 큐에 넣지 않고 필요할 때 Docker 배포 점검으로만 분리합니다.
 
 변경 내용:
 
 - 기본 Python 실행 제한을 120초로 늘렸습니다.
 - dev compose에서는 `APP_PYTHON_TIMEOUT_SECONDS=180`으로 설정했습니다.
 - 환경변수로 최대 900초까지 조정할 수 있습니다.
-- API 컨테이너 리소스는 현재 Docker 환경에서 허용되는 최대 CPU 2개로 설정했습니다.
+- API 컨테이너 실행 여유값을 현재 Docker 환경에 맞춰 조정했습니다.
 - 메모리 제한은 6GiB, 예약은 2GiB로 설정했습니다.
 
 관련 파일:
@@ -179,7 +179,7 @@ RAG 문서 메타데이터 예시:
 
 - 프론트엔드 `npm run build` 성공
 - API Docker 이미지 `bootJar` 빌드 성공
-- Docker compose 설정에서 API 컨테이너 리소스 설정 파싱 확인
+- Docker compose 설정에서 API 컨테이너 실행 설정 파싱 확인
 
 주의:
 
@@ -368,7 +368,7 @@ apps/mobile/android/build/ai-assitant-debug.apk
 
 ## 18. 2026-05-25 제품 방향 재정리와 문서 패치
 
-이번 변경은 문서 범위로만 진행했습니다. README와 소스 코드는 수정하지 않았습니다.
+이번 방향 전환은 문서 정리로 시작했고, 이후 README와 앱 소스 수정으로 이어졌습니다.
 
 현재 제품 방향:
 
@@ -383,4 +383,4 @@ apps/mobile/android/build/ai-assitant-debug.apk
 - 메모 모바일 UX를 현재 핵심 점검 항목으로 올렸습니다.
 - AI Trip 일정 상세를 일자별 동선 중심으로 단순화하는 후속 작업을 추가했습니다.
 - 외부 URL, 내부 API URL, 공개 포트가 Docker 배포에서 충돌하지 않는지 확인하는 항목을 추가했습니다.
-- README 정리와 실행 문서 정리는 완료 기록으로 남기되, README식 리소스 모니터링이나 사용자별 CPU 분할 항목은 제품 핵심 큐에서 낮췄습니다.
+- README 정리와 실행 문서 정리는 완료 기록으로 남기되, README식 운영 항목은 제품 핵심 큐에서 제외했습니다.

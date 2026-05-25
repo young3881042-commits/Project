@@ -350,7 +350,7 @@ export default function ConnectionsApp({ navigate, authToken }) {
             </SectionHeader>
             <div className="connectionsReadiness">
               <span>현재 상태</span>
-              <strong>AI 메모 보드로 연결됨</strong>
+              <strong>메모 보드로 연결됨</strong>
               <small>작업 로그, 개인 메모, 일정 후보를 보드별로 이어서 관리합니다.</small>
             </div>
             <div className="connectionsButtonRow">

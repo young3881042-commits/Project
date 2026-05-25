@@ -2326,6 +2326,22 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260525-mobile-memo-trip-direction',
+    content: `# 2026-05-25 모바일 메모 UX와 제품 방향 재정리
+
+- [x] 메모 보드 카드 제목은 기본 읽기 상태로 두고 더블클릭 때만 제목 입력을 열도록 변경
+- [x] 선택한 메모 본문은 기본 미리보기로 보여주고 더블클릭 또는 수정 버튼에서만 편집 모드로 전환
+- [x] 모바일에서 메모 보드가 절대 배치 캔버스가 아니라 세로 카드 리스트처럼 보이도록 CSS 보정
+- [x] AI Trip 플래너에서 전체 출발지와 최종 목적지 입력을 제거하고 일자별 출발지/도착지만 남김
+- [x] 앱 방향을 완성형 AI 비서가 아니라 모바일 우선 메모/일정 앱, 점진적 API 연결 흐름으로 README와 체크리스트에 반영
+
+## 다음 확인
+
+- [ ] 핸드폰에서 \`/notes\` 메모 작성, 수정, 삭제, 보드 전환 터치감 확인
+- [ ] \`/planner\` 일자별 출발지/도착지 입력이 충분히 단순한지 확인
+- [ ] 날씨, 내 위치 주변 여행지, 주변 식당/카페 API 연결 우선순위 정하기`
+  },
+  {
     id: 'admin1-memo-20260524-apps-route-alias',
     content: `# 2026-05-24 /apps 앱 홈 라우트 보정
 
@@ -2715,6 +2731,21 @@ function summarizeAdmin1Activity() {
   };
 }
 
+const EMPTY_APP_OVERVIEW = {
+  todayCount: 0,
+  weekPendingCount: 0,
+  nextSchedule: null,
+  totalScheduleCount: 0,
+  travelScheduleCount: 0,
+  boardCount: 0,
+  noteCount: 0,
+  memoCount: 0,
+  adminGoalCount: 0,
+  checklistDone: 0,
+  checklistTotal: 0,
+  statusCounts: {}
+};
+
 function PortfolioHomePage({ navigate }) {
   useEffect(() => {
     document.title = 'ai-assitant Portfolio';
@@ -2722,8 +2753,8 @@ function PortfolioHomePage({ navigate }) {
 
   const portfolioLinks = [
     {
-      title: '개인 AI 비서 앱',
-      detail: '메모, 일정, 데이터 연결을 한 화면에서 이어 쓰는 실제 앱',
+      title: '개인 메모 앱',
+      detail: '메모와 일정을 한 화면에서 이어 쓰는 모바일 앱',
       action: '앱 시작',
       path: '/app',
       tone: 'assistant',
@@ -2765,7 +2796,7 @@ function PortfolioHomePage({ navigate }) {
           <span className="portfolioEyebrow">Personal AI Workspace</span>
           <h1>메모, 일정, 여행을 한곳에</h1>
           <p>
-            적어둔 생각을 일정으로 옮기고, 여행 코스까지 이어서 관리하는 개인 AI 비서입니다.
+            적어둔 생각을 일정으로 옮기고, 여행 코스까지 이어서 관리하는 개인 앱입니다.
             공개 포트폴리오와 실제 앱 화면을 분리해 바로 써볼 수 있게 만들었습니다.
           </p>
           <div className="portfolioHeroActions">
@@ -2825,14 +2856,14 @@ function PortfolioHomePage({ navigate }) {
 }
 
 function SpaceHomePage({ navigate }) {
-  const [adminOverview, setAdminOverview] = useState(() => summarizeAdmin1Activity());
+  const [adminOverview, setAdminOverview] = useState(() => summarizeAdmin1Activity() || EMPTY_APP_OVERVIEW);
 
   useEffect(() => {
-    document.title = '개인 AI 비서';
+    document.title = '개인 앱 홈';
   }, []);
 
   useEffect(() => {
-    const refresh = () => setAdminOverview(summarizeAdmin1Activity());
+    const refresh = () => setAdminOverview(summarizeAdmin1Activity() || EMPTY_APP_OVERVIEW);
     const handleStorage = (event) => {
       if (!event.key || [AUTH_KEY, AI_NOTE_KEY, AI_NOTE_BOARDS_KEY, SCHEDULER_KEY, schedulerStorageKey('admin1')].includes(event.key)) {
         refresh();
@@ -2850,7 +2881,7 @@ function SpaceHomePage({ navigate }) {
     <main className="spaceHome">
       <section className="spaceHero">
         <div className="spaceHeroCopy">
-          <span className="spaceEyebrow">AI Home</span>
+          <span className="spaceEyebrow">App Home</span>
           <h1>오늘 할 일을 바로 이어서</h1>
           <strong className="spaceHeroLead">메모, 일정, 여행 코스를 한 화면에서 정리합니다.</strong>
           <p>생각은 메모로 남기고, 해야 할 일은 일정으로 옮기고, 떠날 곳은 코스로 저장하세요.</p>
@@ -2932,23 +2963,25 @@ function AiNotePage({ navigate }) {
   const [blocks, setBlocks] = useState(readNoteBlocks);
   const [activeId, setActiveId] = useState('');
   const [workspaceMode, setWorkspaceMode] = useState('board');
-  const [noteContentOpen, setNoteContentOpen] = useState(false);
+  const [noteContentOpen, setNoteContentOpen] = useState(true);
   const [syncCount, setSyncCount] = useState(0);
   const [fileStatus, setFileStatus] = useState('');
   const [draggingBlockId, setDraggingBlockId] = useState('');
   const [movingBlock, setMovingBlock] = useState(null);
-  const [memoViewMode] = useState('edit');
   const freeformBoardRef = useRef(null);
   const movedBlockRef = useRef(false);
   const movedBlockResetTimerRef = useRef(null);
   const [contextMenu, setContextMenu] = useState(null);
-  const [activeBoardId, setActiveBoardId] = useState('project');
+  const [activeBoardId, setActiveBoardId] = useState('memo');
   const [memoActiveLine, setMemoActiveLine] = useState(null);
+  const [editingBlockId, setEditingBlockId] = useState('');
+  const [editingTitleId, setEditingTitleId] = useState('');
+  const [editingBoardId, setEditingBoardId] = useState('');
   const session = readStoredAuth();
   const displayName = session?.username && session.username !== 'guestuser' ? session.username : 'Guest';
 
   useEffect(() => {
-    document.title = 'AI 메모 보드';
+    document.title = '메모';
   }, []);
 
   useEffect(() => {
@@ -3028,6 +3061,7 @@ function AiNotePage({ navigate }) {
     setBoards((current) => [...current, nextBoard]);
     setActiveBoardId(nextBoard.id);
     setNoteContentOpen(true);
+    setEditingBoardId(nextBoard.id);
   };
 
   const renameBoard = (id, title) => {
@@ -3049,6 +3083,9 @@ function AiNotePage({ navigate }) {
     setActiveBoardId(nextBoard?.id || 'project');
     setActiveId('');
     setMemoActiveLine(null);
+    setEditingBlockId('');
+    setEditingTitleId('');
+    setEditingBoardId('');
     setNoteContentOpen(Boolean(nextBoard));
     setFileStatus(`${targetBoard.title} 보드를 삭제했습니다.`);
   };
@@ -3073,6 +3110,8 @@ function AiNotePage({ navigate }) {
     };
     setBlocks((current) => [...current, nextBlock]);
     setActiveId(nextBlock.id);
+    setEditingBlockId(nextBlock.id);
+    setEditingTitleId('');
     setFileStatus(`${noteBlockTitle(nextBlock)} 항목을 추가했습니다.`);
   };
 
@@ -3094,6 +3133,8 @@ function AiNotePage({ navigate }) {
     };
     setBlocks((current) => [...current, nextBlock]);
     setActiveId(nextBlock.id);
+    setEditingBlockId(nextBlock.id);
+    setEditingTitleId('');
     setFileStatus(`'${title}' 블록을 추가했습니다.`);
   };
 
@@ -3107,6 +3148,21 @@ function AiNotePage({ navigate }) {
 
   const updateBlockTitle = (block, title) => {
     updateBlock(block.id, { content: noteBlockContentWithTitle(block, title) });
+  };
+
+  const beginBlockEdit = (block) => {
+    if (!block) return;
+    openBlockFile(block);
+    setEditingBlockId(block.id);
+    setEditingTitleId('');
+    setMemoActiveLine(null);
+    setFileStatus(`${noteBlockTitle(block)} 메모를 수정합니다.`);
+  };
+
+  const finishBlockEdit = () => {
+    setEditingBlockId('');
+    setEditingTitleId('');
+    setFileStatus('메모를 저장했습니다.');
   };
 
   const updateActiveBlockLine = (block, lineIndex, value) => {
@@ -3126,6 +3182,8 @@ function AiNotePage({ navigate }) {
     setBlocks((current) => current.filter((block) => block.id !== id));
     setActiveId(nextBlock?.id || '');
     setMemoActiveLine(null);
+    setEditingBlockId('');
+    setEditingTitleId('');
     setFileStatus(targetBlock ? `${noteBlockTitle(targetBlock)} 메모를 삭제했습니다.` : '메모를 삭제했습니다.');
   };
 
@@ -3166,6 +3224,8 @@ function AiNotePage({ navigate }) {
   const openBlockFile = async (block) => {
     const filePath = noteBlockFilePath(block);
     setActiveId(block.id);
+    setEditingBlockId((current) => (current === block.id ? current : ''));
+    setEditingTitleId('');
     setMemoActiveLine(null);
     setNoteContentOpen(true);
     setFileStatus('파일을 준비하는 중...');
@@ -3258,6 +3318,46 @@ function AiNotePage({ navigate }) {
     addBlock('text', '', status, boardId);
     setContextMenu(null);
   };
+  const renderCardTitle = (block) => {
+    const title = noteBlockTitle(block);
+    if (editingTitleId === block.id) {
+      return (
+        <input
+          autoFocus
+          className="memoCardName"
+          value={title}
+          onClick={(event) => event.stopPropagation()}
+          onDoubleClick={(event) => event.stopPropagation()}
+          onChange={(event) => updateBlockTitle(block, event.target.value)}
+          onBlur={() => setEditingTitleId('')}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              event.currentTarget.blur();
+            }
+            if (event.key === 'Escape') {
+              event.preventDefault();
+              setEditingTitleId('');
+            }
+          }}
+          aria-label="메모 제목"
+        />
+      );
+    }
+    return (
+      <strong
+        className="memoCardName memoCardNameText"
+        onDoubleClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setActiveId(block.id);
+          setEditingTitleId(block.id);
+        }}
+      >
+        {title}
+      </strong>
+    );
+  };
   const renderMarkdownLineEditor = (block, line, index) => {
     const lineKey = `${block.id}:${index}`;
     const editing = memoActiveLine === lineKey;
@@ -3339,7 +3439,7 @@ function AiNotePage({ navigate }) {
       onDoubleClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
-        openBlockEditor(block);
+        beginBlockEdit(block);
       }}
     >
       <button
@@ -3371,18 +3471,7 @@ function AiNotePage({ navigate }) {
       >
         ::
       </button>
-      <input
-        className="memoCardName"
-        value={noteBlockTitle(block)}
-        onClick={(event) => event.stopPropagation()}
-        onChange={(event) => updateBlockTitle(block, event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') {
-            event.preventDefault();
-            event.currentTarget.blur();
-          }
-        }}
-      />
+      {renderCardTitle(block)}
       {block.type === 'checklist' ? (
         <small className="memoChecklistCardMeta">
           {checklistItemsFromBlock(block).filter((item) => item.checked).length}/{checklistItemsFromBlock(block).length} 완료
@@ -3406,21 +3495,10 @@ function AiNotePage({ navigate }) {
       onDoubleClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
-        openBlockEditor(block);
+        beginBlockEdit(block);
       }}
     >
-      <input
-        className="memoCardName"
-        value={noteBlockTitle(block)}
-        onClick={(event) => event.stopPropagation()}
-        onChange={(event) => updateBlockTitle(block, event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') {
-            event.preventDefault();
-            event.currentTarget.blur();
-          }
-        }}
-      />
+      {renderCardTitle(block)}
       {block.type === 'checklist' ? (
         <small className="memoChecklistCardMeta">
           {checklistItemsFromBlock(block).filter((item) => item.checked).length}/{checklistItemsFromBlock(block).length} 완료
@@ -3499,13 +3577,37 @@ function AiNotePage({ navigate }) {
             <div>
               {noteContentOpen ? (
                 <div className="memoBoardTitleRow">
-                  <h2>{activeBoard?.title || '메모 보드'}</h2>
-                  {activeBoard ? (
+                  {activeBoard && editingBoardId === activeBoard.id ? (
                     <input
+                      autoFocus
                       value={activeBoard.title}
                       onChange={(event) => renameBoard(activeBoard.id, event.target.value)}
+                      onBlur={() => setEditingBoardId('')}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          event.currentTarget.blur();
+                        }
+                        if (event.key === 'Escape') {
+                          event.preventDefault();
+                          setEditingBoardId('');
+                        }
+                      }}
                       aria-label="현재 보드 이름"
                     />
+                  ) : (
+                    <button
+                      type="button"
+                      className="memoBoardTitleButton"
+                      onDoubleClick={() => activeBoard && setEditingBoardId(activeBoard.id)}
+                    >
+                      {activeBoard?.title || '메모 보드'}
+                    </button>
+                  )}
+                  {activeBoard && canDeleteMemoBoard(activeBoard) ? (
+                    <button type="button" className="memoDangerButton" onClick={() => deleteBoard(activeBoard.id)}>
+                      삭제
+                    </button>
                   ) : null}
                 </div>
               ) : null}
@@ -3519,6 +3621,30 @@ function AiNotePage({ navigate }) {
               </div>
             ) : null}
           </section>
+          {noteContentOpen ? (
+            <div className="memoBoardNavigator" aria-label="메모 보드 목록">
+              {boards.map((board) => (
+                <button
+                  key={board.id}
+                  type="button"
+                  className={activeBoardId === board.id ? 'active' : ''}
+                  onClick={() => {
+                    setActiveBoardId(board.id);
+                    setEditingBlockId('');
+                    setEditingTitleId('');
+                  }}
+                >
+                  <MemoNavIcon type="board" />
+                  <span>{board.title}</span>
+                  <small>{boardMemoCount(board.id)}</small>
+                </button>
+              ))}
+              <button type="button" className="memoBoardAddButton" onClick={addBoard}>
+                <MemoNavIcon type="plus" />
+                <span>보드</span>
+              </button>
+            </div>
+          ) : null}
           {!noteContentOpen ? (
             <section className="notePadStart">
               <div>
@@ -3526,20 +3652,27 @@ function AiNotePage({ navigate }) {
                 <strong>보드를 선택하고 메모를 남기세요.</strong>
                 <p>아이디어, 할 일, 일정 후보를 보드별로 정리합니다.</p>
               </div>
-              <div>
+              <div className="notePadBoardGrid">
                 {boards.map((board) => (
-                  <button
-                    type="button"
-                    key={board.id}
-                    onClick={() => {
-                      setActiveBoardId(board.id);
-                      setNoteContentOpen(true);
-                    }}
-                  >
-                    <MemoNavIcon type="board" />
-                    <span>{board.title}</span>
-                    <small>{rootBlocks.filter((block) => (block.boardId || block.sector) === board.id).length}</small>
-                  </button>
+                  <article className="notePadBoardCard" key={board.id}>
+                    <button
+                      type="button"
+                      className="notePadBoardOpen"
+                      onClick={() => {
+                        setActiveBoardId(board.id);
+                        setNoteContentOpen(true);
+                      }}
+                    >
+                      <MemoNavIcon type="board" />
+                      <span>{board.title}</span>
+                      <small>{rootBlocks.filter((block) => (block.boardId || block.sector) === board.id).length}</small>
+                    </button>
+                    {canDeleteMemoBoard(board) ? (
+                      <button type="button" className="notePadBoardDelete" onClick={() => deleteBoard(board.id)}>
+                        삭제
+                      </button>
+                    ) : null}
+                  </article>
                 ))}
                 <button type="button" className="notePadAddBoard" onClick={addBoard}>
                   <MemoNavIcon type="plus" />
@@ -3558,30 +3691,66 @@ function AiNotePage({ navigate }) {
             </div>
           </aside>
           {activeBlock ? (
-            <section className={`memoInlineEditor ${memoViewMode === 'preview' ? 'previewing' : 'editing'}`} onContextMenu={(event) => event.stopPropagation()}>
+            <section
+              className={`memoInlineEditor ${editingBlockId === activeBlock.id ? 'editing' : 'previewing'}`}
+              onContextMenu={(event) => event.stopPropagation()}
+              onDoubleClick={() => beginBlockEdit(activeBlock)}
+            >
               <header>
                 <div>
                   <span>선택한 메모</span>
-                  <input
-                    value={noteBlockTitle(activeBlock)}
-                    onChange={(event) => updateBlockTitle(activeBlock, event.target.value)}
-                    aria-label="메모 제목"
-                  />
+                  {editingBlockId === activeBlock.id ? (
+                    <input
+                      value={noteBlockTitle(activeBlock)}
+                      onChange={(event) => updateBlockTitle(activeBlock, event.target.value)}
+                      aria-label="메모 제목"
+                    />
+                  ) : (
+                    <button type="button" className="memoInlineTitleButton" onClick={() => openBlockFile(activeBlock)}>
+                      {noteBlockTitle(activeBlock)}
+                    </button>
+                  )}
                 </div>
-                <div>
-                  <span className="memoEditorModeLabel">Preview</span>
+                <div className="memoInlineTools">
+                  {editingBlockId === activeBlock.id ? (
+                    <button type="button" className="active" onClick={finishBlockEdit}>완료</button>
+                  ) : (
+                    <button type="button" onClick={() => beginBlockEdit(activeBlock)}>수정</button>
+                  )}
+                  <button type="button" className="memoDangerButton compact" onClick={() => deleteBlock(activeBlock.id)}>삭제</button>
                 </div>
               </header>
-              <div className="memoMarkdownComposer">
-                <textarea
-                  value={activeBlock.content || ''}
-                  onChange={(event) => updateActiveBlockContent(activeBlock.id, event.target.value)}
-                  placeholder="# 제목&#10;&#10;오늘 떠오른 생각을 적어보세요."
-                />
-                <article className="memoInlinePreview">
-                  {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : <p>내용을 작성하면 미리보기가 표시됩니다.</p>}
+              {editingBlockId === activeBlock.id ? (
+                <div className="memoMarkdownComposer">
+                  {activeBlock.type === 'checklist' ? renderChecklistEditor(activeBlock) : (
+                    <textarea
+                      autoFocus
+                      value={activeBlock.content || ''}
+                      onChange={(event) => updateActiveBlockContent(activeBlock.id, event.target.value)}
+                      placeholder="# 제목&#10;&#10;오늘 떠오른 생각을 적어보세요."
+                    />
+                  )}
+                  <article className="memoInlinePreview">
+                    {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : <p>내용을 작성하면 미리보기가 표시됩니다.</p>}
+                  </article>
+                </div>
+              ) : (
+                <article
+                  className="memoInlinePreview memoReadPreview"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openBlockFile(activeBlock)}
+                  onDoubleClick={() => beginBlockEdit(activeBlock)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      beginBlockEdit(activeBlock);
+                    }
+                  }}
+                >
+                  {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : <p>새 메모를 눌러 내용을 적어보세요.</p>}
                 </article>
-              </div>
+              )}
             </section>
           ) : null}
           {activeBoardId === 'project' ? (
@@ -4122,19 +4291,19 @@ export default function App() {
     return <WorkspaceApp navigate={navigate} />;
   }
 
-  if (routePath === '/scheduler') {
+  if (routePath === '/scheduler' || routePath.startsWith('/scheduler/')) {
     return <SchedulerPage navigate={navigate} />;
   }
 
-  if (routePath === '/connect') {
+  if (routePath === '/connect' || routePath.startsWith('/connect/')) {
     return <ConnectionsPage navigate={navigate} />;
   }
 
-  if (routePath === '/notes') {
+  if (routePath === '/notes' || routePath.startsWith('/notes/')) {
     return <AiNotePage navigate={navigate} />;
   }
 
-  if (routePath === '/portfolio') {
+  if (routePath === '/portfolio' || routePath.startsWith('/portfolio/')) {
     return <PortfolioHomePage navigate={navigate} />;
   }
 
@@ -4142,7 +4311,7 @@ export default function App() {
     return null;
   }
 
-  if (routePath === '/app') {
+  if (routePath === '/app' || routePath.startsWith('/app/')) {
     return <SpaceHomePage navigate={navigate} />;
   }
 

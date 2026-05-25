@@ -1804,7 +1804,7 @@ function HomePage({ navigate }) {
         <div className="ltHeroCopy">
           <span className="ltEyebrow">Local-first Travel</span>
           <h1>취향을 말하면 코스가 됩니다</h1>
-          <p>갈 곳을 고르면 출발지와 도착지 기준으로 움직이기 쉬운 하루 동선을 만듭니다.</p>
+          <p>갈 곳과 날짜를 고르면 일자별 출발지와 도착지 기준으로 움직이기 쉬운 코스를 만듭니다.</p>
           <HeroSearch query={query} setQuery={setQuery} navigate={navigate} />
           <div className="ltValuePoints" aria-label="서비스 차별점">
             <article>
@@ -1812,8 +1812,8 @@ function HomePage({ navigate }) {
               <span>관광지와 식당, 카페를 이동 순서로 묶습니다.</span>
             </article>
             <article>
-              <strong>주소 기준</strong>
-              <span>출발지와 도착지를 넣어 실제 이동에 맞춥니다.</span>
+              <strong>하루 동선</strong>
+              <span>일자별 출발지와 도착지만 넣어 가볍게 시작합니다.</span>
             </article>
             <article>
               <strong>코스 저장</strong>
@@ -1951,12 +1951,6 @@ function PlannerPage({ path, navigate }) {
   const [transportType, setTransportType] = useState('대중교통');
   const [pace, setPace] = useState('보통');
   const [budget, setBudget] = useState('보통');
-  const [startPlace, setStartPlace] = useState('');
-  const [startAddress, setStartAddress] = useState('');
-  const [endPlace, setEndPlace] = useState('');
-  const [endAddress, setEndAddress] = useState('');
-  const [departureTime, setDepartureTime] = useState('09:00');
-  const [arrivalTime, setArrivalTime] = useState('20:00');
   const [exportFormat, setExportFormat] = useState('텍스트');
   const [selectedInterests, setSelectedInterests] = useState(['맛집', '역사']);
   const [notes, setNotes] = useState('');
@@ -1965,10 +1959,9 @@ function PlannerPage({ path, navigate }) {
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const [activeStep, setActiveStep] = useState(1);
   const [activeRouteField, setActiveRouteField] = useState('dates');
-  const [dayRoutes, setDayRoutes] = useState([{ day: 1, startPlace: '', startAddress: '', endPlace: '', endAddress: '', departureTime: '09:00', arrivalTime: '20:00' }]);
+  const [dayRoutes, setDayRoutes] = useState([{ day: 1, startPlace: '', startAddress: '', endPlace: '', endAddress: '' }]);
   const validDayCount = Number.isFinite(Number(days)) && Number(days) >= 1 && Number(days) <= 7;
   const routeInfoComplete = Boolean(startDate) && validDayCount;
-  const overallRouteComplete = Boolean(startPlace.trim() || endPlace.trim() || startAddress.trim() || endAddress.trim());
   const dailyRouteCount = dayRoutes.filter((route) => (
     route.startPlace.trim() || route.endPlace.trim() || route.startAddress.trim() || route.endAddress.trim()
   )).length;
@@ -2016,12 +2009,10 @@ function PlannerPage({ path, navigate }) {
         startPlace: existing.startPlace || '',
         startAddress: existing.startAddress || '',
         endPlace: existing.endPlace || '',
-        endAddress: existing.endAddress || '',
-        departureTime: existing.departureTime || departureTime,
-        arrivalTime: existing.arrivalTime || arrivalTime
+        endAddress: existing.endAddress || ''
       };
     }));
-  }, [arrivalTime, days, departureTime]);
+  }, [days]);
 
   const toggleDestination = (id) => {
     setSelectedDestinationIds((current) => (
@@ -2055,10 +2046,6 @@ function PlannerPage({ path, navigate }) {
   };
 
   const routeDateSummary = routeInfoComplete ? `${formatDate(startDate)} · ${formatDaysLabel(days)}` : '출발일과 여행 일수';
-  const overallRouteSummary = overallRouteComplete
-    ? `${startPlace || '출발지 미정'} → ${endPlace || '도착지 미정'}`
-    : '출발지와 도착지는 필요할 때만 입력';
-  const routeTimeSummary = departureTime && arrivalTime ? `${departureTime} → ${arrivalTime}` : '기본 시간';
   const dailyRouteSummary = dailyRouteCount ? `${dailyRouteCount}일차 세부 동선 입력` : '일자별 동선은 선택 입력';
   const travelOptionSummary = `${travelers} · ${pace} · ${transportType} · ${budget}`;
 
@@ -2075,12 +2062,10 @@ function PlannerPage({ path, navigate }) {
       .filter((id) => Number.isFinite(id));
     const routeMemoLines = [
       notes,
-      startPlace || startAddress || departureTime ? `전체 출발: ${startPlace || '미정'}${startAddress ? ` (${startAddress})` : ''}${departureTime ? ` · ${departureTime}` : ''}` : '',
-      endPlace || endAddress || arrivalTime ? `최종 도착: ${endPlace || '미정'}${endAddress ? ` (${endAddress})` : ''}${arrivalTime ? ` · ${arrivalTime}` : ''}` : '',
       dailyRouteCount ? '일자별 출발/도착:' : '',
       ...dayRoutes
         .filter((route) => route.startPlace || route.startAddress || route.endPlace || route.endAddress)
-        .map((route) => `${route.day}일차 출발=${route.startPlace || '미정'}${route.startAddress ? ` (${route.startAddress})` : ''} ${route.departureTime || departureTime || ''}, 도착=${route.endPlace || '미정'}${route.endAddress ? ` (${route.endAddress})` : ''} ${route.arrivalTime || arrivalTime || ''}`)
+        .map((route) => `${route.day}일차 출발=${route.startPlace || '미정'}${route.startAddress ? ` (${route.startAddress})` : ''}, 도착=${route.endPlace || '미정'}${route.endAddress ? ` (${route.endAddress})` : ''}`)
     ].filter(Boolean);
 
     const payload = {
@@ -2094,12 +2079,6 @@ function PlannerPage({ path, navigate }) {
       travelerType: travelers,
       pace,
       budgetLevel: budget,
-      startPlace,
-      startAddress,
-      endPlace,
-      endAddress,
-      departureTime,
-      arrivalTime,
       dailyRoutes: dayRoutes,
       exportFormat,
       memo: routeMemoLines.join('\n')
@@ -2124,7 +2103,7 @@ function PlannerPage({ path, navigate }) {
       <PageHeader
         eyebrow="일정 만들기"
         title="장소를 일정으로 묶기"
-        description="고른 장소, 날짜, 출발·도착지를 바탕으로 움직이기 쉬운 동선을 만듭니다."
+        description="고른 장소와 날짜, 일자별 출발지·도착지만으로 움직이기 쉬운 동선을 만듭니다."
       />
 
       <InlineNotice error={error} fallback={usingFallback} />
@@ -2234,56 +2213,6 @@ function PlannerPage({ path, navigate }) {
 
               <PlannerProgressiveCard
                 index={2}
-                title="출발·도착"
-                summary={overallRouteSummary}
-                complete={overallRouteComplete}
-                active={activeRouteField === 'route'}
-                onToggle={() => setActiveRouteField('route')}
-              >
-                <div className="ltInlinePlannerGrid">
-                  <AddressSearchInput
-                    label="전체 출발지"
-                    value={startPlace}
-                    address={startAddress}
-                    onValue={setStartPlace}
-                    onAddress={setStartAddress}
-                    destinations={countryDestinations}
-                    placeholder="집, 역, 공항, 숙소명"
-                  />
-                  <AddressSearchInput
-                    label="최종 목적지"
-                    value={endPlace}
-                    address={endAddress}
-                    onValue={setEndPlace}
-                    onAddress={setEndAddress}
-                    destinations={countryDestinations}
-                    placeholder="마지막 도착지, 역, 공항"
-                  />
-                </div>
-              </PlannerProgressiveCard>
-
-              <PlannerProgressiveCard
-                index={3}
-                title="기본 시간"
-                summary={routeTimeSummary}
-                complete={Boolean(departureTime && arrivalTime)}
-                active={activeRouteField === 'time'}
-                onToggle={() => setActiveRouteField('time')}
-              >
-                <div className="ltInlinePlannerGrid">
-                  <label>
-                    <span>출발 시간</span>
-                    <input type="time" value={departureTime} onChange={(event) => setDepartureTime(event.target.value)} />
-                  </label>
-                  <label>
-                    <span>도착 시간</span>
-                    <input type="time" value={arrivalTime} onChange={(event) => setArrivalTime(event.target.value)} />
-                  </label>
-                </div>
-              </PlannerProgressiveCard>
-
-              <PlannerProgressiveCard
-                index={4}
                 title="일자별 동선"
                 summary={dailyRouteSummary}
                 complete={dailyRouteCount > 0}
@@ -2312,21 +2241,13 @@ function PlannerPage({ path, navigate }) {
                         destinations={countryDestinations}
                         placeholder="숙소, 다음 이동지 등"
                       />
-                      <label>
-                        <span>출발 시간</span>
-                        <input type="time" value={route.departureTime || departureTime} onChange={(event) => updateDayRoute(index, 'departureTime', event.target.value)} />
-                      </label>
-                      <label>
-                        <span>도착 시간</span>
-                        <input type="time" value={route.arrivalTime || arrivalTime} onChange={(event) => updateDayRoute(index, 'arrivalTime', event.target.value)} />
-                      </label>
                     </fieldset>
                   ))}
                 </div>
               </PlannerProgressiveCard>
 
               <PlannerProgressiveCard
-                index={5}
+                index={3}
                 title="여행 옵션"
                 summary={travelOptionSummary}
                 complete={true}
@@ -2747,21 +2668,7 @@ function PlanDayCards({ plan }) {
 }
 
 function PlanRouteFacts({ plan }) {
-  const facts = [
-    ['출발', [plan.startPlace, plan.startAddress, plan.departureTime].filter(Boolean).join(' · ')],
-    ['도착', [plan.endPlace, plan.endAddress, plan.arrivalTime].filter(Boolean).join(' · ')]
-  ].filter(([, value]) => value);
-  if (!facts.length) return null;
-  return (
-    <section className="ltRouteFacts" aria-label="여행 출발 도착 예산">
-      {facts.map(([label, value]) => (
-        <article key={label}>
-          <span>{label}</span>
-          <strong>{value}</strong>
-        </article>
-      ))}
-    </section>
-  );
+  return null;
 }
 
 function PlanDetailPage({ planId, navigate }) {

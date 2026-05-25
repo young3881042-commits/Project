@@ -4,6 +4,9 @@
 - If only `/data/jupiter-assistant` exists, treat it as legacy runtime context and inspect it before changing repo files.
 - Treat `/data/ai-assitant` and `/data/jupiter-assistant` as local runtime data, not source. Do not commit secrets or raw personal exports copied from those paths.
 - Before changing this repo, read `docs/NEXT_CHECKLIST_PLAN_KO.md` and align the work with its operating rules, task queue, and validation list.
+- Current product direction: this is not yet a finished AI assistant service. Treat it as a mobile-first personal memo/schedule app where polished UI/UX comes first and APIs are attached incrementally.
+- Long-term target: after mobile UI and server APIs are stable, expand toward a phone-based personal AI assistant that can use user-granted access to messages, mail, local files, weather, nearby travel spots, and nearby restaurants. Web/PWA alone cannot read phone-local SMS/mail/files; native Android/iOS permissions or a native wrapper will be needed.
+- Avoid generic platform-operations work unless the user specifically asks for it. Keep the main work queue focused on mobile usability, routing/deployment stability, and real app API integrations.
 - The default app route is `/app`; `/` should not render a separate main screen.
 - Keep `docs/NEXT_CHECKLIST_PLAN_KO.md` updated when a task changes UI behavior, routing, deployment steps, or follow-up work.
 - Check `docs/PROJECT_CHANGELOG_KO.md` for recent context before changing travel, notes, scheduler, login, or admin behavior.
