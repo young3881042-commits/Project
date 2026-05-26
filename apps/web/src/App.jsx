@@ -225,6 +225,23 @@ function readSchedulerItems(input) {
   }
 }
 
+function dedupeSchedulerItems(items) {
+  const seen = new Set();
+  return items.filter((item) => {
+    const key = item?.id || `${item?.date || ''}:${item?.time || ''}:${item?.title || ''}`;
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function readCurrentSchedulerItems(session = readStoredAuth()) {
+  return dedupeSchedulerItems([
+    ...readSchedulerItems(schedulerStorageKey(session)),
+    ...readStoredArrayByKey(SCHEDULER_KEY)
+  ]);
+}
+
 function normalizeSchedulerItem(item) {
   return {
     ...item,
@@ -2418,6 +2435,14 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260526-app-home-current-summary',
+    content: `# 2026-05-26 앱 홈 현재 데이터 집계 보정
+
+- [x] /app 홈 카드가 admin1 전용 집계가 아니라 현재 세션의 일정과 메모를 보도록 변경
+- [x] 이전 전역 일정 저장소의 여행 코스 항목도 현재 사용자 일정 요약에 포함
+- [x] 메모 카드는 프로젝트 작업이 아니라 실제 메모 보드 항목 수를 표시`
+  },
+  {
     id: 'admin1-memo-20260526-app-auth-pages',
     content: `# 2026-05-26 앱 전용 로그인/회원가입 분리
 
@@ -2873,14 +2898,9 @@ function checklistStatsForBlocks(blocks) {
   }, { total: 0, done: 0 });
 }
 
-function summarizeAdmin1Activity() {
+function summarizeAppActivity() {
   const session = readStoredAuth();
-  if (session?.username !== 'admin1') return null;
-
-  const schedulerItems = [
-    ...readSchedulerItems(schedulerStorageKey(session)),
-    ...readStoredArrayByKey(SCHEDULER_KEY)
-  ].filter((item, index, items) => index === items.findIndex((candidate) => candidate.id === item.id));
+  const schedulerItems = readCurrentSchedulerItems(session);
   const today = toDateKey(new Date());
   const nextSevenDays = Array.from({ length: 7 }, (_, index) => toDateKey(addDays(new Date(), index)));
   const expandedWeekItems = expandSchedulerItemsForDates(schedulerItems, nextSevenDays);
@@ -2895,6 +2915,7 @@ function summarizeAdmin1Activity() {
   const blocks = readNoteBlocks();
   const adminSeedBlocks = blocks.filter((block) => `${block.id || ''}`.startsWith('admin1-goal-'));
   const projectBlocks = blocks.filter((block) => (block.boardId || block.sector) === 'project');
+  const memoBoards = boards.filter((board) => board.id !== 'project');
   const memoBlocks = blocks.filter((block) => (block.boardId || block.sector) !== 'project');
   const seededChecklist = checklistStatsForBlocks(adminSeedBlocks);
   const expectedChecklistTotal = ADMIN1_BOARD_TASKS.length * 2;
@@ -2911,8 +2932,8 @@ function summarizeAdmin1Activity() {
     nextSchedule,
     totalScheduleCount: schedulerItems.length,
     travelScheduleCount: travelScheduleItems.length,
-    boardCount: boards.length,
-    noteCount: blocks.length,
+    boardCount: memoBoards.length,
+    noteCount: memoBlocks.length,
     memoCount: memoBlocks.length,
     adminGoalCount: Math.max(adminSeedBlocks.length, ADMIN1_BOARD_TASKS.length),
     checklistDone,
@@ -3046,7 +3067,7 @@ function PortfolioHomePage({ navigate }) {
 }
 
 function SpaceHomePage({ navigate }) {
-  const [adminOverview, setAdminOverview] = useState(() => summarizeAdmin1Activity() || EMPTY_APP_OVERVIEW);
+  const [appOverview, setAppOverview] = useState(() => summarizeAppActivity() || EMPTY_APP_OVERVIEW);
   const [session, setSession] = useState(readStoredAuth);
   const [guestStarting, setGuestStarting] = useState(false);
   const [accountError, setAccountError] = useState('');
@@ -3061,12 +3082,12 @@ function SpaceHomePage({ navigate }) {
   }, []);
 
   useEffect(() => {
-    const refresh = () => setAdminOverview(summarizeAdmin1Activity() || EMPTY_APP_OVERVIEW);
+    const refresh = () => setAppOverview(summarizeAppActivity() || EMPTY_APP_OVERVIEW);
     const handleStorage = (event) => {
       if (!event.key || event.key === AUTH_KEY) {
         setSession(readStoredAuth());
       }
-      if (!event.key || [AUTH_KEY, AI_NOTE_KEY, AI_NOTE_BOARDS_KEY, SCHEDULER_KEY, schedulerStorageKey('admin1')].includes(event.key)) {
+      if (!event.key || [AUTH_KEY, AI_NOTE_KEY, AI_NOTE_BOARDS_KEY, SCHEDULER_KEY, schedulerStorageKey(readStoredAuth())].includes(event.key)) {
         refresh();
       }
     };
@@ -3090,6 +3111,7 @@ function SpaceHomePage({ navigate }) {
       const normalized = normalizeAuthSession({ ...guestSession, isGuest: true });
       localStorage.setItem(AUTH_KEY, JSON.stringify(normalized));
       setSession(normalized);
+      setAppOverview(summarizeAppActivity() || EMPTY_APP_OVERVIEW);
       navigate('/notes');
     } catch (error) {
       setAccountError(error.message || '게스트 세션을 만들 수 없습니다.');
@@ -3145,8 +3167,8 @@ function SpaceHomePage({ navigate }) {
               <span>MEMO</span>
             </header>
             <div className="spaceFeatureMeta">
-              <span>기록된 보드 {adminOverview.boardCount}</span>
-              <span>새 메모 {adminOverview.noteCount}</span>
+              <span>기록된 보드 {appOverview.boardCount}</span>
+              <span>메모 {appOverview.memoCount}</span>
             </div>
             <p>생각과 아이디어를 보드에 기록하고 관리하세요.</p>
             <div className="spaceFeatureActions">
@@ -3160,8 +3182,8 @@ function SpaceHomePage({ navigate }) {
               <span>SCHEDULE</span>
             </header>
             <div className="spaceFeatureMeta">
-              <span>오늘 일정 {adminOverview.todayCount}</span>
-              <span>7일 미완료 {adminOverview.weekPendingCount}</span>
+              <span>오늘 일정 {appOverview.todayCount}</span>
+              <span>7일 미완료 {appOverview.weekPendingCount}</span>
             </div>
             <p>오늘 해야 할 우선순위 일정을 확인하세요.</p>
             <div className="spaceFeatureActions">
@@ -3175,7 +3197,7 @@ function SpaceHomePage({ navigate }) {
               <span>TRIP</span>
             </header>
             <div className="spaceFeatureMeta">
-              <span>저장 코스 {adminOverview.travelScheduleCount}</span>
+              <span>저장 코스 {appOverview.travelScheduleCount}</span>
               <span>장소 추천</span>
             </div>
             <p>나만의 여행 동선을 짜고 계획을 저장하세요.</p>
@@ -4132,7 +4154,7 @@ function SchedulerPage({ navigate, embedded = false }) {
   const session = readStoredAuth();
   const schedulerTitle = session?.username && session.username !== 'guestuser' ? `${session.username}님의 일정` : '내 일정';
   const schedulerKey = schedulerStorageKey(session);
-  const [items, setItems] = useState(() => readSchedulerItems(schedulerKey));
+  const [items, setItems] = useState(() => readCurrentSchedulerItems(session));
   const [filter, setFilter] = useState('전체');
   const [selectedDate, setSelectedDate] = useState(toDateKey(new Date()));
   const [calendarMonth, setCalendarMonth] = useState(toDateKey(new Date()).slice(0, 7));
@@ -4155,12 +4177,15 @@ function SchedulerPage({ navigate, embedded = false }) {
 
   useEffect(() => {
     localStorage.setItem(schedulerKey, JSON.stringify(items));
+    if (localStorage.getItem(SCHEDULER_KEY)) {
+      localStorage.removeItem(SCHEDULER_KEY);
+    }
   }, [items, schedulerKey]);
 
   useEffect(() => {
-    const syncItems = () => setItems(readSchedulerItems(schedulerKey));
+    const syncItems = () => setItems(readCurrentSchedulerItems(session));
     const handleStorage = (event) => {
-      if (event.key === schedulerKey) {
+      if (event.key === schedulerKey || event.key === SCHEDULER_KEY) {
         syncItems();
       }
     };
@@ -4175,7 +4200,7 @@ function SchedulerPage({ navigate, embedded = false }) {
       window.removeEventListener('storage', handleStorage);
       window.removeEventListener('codex:scheduler-items-updated', handleSchedulerUpdate);
     };
-  }, [schedulerKey]);
+  }, [schedulerKey, session?.username]);
 
   const today = toDateKey(new Date());
   const monthDays = useMemo(() => buildMonthDays(calendarMonth), [calendarMonth]);

@@ -395,6 +395,32 @@ function readStoredAuth() {
   }
 }
 
+function schedulerStorageKey(session = readStoredAuth()) {
+  const username = session?.username;
+  const normalized = String(username || 'guestuser').trim().toLowerCase().replace(/[^a-z0-9._-]/g, '_') || 'guestuser';
+  return `${SCHEDULER_KEY}:${normalized}`;
+}
+
+function readSchedulerArray(storageKey) {
+  try {
+    const raw = localStorage.getItem(storageKey);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function dedupeSchedulerItems(items) {
+  const seen = new Set();
+  return items.filter((item) => {
+    const key = item?.id || `${item?.date || ''}:${item?.time || ''}:${item?.title || ''}`;
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function isGuestSession(session) {
   return !session || Boolean(session?.isGuest) || session?.username === 'guestuser';
 }
@@ -1002,12 +1028,21 @@ function normalizePlans(payload) {
 function addPlanToScheduler(plan) {
   if (!plan) return;
   try {
-    const raw = localStorage.getItem(SCHEDULER_KEY);
-    const current = raw ? JSON.parse(raw) : [];
-    const items = Array.isArray(current) ? current : [];
+    const storageKey = schedulerStorageKey();
+    const items = dedupeSchedulerItems([
+      ...readSchedulerArray(storageKey),
+      ...readSchedulerArray(SCHEDULER_KEY)
+    ]);
     const id = `travel-plan-${plan.id || plan.key || Date.now()}`;
     const exists = items.some((item) => item.id === id);
-    if (exists) return;
+    if (exists) {
+      localStorage.setItem(storageKey, JSON.stringify(items));
+      if (localStorage.getItem(SCHEDULER_KEY)) {
+        localStorage.removeItem(SCHEDULER_KEY);
+      }
+      window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { items, storageKey } }));
+      return;
+    }
     const firstSlot = plan.itinerary?.[0]?.items?.[0];
     const nextItem = {
       id,
@@ -1021,8 +1056,11 @@ function addPlanToScheduler(plan) {
       planId: plan.id || plan.key || ''
     };
     const nextItems = [...items, nextItem];
-    localStorage.setItem(SCHEDULER_KEY, JSON.stringify(nextItems));
-    window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { item: nextItem, items: nextItems } }));
+    localStorage.setItem(storageKey, JSON.stringify(nextItems));
+    if (localStorage.getItem(SCHEDULER_KEY)) {
+      localStorage.removeItem(SCHEDULER_KEY);
+    }
+    window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { item: nextItem, items: nextItems, storageKey } }));
   } catch {
     // Scheduler sync is a convenience layer; plan creation should not fail because localStorage is unavailable.
   }
