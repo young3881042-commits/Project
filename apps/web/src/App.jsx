@@ -29,11 +29,6 @@ const PRIMARY_SHORTCUTS = [
   { key: 'trip', shortcut: 'aiTrip', icon: 'trip' },
   { key: 'connections', shortcut: 'dataConnections', icon: 'link' }
 ];
-const SPACE_HOME_SHORTCUTS = [
-  { key: 'schedule', label: '내 일정', path: '/scheduler', icon: 'calendar' },
-  { key: 'notes', label: '메모', path: '/notes', icon: 'board' },
-  { key: 'trip', label: '여행 코스', path: '/destinations', icon: 'trip' }
-];
 const RECURRENCE_LABELS = {
   none: '반복 없음',
   daily: '매일',
@@ -2340,6 +2335,22 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260526-app-home-account-window',
+    content: `# 2026-05-26 앱 홈 Guest/Member 시작 창 추가
+
+- [x] 앱 홈 상단에 Guest와 Member 선택 창 추가
+- [x] Guest는 게스트 세션 생성 후 메모 화면으로 진입
+- [x] Member는 기존 로그인 화면으로 이동하도록 연결`
+  },
+  {
+    id: 'admin1-memo-20260526-app-home-hero-copy',
+    content: `# 2026-05-26 앱 홈 문구와 바로가기 정리
+
+- [x] 앱 홈 첫 문구를 흩어진 생각과 복잡한 일정 중심으로 변경
+- [x] 메모부터 여행 계획까지 가볍게 정리하는 보조 문구 적용
+- [x] 카드 액션과 중복되던 상단 바로가기 버튼 제거`
+  },
+  {
     id: 'admin1-memo-20260525-app-home-dashboard-cards',
     content: `# 2026-05-25 앱 홈 카드 모바일 정리
 
@@ -2945,6 +2956,14 @@ function PortfolioHomePage({ navigate }) {
 
 function SpaceHomePage({ navigate }) {
   const [adminOverview, setAdminOverview] = useState(() => summarizeAdmin1Activity() || EMPTY_APP_OVERVIEW);
+  const [session, setSession] = useState(readStoredAuth);
+  const [guestStarting, setGuestStarting] = useState(false);
+  const [accountError, setAccountError] = useState('');
+  const accountMode = session?.token && !session?.isGuest && session?.username !== 'guestuser'
+    ? 'member'
+    : session?.token
+      ? 'guest'
+      : 'none';
 
   useEffect(() => {
     document.title = '개인 앱 홈';
@@ -2953,6 +2972,9 @@ function SpaceHomePage({ navigate }) {
   useEffect(() => {
     const refresh = () => setAdminOverview(summarizeAdmin1Activity() || EMPTY_APP_OVERVIEW);
     const handleStorage = (event) => {
+      if (!event.key || event.key === AUTH_KEY) {
+        setSession(readStoredAuth());
+      }
       if (!event.key || [AUTH_KEY, AI_NOTE_KEY, AI_NOTE_BOARDS_KEY, SCHEDULER_KEY, schedulerStorageKey('admin1')].includes(event.key)) {
         refresh();
       }
@@ -2965,22 +2987,66 @@ function SpaceHomePage({ navigate }) {
     };
   }, []);
 
+  const startGuest = async () => {
+    if (guestStarting) return;
+    setGuestStarting(true);
+    setAccountError('');
+    try {
+      const guestSession = await requestJson('/api/auth/guest', {
+        method: 'POST',
+        headers: { Accept: 'application/json' }
+      });
+      const normalized = normalizeAuthSession({ ...guestSession, isGuest: true });
+      localStorage.setItem(AUTH_KEY, JSON.stringify(normalized));
+      setSession(normalized);
+      navigate('/notes');
+    } catch (error) {
+      setAccountError(error.message || '게스트 세션을 만들 수 없습니다.');
+    } finally {
+      setGuestStarting(false);
+    }
+  };
+
   return (
     <main className="spaceHome">
       <section className="spaceHero">
         <div className="spaceHeroCopy">
           <span className="spaceEyebrow">App Home</span>
-          <h1>오늘 할 일을 바로 이어서</h1>
-          <strong className="spaceHeroLead">흩어진 생각과 일정을 한눈에. 메모를 쓰고, 일정을 계획하고, 다음 여행 코스까지 이 화면 하나로 가볍게 정리해보세요.</strong>
-          <div className="spaceHeroActions">
-            {SPACE_HOME_SHORTCUTS.map((shortcut) => {
-              return (
-                <button key={shortcut.key} type="button" onClick={() => navigate(shortcut.path)}>
-                  <MemoNavIcon type={shortcut.icon} />
-                  {shortcut.label}
-                </button>
-              );
-            })}
+          <h1>흩어진 생각과 복잡한 일정을 한눈에.</h1>
+          <strong className="spaceHeroLead">메모부터 여행 계획까지, 가볍게 정리해 보세요.</strong>
+          <div className="spaceAccountWindow" aria-label="Guest and member start">
+            <div className="spaceAccountHead">
+              <span>Start</span>
+              <strong>
+                {accountMode === 'member'
+                  ? `${session.username} 계정 사용 중`
+                  : accountMode === 'guest'
+                    ? 'Guest 모드 사용 중'
+                    : 'Guest 또는 Member'}
+              </strong>
+            </div>
+            <div className="spaceAccountChoices">
+              <button
+                type="button"
+                className={`spaceAccountChoice guest${accountMode === 'guest' ? ' active' : ''}`}
+                onClick={startGuest}
+                disabled={guestStarting}
+              >
+                <span>Guest</span>
+                <strong>{guestStarting ? '준비 중...' : '게스트로 시작'}</strong>
+                <small>로그인 없이 먼저 둘러보기</small>
+              </button>
+              <button
+                type="button"
+                className={`spaceAccountChoice member${accountMode === 'member' ? ' active' : ''}`}
+                onClick={() => navigate('/login')}
+              >
+                <span>Member</span>
+                <strong>회원으로 계속</strong>
+                <small>내 계정으로 이어서 보기</small>
+              </button>
+            </div>
+            {accountError ? <p className="spaceAccountNotice">{accountError}</p> : null}
           </div>
         </div>
         <aside className="spaceFeaturePanel" aria-label="assistant feature shortcuts">

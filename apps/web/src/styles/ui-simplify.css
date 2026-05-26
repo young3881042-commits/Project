@@ -70,6 +70,133 @@
   font-weight: 850;
 }
 
+.spaceAccountWindow {
+  width: min(100%, 560px);
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 12px;
+  border: 1px solid rgba(203, 213, 225, 0.72);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.spaceAccountHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.spaceAccountHead span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.spaceAccountHead strong {
+  min-width: 0;
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 900;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.spaceAccountChoices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.spaceAccountChoice {
+  min-width: 0;
+  min-height: 76px;
+  display: grid;
+  gap: 5px;
+  align-content: center;
+  justify-items: start;
+  padding: 11px 12px;
+  border: 1px solid rgba(203, 213, 225, 0.76);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  text-align: left;
+  cursor: pointer;
+}
+
+.spaceAccountChoice:hover {
+  transform: translateY(-1px);
+  border-color: rgba(15, 118, 110, 0.34);
+}
+
+.spaceAccountChoice:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.spaceAccountChoice span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #0f766e;
+  font-size: 0.68rem;
+  font-weight: 950;
+}
+
+.spaceAccountChoice.member span {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.spaceAccountChoice strong {
+  max-width: 100%;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.spaceAccountChoice small {
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.spaceAccountChoice.active {
+  border-color: rgba(15, 118, 110, 0.48);
+  background: #ecfdf5;
+}
+
+.spaceAccountChoice.member.active {
+  border-color: rgba(37, 99, 235, 0.44);
+  background: #eff6ff;
+}
+
+.spaceAccountNotice {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.8rem !important;
+  line-height: 1.35 !important;
+  font-weight: 800;
+}
+
 .spaceHeroCopy p {
   max-width: 560px;
   color: #4b5f76;
@@ -452,6 +579,24 @@
 
   .spaceHeroActions button {
     justify-content: center;
+  }
+
+  .spaceAccountWindow {
+    width: 100%;
+    padding: 11px;
+  }
+
+  .spaceAccountHead {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .spaceAccountHead strong {
+    text-align: left;
+  }
+
+  .spaceAccountChoices {
+    grid-template-columns: 1fr;
   }
 
   .spaceHeroCopy h1 {
