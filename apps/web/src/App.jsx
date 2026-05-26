@@ -666,6 +666,89 @@ function AuthScreen({ mode, setMode, username, setUsername, password, setPasswor
   );
 }
 
+function authRedirectTarget(fallback = '/app') {
+  const params = new URLSearchParams(window.location.search);
+  const redirect = params.get('redirect') || fallback;
+  if (!redirect.startsWith('/') || redirect.startsWith('//') || redirect.startsWith('/login') || redirect.startsWith('/signup')) {
+    return fallback;
+  }
+  return redirect;
+}
+
+function AppAuthPage({ mode, navigate }) {
+  const isSignup = mode === 'signup';
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const redirectTarget = authRedirectTarget('/app');
+
+  useEffect(() => {
+    document.title = isSignup ? '회원가입' : '로그인';
+  }, [isSignup]);
+
+  const submitAuth = async (event) => {
+    event.preventDefault();
+    if (loading) return;
+    const validationError = validateAuthForm(mode, username, password);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const session = await requestJson(isSignup ? '/api/auth/signup' : '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ username: username.trim(), password })
+      });
+      const normalized = normalizeAuthSession(session);
+      localStorage.setItem(AUTH_KEY, JSON.stringify(normalized));
+      navigate(redirectTarget);
+    } catch (authError) {
+      setError(authError.message || '처리 중 문제가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const switchPath = `${isSignup ? '/login' : '/signup'}?redirect=${encodeURIComponent(redirectTarget)}`;
+
+  return (
+    <main className="appAuthShell">
+      <section className="appAuthCard">
+        <button type="button" className="appAuthBack" onClick={() => navigate('/app')}>앱 홈</button>
+        <div className="appAuthHeader">
+          <span>{isSignup ? 'Member Signup' : 'Member Login'}</span>
+          <h1>{isSignup ? '회원가입' : '로그인'}</h1>
+          <p>{isSignup ? '새 계정으로 메모와 일정을 이어서 관리하세요.' : '내 계정으로 메모, 일정, 여행 코스를 이어서 확인하세요.'}</p>
+        </div>
+        <form className="appAuthForm" onSubmit={submitAuth}>
+          <label>
+            <span>아이디</span>
+            <input value={username} onChange={(event) => setUsername(event.target.value)} placeholder="my-id" autoComplete="username" />
+          </label>
+          <label>
+            <span>비밀번호</span>
+            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="password" autoComplete={isSignup ? 'new-password' : 'current-password'} />
+          </label>
+          <button type="submit" className="appAuthSubmit" disabled={loading}>
+            {loading ? '처리 중...' : isSignup ? '회원가입' : '로그인'}
+          </button>
+          {error ? <p className="appAuthError">{error}</p> : null}
+        </form>
+        <div className="appAuthSwitch">
+          <span>{isSignup ? '이미 계정이 있나요?' : '처음 사용하시나요?'}</span>
+          <button type="button" onClick={() => navigate(switchPath)}>
+            {isSignup ? '로그인' : '회원가입'}
+          </button>
+        </div>
+      </section>
+    </main>
+  );
+}
+
 function DirectoryTree({ path, depth = 0, selectedPath, expandedPaths, treeMap, loadingPaths, onToggle, onSelect }) {
   const node = treeMap.get(path);
   const entries = node?.entries?.filter((entry) => entry.type === 'dir') || [];
@@ -2273,7 +2356,7 @@ function currentPath() {
 
 function loginPathForCurrentLocation(fallback = '/') {
   const path = currentPath();
-  const redirect = path && !path.startsWith('/login') ? path : fallback;
+  const redirect = path && !path.startsWith('/login') && !path.startsWith('/signup') ? path : fallback;
   return `/login?redirect=${encodeURIComponent(redirect || fallback)}`;
 }
 
@@ -2335,6 +2418,14 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260526-app-auth-pages',
+    content: `# 2026-05-26 앱 전용 로그인/회원가입 분리
+
+- [x] 앱 홈의 큰 첫 문구 제거
+- [x] /login을 앱 전용 로그인 화면으로 분리
+- [x] /signup을 별도 회원가입 화면으로 분리`
+  },
+  {
     id: 'admin1-memo-20260526-app-home-account-window',
     content: `# 2026-05-26 앱 홈 Guest/Member 시작 창 추가
 
@@ -2346,7 +2437,7 @@ const ADMIN1_MEMO_LOGS = [
     id: 'admin1-memo-20260526-app-home-hero-copy',
     content: `# 2026-05-26 앱 홈 문구와 바로가기 정리
 
-- [x] 앱 홈 첫 문구를 흩어진 생각과 복잡한 일정 중심으로 변경
+- [x] 앱 홈 첫 문구를 메모와 여행 계획 중심으로 변경
 - [x] 메모부터 여행 계획까지 가볍게 정리하는 보조 문구 적용
 - [x] 카드 액션과 중복되던 상단 바로가기 버튼 제거`
   },
@@ -3012,7 +3103,6 @@ function SpaceHomePage({ navigate }) {
       <section className="spaceHero">
         <div className="spaceHeroCopy">
           <span className="spaceEyebrow">App Home</span>
-          <h1>흩어진 생각과 복잡한 일정을 한눈에.</h1>
           <strong className="spaceHeroLead">메모부터 여행 계획까지, 가볍게 정리해 보세요.</strong>
           <div className="spaceAccountWindow" aria-label="Guest and member start">
             <div className="spaceAccountHead">
@@ -3039,7 +3129,7 @@ function SpaceHomePage({ navigate }) {
               <button
                 type="button"
                 className={`spaceAccountChoice member${accountMode === 'member' ? ' active' : ''}`}
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/login?redirect=/app')}
               >
                 <span>Member</span>
                 <strong>회원으로 계속</strong>
@@ -4528,6 +4618,14 @@ export default function App() {
 
   if (routePath === '/portfolio' || routePath.startsWith('/portfolio/')) {
     return <PortfolioHomePage navigate={navigate} />;
+  }
+
+  if (routePath === '/login') {
+    return <AppAuthPage mode="login" navigate={navigate} />;
+  }
+
+  if (routePath === '/signup') {
+    return <AppAuthPage mode="signup" navigate={navigate} />;
   }
 
   if (redirectPath) {

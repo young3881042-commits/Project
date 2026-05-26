@@ -29,6 +29,161 @@
   display: none !important;
 }
 
+.appAuthShell {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #0f172a;
+  font-family: Inter, "Pretendard Variable", "Apple SD Gothic Neo", system-ui, sans-serif;
+  background:
+    linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(239, 246, 255, 0.96) 48%, rgba(240, 253, 244, 0.94)),
+    #f8fafc;
+}
+
+.appAuthCard {
+  width: min(100%, 420px);
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid rgba(203, 213, 225, 0.86);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 52px rgba(15, 23, 42, 0.12);
+}
+
+.appAuthBack {
+  width: fit-content;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.appAuthHeader {
+  display: grid;
+  gap: 8px;
+}
+
+.appAuthHeader span {
+  width: fit-content;
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 9px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #0f766e;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.appAuthHeader h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(1.85rem, 7vw, 2.4rem);
+  line-height: 1.08;
+  font-weight: 950;
+}
+
+.appAuthHeader p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  font-weight: 700;
+}
+
+.appAuthForm {
+  display: grid;
+  gap: 12px;
+}
+
+.appAuthForm label {
+  display: grid;
+  gap: 7px;
+}
+
+.appAuthForm label span {
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.appAuthForm input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid rgba(148, 163, 184, 0.52);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  outline: none;
+}
+
+.appAuthForm input:focus {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+}
+
+.appAuthSubmit {
+  min-height: 48px;
+  border: 1px solid #0f766e;
+  border-radius: 8px;
+  background: #0f766e;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.appAuthSubmit:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.appAuthError {
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  font-weight: 800;
+}
+
+.appAuthSwitch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.appAuthSwitch span {
+  color: #64748b;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.appAuthSwitch button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 950;
+  cursor: pointer;
+}
+
 .spaceHero {
   width: min(100% - 48px, 1160px) !important;
   min-height: 100svh !important;
@@ -556,6 +711,20 @@
 }
 
 @media (max-width: 640px) {
+  .appAuthShell {
+    align-items: start;
+    padding: 16px 12px;
+  }
+
+  .appAuthCard {
+    padding: 18px;
+  }
+
+  .appAuthSwitch {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .spaceHome {
     background:
       linear-gradient(160deg, rgba(248, 250, 252, 0.99) 0%, rgba(237, 247, 255, 0.98) 44%, rgba(238, 252, 246, 0.98) 100%),
