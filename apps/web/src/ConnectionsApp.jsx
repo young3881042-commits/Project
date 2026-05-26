@@ -190,7 +190,7 @@ export default function ConnectionsApp({ navigate, authToken }) {
   const [providerLoading, setProviderLoading] = useState(false);
   const [savingOpenAi, setSavingOpenAi] = useState(false);
   const [message, setMessage] = useState('');
-  const [activeSource, setActiveSource] = useState('memo');
+  const [activeSource, setActiveSource] = useState('email');
 
   const openAiProvider = useMemo(
     () => providers.find((provider) => provider.id === 'openai'),
@@ -292,30 +292,13 @@ export default function ConnectionsApp({ navigate, authToken }) {
         <div>
           <span className="connectionsEyebrow">Daily Sync</span>
           <h1>스마트한 일상 연동</h1>
-          <p>기록은 더 가볍게, 흩어진 메일과 문자 속 일정은 알아서 쏙쏙 챙겨 드릴게요.</p>
-        </div>
-        <div className="connectionsHeroActions">
-          <button type="button" className="connectionsGhostButton" onClick={() => navigate?.('/notes')}>
-            메모로 가기
-          </button>
+          <p>메일과 문자 속 중요한 일정을 한곳에서 확인할 수 있게 준비합니다.</p>
         </div>
       </header>
 
       {message ? <p className="connectionsNotice">{message}</p> : null}
 
       <section className="connectionsChoiceGrid" aria-label="연동할 일상 선택">
-        <button
-          type="button"
-          className={activeSource === 'memo' ? 'active' : ''}
-          onClick={() => setActiveSource('memo')}
-        >
-          <ConnectionIcon type="note" />
-          <span>
-            <strong>메모</strong>
-            <small>아이디어가 시작되는 곳</small>
-          </span>
-          <StatusPill tone="ok">바로 사용</StatusPill>
-        </button>
         <button
           type="button"
           className={activeSource === 'email' ? 'active' : ''}
@@ -343,26 +326,7 @@ export default function ConnectionsApp({ navigate, authToken }) {
       </section>
 
       <section className="connectionsPanel connectionsSimplePanel">
-        {activeSource === 'memo' ? (
-          <>
-            <SectionHeader icon="note" eyebrow="Memo" title="메모 보드" action={<StatusPill tone="ok">바로 사용</StatusPill>}>
-              오늘 떠오른 생각을 적고, 필요한 일정을 자연스럽게 이어보세요.
-            </SectionHeader>
-            <div className="connectionsReadiness">
-              <span>현재 상태</span>
-              <strong>메모에서 바로 시작할 수 있어요</strong>
-              <small>아이디어, 할 일, 약속을 보드별로 가볍게 정리해보세요.</small>
-            </div>
-            <div className="connectionsButtonRow">
-              <button type="button" className="connectionsPrimaryButton" onClick={() => navigate?.('/notes')}>
-                메모 열기
-              </button>
-              <button type="button" className="connectionsGhostButton" onClick={() => navigate?.('/scheduler')}>
-                내 일정
-              </button>
-            </div>
-          </>
-        ) : activeSource === 'email' ? (
+        {activeSource === 'email' ? (
           <>
             <SectionHeader icon="mail" eyebrow="Email" title="이메일" action={<StatusPill tone={emailReady ? 'ok' : 'warn'}>{emailReady ? '준비됐어요' : '곧 만나요'}</StatusPill>}>
               예약과 결제 메일 속 중요한 일정을 알아서 챙겨드릴게요.

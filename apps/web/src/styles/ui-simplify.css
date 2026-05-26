@@ -136,11 +136,11 @@
 
 .spaceFeatureCard {
   min-width: 0;
-  min-height: 214px;
+  min-height: 196px;
   display: grid;
-  align-content: start;
-  gap: 12px;
-  padding: 18px;
+  grid-template-rows: auto auto minmax(0, auto) auto;
+  gap: 14px;
+  padding: 16px;
   border: 1px solid rgba(203, 213, 225, 0.72);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.82);
@@ -150,7 +150,7 @@
 
 .spaceFeatureCard.memo {
   grid-column: 1 / -1;
-  min-height: 254px;
+  min-height: 206px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(236, 253, 245, 0.88)),
     #ffffff;
@@ -172,88 +172,73 @@
 .spaceFeatureHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.spaceFeatureHeader .memoNavIcon {
-  width: 42px;
-  height: 42px;
-  min-width: 42px;
-  border: 1px solid rgba(15, 118, 110, 0.16);
-  background: #ecfdf5;
-  color: #0f766e;
-}
-
-.spaceFeatureCard.schedule .spaceFeatureHeader .memoNavIcon {
-  border-color: rgba(37, 99, 235, 0.18);
-  background: #eff6ff;
-  color: #2563eb;
-}
-
-.spaceFeatureCard.travel .spaceFeatureHeader .memoNavIcon {
-  border-color: rgba(217, 119, 6, 0.18);
-  background: #fffbeb;
-  color: #d97706;
+  justify-content: flex-start;
 }
 
 .spaceFeatureHeader span {
   min-height: 28px;
   display: inline-flex;
   align-items: center;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.06);
-  color: #475569;
+  padding: 0 11px;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #0f766e;
   font-size: 0.72rem;
   font-weight: 950;
   text-transform: uppercase;
 }
 
-.spaceFeatureCard strong {
-  color: #111827;
-  font-size: clamp(1.15rem, 2vw, 1.55rem);
-  line-height: 1.22;
-  font-weight: 950;
-  overflow-wrap: anywhere;
+.spaceFeatureCard.schedule .spaceFeatureHeader span {
+  border-color: rgba(37, 99, 235, 0.2);
+  background: #eff6ff;
+  color: #2563eb;
 }
 
-.spaceFeatureCard.memo strong {
-  max-width: 320px;
-  font-size: clamp(1.55rem, 3vw, 2rem);
+.spaceFeatureCard.travel .spaceFeatureHeader span {
+  border-color: rgba(217, 119, 6, 0.2);
+  background: #fffbeb;
+  color: #b45309;
 }
 
 .spaceFeatureCard p {
   margin: 0;
   color: #52657a;
-  font-size: 0.94rem;
-  line-height: 1.58;
+  font-size: 0.9rem;
+  line-height: 1.52;
   overflow-wrap: anywhere;
 }
 
 .spaceFeatureMeta {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  margin-top: auto;
+  margin: 0;
 }
 
 .spaceFeatureMeta span {
-  min-height: 28px;
+  min-width: 0;
+  min-height: 36px;
   display: inline-flex;
   align-items: center;
-  padding: 0 10px;
-  border-radius: 999px;
+  justify-content: center;
+  padding: 6px 8px;
+  border: 1px solid rgba(203, 213, 225, 0.65);
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.72);
   color: #475569;
-  font-size: 0.78rem;
-  font-weight: 850;
+  font-size: 0.8rem;
+  font-weight: 900;
+  line-height: 1.24;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .spaceFeatureActions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: auto;
 }
 
 .spaceFeatureActions button {
@@ -483,7 +468,8 @@
 
   .spaceFeatureCard {
     min-height: auto;
-    padding: 16px;
+    gap: 12px;
+    padding: 14px;
   }
 
   .spaceFeatureActions {

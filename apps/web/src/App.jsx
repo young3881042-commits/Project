@@ -2340,6 +2340,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260525-app-home-dashboard-cards',
+    content: `# 2026-05-25 앱 홈 카드 모바일 정리
+
+- [x] 앱 홈 카드의 큰 감성형 제목 제거
+- [x] MEMO, SCHEDULE, TRIP 배지를 카드 기준 헤더로 정리
+- [x] 각 카드에 현재 데이터 두 줄과 짧은 설명, 기존 액션 버튼만 남김
+- [x] 연결 화면에서 메모 선택과 메모 진입 액션 제거`
+  },
+  {
     id: 'admin1-memo-20260525-connection-nav-restore',
     content: `# 2026-05-25 연결 메뉴 복구
 
@@ -2976,16 +2985,14 @@ function SpaceHomePage({ navigate }) {
         </div>
         <aside className="spaceFeaturePanel" aria-label="assistant feature shortcuts">
           <article className="spaceFeatureCard memo">
-            <div className="spaceFeatureHeader">
-              <MemoNavIcon type="board" />
-              <span>Memo</span>
-            </div>
-            <strong>생각을 바로 보드에</strong>
-            <p>오늘 떠오른 아이디어를 기록하고, 필요한 일정과 유연하게 연결해보세요.</p>
+            <header className="spaceFeatureHeader">
+              <span>MEMO</span>
+            </header>
             <div className="spaceFeatureMeta">
-              <span>보드 {adminOverview.boardCount}</span>
-              <span>메모 {adminOverview.noteCount}</span>
+              <span>기록된 보드 {adminOverview.boardCount}</span>
+              <span>새 메모 {adminOverview.noteCount}</span>
             </div>
+            <p>생각과 아이디어를 보드에 기록하고 관리하세요.</p>
             <div className="spaceFeatureActions">
               <button type="button" className="spaceFeaturePrimaryAction" onClick={() => navigate('/notes')}>
                 메모 열기
@@ -2993,16 +3000,14 @@ function SpaceHomePage({ navigate }) {
             </div>
           </article>
           <article className="spaceFeatureCard schedule">
-            <div className="spaceFeatureHeader">
-              <MemoNavIcon type="calendar" />
-              <span>Schedule</span>
-            </div>
-            <strong>오늘 일정만 선명하게</strong>
-            <p>메모 속 숨은 할 일들을 모아 오늘 하루를 선명하게 채워드려요.</p>
+            <header className="spaceFeatureHeader">
+              <span>SCHEDULE</span>
+            </header>
             <div className="spaceFeatureMeta">
-              <span>오늘 {adminOverview.todayCount}</span>
+              <span>오늘 일정 {adminOverview.todayCount}</span>
               <span>7일 미완료 {adminOverview.weekPendingCount}</span>
             </div>
+            <p>오늘 해야 할 우선순위 일정을 확인하세요.</p>
             <div className="spaceFeatureActions">
               <button type="button" className="spaceFeatureSecondaryAction" onClick={() => navigate('/scheduler')}>
                 일정 보기
@@ -3010,16 +3015,14 @@ function SpaceHomePage({ navigate }) {
             </div>
           </article>
           <article className="spaceFeatureCard travel">
-            <div className="spaceFeatureHeader">
-              <MemoNavIcon type="trip" />
-              <span>Trip</span>
-            </div>
-            <strong>갈 곳은 코스로 저장</strong>
-            <p>가고 싶은 장소들을 모아 나만의 완벽한 여행 동선을 짜보세요.</p>
+            <header className="spaceFeatureHeader">
+              <span>TRIP</span>
+            </header>
             <div className="spaceFeatureMeta">
               <span>저장 코스 {adminOverview.travelScheduleCount}</span>
               <span>장소 추천</span>
             </div>
+            <p>나만의 여행 동선을 짜고 계획을 저장하세요.</p>
             <div className="spaceFeatureActions">
               <button type="button" className="spaceFeatureSecondaryAction" onClick={() => navigate('/destinations')}>
                 코스 찾기
