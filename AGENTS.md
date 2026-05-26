@@ -8,6 +8,7 @@
 - Long-term target: after mobile UI and server APIs are stable, expand toward a phone-based personal AI assistant that can use user-granted access to messages, mail, local files, weather, nearby travel spots, and nearby restaurants. Web/PWA alone cannot read phone-local SMS/mail/files; native Android/iOS permissions or a native wrapper will be needed.
 - Avoid generic platform-operations work unless the user specifically asks for it. Keep the main work queue focused on mobile usability, routing/deployment stability, and real app API integrations.
 - The default app route is `/app`; `/` should not render a separate main screen.
+- Treat external web access for this deployment as port `80`. Local Docker checks may use an override such as `WEB_HTTP_PORT=18000`, but user-facing deployment notes should call out external port `80`.
 - Keep `docs/NEXT_CHECKLIST_PLAN_KO.md` updated when a task changes UI behavior, routing, deployment steps, or follow-up work.
 - Check `docs/PROJECT_CHANGELOG_KO.md` for recent context before changing travel, notes, scheduler, login, or admin behavior.
 - Every completed work item should also leave an `admin1` memo-board entry. Prefer adding/updating a seeded `ADMIN1_MEMO_LOGS` item in `apps/web/src/App.jsx` so the log appears in `/notes` for `admin1`.
