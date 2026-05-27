@@ -549,14 +549,22 @@ function MarkdownPreview({ markdown, compact = false }) {
       className={compact ? 'markdownRender compact' : 'markdownRender'}
       components={{
         a: ({ node, ...props }) => <a {...props} target="_blank" rel="noreferrer" />,
-        ul: ({ node, className, ...props }) => <ul className={className || ''} {...props} />,
+        ul: ({ node, className, ...props }) => {
+          const taskListClass = className?.includes('contains-task-list') ? ' markdownTaskList' : '';
+          return <ul className={`${className || ''}${taskListClass}`.trim()} {...props} />;
+        },
         ol: ({ node, className, ...props }) => <ol className={className || ''} {...props} />,
-        li: ({ node, className, ...props }) => <li className={className || ''} {...props} />,
-        input: ({ node, ...props }) => (
+        li: ({ node, className, ...props }) => {
+          const taskItemClass = className?.includes('task-list-item') ? ' markdownTaskItem' : '';
+          return <li className={`${className || ''}${taskItemClass}`.trim()} {...props} />;
+        },
+        input: ({ node, className, checked, ...props }) => (
           <input
             {...props}
-            className={`markdownCheckbox ${props.checked ? 'checked' : ''}`}
+            checked={Boolean(checked)}
+            className={`${className || ''} markdownCheckbox ${checked ? 'checked' : ''}`.trim()}
             readOnly
+            aria-checked={checked ? 'true' : 'false'}
           />
         )
       }}
@@ -2435,6 +2443,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260527-notes-checklist-modal-fix',
+    content: `# 2026-05-27 메모 체크리스트 모달 렌더링 수정
+
+- [x] 메모 보기 모달의 Markdown 체크박스 크기와 한 줄 정렬 보정
+- [x] task-list 불릿을 제거하고 체크박스와 텍스트만 가로 정렬
+- [x] 메모 작성/수정 모달에 작성/미리보기 탭 추가
+- [x] 닫기 X 버튼 히트박스와 헤더 버튼 정렬 보강`
+  },
+  {
     id: 'admin1-memo-20260527-notes-ui-polish',
     content: `# 2026-05-27 메모 화면 탭과 모달 UI 정리
 
@@ -3272,6 +3289,7 @@ function AiNotePage({ navigate }) {
   const [editingTitleId, setEditingTitleId] = useState('');
   const [editingBoardId, setEditingBoardId] = useState('');
   const [memoWindowOpen, setMemoWindowOpen] = useState(false);
+  const [memoComposerMode, setMemoComposerMode] = useState('edit');
   const session = readStoredAuth();
 
   useEffect(() => {
@@ -3444,6 +3462,7 @@ function AiNotePage({ navigate }) {
 
   const applyMarkdownTool = (block, tool) => {
     if (!block || block.type === 'checklist') return;
+    setMemoComposerMode('edit');
     const textarea = memoTextareaRef.current;
     const content = block.content || '';
     const start = textarea?.selectionStart ?? content.length;
@@ -3491,6 +3510,7 @@ function AiNotePage({ navigate }) {
     setEditingBlockId(block.id);
     setEditingTitleId('');
     setMemoActiveLine(null);
+    setMemoComposerMode('edit');
     setFileStatus(`${noteBlockTitle(block)} 메모를 수정합니다.`);
   };
 
@@ -3498,6 +3518,7 @@ function AiNotePage({ navigate }) {
     setEditingBlockId('');
     setEditingTitleId('');
     setMemoWindowOpen(false);
+    setMemoComposerMode('edit');
     setFileStatus('메모를 저장했습니다.');
   };
 
@@ -3512,6 +3533,7 @@ function AiNotePage({ navigate }) {
     setEditingBlockId('');
     setEditingTitleId('');
     setMemoActiveLine(null);
+    setMemoComposerMode('edit');
   };
 
   const updateActiveBlockLine = (block, lineIndex, value) => {
@@ -4069,29 +4091,52 @@ function AiNotePage({ navigate }) {
                 <div className="memoMarkdownComposer">
                   {activeBlock.type === 'checklist' ? renderChecklistEditor(activeBlock) : (
                     <>
-                      <div className="memoMarkdownToolbar" aria-label="메모 서식">
-                        <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'bold')} aria-label="굵게" title="굵게">
-                          <MemoNavIcon type="bold" />
-                        </button>
-                        <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'check')} aria-label="체크박스" title="체크박스">
-                          <MemoNavIcon type="checkSquare" />
-                        </button>
-                        <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'list')} aria-label="목록" title="목록">
-                          <MemoNavIcon type="list" />
-                        </button>
+                      <div className="memoMarkdownComposerHeader">
+                        <div className="memoMarkdownToolbar" aria-label="메모 서식">
+                          <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'bold')} aria-label="굵게" title="굵게">
+                            <MemoNavIcon type="bold" />
+                          </button>
+                          <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'check')} aria-label="체크박스" title="체크박스">
+                            <MemoNavIcon type="checkSquare" />
+                          </button>
+                          <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'list')} aria-label="목록" title="목록">
+                            <MemoNavIcon type="list" />
+                          </button>
+                        </div>
+                        <div className="memoComposerTabs" role="tablist" aria-label="메모 작성 보기">
+                          <button
+                            type="button"
+                            role="tab"
+                            aria-selected={memoComposerMode === 'edit'}
+                            className={memoComposerMode === 'edit' ? 'active' : ''}
+                            onClick={() => setMemoComposerMode('edit')}
+                          >
+                            작성
+                          </button>
+                          <button
+                            type="button"
+                            role="tab"
+                            aria-selected={memoComposerMode === 'preview'}
+                            className={memoComposerMode === 'preview' ? 'active' : ''}
+                            onClick={() => setMemoComposerMode('preview')}
+                          >
+                            미리보기
+                          </button>
+                        </div>
                       </div>
                       <textarea
+                        className={`memoComposerEditPane ${memoComposerMode === 'edit' ? 'active' : ''}`}
                         ref={memoTextareaRef}
                         autoFocus
                         value={activeBlock.content || ''}
                         onChange={(event) => updateActiveBlockContent(activeBlock.id, event.target.value)}
                         placeholder="메모"
                       />
+                      <article className={`memoInlinePreview memoComposerPreview ${memoComposerMode === 'preview' ? 'active' : ''}`}>
+                        {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : <p>비어 있음</p>}
+                      </article>
                     </>
                   )}
-                  <article className="memoInlinePreview">
-                    {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : null}
-                  </article>
                 </div>
               ) : (
                 <article
