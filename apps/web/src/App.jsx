@@ -425,11 +425,15 @@ function normalizeNoteBlock(block) {
 function plainMarkdownText(markdown) {
   return markdown
     .replace(/^#{1,6}\s+/gm, '')
-    .replace(/^\s*[-*]\s+\[[ xX]\]\s+/gm, '')
+    .replace(/^\s*[-*]\s+\[[ xX]?\]\s*/gm, '')
     .replace(/^\s*[-*]\s+/gm, '')
     .replace(/\*\*([^*]+)\*\*/g, '$1')
     .replace(/`([^`]+)`/g, '$1')
     .trim();
+}
+
+function normalizeMarkdownTasks(markdown) {
+  return `${markdown || ''}`.replace(/^(\s*[-*]\s+)\[\s*\]\s*(.*)$/gm, '$1[ ] $2');
 }
 
 function noteBlockTitle(block) {
@@ -455,7 +459,7 @@ function checklistItemsFromBlock(block) {
   const body = noteBlockBody(block);
   const lines = body.split('\n').map((line) => line.trim()).filter(Boolean);
   const items = lines.map((line) => {
-    const match = line.match(/^[-*]\s+\[([ xX])\]\s+(.*)$/);
+    const match = line.match(/^[-*]\s+\[([ xX]?)\]\s*(.*)$/);
     return match ? { checked: match[1].toLowerCase() === 'x', text: match[2] } : { checked: false, text: line.replace(/^[-*]\s+/, '') };
   });
   return items.length ? items : [{ checked: false, text: '' }];
@@ -543,6 +547,7 @@ function markdownPreviewBlocks(markdown) {
 }
 
 function MarkdownPreview({ markdown, compact = false }) {
+  const normalizedMarkdown = normalizeMarkdownTasks(markdown);
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -569,7 +574,7 @@ function MarkdownPreview({ markdown, compact = false }) {
         )
       }}
     >
-      {markdown || ''}
+      {normalizedMarkdown}
     </ReactMarkdown>
   );
 }
@@ -2448,6 +2453,7 @@ const ADMIN1_MEMO_LOGS = [
 
 - [x] 메모 보기 모달의 Markdown 체크박스 크기와 한 줄 정렬 보정
 - [x] task-list 불릿을 제거하고 체크박스와 텍스트만 가로 정렬
+- [x] 체크박스 툴은 raw Markdown 대신 체크리스트 편집 UI로 전환
 - [x] 메모 작성/수정 모달에 작성/미리보기 탭 추가
 - [x] 닫기 X 버튼 히트박스와 헤더 버튼 정렬 보강`
   },
@@ -3476,17 +3482,22 @@ function AiNotePage({ navigate }) {
       insert = `**${text}**`;
       nextCursor = selected ? start + insert.length : start + 2;
     } else if (tool === 'check') {
-      const text = selected || '할 일';
-      insert = text
+      const source = selected || noteBlockBody(block) || '할 일';
+      const items = source
         .split('\n')
-        .map((line) => `- [ ] ${line.replace(/^\s*[-*]\s+(\[[ xX]\]\s+)?/, '').trim() || '할 일'}`)
-        .join('\n');
-      nextCursor = start + insert.length;
+        .map((line) => line.replace(/^\s*[-*]\s+(\[[ xX]?\]\s*)?/, '').trim())
+        .filter(Boolean)
+        .map((line) => ({ checked: false, text: line || '할 일' }));
+      updateBlock(block.id, {
+        type: 'checklist',
+        content: checklistContentWithItems(block, items.length ? items : [{ checked: false, text: '할 일' }])
+      });
+      return;
     } else {
       const text = selected || '목록';
       insert = text
         .split('\n')
-        .map((line) => `- ${line.replace(/^\s*[-*]\s+(\[[ xX]\]\s+)?/, '').trim() || '목록'}`)
+        .map((line) => `- ${line.replace(/^\s*[-*]\s+(\[[ xX]?\]\s*)?/, '').trim() || '목록'}`)
         .join('\n');
       nextCursor = start + insert.length;
     }
