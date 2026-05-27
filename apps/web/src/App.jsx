@@ -2435,6 +2435,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260527-notes-ui-polish',
+    content: `# 2026-05-27 메모 화면 탭과 모달 UI 정리
+
+- [x] 공통 상단 메뉴를 세그먼트 컨트롤 형태로 보정
+- [x] Guest 계정 영역의 로그인 링크 색상과 이동 표시 보강
+- [x] 메모 보드 추가와 새 글 버튼의 점선 스타일을 실선/채움형으로 변경
+- [x] 메모 보기/수정 창 헤더 정렬, 버튼 간격, 닫기 아이콘, 입력/툴바 크기 통일`
+  },
+  {
     id: 'admin1-memo-20260526-app-home-current-summary',
     content: `# 2026-05-26 앱 홈 현재 데이터 집계 보정
 
@@ -2759,6 +2768,35 @@ function MemoNavIcon({ type }) {
       <>
         <path d="M12 5v14" />
         <path d="M5 12h14" />
+      </>
+    ),
+    close: (
+      <>
+        <path d="M6 6l12 12" />
+        <path d="M18 6L6 18" />
+      </>
+    ),
+    bold: (
+      <>
+        <path d="M8 5h5.2a3 3 0 0 1 0 6H8z" />
+        <path d="M8 11h6a3.5 3.5 0 0 1 0 7H8z" />
+        <path d="M8 5v13" />
+      </>
+    ),
+    checkSquare: (
+      <>
+        <path d="M5 5h14v14H5z" />
+        <path d="m8.5 12.5 2.2 2.2 4.8-5.4" />
+      </>
+    ),
+    list: (
+      <>
+        <path d="M8 7h11" />
+        <path d="M8 12h11" />
+        <path d="M8 17h11" />
+        <path d="M4.5 7h.01" />
+        <path d="M4.5 12h.01" />
+        <path d="M4.5 17h.01" />
       </>
     ),
     board: (
@@ -4020,7 +4058,9 @@ function AiNotePage({ navigate }) {
                     <button type="button" onClick={() => beginBlockEdit(activeBlock)}>수정</button>
                   )}
                   {memoWindowOpen ? (
-                    <button type="button" className="memoWindowCloseButton" onClick={closeMemoWindow}>닫기</button>
+                    <button type="button" className="memoWindowCloseButton" onClick={closeMemoWindow} aria-label="닫기" title="닫기">
+                      <MemoNavIcon type="close" />
+                    </button>
                   ) : null}
                   <button type="button" className="memoDangerButton compact" onClick={() => deleteBlock(activeBlock.id)}>삭제</button>
                 </div>
@@ -4030,14 +4070,14 @@ function AiNotePage({ navigate }) {
                   {activeBlock.type === 'checklist' ? renderChecklistEditor(activeBlock) : (
                     <>
                       <div className="memoMarkdownToolbar" aria-label="메모 서식">
-                        <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'bold')}>
-                          <strong>B</strong>
+                        <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'bold')} aria-label="굵게" title="굵게">
+                          <MemoNavIcon type="bold" />
                         </button>
-                        <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'check')}>
-                          체크
+                        <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'check')} aria-label="체크박스" title="체크박스">
+                          <MemoNavIcon type="checkSquare" />
                         </button>
-                        <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'list')}>
-                          목록
+                        <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'list')} aria-label="목록" title="목록">
+                          <MemoNavIcon type="list" />
                         </button>
                       </div>
                       <textarea

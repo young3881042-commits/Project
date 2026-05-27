@@ -603,3 +603,229 @@ body:has(.aiNoteShell) {
     max-width: 100% !important;
   }
 }
+
+/* 2026-05-27 mobile memo polish */
+.workspaceNavigatorLinks {
+  gap: 4px !important;
+  padding: 5px !important;
+  border: 1px solid #dbe4ef !important;
+  border-radius: 10px !important;
+  background: #f1f5f9 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+}
+
+.workspaceNavigatorLinks a {
+  min-height: 38px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #475569 !important;
+  box-shadow: none !important;
+}
+
+.workspaceNavigatorLinks a:hover,
+.workspaceNavigatorLinks a.active {
+  border-color: #bfdbfe !important;
+  background: #ffffff !important;
+  color: #1d4ed8 !important;
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.06) !important;
+}
+
+.workspaceNavigatorLinks a .memoNavIcon,
+.workspaceNavigatorLinks a:hover .memoNavIcon,
+.workspaceNavigatorLinks a.active .memoNavIcon {
+  background: transparent !important;
+  color: currentColor !important;
+}
+
+.workspaceNavigatorAccount {
+  row-gap: 5px !important;
+}
+
+.workspaceNavigatorAccount small {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  color: #2563eb !important;
+  font-weight: 950 !important;
+}
+
+.workspaceNavigatorAccount small::after {
+  content: ">";
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.memoBoardNavigator .memoBoardAddButton {
+  min-height: 36px !important;
+  border-style: solid !important;
+  border-color: #bbf7d0 !important;
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+}
+
+.memoBoardNavigator .memoBoardAddButton:hover {
+  border-color: #86efac !important;
+  background: #dcfce7 !important;
+}
+
+.memoBoardAddNoteTile {
+  border-style: solid !important;
+  border-color: #bfdbfe !important;
+  background: #eff6ff !important;
+  box-shadow: none !important;
+}
+
+.memoInlineEditor header {
+  align-items: center !important;
+}
+
+.memoInlineEditor header .memoNavIcon {
+  display: inline-flex !important;
+}
+
+.memoInlineEditor header input {
+  min-height: 42px !important;
+  box-sizing: border-box !important;
+  padding: 0 12px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  line-height: 1.2 !important;
+}
+
+.memoInlineTools {
+  gap: 16px !important;
+  align-items: center !important;
+}
+
+.memoInlineTools button {
+  min-height: 42px !important;
+  box-sizing: border-box !important;
+}
+
+.memoWindowCloseButton {
+  width: 42px !important;
+  min-width: 42px !important;
+  padding: 0 !important;
+}
+
+.memoWindowCloseButton .memoNavIcon {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+}
+
+.memoInlineEditor.previewing .memoReadPreview,
+.memoInlineEditor.previewing .memoInlinePreview {
+  min-height: 64px !important;
+}
+
+.memoMarkdownToolbar {
+  gap: 8px !important;
+}
+
+.memoMarkdownToolButton {
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 !important;
+}
+
+.memoMarkdownToolButton .memoNavIcon {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+}
+
+.memoMarkdownComposer textarea {
+  display: block !important;
+  border-color: #cbd5e1 !important;
+  background-clip: padding-box !important;
+  outline: none !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02) !important;
+}
+
+.memoMarkdownComposer textarea:focus {
+  border-color: #2563eb !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14) !important;
+}
+
+@media (max-width: 760px) {
+  .workspaceNavigatorLinks {
+    gap: 5px !important;
+    padding: 6px !important;
+  }
+
+  .workspaceNavigatorLinks a {
+    min-height: 36px !important;
+    padding: 0 10px !important;
+  }
+
+  .workspaceNavigatorAccount {
+    min-height: 46px !important;
+  }
+
+  .memoBoardNavigator button,
+  .memoBoardNavigator .memoBoardAddButton {
+    min-height: 36px !important;
+  }
+
+  .memoBoardNavigator .memoBoardAddButton {
+    min-width: 38px !important;
+  }
+
+  .memoBoardAddNoteTile {
+    border-style: solid !important;
+    background: #eff6ff !important;
+  }
+
+  .aiNoteBoardPanel.memoWindowIsOpen > .memoInlineEditor.previewing {
+    bottom: auto !important;
+    max-height: calc(100svh - 78px) !important;
+    grid-template-rows: auto auto !important;
+  }
+
+  .aiNoteBoardPanel.memoWindowIsOpen > .memoInlineEditor.editing {
+    bottom: 12px !important;
+  }
+
+  .memoInlineEditor header {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+  }
+
+  .memoInlineTools {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 16px !important;
+  }
+
+  .memoInlineTools button {
+    flex: 0 0 auto !important;
+    min-height: 42px !important;
+  }
+
+  .memoInlineTools button.active {
+    min-width: 64px !important;
+  }
+
+  .memoInlineEditor header input {
+    min-height: 42px !important;
+  }
+
+  .memoMarkdownComposer textarea,
+  .memoChecklistEditor {
+    min-height: calc(100svh - 230px) !important;
+  }
+
+  .memoMarkdownToolButton {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+  }
+}
