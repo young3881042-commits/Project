@@ -2490,6 +2490,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260527-notes-modal-edit-direct',
+    content: `# 2026-05-27 메모 카드 편집 모달 단순화
+
+- [x] 카드 클릭 시 읽기 전용 상세 모달 대신 작성/수정 모달로 바로 진입
+- [x] 작성/미리보기 탭을 에디터 상단 전체 폭 세그먼트 탭으로 분리
+- [x] 작성 탭에서만 서식 도구 바를 에디터 위에 표시
+- [x] 제목 입력, 완료 버튼, 닫기 버튼 높이와 우측 여백 보정`
+  },
+  {
     id: 'admin1-memo-20260527-notes-checklist-modal-fix',
     content: `# 2026-05-27 메모 체크리스트 모달 렌더링 수정
 
@@ -3577,12 +3586,6 @@ function AiNotePage({ navigate }) {
     setFileStatus('메모를 저장했습니다.');
   };
 
-  const openMemoWindow = (block) => {
-    if (!block) return;
-    openBlockFile(block);
-    setMemoWindowOpen(true);
-  };
-
   const closeMemoWindow = () => {
     setMemoWindowOpen(false);
     setEditingBlockId('');
@@ -3861,11 +3864,6 @@ function AiNotePage({ navigate }) {
           window.clearTimeout(movedBlockResetTimerRef.current);
           return;
         }
-        openMemoWindow(block);
-      }}
-      onDoubleClick={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
         beginBlockEdit(block);
       }}
     >
@@ -3918,12 +3916,7 @@ function AiNotePage({ navigate }) {
       }}
       onDragEnd={() => setDraggingBlockId('')}
       onContextMenu={(event) => openBlockContextMenu(event, block)}
-      onClick={() => openMemoWindow(block)}
-      onDoubleClick={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        beginBlockEdit(block);
-      }}
+      onClick={() => beginBlockEdit(block)}
     >
       {renderCardTitle(block)}
       {block.type === 'checklist' ? (
@@ -4147,17 +4140,6 @@ function AiNotePage({ navigate }) {
                   {activeBlock.type === 'checklist' ? renderChecklistEditor(activeBlock) : (
                     <>
                       <div className="memoMarkdownComposerHeader">
-                        <div className="memoMarkdownToolbar" aria-label="메모 서식">
-                          <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'bold')} aria-label="굵게" title="굵게">
-                            <MemoNavIcon type="bold" />
-                          </button>
-                          <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'check')} aria-label="체크박스" title="체크박스">
-                            <MemoNavIcon type="checkSquare" />
-                          </button>
-                          <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'list')} aria-label="목록" title="목록">
-                            <MemoNavIcon type="list" />
-                          </button>
-                        </div>
                         <div className="memoComposerTabs" role="tablist" aria-label="메모 작성 보기">
                           <button
                             type="button"
@@ -4178,6 +4160,19 @@ function AiNotePage({ navigate }) {
                             미리보기
                           </button>
                         </div>
+                        {memoComposerMode === 'edit' ? (
+                          <div className="memoMarkdownToolbar" aria-label="메모 서식">
+                            <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'bold')} aria-label="굵게" title="굵게">
+                              <MemoNavIcon type="bold" />
+                            </button>
+                            <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'check')} aria-label="체크박스" title="체크박스">
+                              <MemoNavIcon type="checkSquare" />
+                            </button>
+                            <button type="button" className="memoMarkdownToolButton" onClick={() => applyMarkdownTool(activeBlock, 'list')} aria-label="목록" title="목록">
+                              <MemoNavIcon type="list" />
+                            </button>
+                          </div>
+                        ) : null}
                       </div>
                       <textarea
                         className={`memoComposerEditPane ${memoComposerMode === 'edit' ? 'active' : ''}`}

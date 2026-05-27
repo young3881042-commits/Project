@@ -1035,3 +1035,106 @@ body:has(.aiNoteShell) {
     min-height: 42px !important;
   }
 }
+
+/* 2026-05-27 memo edit modal depth and toolbar layout */
+.aiNoteBoardPanel.memoWindowIsOpen > .memoInlineEditor header,
+.memoInlineEditor header {
+  align-items: center !important;
+}
+
+.aiNoteBoardPanel.memoWindowIsOpen > .memoInlineEditor header {
+  padding-right: 18px !important;
+}
+
+.memoInlineEditor header input,
+.memoInlineTools button {
+  height: 44px !important;
+  min-height: 44px !important;
+  box-sizing: border-box !important;
+}
+
+.memoInlineTools {
+  align-items: center !important;
+  gap: 8px !important;
+  padding-right: 2px !important;
+}
+
+.memoInlineTools button.active {
+  min-width: 68px !important;
+}
+
+.memoWindowCloseButton {
+  margin-right: 4px !important;
+}
+
+.memoMarkdownComposerHeader {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  justify-content: normal !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  margin: 0 0 10px !important;
+}
+
+.memoComposerTabs {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  width: 100% !important;
+  flex: 1 1 auto !important;
+  gap: 4px !important;
+  padding: 4px !important;
+}
+
+.memoComposerTabs button {
+  width: 100% !important;
+  min-height: 40px !important;
+}
+
+.memoMarkdownComposerHeader .memoMarkdownToolbar {
+  width: 100% !important;
+  flex: none !important;
+  justify-content: flex-start !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.memoMarkdownToolButton {
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+}
+
+@media (max-width: 760px) {
+  .aiNoteBoardPanel.memoWindowIsOpen > .memoInlineEditor header {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    padding-right: 16px !important;
+  }
+
+  .memoInlineTools {
+    gap: 6px !important;
+    padding-right: 4px !important;
+  }
+
+  .memoInlineTools button.active {
+    min-width: 64px !important;
+  }
+
+  .memoWindowCloseButton {
+    margin-right: 2px !important;
+  }
+
+  .memoComposerTabs {
+    flex: none !important;
+  }
+
+  .memoMarkdownComposerHeader .memoMarkdownToolbar {
+    overflow-x: auto !important;
+  }
+
+  .memoMarkdownComposer textarea,
+  .memoComposerPreview {
+    min-height: calc(100svh - 300px) !important;
+  }
+}
