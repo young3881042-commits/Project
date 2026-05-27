@@ -525,14 +525,17 @@ body:has(.aiNoteShell) {
 }
 
 .memoChecklistItem {
-  display: grid !important;
-  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  display: flex !important;
+  flex-direction: row !important;
   gap: 8px !important;
   align-items: center !important;
   min-width: 0 !important;
+  width: 100% !important;
 }
 
 .memoChecklistItem input:not([type="checkbox"]) {
+  flex: 1 1 auto !important;
+  width: auto !important;
   min-width: 0 !important;
   min-height: 36px !important;
   padding: 8px 10px !important;
@@ -589,13 +592,8 @@ body:has(.aiNoteShell) {
     font-size: 0.82rem !important;
   }
 
-  .memoChecklistItem {
-    grid-template-columns: auto minmax(0, 1fr) !important;
-  }
-
   .memoChecklistItem button {
-    grid-column: 2 !important;
-    justify-self: end !important;
+    flex: 0 0 auto !important;
   }
 
   .memoMarkdownComposer textarea,
@@ -845,7 +843,8 @@ body:has(.aiNoteShell) {
 .markdownRender .markdownTaskItem,
 .markdownRender .task-list-item,
 .markdownRender li:has(> input[type="checkbox"]),
-.markdownTaskLine {
+.markdownTaskLine,
+.memoChecklistPreviewItem {
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
@@ -867,7 +866,8 @@ body:has(.aiNoteShell) {
 .markdownRender .markdownTaskItem > p,
 .markdownRender .task-list-item > p,
 .markdownRender li:has(> input[type="checkbox"]) > p,
-.markdownTaskLine span {
+.markdownTaskLine span,
+.memoChecklistPreviewText {
   display: inline !important;
   min-width: 0 !important;
   margin: 0 !important;
@@ -882,6 +882,7 @@ body:has(.aiNoteShell) {
 .markdownRender li:has(> input[type="checkbox"]) > input[type="checkbox"],
 .markdownRender input[type="checkbox"].markdownCheckbox,
 .markdownTaskLine input[type="checkbox"],
+.memoChecklistPreviewItem input[type="checkbox"],
 .memoChecklistEditor input[type="checkbox"] {
   appearance: auto !important;
   -webkit-appearance: checkbox !important;
@@ -903,6 +904,20 @@ body:has(.aiNoteShell) {
 }
 
 .markdownRender input[type="checkbox"].markdownCheckbox[disabled] {
+  opacity: 1 !important;
+}
+
+.memoChecklistPreview {
+  display: grid !important;
+  align-content: start !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.memoChecklistPreviewItem input[type="checkbox"][disabled] {
   opacity: 1 !important;
 }
 

@@ -425,15 +425,39 @@ function normalizeNoteBlock(block) {
 function plainMarkdownText(markdown) {
   return markdown
     .replace(/^#{1,6}\s+/gm, '')
-    .replace(/^\s*[-*]\s+\[[ xX]?\]\s*/gm, '')
+    .replace(/^\s*(?:[-*]\s*)?\[[ xX]?\]\s*/gm, '')
     .replace(/^\s*[-*]\s+/gm, '')
     .replace(/\*\*([^*]+)\*\*/g, '$1')
     .replace(/`([^`]+)`/g, '$1')
     .trim();
 }
 
+function isChecklistMarkdownLine(line) {
+  return /^\s*(?:[-*]\s*)?\[[ xX]?\]/.test(`${line || ''}`);
+}
+
+function parseChecklistLine(line) {
+  const trimmed = `${line || ''}`.trim();
+  if (!trimmed) return null;
+  const checkboxMatch = trimmed.match(/^(?:[-*]\s*)?\[([ xX]?)\]\s*(.*)$/);
+  if (checkboxMatch) {
+    return {
+      checked: checkboxMatch[1].toLowerCase() === 'x',
+      text: checkboxMatch[2].trim()
+    };
+  }
+  return {
+    checked: false,
+    text: trimmed.replace(/^[-*]\s+/, '').trim()
+  };
+}
+
 function normalizeMarkdownTasks(markdown) {
-  return `${markdown || ''}`.replace(/^(\s*[-*]\s+)\[\s*\]\s*(.*)$/gm, '$1[ ] $2');
+  return `${markdown || ''}`.split('\n').map((line) => {
+    const match = line.match(/^(\s*)(?:[-*]\s*)?\[([ xX]?)\]\s*(.*)$/);
+    if (!match) return line;
+    return `${match[1]}- [${match[2].toLowerCase() === 'x' ? 'x' : ' '}] ${match[3]}`.trimEnd();
+  }).join('\n');
 }
 
 function noteBlockTitle(block) {
@@ -456,12 +480,16 @@ function noteBlockContentWithTitle(block, title) {
 }
 
 function checklistItemsFromBlock(block) {
-  const body = noteBlockBody(block);
-  const lines = body.split('\n').map((line) => line.trim()).filter(Boolean);
-  const items = lines.map((line) => {
-    const match = line.match(/^[-*]\s+\[([ xX]?)\]\s*(.*)$/);
-    return match ? { checked: match[1].toLowerCase() === 'x', text: match[2] } : { checked: false, text: line.replace(/^[-*]\s+/, '') };
-  });
+  const rawLines = `${block?.content || ''}`.split('\n');
+  const firstContentIndex = rawLines.findIndex((line) => line.trim());
+  const contentLines = firstContentIndex === -1 ? [] : rawLines.slice(firstContentIndex);
+  const firstLine = contentLines[0]?.trim() || '';
+  const hasChecklistAfterFirst = contentLines.slice(1).some(isChecklistMarkdownLine);
+  const bodyLines = firstLine.startsWith('#') || (!isChecklistMarkdownLine(firstLine) && hasChecklistAfterFirst)
+    ? contentLines.slice(1)
+    : contentLines;
+  const lines = bodyLines.map((line) => line.trim()).filter(Boolean);
+  const items = lines.map(parseChecklistLine).filter(Boolean);
   return items.length ? items : [{ checked: false, text: '' }];
 }
 
@@ -576,6 +604,20 @@ function MarkdownPreview({ markdown, compact = false }) {
     >
       {normalizedMarkdown}
     </ReactMarkdown>
+  );
+}
+
+function ChecklistPreview({ items }) {
+  const normalizedItems = Array.isArray(items) && items.length ? items : [{ checked: false, text: '' }];
+  return (
+    <div className="memoChecklistPreview" aria-label="체크리스트 미리보기">
+      {normalizedItems.map((item, index) => (
+        <div className="memoChecklistPreviewItem" key={`checklist-preview-${index}`}>
+          <input type="checkbox" checked={Boolean(item.checked)} readOnly disabled />
+          <span className="memoChecklistPreviewText">{item.text || ' '}</span>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -2455,7 +2497,9 @@ const ADMIN1_MEMO_LOGS = [
 - [x] task-list 불릿을 제거하고 체크박스와 텍스트만 가로 정렬
 - [x] 체크박스 툴은 raw Markdown 대신 체크리스트 편집 UI로 전환
 - [x] 메모 작성/수정 모달에 작성/미리보기 탭 추가
-- [x] 닫기 X 버튼 히트박스와 헤더 버튼 정렬 보강`
+- [x] 닫기 X 버튼 히트박스와 헤더 버튼 정렬 보강
+- [x] 체크리스트 작성 행을 체크박스, 입력창, 삭제 버튼 한 줄로 고정
+- [x] 체크리스트 상세는 Markdown 파서 대신 읽기 전용 체크리스트 컴포넌트로 렌더링`
   },
   {
     id: 'admin1-memo-20260527-notes-ui-polish',
@@ -4163,7 +4207,11 @@ function AiNotePage({ navigate }) {
                     }
                   }}
                 >
-                  {(activeBlock.content || '').trim() ? <MarkdownPreview markdown={activeBlock.content} /> : <p>비어 있음</p>}
+                  {(activeBlock.content || '').trim()
+                    ? activeBlock.type === 'checklist'
+                      ? <ChecklistPreview items={checklistItemsFromBlock(activeBlock)} />
+                      : <MarkdownPreview markdown={activeBlock.content} />
+                    : <p>비어 있음</p>}
                 </article>
               )}
             </section>
