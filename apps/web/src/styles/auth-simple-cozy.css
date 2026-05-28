@@ -147,6 +147,14 @@
   line-height: 1.45;
 }
 
+.loginRule {
+  margin: -2px 0 2px;
+  color: #475569;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  font-weight: 800;
+}
+
 .ltOptionGroup {
   display: grid;
   gap: 8px;

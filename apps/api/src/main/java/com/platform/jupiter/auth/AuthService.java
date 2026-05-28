@@ -23,6 +23,8 @@ public class AuthService {
     private static final String ADMIN_ROLE = "ADMIN";
     private static final String USER_ROLE = "USER";
     private static final String GUEST_USERNAME = "guestuser";
+    private static final String AUTH_POLICY_STATE_ID = "password-policy";
+    private static final int AUTH_POLICY_VERSION = 2;
 
     private final AppUserAccountRepository repository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -56,9 +58,18 @@ public class AuthService {
                     updated_at TIMESTAMP(6) NOT NULL
                 )
                 """);
+        jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS app_auth_schema_state (
+                    id VARCHAR(40) NOT NULL PRIMARY KEY,
+                    version INT NOT NULL,
+                    updated_at TIMESTAMP(6) NOT NULL
+                )
+                """);
+        resetLegacyUserAccountsIfNeeded();
         String adminUsername = Optional.ofNullable(System.getenv("JUPITER_ADMIN_USERNAME")).orElse("").trim();
         String adminPassword = Optional.ofNullable(System.getenv("JUPITER_ADMIN_PASSWORD")).orElse("").trim();
         if (!adminUsername.isBlank() && !adminPassword.isBlank()) {
+            validatePasswordPolicy(adminPassword);
             AppUserAccount admin = repository.findByUsername(adminUsername).orElseGet(AppUserAccount::new);
             admin.setUsername(adminUsername);
             admin.setPasswordHash(passwordEncoder.encode(adminPassword));
@@ -77,6 +88,7 @@ public class AuthService {
     @Transactional
     public AuthResponse signup(AuthSignupRequest request) {
         String username = normalizeUsername(request.username());
+        validatePasswordPolicy(request.password());
         if (repository.existsByUsername(username)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
         }
@@ -94,6 +106,9 @@ public class AuthService {
         String username = normalizeUsername(request.username());
         AppUserAccount account = repository.findByUsername(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password"));
+        if (!ADMIN_ROLE.equalsIgnoreCase(account.getRole())) {
+            validatePasswordPolicy(request.password());
+        }
         if (!passwordEncoder.matches(request.password(), account.getPasswordHash())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
         }
@@ -147,11 +162,48 @@ public class AuthService {
         if (!passwordEncoder.matches(request.currentPassword(), account.getPasswordHash())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다.");
         }
+        validatePasswordPolicy(request.newPassword());
         if (request.currentPassword().equals(request.newPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "새 비밀번호는 현재 비밀번호와 달라야 합니다.");
         }
         account.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         repository.save(account);
+    }
+
+    private void validatePasswordPolicy(String password) {
+        if (password == null || password.length() < 8) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호는 8자 이상이어야 합니다.");
+        }
+        if (password.length() > 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호는 100자 이하여야 합니다.");
+        }
+        if (!password.matches(".*[A-Za-z].*") || !password.matches(".*\\d.*") || !password.matches(".*[^A-Za-z0-9].*")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호는 영문, 숫자, 특수문자를 모두 포함해야 합니다.");
+        }
+    }
+
+    private void resetLegacyUserAccountsIfNeeded() {
+        Integer version = jdbcTemplate.query(
+                        "SELECT version FROM app_auth_schema_state WHERE id = ?",
+                        (rs, rowNum) -> rs.getInt("version"),
+                        AUTH_POLICY_STATE_ID)
+                .stream()
+                .findFirst()
+                .orElse(0);
+        if (version < AUTH_POLICY_VERSION) {
+            jdbcTemplate.update(
+                    "DELETE FROM app_user_account WHERE UPPER(role) <> ? AND username <> ?",
+                    ADMIN_ROLE,
+                    GUEST_USERNAME);
+            sessions.clear();
+            jdbcTemplate.update("""
+                    INSERT INTO app_auth_schema_state (id, version, updated_at)
+                    VALUES (?, ?, CURRENT_TIMESTAMP(6))
+                    ON DUPLICATE KEY UPDATE version = VALUES(version), updated_at = VALUES(updated_at)
+                    """,
+                    AUTH_POLICY_STATE_ID,
+                    AUTH_POLICY_VERSION);
+        }
     }
 
     private String normalizeUsername(String username) {

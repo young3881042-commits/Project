@@ -401,8 +401,26 @@ function schedulerStorageKey(session = readStoredAuth()) {
   return `${SCHEDULER_KEY}:${normalized}`;
 }
 
+function migrateLegacySchedulerStorage(scopedKey) {
+  if (localStorage.getItem(scopedKey) !== null) return;
+  const legacyRaw = localStorage.getItem(SCHEDULER_KEY);
+  if (legacyRaw === null) return;
+  try {
+    const parsed = JSON.parse(legacyRaw);
+    if (Array.isArray(parsed)) {
+      localStorage.setItem(scopedKey, JSON.stringify(parsed));
+      localStorage.removeItem(SCHEDULER_KEY);
+    }
+  } catch {
+    localStorage.removeItem(SCHEDULER_KEY);
+  }
+}
+
 function readSchedulerArray(storageKey) {
   try {
+    if (storageKey !== SCHEDULER_KEY) {
+      migrateLegacySchedulerStorage(storageKey);
+    }
     const raw = localStorage.getItem(storageKey);
     const parsed = raw ? JSON.parse(raw) : [];
     return Array.isArray(parsed) ? parsed : [];
@@ -1029,10 +1047,7 @@ function addPlanToScheduler(plan) {
   if (!plan) return;
   try {
     const storageKey = schedulerStorageKey();
-    const items = dedupeSchedulerItems([
-      ...readSchedulerArray(storageKey),
-      ...readSchedulerArray(SCHEDULER_KEY)
-    ]);
+    const items = dedupeSchedulerItems(readSchedulerArray(storageKey));
     const id = `travel-plan-${plan.id || plan.key || Date.now()}`;
     const exists = items.some((item) => item.id === id);
     if (exists) {

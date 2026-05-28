@@ -18,7 +18,7 @@ public class ApiExceptionHandler {
                 .stream()
                 .map(error -> switch (error.getField()) {
                     case "username" -> "아이디 형식이 올바르지 않습니다. 영문, 숫자, 점, 밑줄, 하이픈만 사용할 수 있으며 40자 이하여야 합니다.";
-                    case "password", "currentPassword", "newPassword" -> "비밀번호는 4자 이상 100자 이하여야 합니다.";
+                    case "password", "currentPassword", "newPassword" -> "비밀번호는 100자 이하여야 합니다.";
                     default -> error.getDefaultMessage();
                 })
                 .distinct()

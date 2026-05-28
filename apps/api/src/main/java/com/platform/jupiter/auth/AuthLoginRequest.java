@@ -10,6 +10,6 @@ public record AuthLoginRequest(
         @Pattern(regexp = "[a-zA-Z0-9._-]+", message = "username must match [a-zA-Z0-9._-]+")
         String username,
         @NotBlank
-        @Size(min = 4, max = 100)
+        @Size(max = 100)
         String password) {
 }

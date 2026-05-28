@@ -34,6 +34,12 @@ CREATE TABLE IF NOT EXISTS app_user_account (
     updated_at TIMESTAMP(6) NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS app_auth_schema_state (
+    id VARCHAR(40) NOT NULL PRIMARY KEY,
+    version INT NOT NULL,
+    updated_at TIMESTAMP(6) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS travel_region (
     region_code VARCHAR(16) NOT NULL PRIMARY KEY,
     region_name VARCHAR(80) NOT NULL,

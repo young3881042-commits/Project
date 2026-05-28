@@ -132,6 +132,14 @@
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
 }
 
+.appAuthRule {
+  margin: -4px 0 0;
+  color: #475569;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  font-weight: 800;
+}
+
 .appAuthSubmit {
   min-height: 48px;
   border: 1px solid #0f766e;

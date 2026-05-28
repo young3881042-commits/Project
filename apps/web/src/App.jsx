@@ -206,15 +206,47 @@ function readStoredAuth() {
   }
 }
 
-function schedulerStorageKey(input = readStoredAuth()) {
+function storageUsername(input = readStoredAuth()) {
   const username = typeof input === 'string' ? input : input?.username;
-  const normalized = String(username || 'guestuser').trim().toLowerCase().replace(/[^a-z0-9._-]/g, '_') || 'guestuser';
-  return `${SCHEDULER_KEY}:${normalized}`;
+  return String(username || 'guestuser').trim().toLowerCase().replace(/[^a-z0-9._-]/g, '_') || 'guestuser';
+}
+
+function userStorageKey(baseKey, input = readStoredAuth()) {
+  return `${baseKey}:${storageUsername(input)}`;
+}
+
+function migrateLegacyArrayStorage(legacyKey, scopedKey) {
+  if (legacyKey === scopedKey || localStorage.getItem(scopedKey) !== null) return;
+  const legacyRaw = localStorage.getItem(legacyKey);
+  if (legacyRaw === null) return;
+  try {
+    const parsed = JSON.parse(legacyRaw);
+    if (Array.isArray(parsed)) {
+      localStorage.setItem(scopedKey, JSON.stringify(parsed));
+      localStorage.removeItem(legacyKey);
+    }
+  } catch {
+    localStorage.removeItem(legacyKey);
+  }
+}
+
+function schedulerStorageKey(input = readStoredAuth()) {
+  return userStorageKey(SCHEDULER_KEY, input);
+}
+
+function noteBlocksStorageKey(input = readStoredAuth()) {
+  return userStorageKey(AI_NOTE_KEY, input);
+}
+
+function noteBoardsStorageKey(input = readStoredAuth()) {
+  return userStorageKey(AI_NOTE_BOARDS_KEY, input);
 }
 
 function readSchedulerItems(input) {
   try {
-    const raw = localStorage.getItem(input?.startsWith?.(SCHEDULER_KEY) ? input : schedulerStorageKey(input));
+    const storageKey = input?.startsWith?.(SCHEDULER_KEY) ? input : schedulerStorageKey(input);
+    migrateLegacyArrayStorage(SCHEDULER_KEY, storageKey);
+    const raw = localStorage.getItem(storageKey);
     if (raw === null) {
       return DEFAULT_SCHEDULER_ITEMS;
     }
@@ -236,10 +268,7 @@ function dedupeSchedulerItems(items) {
 }
 
 function readCurrentSchedulerItems(session = readStoredAuth()) {
-  return dedupeSchedulerItems([
-    ...readSchedulerItems(schedulerStorageKey(session)),
-    ...readStoredArrayByKey(SCHEDULER_KEY)
-  ]);
+  return dedupeSchedulerItems(readSchedulerItems(schedulerStorageKey(session)));
 }
 
 function normalizeSchedulerItem(item) {
@@ -366,9 +395,11 @@ function defaultMemoBoards() {
   ];
 }
 
-function readMemoBoards() {
+function readMemoBoards(input = readStoredAuth()) {
   try {
-    const raw = localStorage.getItem(AI_NOTE_BOARDS_KEY);
+    const storageKey = noteBoardsStorageKey(input);
+    migrateLegacyArrayStorage(AI_NOTE_BOARDS_KEY, storageKey);
+    const raw = localStorage.getItem(storageKey);
     if (raw === null) {
       return defaultMemoBoards();
     }
@@ -389,9 +420,11 @@ function normalizeMemoBoard(board) {
   };
 }
 
-function readNoteBlocks() {
+function readNoteBlocks(input = readStoredAuth()) {
   try {
-    const raw = localStorage.getItem(AI_NOTE_KEY);
+    const storageKey = noteBlocksStorageKey(input);
+    migrateLegacyArrayStorage(AI_NOTE_KEY, storageKey);
+    const raw = localStorage.getItem(storageKey);
     const parsed = raw ? JSON.parse(raw) : null;
     return Array.isArray(parsed) && parsed.length ? parsed.map(normalizeNoteBlock) : defaultNoteBlocks();
   } catch {
@@ -692,11 +725,27 @@ function validateAuthForm(mode, username, password) {
   if (!password.trim()) {
     return '비밀번호를 입력하세요.';
   }
+  if (mode === 'signup') {
+    return passwordPolicyError(password);
+  }
   if (password.length < 4) {
-    return '비밀번호는 4자 이상이어야 합니다.';
+    return '비밀번호를 입력하세요.';
   }
   if (password.length > 100) {
     return '비밀번호는 100자 이하여야 합니다.';
+  }
+  return '';
+}
+
+function passwordPolicyError(password) {
+  if (password.length < 8) {
+    return '비밀번호는 8자 이상이어야 합니다.';
+  }
+  if (password.length > 100) {
+    return '비밀번호는 100자 이하여야 합니다.';
+  }
+  if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+    return '비밀번호는 영문, 숫자, 특수문자를 모두 포함해야 합니다.';
   }
   return '';
 }
@@ -738,7 +787,7 @@ function AuthScreen({ mode, setMode, username, setUsername, password, setPasswor
   );
 }
 
-function authRedirectTarget(fallback = '/app') {
+function authRedirectTarget(fallback = '/scheduler') {
   const params = new URLSearchParams(window.location.search);
   const redirect = params.get('redirect') || fallback;
   if (!redirect.startsWith('/') || redirect.startsWith('//') || redirect.startsWith('/login') || redirect.startsWith('/signup')) {
@@ -753,7 +802,7 @@ function AppAuthPage({ mode, navigate }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const redirectTarget = authRedirectTarget('/app');
+  const redirectTarget = authRedirectTarget('/scheduler');
 
   useEffect(() => {
     document.title = isSignup ? '회원가입' : '로그인';
@@ -805,6 +854,7 @@ function AppAuthPage({ mode, navigate }) {
             <span>비밀번호</span>
             <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="password" autoComplete={isSignup ? 'new-password' : 'current-password'} />
           </label>
+          {isSignup ? <p className="appAuthRule">8자 이상, 영문·숫자·특수문자를 모두 포함하세요.</p> : null}
           <button type="submit" className="appAuthSubmit" disabled={loading}>
             {loading ? '처리 중...' : isSignup ? '회원가입' : '로그인'}
           </button>
@@ -963,6 +1013,7 @@ function AccountEditDialog({
             <span>New Password</span>
             <input type="password" value={newPassword} onChange={(event) => onNewPassword(event.target.value)} placeholder="새 비밀번호" />
           </label>
+          <p className="loginRule">8자 이상, 영문·숫자·특수문자를 모두 포함하세요.</p>
           <label className="loginField">
             <span>Confirm Password</span>
             <input type="password" value={confirmPassword} onChange={(event) => onConfirmPassword(event.target.value)} placeholder="새 비밀번호 확인" />
@@ -1966,8 +2017,9 @@ function WorkspaceApp({ navigate }) {
       setAccountEditError('현재 비밀번호를 입력하세요.');
       return;
     }
-    if (newPassword.length < 4) {
-      setAccountEditError('새 비밀번호는 4자 이상이어야 합니다.');
+    const passwordError = passwordPolicyError(newPassword);
+    if (passwordError) {
+      setAccountEditError(passwordError);
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -2490,6 +2542,16 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260527-auth-scheduler-user-scope',
+    content: `# 2026-05-27 로그인과 사용자별 일정/메모 정리
+
+- [x] /login과 /signup 기본 완료 이동을 /scheduler로 변경
+- [x] 앱 홈 Guest 시작도 스케줄러로 이동하게 변경
+- [x] 메모와 스케줄러 localStorage 키를 사용자별로 분리
+- [x] 기존 전역 메모/일정 키는 현재 세션 사용자 키로 1회 이관
+- [x] 회원가입과 비밀번호 변경은 8자 이상, 영문, 숫자, 특수문자 포함 규칙 적용`
+  },
+  {
     id: 'admin1-memo-20260527-notes-modal-edit-direct',
     content: `# 2026-05-27 메모 카드 편집 모달 단순화
 
@@ -2509,6 +2571,15 @@ const ADMIN1_MEMO_LOGS = [
 - [x] 닫기 X 버튼 히트박스와 헤더 버튼 정렬 보강
 - [x] 체크리스트 작성 행을 체크박스, 입력창, 삭제 버튼 한 줄로 고정
 - [x] 체크리스트 상세는 Markdown 파서 대신 읽기 전용 체크리스트 컴포넌트로 렌더링`
+  },
+  {
+    id: 'admin1-memo-20260527-port-80-default',
+    content: `# 2026-05-27 Docker 웹 포트 80 고정
+
+- [x] Docker web 컨테이너를 호스트 80/443 포트로 다시 매핑
+- [x] 다음 Codex 세션이 18000으로 검증하지 않도록 AGENTS 지침 보강
+- [x] README Docker 실행 예시를 WEB_HTTP_PORT=80 기준으로 수정
+- [x] /app과 /notes를 포트 번호 없이 80에서 확인`
   },
   {
     id: 'admin1-memo-20260527-notes-ui-polish',
@@ -2990,17 +3061,6 @@ function noteBlockFileContent(block) {
   return [`# ${title}`, '', block.content.trim()].filter(Boolean).join('\n');
 }
 
-function readStoredArrayByKey(storageKey) {
-  try {
-    const raw = localStorage.getItem(storageKey);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.map(normalizeSchedulerItem) : [];
-  } catch {
-    return [];
-  }
-}
-
 function checklistStatsForBlocks(blocks) {
   return blocks.reduce((stats, block) => {
     const checks = `${block.content || ''}`.match(/^\s*[-*]\s+\[[ xX]\]\s+/gm) || [];
@@ -3198,18 +3258,30 @@ function SpaceHomePage({ navigate }) {
   useEffect(() => {
     const refresh = () => setAppOverview(summarizeAppActivity() || EMPTY_APP_OVERVIEW);
     const handleStorage = (event) => {
+      const currentAuth = readStoredAuth();
+      const watchedKeys = [
+        AUTH_KEY,
+        AI_NOTE_KEY,
+        AI_NOTE_BOARDS_KEY,
+        noteBlocksStorageKey(currentAuth),
+        noteBoardsStorageKey(currentAuth),
+        SCHEDULER_KEY,
+        schedulerStorageKey(currentAuth)
+      ];
       if (!event.key || event.key === AUTH_KEY) {
         setSession(readStoredAuth());
       }
-      if (!event.key || [AUTH_KEY, AI_NOTE_KEY, AI_NOTE_BOARDS_KEY, SCHEDULER_KEY, schedulerStorageKey(readStoredAuth())].includes(event.key)) {
+      if (!event.key || watchedKeys.includes(event.key)) {
         refresh();
       }
     };
     window.addEventListener('storage', handleStorage);
     window.addEventListener('codex:scheduler-items-updated', refresh);
+    window.addEventListener('codex:notes-updated', refresh);
     return () => {
       window.removeEventListener('storage', handleStorage);
       window.removeEventListener('codex:scheduler-items-updated', refresh);
+      window.removeEventListener('codex:notes-updated', refresh);
     };
   }, []);
 
@@ -3226,7 +3298,7 @@ function SpaceHomePage({ navigate }) {
       localStorage.setItem(AUTH_KEY, JSON.stringify(normalized));
       setSession(normalized);
       setAppOverview(summarizeAppActivity() || EMPTY_APP_OVERVIEW);
-      navigate('/notes');
+      navigate('/scheduler');
     } catch (error) {
       setAccountError(error.message || '게스트 세션을 만들 수 없습니다.');
     } finally {
@@ -3265,7 +3337,7 @@ function SpaceHomePage({ navigate }) {
               <button
                 type="button"
                 className={`spaceAccountChoice member${accountMode === 'member' ? ' active' : ''}`}
-                onClick={() => navigate('/login?redirect=/app')}
+                onClick={() => navigate('/login?redirect=/scheduler')}
               >
                 <span>Member</span>
                 <strong>회원으로 계속</strong>
@@ -3328,8 +3400,11 @@ function SpaceHomePage({ navigate }) {
 }
 
 function AiNotePage({ navigate }) {
-  const [boards, setBoards] = useState(readMemoBoards);
-  const [blocks, setBlocks] = useState(readNoteBlocks);
+  const session = readStoredAuth();
+  const noteBlocksKey = noteBlocksStorageKey(session);
+  const noteBoardsKey = noteBoardsStorageKey(session);
+  const [boards, setBoards] = useState(() => readMemoBoards(session));
+  const [blocks, setBlocks] = useState(() => readNoteBlocks(session));
   const [activeId, setActiveId] = useState('');
   const [workspaceMode, setWorkspaceMode] = useState('board');
   const [noteContentOpen, setNoteContentOpen] = useState(true);
@@ -3349,20 +3424,23 @@ function AiNotePage({ navigate }) {
   const [editingBoardId, setEditingBoardId] = useState('');
   const [memoWindowOpen, setMemoWindowOpen] = useState(false);
   const [memoComposerMode, setMemoComposerMode] = useState('edit');
-  const session = readStoredAuth();
 
   useEffect(() => {
     document.title = '메모';
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(AI_NOTE_KEY, JSON.stringify(blocks));
+    localStorage.setItem(noteBlocksKey, JSON.stringify(blocks));
+    localStorage.removeItem(AI_NOTE_KEY);
+    window.dispatchEvent(new CustomEvent('codex:notes-updated', { detail: { storageKey: noteBlocksKey } }));
     setSyncCount(syncNoteSchedules(blocks));
-  }, [blocks]);
+  }, [blocks, noteBlocksKey]);
 
   useEffect(() => {
-    localStorage.setItem(AI_NOTE_BOARDS_KEY, JSON.stringify(boards));
-  }, [boards]);
+    localStorage.setItem(noteBoardsKey, JSON.stringify(boards));
+    localStorage.removeItem(AI_NOTE_BOARDS_KEY);
+    window.dispatchEvent(new CustomEvent('codex:notes-updated', { detail: { storageKey: noteBoardsKey } }));
+  }, [boards, noteBoardsKey]);
 
   useEffect(() => {
     if (session?.username !== 'admin1') return;
