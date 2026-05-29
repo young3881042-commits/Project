@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="720" viewBox="0 0 1120 720" role="img" aria-labelledby="title desc">
+  <title id="title">메모 일정 연동 컷툰</title>
+  <desc id="desc">메모 작성, 일정 켜기, 날짜와 시간 선택, 내 일정 확인 흐름을 안내하는 로봇 컷툰</desc>
+  <defs>
+    <clipPath id="robotClip">
+      <rect x="46" y="86" width="430" height="560" rx="28" />
+    </clipPath>
+    <filter id="panelShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#0f172a" flood-opacity="0.14" />
+    </filter>
+    <style>
+      .panel { fill: #ffffff; stroke: #111827; stroke-width: 5; }
+      .caption { font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif; fill: #0f172a; font-weight: 900; }
+      .body { font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif; fill: #334155; font-weight: 800; }
+      .tag { font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif; fill: #2563eb; font-weight: 900; }
+      .step { font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif; fill: #ffffff; font-weight: 950; }
+    </style>
+  </defs>
+  <rect width="1120" height="720" rx="36" fill="#f8fafc" />
+  <path d="M0 120h1120M0 360h1120M560 0v720" stroke="#e2e8f0" stroke-width="2" opacity="0.75" />
+  <g filter="url(#panelShadow)">
+    <rect class="panel" x="32" y="32" width="468" height="656" rx="30" />
+    <rect class="panel" x="528" y="32" width="560" height="204" rx="26" />
+    <rect class="panel" x="528" y="260" width="560" height="196" rx="26" />
+    <rect class="panel" x="528" y="480" width="560" height="208" rx="26" />
+  </g>
+  <image href="robot-guide.png" x="-28" y="64" width="550" height="550" clip-path="url(#robotClip)" preserveAspectRatio="xMidYMid slice" />
+  <path d="M362 104c54-50 126-24 134 38 8 64-48 112-128 98l-54 38 18-62c-38-26-36-76 30-112z" fill="#ffffff" stroke="#111827" stroke-width="5" />
+  <text class="caption" x="354" y="156" font-size="38">메모가</text>
+  <text class="caption" x="354" y="205" font-size="38">일정으로!</text>
+  <rect x="76" y="596" width="374" height="48" rx="18" fill="#111827" />
+  <text class="step" x="106" y="628" font-size="24">로봇이 한 화면에서 알려드려요</text>
+
+  <rect x="556" y="60" width="72" height="72" rx="20" fill="#2563eb" />
+  <text class="step" x="580" y="107" font-size="34">1</text>
+  <text class="caption" x="654" y="94" font-size="34">메모 작성</text>
+  <text class="body" x="654" y="138" font-size="25">생각이나 할 일을 메모에 적어요.</text>
+  <rect x="654" y="164" width="310" height="42" rx="14" fill="#eff6ff" stroke="#bfdbfe" stroke-width="2" />
+  <text class="tag" x="678" y="193" font-size="22">제목과 내용을 자유롭게 기록</text>
+
+  <rect x="556" y="288" width="72" height="72" rx="20" fill="#0f766e" />
+  <text class="step" x="580" y="335" font-size="34">2</text>
+  <text class="caption" x="654" y="322" font-size="34">일정 켜기</text>
+  <text class="body" x="654" y="366" font-size="25">글 안에 날짜를 쓰지 않고</text>
+  <text class="body" x="654" y="403" font-size="25">날짜와 시간을 직접 고릅니다.</text>
+  <rect x="904" y="301" width="132" height="52" rx="18" fill="#ecfdf5" stroke="#99f6e4" stroke-width="3" />
+  <text class="tag" x="930" y="335" font-size="24" fill="#0f766e">일정 ON</text>
+  <rect x="904" y="370" width="132" height="52" rx="18" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" />
+  <text class="body" x="920" y="404" font-size="23">날짜 선택</text>
+
+  <rect x="556" y="508" width="72" height="72" rx="20" fill="#7c3aed" />
+  <text class="step" x="580" y="555" font-size="34">3</text>
+  <text class="caption" x="654" y="542" font-size="34">내 일정에서 확인</text>
+  <text class="body" x="654" y="586" font-size="25">저장하면 스케줄러에 바로 보이고,</text>
+  <text class="body" x="654" y="623" font-size="25">일정에서 원본 메모로 돌아갈 수 있어요.</text>
+  <path d="M980 545h60v80h-92v-56h32z" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="3" />
+  <path d="M980 545v24h24" fill="none" stroke="#7c3aed" stroke-width="3" />
+  <path d="M974 594h42M974 614h30" stroke="#7c3aed" stroke-width="4" stroke-linecap="round" />
+</svg>

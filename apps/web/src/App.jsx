@@ -296,6 +296,17 @@ function normalizeSchedulerItem(item) {
   };
 }
 
+function isDateKey(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(`${value || ''}`)) return false;
+  const [year, month, day] = `${value}`.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+}
+
+function isTimeKey(value) {
+  return /^([01]\d|2[0-3]):([0-5]\d)$/.test(`${value || ''}`);
+}
+
 function toDateKey(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -434,6 +445,25 @@ function normalizeMemoBoard(board) {
   };
 }
 
+function legacyScheduleFromContent(content) {
+  const plain = plainMarkdownText(content || '');
+  const dateMatch = plain.match(/#(\d{4}-\d{2}-\d{2})/);
+  const timeMatch = plain.match(/\b([01]\d|2[0-3]):([0-5]\d)\b/);
+  return {
+    date: dateMatch?.[1] || '',
+    time: timeMatch ? timeMatch[0] : ''
+  };
+}
+
+function normalizeNoteSchedule(schedule, block) {
+  const hasSchedule = schedule && typeof schedule === 'object';
+  const legacy = hasSchedule ? { date: '', time: '' } : legacyScheduleFromContent(block?.content || '');
+  const enabled = hasSchedule ? Boolean(schedule.enabled) : Boolean(block?.type === 'schedule' || legacy.date);
+  const date = isDateKey(schedule?.date) ? schedule.date : legacy.date || toDateKey(new Date());
+  const time = isTimeKey(schedule?.time) ? schedule.time : legacy.time || '09:00';
+  return { enabled, date, time };
+}
+
 function readNoteBlocks(input = readStoredAuth()) {
   try {
     const storageKey = noteBlocksStorageKey(input);
@@ -465,7 +495,8 @@ function normalizeNoteBlock(block) {
     width: projectBlock ? Math.max(160, Math.min(520, Number(block?.width) || 220)) : Math.max(260, Math.min(920, Number(block?.width) || 760)),
     height: projectBlock ? Math.max(96, Math.min(360, Number(block?.height) || 120)) : Math.max(48, Math.min(180, Number(block?.height) || 58)),
     x: projectBlock ? 0 : Math.max(0, Math.min(1600, Number(block?.x) || fallbackX)),
-    y: projectBlock ? 0 : Math.max(0, Math.min(1600, Number(block?.y) || fallbackY))
+    y: projectBlock ? 0 : Math.max(0, Math.min(1600, Number(block?.y) || fallbackY)),
+    schedule: normalizeNoteSchedule(block?.schedule, block)
   };
 }
 
@@ -555,35 +586,47 @@ function noteScheduleSource(block) {
 }
 
 function blockHasScheduleMarker(block) {
-  return block?.type === 'schedule' || /#\d{4}-\d{2}-\d{2}/.test(block?.content || '');
+  return Boolean(block?.schedule?.enabled);
 }
 
 function parseNoteScheduleBlock(block) {
   const source = noteScheduleSource(block);
-  const content = plainMarkdownText(block.content);
-  if (!content) return null;
-  const dateMatch = content.match(/#(\d{4}-\d{2}-\d{2})/);
-  const timeMatch = content.match(/\b([01]\d|2[0-3]):([0-5]\d)\b/);
-  const date = dateMatch?.[1] || toDateKey(new Date());
-  const time = timeMatch ? timeMatch[0] : '09:00';
-  const title = content
+  const schedule = normalizeNoteSchedule(block.schedule, block);
+  if (!schedule.enabled) return null;
+  const title = noteBlockTitle(block)
     .replace(/#\d{4}-\d{2}-\d{2}/g, '')
     .replace(/\b([01]\d|2[0-3]):([0-5]\d)\b/, '')
     .replace(/^일정\s*[:：-]?/i, '')
     .trim();
   if (!title) return null;
+  const boardId = block.boardId || block.sector || 'memo';
   return {
     id: `${source === '프로젝트' ? 'project-note' : 'ai-note'}-${block.id}`,
     title,
-    date,
-    time,
+    date: schedule.date,
+    time: schedule.time,
     type: source === '프로젝트' ? '업무' : '메모',
-    memo: block.content.trim(),
+    memo: noteBlockBody(block).trim() || block.content.trim(),
     recurrence: 'none',
     recurrenceEnd: '',
     source,
+    origin: {
+      kind: 'note',
+      blockId: block.id,
+      boardId,
+      path: `/notes?board=${encodeURIComponent(boardId)}&block=${encodeURIComponent(block.id)}`
+    },
     done: false
   };
+}
+
+function schedulerItemSourcePath(item) {
+  if (item?.origin?.path) return item.origin.path;
+  if (item?.origin?.kind === 'note' && item.origin.blockId) {
+    const boardId = item.origin.boardId || 'memo';
+    return `/notes?board=${encodeURIComponent(boardId)}&block=${encodeURIComponent(item.origin.blockId)}`;
+  }
+  return '';
 }
 
 function syncNoteSchedules(blocks) {
@@ -2565,6 +2608,14 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260529-memo-schedule-picker-cuttoon',
+    content: `# 2026-05-29 메모 일정 선택과 로봇 컷툰 안내
+
+- [x] 메모 작성창에 일정 항목을 추가하고 날짜/시간 선택으로 스케줄러에 연동
+- [x] 스케줄러의 메모 연동 일정에서 원본 메모로 돌아가는 버튼 추가
+- [x] 앱 홈 로봇 안내를 설명이 이미지 안에 들어간 컷툰형 자산으로 교체`
+  },
+  {
     id: 'admin1-memo-20260528-robot-guide-meme',
     content: `# 2026-05-28 앱 홈 로봇 가이드 이미지 추가
 
@@ -3302,7 +3353,6 @@ function SpaceHomePage({ navigate }) {
   const heroLead = isMemberSession
     ? `${session.username}님, 반갑습니다. 오늘도 스마트한 하루를 기록해 보세요.`
     : '메모부터 여행 계획까지, 가볍게 정리해 보세요.';
-  const guideScheduleExample = `#${toDateKey(new Date())} 09:00`;
 
   useEffect(() => {
     document.title = '개인 앱 홈';
@@ -3395,29 +3445,17 @@ function SpaceHomePage({ navigate }) {
               {accountError ? <p className="spaceAccountNotice">{accountError}</p> : null}
             </div>
           ) : null}
-          <section className="robotGuideMeme" aria-label="로봇 사용 안내">
-            <div className="robotGuideImageWrap">
-              <img src="/robot-guide.png" alt="로봇 안내 캐릭터" />
-            </div>
-            <div className="robotGuideBubble">
-              <span>Robot Guide</span>
-              <strong>메모를 남기고, 날짜를 붙이면 일정으로 이어져요.</strong>
-              <p>프로젝트 카드에 {guideScheduleExample}처럼 적으면 스케줄러에 업무 일정으로 보여요.</p>
-              <div className="robotGuideSteps">
-                <em>1. 메모 작성</em>
-                <em>2. 날짜/시간 추가</em>
-                <em>3. 일정에서 확인</em>
-              </div>
-              <div className="robotGuideActions">
-                <button type="button" onClick={() => navigate('/notes')}>
-                  <MemoNavIcon type="board" />
-                  메모/프로젝트
-                </button>
-                <button type="button" onClick={() => navigate('/scheduler')}>
-                  <MemoNavIcon type="calendar" />
-                  일정 보기
-                </button>
-              </div>
+          <section className="robotGuideMeme cuttoon" aria-label="로봇 사용 안내 컷툰">
+            <img className="robotGuideCuttoonImage" src="/robot-guide-cuttoon.svg" alt="메모 작성, 일정 켜기, 날짜와 시간 선택, 내 일정 확인 순서 안내" />
+            <div className="robotGuideActions">
+              <button type="button" onClick={() => navigate('/notes')} aria-label="메모 열기">
+                <MemoNavIcon type="board" />
+                메모
+              </button>
+              <button type="button" onClick={() => navigate('/scheduler')} aria-label="일정 보기">
+                <MemoNavIcon type="calendar" />
+                일정
+              </button>
             </div>
           </section>
         </div>
@@ -3477,6 +3515,11 @@ function AiNotePage({ navigate }) {
   const session = readStoredAuth();
   const noteBlocksKey = noteBlocksStorageKey(session);
   const noteBoardsKey = noteBoardsStorageKey(session);
+  const routeTargetRef = useRef({
+    applied: false,
+    boardId: new URLSearchParams(window.location.search).get('board') || '',
+    blockId: new URLSearchParams(window.location.search).get('block') || ''
+  });
   const [boards, setBoards] = useState(() => readMemoBoards(session));
   const [blocks, setBlocks] = useState(() => readNoteBlocks(session));
   const [activeId, setActiveId] = useState('');
@@ -3491,7 +3534,7 @@ function AiNotePage({ navigate }) {
   const movedBlockRef = useRef(false);
   const movedBlockResetTimerRef = useRef(null);
   const [contextMenu, setContextMenu] = useState(null);
-  const [activeBoardId, setActiveBoardId] = useState('memo');
+  const [activeBoardId, setActiveBoardId] = useState(routeTargetRef.current.boardId || 'memo');
   const [memoActiveLine, setMemoActiveLine] = useState(null);
   const [editingBlockId, setEditingBlockId] = useState('');
   const [editingTitleId, setEditingTitleId] = useState('');
@@ -3575,6 +3618,23 @@ function AiNotePage({ navigate }) {
       setActiveId((firstBoardBlock || blocks[0]).id);
     }
   }, [activeBoardId, activeId, blocks]);
+
+  useEffect(() => {
+    const target = routeTargetRef.current;
+    if (target.applied || !target.blockId) return;
+    const targetBlock = blocks.find((block) => block.id === target.blockId);
+    if (!targetBlock) return;
+    target.applied = true;
+    setActiveBoardId(target.boardId || targetBlock.boardId || targetBlock.sector || 'memo');
+    setActiveId(targetBlock.id);
+    setNoteContentOpen(true);
+    setMemoWindowOpen(true);
+    setEditingBlockId(targetBlock.id);
+    setEditingTitleId('');
+    setMemoActiveLine(null);
+    setMemoComposerMode('edit');
+    setFileStatus(`${noteBlockTitle(targetBlock)} 메모를 열었습니다.`);
+  }, [blocks]);
 
   const addBoard = () => {
     const nextIndex = boards.length + 1;
@@ -3669,6 +3729,20 @@ function AiNotePage({ navigate }) {
 
   const updateActiveBlockContent = (id, content) => {
     updateBlock(id, { content });
+  };
+
+  const updateBlockSchedule = (block, patch) => {
+    if (!block) return;
+    const current = normalizeNoteSchedule(block.schedule, block);
+    updateBlock(block.id, {
+      schedule: {
+        ...current,
+        ...patch,
+        enabled: Object.prototype.hasOwnProperty.call(patch, 'enabled') ? Boolean(patch.enabled) : current.enabled,
+        date: isDateKey(patch.date) ? patch.date : current.date,
+        time: isTimeKey(patch.time) ? patch.time : current.time
+      }
+    });
   };
 
   const applyMarkdownTool = (block, tool) => {
@@ -3995,6 +4069,15 @@ function AiNotePage({ navigate }) {
       </div>
     );
   };
+  const renderScheduleChip = (block, className = 'memoScheduleCardMeta') => {
+    const schedule = normalizeNoteSchedule(block.schedule, block);
+    return schedule.enabled ? (
+      <small className={className}>
+        <MemoNavIcon type="calendar" />
+        <span>{schedule.date} {schedule.time}</span>
+      </small>
+    ) : null;
+  };
   const renderBoardCard = (block) => (
     <article
       className={`projectTaskCard memoBoardCard ${activeId === block.id ? 'active' : ''} ${draggingBlockId === block.id ? 'dragging' : ''}`}
@@ -4049,6 +4132,7 @@ function AiNotePage({ navigate }) {
         ::
       </button>
       {renderCardTitle(block)}
+      {renderScheduleChip(block)}
       {block.type === 'checklist' ? (
         <small className="memoChecklistCardMeta">
           {checklistItemsFromBlock(block).filter((item) => item.checked).length}/{checklistItemsFromBlock(block).length} 완료
@@ -4071,6 +4155,7 @@ function AiNotePage({ navigate }) {
       onClick={() => beginBlockEdit(block)}
     >
       {renderCardTitle(block)}
+      {renderScheduleChip(block)}
       {block.type === 'checklist' ? (
         <small className="memoChecklistCardMeta">
           {checklistItemsFromBlock(block).filter((item) => item.checked).length}/{checklistItemsFromBlock(block).length} 완료
@@ -4078,6 +4163,41 @@ function AiNotePage({ navigate }) {
       ) : null}
     </article>
   );
+  const renderSchedulePicker = (block) => {
+    const schedule = normalizeNoteSchedule(block.schedule, block);
+    return (
+      <section className={`memoSchedulePicker ${schedule.enabled ? 'enabled' : ''}`} aria-label="메모 일정">
+        <label className="memoScheduleToggle">
+          <input
+            type="checkbox"
+            checked={schedule.enabled}
+            onChange={(event) => updateBlockSchedule(block, { enabled: event.target.checked })}
+          />
+          <span>일정</span>
+        </label>
+        <div className="memoScheduleFields">
+          <label>
+            <span>날짜</span>
+            <input
+              type="date"
+              value={schedule.date}
+              disabled={!schedule.enabled}
+              onChange={(event) => updateBlockSchedule(block, { date: event.target.value })}
+            />
+          </label>
+          <label>
+            <span>시간</span>
+            <input
+              type="time"
+              value={schedule.time}
+              disabled={!schedule.enabled}
+              onChange={(event) => updateBlockSchedule(block, { time: event.target.value })}
+            />
+          </label>
+        </div>
+      </section>
+    );
+  };
   const renderChecklistEditor = (block) => {
     const items = checklistItemsFromBlock(block);
     const updateChecklistItems = (nextItems) => {
@@ -4261,19 +4381,20 @@ function AiNotePage({ navigate }) {
             >
               <header>
                 <div>
-                  {editingBlockId === activeBlock.id ? (
-                    <input
-                      value={noteBlockTitle(activeBlock)}
-                      onChange={(event) => updateBlockTitle(activeBlock, event.target.value)}
-                      aria-label="메모 제목"
-                    />
-                  ) : (
-                    <button type="button" className="memoInlineTitleButton" onClick={() => openBlockFile(activeBlock)}>
-                      {noteBlockTitle(activeBlock)}
-                    </button>
-                  )}
-                </div>
-                <div className="memoInlineTools">
+	                  {editingBlockId === activeBlock.id ? (
+	                    <input
+	                      value={noteBlockTitle(activeBlock)}
+	                      onChange={(event) => updateBlockTitle(activeBlock, event.target.value)}
+	                      aria-label="메모 제목"
+	                    />
+	                  ) : (
+	                    <button type="button" className="memoInlineTitleButton" onClick={() => openBlockFile(activeBlock)}>
+	                      {noteBlockTitle(activeBlock)}
+	                    </button>
+	                  )}
+	                  {renderScheduleChip(activeBlock, 'memoScheduleInlineChip')}
+	                </div>
+	                <div className="memoInlineTools">
                   {editingBlockId === activeBlock.id ? (
                     <button type="button" className="active" onClick={finishBlockEdit}>완료</button>
                   ) : (
@@ -4286,10 +4407,11 @@ function AiNotePage({ navigate }) {
                   ) : null}
                   <button type="button" className="memoDangerButton compact" onClick={() => deleteBlock(activeBlock.id)}>삭제</button>
                 </div>
-              </header>
-              {editingBlockId === activeBlock.id ? (
-                <div className="memoMarkdownComposer">
-                  {activeBlock.type === 'checklist' ? renderChecklistEditor(activeBlock) : (
+	              </header>
+	              {editingBlockId === activeBlock.id ? (
+	                <div className="memoMarkdownComposer">
+	                  {renderSchedulePicker(activeBlock)}
+	                  {activeBlock.type === 'checklist' ? renderChecklistEditor(activeBlock) : (
                     <>
                       <div className="memoMarkdownComposerHeader">
                         <div className="memoComposerTabs" role="tablist" aria-label="메모 작성 보기">
@@ -4837,18 +4959,24 @@ function SchedulerPage({ navigate, embedded = false }) {
               <span>메모</span>
               <span />
             </div>
-            {visibleItems.map((item) => (
-              <article className={`schedulerItem ${item.done ? 'done' : ''}`} key={item.id}>
-                <div className="schedulerNameCell">
-                  <button type="button" className="schedulerCheck" onClick={() => updateVisibleItem(item, { done: !item.done })}>{item.done ? '✓' : ''}</button>
-                  <strong>{item.title}</strong>
-                </div>
-                <span className="schedulerTypePill">{item.type}</span>
-                <time>{item.date} · {item.time}</time>
-                <small>{[item.memo || '메모 없음', item.recurring ? item.recurrenceLabel : ''].filter(Boolean).join(' · ')}</small>
-                <button type="button" className="schedulerDelete" onClick={() => deleteVisibleItem(item)}>{item.recurring ? '반복삭제' : '삭제'}</button>
-              </article>
-            ))}
+            {visibleItems.map((item) => {
+              const sourcePath = schedulerItemSourcePath(item);
+              return (
+                <article className={`schedulerItem ${item.done ? 'done' : ''}`} key={item.id}>
+                  <div className="schedulerNameCell">
+                    <button type="button" className="schedulerCheck" onClick={() => updateVisibleItem(item, { done: !item.done })}>{item.done ? '✓' : ''}</button>
+                    <strong>{item.title}</strong>
+                  </div>
+                  <span className="schedulerTypePill">{item.type}</span>
+                  <time>{item.date} · {item.time}</time>
+                  <small>{[item.memo || '메모 없음', item.recurring ? item.recurrenceLabel : ''].filter(Boolean).join(' · ')}</small>
+                  <div className="schedulerActionsCell">
+                    {sourcePath ? <button type="button" className="schedulerSourceLink" onClick={() => navigate(sourcePath)}>메모</button> : null}
+                    <button type="button" className="schedulerDelete" onClick={() => deleteVisibleItem(item)}>{item.recurring ? '반복삭제' : '삭제'}</button>
+                  </div>
+                </article>
+              );
+            })}
             {visibleItems.length ? null : <p className="schedulerEmpty">이 날은 비어 있어요. 하고 싶은 일을 하나 적어보세요.</p>}
           </div>
         </section>
