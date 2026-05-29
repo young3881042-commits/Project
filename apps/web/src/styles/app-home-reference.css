@@ -1,0 +1,652 @@
+/* 2026-05-29 /app home aligned to the 11.png reference. */
+.referenceHome {
+  min-height: 100svh !important;
+  display: block !important;
+  overflow-x: hidden !important;
+  color: #111827 !important;
+  background:
+    radial-gradient(circle at 82% 8%, rgba(125, 211, 252, 0.22), transparent 24%),
+    linear-gradient(180deg, #f8fcff 0%, #eef8ff 48%, #f7fbff 100%) !important;
+}
+
+.referenceHome::before {
+  content: "" !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.18) 52%, rgba(59, 130, 246, 0.06)),
+    repeating-linear-gradient(90deg, rgba(15, 23, 42, 0.028) 0 1px, transparent 1px 96px),
+    repeating-linear-gradient(0deg, rgba(15, 23, 42, 0.022) 0 1px, transparent 1px 96px) !important;
+}
+
+.spaceAppFrame {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 32px, 860px);
+  margin: 0 auto;
+  padding: clamp(28px, 5vw, 60px) 0 34px;
+}
+
+.spaceAppIntro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(132px, 22vw, 218px);
+  gap: clamp(14px, 4vw, 34px);
+  align-items: end;
+  margin: 0 0 18px;
+}
+
+.spaceAppTitle {
+  position: relative;
+  min-width: 0;
+  padding: 4px 0 10px;
+}
+
+.spaceAppTitle::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  bottom: -4px;
+  width: min(310px, 72vw);
+  height: 24px;
+  border-bottom: 5px solid rgba(45, 212, 191, 0.42);
+  border-radius: 50%;
+  transform: rotate(2deg);
+}
+
+.spaceAppTitle h1 {
+  margin: 0;
+  color: #111c35;
+  font-size: clamp(2rem, 6.2vw, 4.15rem);
+  line-height: 1.26;
+  font-weight: 950;
+  letter-spacing: 0;
+  overflow-wrap: keep-all;
+  word-break: keep-all;
+}
+
+.spaceMascot {
+  position: relative;
+  align-self: end;
+  aspect-ratio: 1;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.spaceMascot::before,
+.spaceMascot::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  border-radius: 999px;
+  background: rgba(96, 165, 250, 0.28);
+}
+
+.spaceMascot::before {
+  width: 14px;
+  height: 40px;
+  right: 16%;
+  top: 8%;
+  transform: rotate(45deg);
+}
+
+.spaceMascot::after {
+  width: 22px;
+  height: 22px;
+  left: 8%;
+  top: 18%;
+  box-shadow: 48px -26px 0 rgba(45, 212, 191, 0.36), 92px 10px 0 rgba(250, 204, 21, 0.42);
+}
+
+.spaceMascot img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: 52% 16%;
+  transform: scale(1.62) translateY(14%);
+}
+
+.spaceMainPanel {
+  display: grid;
+  gap: 18px;
+}
+
+.referenceHome .spaceAccountWindow,
+.spaceMemberWindow {
+  width: 100% !important;
+  display: grid;
+  gap: 14px;
+  margin: 0 !important;
+  padding: clamp(14px, 3vw, 22px) !important;
+  border: 1px solid rgba(226, 232, 240, 0.96) !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.09) !important;
+  backdrop-filter: blur(18px);
+}
+
+.referenceHome .spaceAccountHead {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+.referenceHome .spaceAccountHead span,
+.spaceMemberWindow span {
+  min-height: 34px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0 14px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  font-size: 0.92rem !important;
+  font-weight: 900 !important;
+}
+
+.referenceHome .spaceAccountHead strong {
+  position: relative;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #17223b !important;
+  font-size: 1rem !important;
+  font-weight: 850 !important;
+  text-align: right !important;
+}
+
+.referenceHome .spaceAccountHead strong::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #5eead4;
+}
+
+.referenceHome .spaceAccountChoices {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+
+.referenceHome .spaceAccountChoice {
+  position: relative;
+  min-height: 150px !important;
+  display: grid !important;
+  align-content: center !important;
+  gap: 12px !important;
+  padding: 24px 28px !important;
+  border: 2px solid rgba(203, 213, 225, 0.72) !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: #101827 !important;
+  text-align: left !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.referenceHome .spaceAccountChoice.guest {
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.86), rgba(255, 255, 255, 0.96)) !important;
+}
+
+.referenceHome .spaceAccountChoice.active {
+  border-color: rgba(16, 185, 129, 0.64) !important;
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.98), rgba(255, 255, 255, 0.92)) !important;
+}
+
+.referenceHome .spaceAccountChoice.active::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  background: #10b981;
+  box-shadow: 0 10px 24px rgba(16, 185, 129, 0.24);
+}
+
+.referenceHome .spaceAccountChoice.active::before {
+  content: "";
+  position: absolute;
+  right: 32px;
+  top: 29px;
+  z-index: 1;
+  width: 18px;
+  height: 11px;
+  border-left: 4px solid #ffffff;
+  border-bottom: 4px solid #ffffff;
+  transform: rotate(-45deg);
+}
+
+.referenceHome .spaceAccountChoice span {
+  width: fit-content !important;
+  min-height: 34px !important;
+  padding: 0 14px !important;
+  border-radius: 8px !important;
+  background: #dffcf2 !important;
+  color: #0f766e !important;
+  font-size: 1rem !important;
+  font-weight: 900 !important;
+}
+
+.referenceHome .spaceAccountChoice.member span {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+}
+
+.referenceHome .spaceAccountChoice strong {
+  max-width: calc(100% - 44px);
+  color: #111827 !important;
+  font-size: clamp(1.25rem, 3vw, 1.82rem) !important;
+  line-height: 1.18 !important;
+  font-weight: 950 !important;
+}
+
+.referenceHome .spaceAccountChoice small {
+  color: #475569 !important;
+  font-size: clamp(0.92rem, 2vw, 1.08rem) !important;
+  line-height: 1.42 !important;
+  font-weight: 800 !important;
+}
+
+.spaceMemberWindow {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.spaceMemberWindow div {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.spaceMemberWindow strong {
+  color: #111827;
+  font-size: clamp(1.14rem, 3vw, 1.45rem);
+  line-height: 1.28;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.spaceMemberWindow button {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(37, 99, 235, 0.26);
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.referenceHome .robotGuideMeme.cuttoon {
+  width: 100% !important;
+  max-width: none !important;
+  display: block !important;
+  justify-self: stretch !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.referenceHome .robotGuideCuttoonImage {
+  width: 100% !important;
+  display: block !important;
+  height: auto !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  box-shadow: 0 22px 52px rgba(15, 23, 42, 0.09) !important;
+}
+
+.spaceHomeTabs {
+  min-height: 78px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid rgba(226, 232, 240, 0.96);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.07);
+}
+
+.spaceHomeTabs button,
+.spaceLaunchCard {
+  min-width: 0;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.spaceHomeTabs button {
+  min-height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.spaceHomeTabs button.active {
+  color: #0f766e;
+}
+
+.spaceHomeTabs button:nth-child(2) {
+  color: #2563eb;
+}
+
+.spaceHomeTabs .memoNavIcon {
+  width: 30px;
+  height: 30px;
+}
+
+.spaceLaunchGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.spaceLaunchCard {
+  position: relative;
+  min-height: 98px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  gap: 4px 14px;
+  align-items: center;
+  padding: 18px 22px;
+  border: 1px solid rgba(203, 213, 225, 0.84);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #0f172a;
+  text-align: left;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.07);
+}
+
+.spaceLaunchCard::after {
+  content: "";
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  width: 14px;
+  height: 14px;
+  border-right: 4px solid currentColor;
+  border-bottom: 4px solid currentColor;
+  opacity: 0.42;
+  transform: rotate(-45deg);
+}
+
+.spaceLaunchCard > span {
+  grid-row: 1 / span 2;
+  width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #d1fae5;
+  color: #0f766e;
+}
+
+.spaceLaunchCard.schedule > span {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.spaceLaunchCard strong {
+  min-width: 0;
+  color: currentColor;
+  font-size: clamp(1.28rem, 3vw, 1.6rem);
+  line-height: 1.1;
+  font-weight: 950;
+}
+
+.spaceLaunchCard small {
+  min-width: 0;
+  color: #64748b;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.spaceLaunchCard.memo {
+  color: #0f766e;
+  border-color: rgba(16, 185, 129, 0.28);
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.94), rgba(255, 255, 255, 0.96));
+}
+
+.spaceLaunchCard.schedule {
+  color: #2563eb;
+  border-color: rgba(37, 99, 235, 0.22);
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.94), rgba(255, 255, 255, 0.96));
+}
+
+.spaceHomeTabs button:hover,
+.spaceLaunchCard:hover,
+.spaceMemberWindow button:hover,
+.referenceHome .spaceAccountChoice:hover {
+  transform: translateY(-1px);
+}
+
+.referenceHome .memoNavIcon {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 720px) {
+  .spaceAppFrame {
+    width: min(100% - 22px, 520px);
+    padding: 28px 0 24px;
+  }
+
+  .spaceAppIntro {
+    grid-template-columns: minmax(0, 1fr) 122px;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .spaceAppTitle h1 {
+    font-size: clamp(1.86rem, 9vw, 2.78rem);
+  }
+
+  .spaceMascot {
+    align-self: center;
+  }
+
+  .spaceMainPanel {
+    gap: 14px;
+  }
+
+  .referenceHome .spaceAccountChoices,
+  .spaceLaunchGrid {
+    gap: 12px !important;
+  }
+
+  .referenceHome .spaceAccountChoice {
+    min-height: 112px !important;
+    padding: 18px 16px !important;
+  }
+
+  .referenceHome .spaceAccountChoice.active::after {
+    width: 38px;
+    height: 38px;
+    right: 12px;
+    top: 12px;
+  }
+
+  .referenceHome .spaceAccountChoice.active::before {
+    right: 24px;
+    top: 22px;
+    width: 15px;
+    height: 9px;
+    border-left-width: 3px;
+    border-bottom-width: 3px;
+  }
+
+  .referenceHome .spaceAccountChoice span {
+    min-height: 29px !important;
+    padding: 0 11px !important;
+    font-size: 0.86rem !important;
+  }
+
+  .referenceHome .spaceAccountChoice strong {
+    font-size: 1.22rem !important;
+  }
+
+  .referenceHome .spaceAccountChoice small {
+    font-size: 0.88rem !important;
+  }
+
+  .spaceHomeTabs {
+    min-height: 66px;
+    padding: 7px 10px;
+  }
+
+  .spaceHomeTabs button {
+    min-height: 48px;
+    font-size: 0.92rem;
+  }
+
+  .spaceHomeTabs .memoNavIcon {
+    width: 25px;
+    height: 25px;
+  }
+
+  .spaceLaunchCard {
+    min-height: 84px;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    gap: 3px 11px;
+    padding: 14px;
+  }
+
+  .spaceLaunchCard > span {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (max-width: 460px) {
+  .spaceAppFrame {
+    width: min(100% - 18px, 420px);
+  }
+
+  .spaceAppIntro {
+    grid-template-columns: minmax(0, 1fr) 96px;
+    align-items: end;
+  }
+
+  .spaceAppTitle h1 {
+    font-size: clamp(1.62rem, 9.2vw, 2.18rem);
+  }
+
+  .spaceAppTitle::after {
+    width: min(220px, 64vw);
+    height: 18px;
+    border-bottom-width: 4px;
+  }
+
+  .referenceHome .spaceAccountHead {
+    align-items: center !important;
+    flex-direction: row !important;
+  }
+
+  .referenceHome .spaceAccountHead strong {
+    font-size: 0.88rem !important;
+  }
+
+  .referenceHome .spaceAccountChoices,
+  .spaceLaunchGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .referenceHome .spaceAccountChoice {
+    min-height: 108px !important;
+    gap: 7px !important;
+    padding: 14px 12px !important;
+  }
+
+  .referenceHome .spaceAccountChoice strong {
+    max-width: 100%;
+    padding-right: 26px;
+    font-size: 1rem !important;
+  }
+
+  .referenceHome .spaceAccountChoice small {
+    font-size: 0.76rem !important;
+  }
+
+  .referenceHome .spaceAccountChoice.active::after {
+    width: 30px;
+    height: 30px;
+    right: 8px;
+    top: 8px;
+  }
+
+  .referenceHome .spaceAccountChoice.active::before {
+    right: 18px;
+    top: 16px;
+    width: 11px;
+    height: 7px;
+  }
+
+  .spaceMemberWindow {
+    grid-template-columns: 1fr;
+  }
+
+  .spaceMemberWindow button {
+    width: 100%;
+  }
+
+  .spaceHomeTabs {
+    gap: 3px;
+    padding: 6px;
+  }
+
+  .spaceHomeTabs button {
+    gap: 5px;
+    font-size: 0.82rem;
+  }
+
+  .spaceHomeTabs .memoNavIcon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .spaceLaunchGrid {
+    gap: 10px !important;
+  }
+
+  .spaceLaunchCard {
+    min-height: 78px;
+    grid-template-columns: 32px minmax(0, 1fr) 10px;
+    padding: 12px 10px;
+  }
+
+  .spaceLaunchCard > span {
+    width: 32px;
+    height: 32px;
+  }
+
+  .spaceLaunchCard strong {
+    font-size: 1.12rem;
+  }
+
+  .spaceLaunchCard small {
+    font-size: 0.72rem;
+  }
+}

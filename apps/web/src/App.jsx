@@ -2608,6 +2608,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260529-app-home-11png-reference',
+    content: `# 2026-05-29 11.png 기준 앱 홈 메인 정리
+
+- [x] /app 메인 화면을 11.png 참고 이미지처럼 세로형 모바일 홈으로 재배치
+- [x] 상단 문구, 로봇 비주얼, Guest/Member 시작 패널, 로봇 안내, 하단 메모/일정 액션 순서로 정리
+- [x] 기존 사이드형 기능 카드 대신 메모와 일정 중심의 빠른 시작 버튼을 배치
+- [x] 로봇 안내 SVG를 부드러운 카드형 톤으로 교체`
+  },
+  {
     id: 'admin1-memo-20260529-vertical-robot-cuttoon-replace',
     content: `# 2026-05-29 앱 홈 로봇 컷툰 이미지 교체
 
@@ -3097,6 +3106,19 @@ function MemoNavIcon({ type }) {
         <path d="M7 3h7l4 4v14H7z" />
         <path d="M14 3v5h5" />
       </>
+    ),
+    settings: (
+      <>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 3.5v2.1" />
+        <path d="M12 18.4v2.1" />
+        <path d="M4.8 7.2l1.5 1.5" />
+        <path d="M17.7 15.3l1.5 1.5" />
+        <path d="M3.5 12h2.1" />
+        <path d="M18.4 12h2.1" />
+        <path d="M4.8 16.8l1.5-1.5" />
+        <path d="M17.7 8.7l1.5-1.5" />
+      </>
     )
   };
   return (
@@ -3360,9 +3382,6 @@ function SpaceHomePage({ navigate }) {
       ? 'guest'
       : 'none';
   const isMemberSession = accountMode === 'member';
-  const heroLead = isMemberSession
-    ? `${session.username}님, 반갑습니다. 오늘도 스마트한 하루를 기록해 보세요.`
-    : '메모부터 여행 계획까지, 가볍게 정리해 보세요.';
 
   useEffect(() => {
     document.title = '개인 앱 홈';
@@ -3420,24 +3439,32 @@ function SpaceHomePage({ navigate }) {
   };
 
   return (
-    <main className="spaceHome">
-      <section className="spaceHero">
-        <div className="spaceHeroCopy">
-          <span className="spaceEyebrow">App Home</span>
-          <strong className="spaceHeroLead">{heroLead}</strong>
-          <section className="robotGuideMeme cuttoon" aria-label="로봇 사용 안내 컷툰">
-            <img className="robotGuideCuttoonImage" src="/robot-guide-cuttoon.svg" alt="메모 작성, 일정 켜기, 내 일정 확인, 한눈에 관리 순서 안내" />
-            <div className="robotGuideActions">
-              <button type="button" onClick={() => navigate('/notes')} aria-label="메모 열기">
-                <MemoNavIcon type="board" />
-                메모
-              </button>
-              <button type="button" onClick={() => navigate('/scheduler')} aria-label="일정 보기">
-                <MemoNavIcon type="calendar" />
-                일정
-              </button>
-            </div>
-          </section>
+    <main className={`spaceHome referenceHome${isMemberSession ? ' memberSession' : ''}`}>
+      <section className="spaceAppFrame" aria-label="앱 홈">
+        <header className="spaceAppIntro">
+          <div className="spaceAppTitle">
+            <h1>
+              {isMemberSession ? (
+                <>
+                  {session.username}님,
+                  <br />
+                  오늘도 가볍게 정리해 보세요.
+                </>
+              ) : (
+                <>
+                  메모부터 여행 계획까지,
+                  <br />
+                  가볍게 정리해 보세요.
+                </>
+              )}
+            </h1>
+          </div>
+          <div className="spaceMascot" aria-hidden="true">
+            <img src="/robot-guide.png" alt="" />
+          </div>
+        </header>
+
+        <div className="spaceMainPanel">
           {!isMemberSession ? (
             <div className="spaceAccountWindow" aria-label="Guest and member start">
               <div className="spaceAccountHead">
@@ -3467,55 +3494,48 @@ function SpaceHomePage({ navigate }) {
               </div>
               {accountError ? <p className="spaceAccountNotice">{accountError}</p> : null}
             </div>
-          ) : null}
+          ) : (
+            <div className="spaceMemberWindow" aria-label="member account">
+              <div>
+                <span>Member</span>
+                <strong>{session.username} 계정 사용 중</strong>
+              </div>
+              <button type="button" onClick={() => navigate('/mypage')}>내 정보</button>
+            </div>
+          )}
+
+          <figure className="robotGuideMeme cuttoon" aria-label="로봇 사용 안내 컷툰">
+            <img className="robotGuideCuttoonImage" src="/robot-guide-cuttoon.svg" alt="메모 작성, 일정 켜기, 내 일정 확인, 한눈에 관리 순서 안내" />
+          </figure>
+
+          <nav className="spaceHomeTabs" aria-label="앱 주요 메뉴">
+            <button type="button" className="active" onClick={() => navigate('/notes')}>
+              <MemoNavIcon type="file" />
+              메모
+            </button>
+            <button type="button" onClick={() => navigate('/scheduler')}>
+              <MemoNavIcon type="calendar" />
+              일정
+            </button>
+            <button type="button" onClick={() => navigate('/connect')}>
+              <MemoNavIcon type="settings" />
+              관리
+            </button>
+          </nav>
+
+          <section className="spaceLaunchGrid" aria-label="빠른 시작">
+            <button type="button" className="spaceLaunchCard memo" onClick={() => navigate('/notes')}>
+              <span><MemoNavIcon type="file" /></span>
+              <strong>메모</strong>
+              <small>메모 {appOverview.memoCount}</small>
+            </button>
+            <button type="button" className="spaceLaunchCard schedule" onClick={() => navigate('/scheduler')}>
+              <span><MemoNavIcon type="calendar" /></span>
+              <strong>일정</strong>
+              <small>오늘 {appOverview.todayCount}</small>
+            </button>
+          </section>
         </div>
-        <aside className="spaceFeaturePanel" aria-label="assistant feature shortcuts">
-          <article className="spaceFeatureCard memo">
-            <header className="spaceFeatureHeader">
-              <span>MEMO</span>
-            </header>
-            <div className="spaceFeatureMeta">
-              <span>기록된 보드 {appOverview.boardCount}</span>
-              <span>메모 {appOverview.memoCount}</span>
-            </div>
-            <p>생각과 아이디어를 보드에 기록하고 관리하세요.</p>
-            <div className="spaceFeatureActions">
-              <button type="button" className="spaceFeaturePrimaryAction" onClick={() => navigate('/notes')}>
-                메모 열기
-              </button>
-            </div>
-          </article>
-          <article className="spaceFeatureCard schedule">
-            <header className="spaceFeatureHeader">
-              <span>SCHEDULE</span>
-            </header>
-            <div className="spaceFeatureMeta">
-              <span>오늘 일정 {appOverview.todayCount}</span>
-              <span>7일 미완료 {appOverview.weekPendingCount}</span>
-            </div>
-            <p>오늘 해야 할 우선순위 일정을 확인하세요.</p>
-            <div className="spaceFeatureActions">
-              <button type="button" className="spaceFeatureSecondaryAction" onClick={() => navigate('/scheduler')}>
-                일정 보기
-              </button>
-            </div>
-          </article>
-          <article className="spaceFeatureCard travel">
-            <header className="spaceFeatureHeader">
-              <span>TRIP</span>
-            </header>
-            <div className="spaceFeatureMeta">
-              <span>저장 코스 {appOverview.travelScheduleCount}</span>
-              <span>장소 추천</span>
-            </div>
-            <p>나만의 여행 동선을 짜고 계획을 저장하세요.</p>
-            <div className="spaceFeatureActions">
-              <button type="button" className="spaceFeatureSecondaryAction" onClick={() => navigate('/destinations')}>
-                코스 찾기
-              </button>
-            </div>
-          </article>
-        </aside>
       </section>
     </main>
   );
