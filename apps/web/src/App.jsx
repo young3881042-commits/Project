@@ -2608,6 +2608,16 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260529-vertical-robot-cuttoon-replace',
+    content: `# 2026-05-29 앱 홈 로봇 컷툰 이미지 교체
+
+- [x] /app 홈 로봇 안내 이미지를 세로형 모바일 컷툰 SVG로 교체
+- [x] 한글 문구를 생성 이미지가 아니라 SVG 텍스트로 고정해 글자가 깨지지 않게 보정
+- [x] 메모 작성, 일정 켜기, 내 일정 확인, 한눈에 관리 흐름이 한 화면에서 보이도록 정리
+- [x] Guest/Member 시작 패널보다 컷툰 안내가 먼저 보이도록 앱 홈 렌더 순서 조정
+- [x] 상단 인사 영역을 제거하고 1단계 컷부터 바로 보이게 조정`
+  },
+  {
     id: 'admin1-memo-20260529-memo-schedule-picker-cuttoon',
     content: `# 2026-05-29 메모 일정 선택과 로봇 컷툰 안내
 
@@ -3415,6 +3425,19 @@ function SpaceHomePage({ navigate }) {
         <div className="spaceHeroCopy">
           <span className="spaceEyebrow">App Home</span>
           <strong className="spaceHeroLead">{heroLead}</strong>
+          <section className="robotGuideMeme cuttoon" aria-label="로봇 사용 안내 컷툰">
+            <img className="robotGuideCuttoonImage" src="/robot-guide-cuttoon.svg" alt="메모 작성, 일정 켜기, 내 일정 확인, 한눈에 관리 순서 안내" />
+            <div className="robotGuideActions">
+              <button type="button" onClick={() => navigate('/notes')} aria-label="메모 열기">
+                <MemoNavIcon type="board" />
+                메모
+              </button>
+              <button type="button" onClick={() => navigate('/scheduler')} aria-label="일정 보기">
+                <MemoNavIcon type="calendar" />
+                일정
+              </button>
+            </div>
+          </section>
           {!isMemberSession ? (
             <div className="spaceAccountWindow" aria-label="Guest and member start">
               <div className="spaceAccountHead">
@@ -3445,19 +3468,6 @@ function SpaceHomePage({ navigate }) {
               {accountError ? <p className="spaceAccountNotice">{accountError}</p> : null}
             </div>
           ) : null}
-          <section className="robotGuideMeme cuttoon" aria-label="로봇 사용 안내 컷툰">
-            <img className="robotGuideCuttoonImage" src="/robot-guide-cuttoon.svg" alt="메모 작성, 일정 켜기, 날짜와 시간 선택, 내 일정 확인 순서 안내" />
-            <div className="robotGuideActions">
-              <button type="button" onClick={() => navigate('/notes')} aria-label="메모 열기">
-                <MemoNavIcon type="board" />
-                메모
-              </button>
-              <button type="button" onClick={() => navigate('/scheduler')} aria-label="일정 보기">
-                <MemoNavIcon type="calendar" />
-                일정
-              </button>
-            </div>
-          </section>
         </div>
         <aside className="spaceFeaturePanel" aria-label="assistant feature shortcuts">
           <article className="spaceFeatureCard memo">

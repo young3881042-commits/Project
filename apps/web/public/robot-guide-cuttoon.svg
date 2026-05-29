@@ -1,59 +1,187 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="720" viewBox="0 0 1120 720" role="img" aria-labelledby="title desc">
-  <title id="title">메모 일정 연동 컷툰</title>
-  <desc id="desc">메모 작성, 일정 켜기, 날짜와 시간 선택, 내 일정 확인 흐름을 안내하는 로봇 컷툰</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="704" height="1148" viewBox="0 346 704 1148" role="img" aria-labelledby="title desc">
+  <title id="title">ai-assitant 메모 일정 안내 컷툰</title>
+  <desc id="desc">1단계 메모 작성부터 일정 켜기, 내 일정 확인, 한눈에 관리하는 흐름을 설명하는 세로형 컷툰</desc>
   <defs>
-    <clipPath id="robotClip">
-      <rect x="46" y="86" width="430" height="560" rx="28" />
-    </clipPath>
-    <filter id="panelShadow" x="-10%" y="-10%" width="120%" height="130%">
-      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#0f172a" flood-opacity="0.14" />
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.16" />
     </filter>
     <style>
-      .panel { fill: #ffffff; stroke: #111827; stroke-width: 5; }
-      .caption { font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif; fill: #0f172a; font-weight: 900; }
-      .body { font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif; fill: #334155; font-weight: 800; }
-      .tag { font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif; fill: #2563eb; font-weight: 900; }
-      .step { font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif; fill: #ffffff; font-weight: 950; }
+      .ui { font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+      .title { font-weight: 900; fill: #0f172a; }
+      .copy { font-weight: 800; fill: #1f2937; }
+      .muted { font-weight: 700; fill: #64748b; }
+      .label { font-weight: 900; fill: #047857; }
+      .bubbleText { font-weight: 900; fill: #111827; }
+      .panel { fill: #fffdf8; stroke: #111827; stroke-width: 4; }
+      .bubble { fill: #ffffff; stroke: #111827; stroke-width: 4; }
+      .line { stroke: #111827; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .thinLine { stroke: #94a3b8; stroke-width: 3; stroke-linecap: round; }
+      .robotMetal { fill: #dbeafe; stroke: #111827; stroke-width: 4; }
+      .robotFace { fill: #14313f; stroke: #111827; stroke-width: 4; }
+      .robotEye { fill: #7dd3fc; }
+      .skin { fill: #f7d5b4; stroke: #111827; stroke-width: 3; }
     </style>
   </defs>
-  <rect width="1120" height="720" rx="36" fill="#f8fafc" />
-  <path d="M0 120h1120M0 360h1120M560 0v720" stroke="#e2e8f0" stroke-width="2" opacity="0.75" />
-  <g filter="url(#panelShadow)">
-    <rect class="panel" x="32" y="32" width="468" height="656" rx="30" />
-    <rect class="panel" x="528" y="32" width="560" height="204" rx="26" />
-    <rect class="panel" x="528" y="260" width="560" height="196" rx="26" />
-    <rect class="panel" x="528" y="480" width="560" height="208" rx="26" />
+
+  <rect width="704" height="1524" fill="#eaf7f4" />
+  <path d="M0 0h704v1524H0z" fill="#eaf7f4" />
+  <circle cx="118" cy="135" r="92" fill="#c7f0e6" opacity="0.75" />
+  <circle cx="610" cy="910" r="112" fill="#dbeafe" opacity="0.55" />
+  <circle cx="92" cy="1300" r="130" fill="#fef3c7" opacity="0.6" />
+
+  <g class="ui" filter="url(#softShadow)">
+    <rect x="20" y="24" width="664" height="1468" rx="42" fill="#f8fafc" stroke="#111827" stroke-width="5" />
   </g>
-  <image href="robot-guide.png" x="-28" y="64" width="550" height="550" clip-path="url(#robotClip)" preserveAspectRatio="xMidYMid slice" />
-  <path d="M362 104c54-50 126-24 134 38 8 64-48 112-128 98l-54 38 18-62c-38-26-36-76 30-112z" fill="#ffffff" stroke="#111827" stroke-width="5" />
-  <text class="caption" x="354" y="156" font-size="38">메모가</text>
-  <text class="caption" x="354" y="205" font-size="38">일정으로!</text>
-  <rect x="76" y="596" width="374" height="48" rx="18" fill="#111827" />
-  <text class="step" x="106" y="628" font-size="24">로봇이 한 화면에서 알려드려요</text>
 
-  <rect x="556" y="60" width="72" height="72" rx="20" fill="#2563eb" />
-  <text class="step" x="580" y="107" font-size="34">1</text>
-  <text class="caption" x="654" y="94" font-size="34">메모 작성</text>
-  <text class="body" x="654" y="138" font-size="25">생각이나 할 일을 메모에 적어요.</text>
-  <rect x="654" y="164" width="310" height="42" rx="14" fill="#eff6ff" stroke="#bfdbfe" stroke-width="2" />
-  <text class="tag" x="678" y="193" font-size="22">제목과 내용을 자유롭게 기록</text>
+  <g class="ui">
+    <rect x="46" y="60" width="612" height="310" rx="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" />
+    <rect x="70" y="88" width="112" height="46" rx="14" fill="#ecfdf5" stroke="#99f6e4" stroke-width="2" />
+    <text class="label" x="92" y="118" font-size="20">App Home</text>
+    <text class="title" x="70" y="184" font-size="32">younglll님, 반갑습니다.</text>
+    <text class="copy" x="70" y="226" font-size="27">오늘도 스마트하게 기록해 보세요.</text>
 
-  <rect x="556" y="288" width="72" height="72" rx="20" fill="#0f766e" />
-  <text class="step" x="580" y="335" font-size="34">2</text>
-  <text class="caption" x="654" y="322" font-size="34">일정 켜기</text>
-  <text class="body" x="654" y="366" font-size="25">글 안에 날짜를 쓰지 않고</text>
-  <text class="body" x="654" y="403" font-size="25">날짜와 시간을 직접 고릅니다.</text>
-  <rect x="904" y="301" width="132" height="52" rx="18" fill="#ecfdf5" stroke="#99f6e4" stroke-width="3" />
-  <text class="tag" x="930" y="335" font-size="24" fill="#0f766e">일정 ON</text>
-  <rect x="904" y="370" width="132" height="52" rx="18" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" />
-  <text class="body" x="920" y="404" font-size="23">날짜 선택</text>
+    <path class="bubble" d="M286 80c94-44 250-24 312 46 52 60 18 132-76 145-56 8-124 0-170-23l-56 42 16-66c-54-33-60-99-26-144z" />
+    <text class="bubbleText" x="350" y="128" font-size="24">안녕하세요 younglll님!</text>
+    <text class="bubbleText" x="344" y="164" font-size="24">스마트한 하루를 기록하는 법,</text>
+    <text class="bubbleText" x="386" y="200" font-size="24">제가 안내해 드릴게요!</text>
 
-  <rect x="556" y="508" width="72" height="72" rx="20" fill="#7c3aed" />
-  <text class="step" x="580" y="555" font-size="34">3</text>
-  <text class="caption" x="654" y="542" font-size="34">내 일정에서 확인</text>
-  <text class="body" x="654" y="586" font-size="25">저장하면 스케줄러에 바로 보이고,</text>
-  <text class="body" x="654" y="623" font-size="25">일정에서 원본 메모로 돌아갈 수 있어요.</text>
-  <path d="M980 545h60v80h-92v-56h32z" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="3" />
-  <path d="M980 545v24h24" fill="none" stroke="#7c3aed" stroke-width="3" />
-  <path d="M974 594h42M974 614h30" stroke="#7c3aed" stroke-width="4" stroke-linecap="round" />
+    <g transform="translate(438 235)">
+      <line class="line" x1="60" y1="-28" x2="60" y2="-52" />
+      <circle cx="60" cy="-58" r="7" fill="#7dd3fc" stroke="#111827" stroke-width="3" />
+      <rect class="robotMetal" x="12" y="-22" width="96" height="78" rx="24" />
+      <rect class="robotFace" x="28" y="-6" width="64" height="42" rx="15" />
+      <circle class="robotEye" cx="50" cy="15" r="6" />
+      <circle class="robotEye" cx="72" cy="15" r="6" />
+      <path d="M50 29q11 9 24 0" stroke="#7dd3fc" stroke-width="4" fill="none" stroke-linecap="round" />
+      <rect class="robotMetal" x="32" y="56" width="56" height="82" rx="17" />
+      <rect x="47" y="80" width="26" height="24" rx="8" fill="#93c5fd" stroke="#111827" stroke-width="3" />
+      <path class="line" d="M20 72-18 44" />
+      <path class="line" d="M100 72l34-34" />
+      <circle class="robotMetal" cx="-22" cy="40" r="12" />
+      <circle class="robotMetal" cx="138" cy="34" r="12" />
+      <path class="line" d="M44 138v34M78 138v34" />
+    </g>
+  </g>
+
+  <g class="ui">
+    <rect class="panel" x="46" y="398" width="296" height="280" rx="14" />
+    <text class="title" x="70" y="446" font-size="28">1단계: 메모 작성!</text>
+    <path class="bubble" d="M82 466h206a32 32 0 0 1 32 32v34a32 32 0 0 1-32 32H153l-36 34 8-34H82a32 32 0 0 1-32-32v-34a32 32 0 0 1 32-32z" />
+    <text class="bubbleText" x="82" y="507" font-size="20">생각이나 할 일을 메모에</text>
+    <text class="bubbleText" x="111" y="536" font-size="20">자유롭게 적어요.</text>
+    <g transform="translate(82 580)">
+      <line class="line" x1="37" y1="-8" x2="37" y2="-26" />
+      <circle cx="37" cy="-31" r="5" fill="#7dd3fc" stroke="#111827" stroke-width="2" />
+      <rect class="robotMetal" x="0" y="0" width="74" height="58" rx="18" />
+      <rect class="robotFace" x="14" y="12" width="46" height="28" rx="10" />
+      <circle class="robotEye" cx="30" cy="26" r="4" />
+      <circle class="robotEye" cx="46" cy="26" r="4" />
+      <path class="line" d="M69 34l40-22" />
+      <circle class="robotMetal" cx="113" cy="10" r="9" />
+    </g>
+    <g transform="translate(202 570)">
+      <rect x="0" y="0" width="104" height="78" rx="10" fill="#ffffff" stroke="#111827" stroke-width="3" />
+      <text class="copy" x="18" y="26" font-size="15">Note 1</text>
+      <path class="thinLine" d="M18 45h58M18 61h70" />
+    </g>
+
+    <rect class="panel" x="362" y="398" width="296" height="280" rx="14" fill="#fff7ed" />
+    <text class="title" x="386" y="446" font-size="28">2단계: 일정 켜기!</text>
+    <path class="bubble" d="M395 466h205a31 31 0 0 1 31 31v36a31 31 0 0 1-31 31H488l-34 34 6-34h-65a31 31 0 0 1-31-31v-36a31 31 0 0 1 31-31z" />
+    <text class="bubbleText" x="402" y="507" font-size="20">일정으로 쓸 메모는</text>
+    <text class="bubbleText" x="423" y="536" font-size="20">토글을 켜요.</text>
+    <g transform="translate(396 586)">
+      <rect x="0" y="0" width="116" height="64" rx="12" fill="#ffffff" stroke="#111827" stroke-width="3" />
+      <text class="copy" x="16" y="26" font-size="15">Note 1</text>
+      <path class="thinLine" d="M16 44h62" />
+    </g>
+    <g transform="translate(520 584)">
+      <rect x="0" y="0" width="92" height="38" rx="19" fill="#10b981" stroke="#111827" stroke-width="3" />
+      <circle cx="70" cy="19" r="14" fill="#ffffff" stroke="#111827" stroke-width="3" />
+      <text class="label" x="10" y="66" font-size="19">Schedule ON</text>
+    </g>
+    <g transform="translate(382 575)">
+      <line class="line" x1="44" y1="88" x2="44" y2="118" />
+      <rect class="robotMetal" x="8" y="36" width="72" height="56" rx="18" />
+      <rect class="robotFace" x="22" y="48" width="44" height="27" rx="10" />
+      <circle class="robotEye" cx="36" cy="61" r="4" />
+      <circle class="robotEye" cx="52" cy="61" r="4" />
+      <path class="line" d="M74 63l34-26" />
+      <circle class="robotMetal" cx="112" cy="34" r="8" />
+    </g>
+
+    <rect class="panel" x="46" y="702" width="612" height="300" rx="14" fill="#f0f9ff" />
+    <text class="title" x="70" y="750" font-size="26">3단계: 내 일정 확인!</text>
+    <path class="bubble" d="M254 756h330a34 34 0 0 1 34 34v58a34 34 0 0 1-34 34H398l-46 42 10-42H254a34 34 0 0 1-34-34v-58a34 34 0 0 1 34-34z" />
+    <text class="bubbleText" x="274" y="807" font-size="24">저장하면 내 일정에서</text>
+    <text class="bubbleText" x="321" y="844" font-size="24">바로 보여요.</text>
+    <g transform="translate(394 882)">
+      <rect x="0" y="0" width="188" height="88" rx="12" fill="#ffffff" stroke="#111827" stroke-width="3" />
+      <rect x="0" y="0" width="188" height="26" rx="12" fill="#dbeafe" stroke="#111827" stroke-width="3" />
+      <text class="copy" x="68" y="19" font-size="14">내 일정</text>
+      <path d="M20 45h146M20 66h116" stroke="#cbd5e1" stroke-width="3" />
+      <rect x="136" y="52" width="24" height="24" rx="5" fill="#60a5fa" />
+    </g>
+    <g transform="translate(98 852)">
+      <line class="line" x1="37" y1="-8" x2="37" y2="-25" />
+      <circle cx="37" cy="-30" r="5" fill="#7dd3fc" stroke="#111827" stroke-width="2" />
+      <rect class="robotMetal" x="0" y="0" width="74" height="58" rx="18" />
+      <rect class="robotFace" x="14" y="12" width="46" height="28" rx="10" />
+      <circle class="robotEye" cx="30" cy="26" r="4" />
+      <circle class="robotEye" cx="46" cy="26" r="4" />
+      <path d="M29 34q9 6 18 0" stroke="#7dd3fc" stroke-width="3" fill="none" stroke-linecap="round" />
+      <path class="line" d="M70 34l170-38" />
+      <circle class="robotMetal" cx="244" cy="-7" r="8" />
+    </g>
+
+    <rect class="panel" x="46" y="1026" width="612" height="318" rx="18" fill="#eefdf8" />
+    <path class="bubble" d="M126 1050h452a34 34 0 0 1 34 34v55a34 34 0 0 1-34 34H402l-50 48-12-48H126a34 34 0 0 1-34-34v-55a34 34 0 0 1 34-34z" />
+    <text class="bubbleText" x="166" y="1097" font-size="25">이제 메모와 일정을</text>
+    <text class="bubbleText" x="177" y="1134" font-size="25">한눈에 관리해요!</text>
+    <g transform="translate(84 1210)">
+      <rect x="0" y="0" width="204" height="92" rx="14" fill="#ffffff" stroke="#111827" stroke-width="3" />
+      <rect x="14" y="14" width="72" height="30" rx="10" fill="#d1fae5" />
+      <text class="label" x="35" y="36" font-size="18">메모</text>
+      <path class="thinLine" d="M20 61h144M20 78h118" />
+    </g>
+    <g transform="translate(416 1210)">
+      <rect x="0" y="0" width="204" height="92" rx="14" fill="#ffffff" stroke="#111827" stroke-width="3" />
+      <rect x="14" y="14" width="72" height="30" rx="10" fill="#dbeafe" />
+      <text class="label" x="35" y="36" font-size="18" fill="#2563eb">일정</text>
+      <rect x="142" y="20" width="44" height="22" rx="11" fill="#10b981" stroke="#111827" stroke-width="2" />
+      <circle cx="174" cy="31" r="8" fill="#ffffff" />
+      <path class="thinLine" d="M20 65h116M20 80h88" />
+    </g>
+    <g transform="translate(296 1196)">
+      <line class="line" x1="55" y1="-28" x2="55" y2="-53" />
+      <circle cx="55" cy="-60" r="7" fill="#7dd3fc" stroke="#111827" stroke-width="3" />
+      <rect class="robotMetal" x="0" y="-16" width="110" height="82" rx="25" />
+      <rect class="robotFace" x="21" y="2" width="68" height="42" rx="15" />
+      <circle class="robotEye" cx="42" cy="22" r="5" />
+      <circle class="robotEye" cx="68" cy="22" r="5" />
+      <path d="M42 34q13 10 28 0" stroke="#7dd3fc" stroke-width="4" fill="none" stroke-linecap="round" />
+      <rect class="robotMetal" x="30" y="66" width="50" height="66" rx="16" />
+      <path class="line" d="M16 80l-36-22M94 80l36-22" />
+      <circle class="robotMetal" cx="-24" cy="55" r="11" />
+      <circle class="robotMetal" cx="134" cy="55" r="11" />
+    </g>
+  </g>
+
+  <g class="ui">
+    <rect x="46" y="1370" width="612" height="88" rx="26" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3" />
+    <g transform="translate(130 1397)">
+      <rect x="0" y="0" width="28" height="28" rx="7" fill="#d1fae5" stroke="#047857" stroke-width="3" />
+      <text class="label" x="-9" y="58" font-size="18">메모</text>
+    </g>
+    <g transform="translate(338 1397)">
+      <rect x="0" y="5" width="34" height="28" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="3" />
+      <path d="M8 0v10M26 0v10" stroke="#2563eb" stroke-width="3" stroke-linecap="round" />
+      <text class="label" x="-1" y="58" font-size="18" fill="#2563eb">일정</text>
+    </g>
+    <g transform="translate(544 1398)">
+      <circle cx="16" cy="16" r="15" fill="#f1f5f9" stroke="#64748b" stroke-width="3" />
+      <path d="M16 7v18M7 16h18" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
+      <text class="muted" x="-2" y="57" font-size="18">관리</text>
+    </g>
+  </g>
 </svg>

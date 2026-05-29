@@ -1281,14 +1281,17 @@ body:has(.aiNoteShell) {
 
 /* 2026-05-29 home guide cuttoon */
 .robotGuideMeme.cuttoon {
-  width: min(100%, 680px) !important;
+  width: min(100%, 520px) !important;
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) !important;
   gap: 10px !important;
   align-items: stretch !important;
+  justify-self: center !important;
   padding: 10px !important;
   border-radius: 8px !important;
   background: #ffffff !important;
+  border: 1px solid rgba(203, 213, 225, 0.9) !important;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12) !important;
 }
 
 .robotGuideCuttoonImage {
@@ -1300,12 +1303,17 @@ body:has(.aiNoteShell) {
   background: #f8fafc !important;
 }
 
+.spaceHome .spaceAccountWindow {
+  justify-self: center !important;
+}
+
 .robotGuideMeme.cuttoon .robotGuideActions {
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 }
 
 @media (max-width: 420px) {
   .robotGuideMeme.cuttoon {
+    width: 100% !important;
     padding: 8px !important;
   }
 
