@@ -360,6 +360,148 @@
   font-weight: 800;
 }
 
+.robotGuideMeme {
+  width: min(100%, 620px);
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  margin-top: 2px;
+  padding: 12px;
+  border: 1px solid rgba(203, 213, 225, 0.78);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.robotGuideImageWrap {
+  aspect-ratio: 1;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.robotGuideImageWrap img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.robotGuideBubble {
+  min-width: 0;
+  position: relative;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.robotGuideBubble::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 28px;
+  width: 14px;
+  height: 14px;
+  border-left: 1px solid rgba(37, 99, 235, 0.16);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.16);
+  background: #ffffff;
+  transform: rotate(45deg);
+}
+
+.robotGuideBubble > span {
+  width: fit-content;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 0.68rem;
+  font-weight: 950;
+}
+
+.robotGuideBubble strong {
+  color: #0f172a;
+  font-size: 1rem;
+  line-height: 1.28;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.robotGuideBubble p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.84rem !important;
+  line-height: 1.45 !important;
+  font-weight: 750;
+}
+
+.robotGuideSteps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.robotGuideSteps em {
+  min-width: 0;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  font-style: normal;
+  font-weight: 900;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.robotGuideActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.robotGuideActions button {
+  min-width: 0;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid rgba(15, 118, 110, 0.26);
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #0f766e;
+  font-size: 0.8rem;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.robotGuideActions button:last-child {
+  border-color: rgba(37, 99, 235, 0.24);
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.robotGuideActions .memoNavIcon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
 .spaceHeroCopy p {
   max-width: 560px;
   color: #4b5f76;
@@ -776,6 +918,25 @@
     grid-template-columns: 1fr;
   }
 
+  .robotGuideMeme {
+    width: 100%;
+    grid-template-columns: 92px minmax(0, 1fr);
+    padding: 10px;
+  }
+
+  .robotGuideBubble {
+    padding: 10px;
+  }
+
+  .robotGuideBubble::before {
+    top: 24px;
+  }
+
+  .robotGuideSteps,
+  .robotGuideActions {
+    grid-template-columns: 1fr;
+  }
+
   .spaceHeroCopy h1 {
     font-size: clamp(2.1rem, 12vw, 3rem) !important;
   }
@@ -805,5 +966,20 @@
 
   .ltValuePoints {
     grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .robotGuideMeme {
+    grid-template-columns: 1fr;
+  }
+
+  .robotGuideImageWrap {
+    width: min(150px, 62vw);
+    justify-self: center;
+  }
+
+  .robotGuideBubble::before {
+    display: none;
   }
 }

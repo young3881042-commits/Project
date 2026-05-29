@@ -35,6 +35,15 @@ const RECURRENCE_LABELS = {
   weekly: '매주',
   monthly: '매월'
 };
+const SCHEDULER_CATEGORY_OPTIONS = ['업무', '개인', '공부', '여행', '집안일'];
+const SCHEDULER_FILTER_OPTIONS = ['전체', ...SCHEDULER_CATEGORY_OPTIONS, '메모', '완료'];
+const SCHEDULER_LEGACY_TYPE_MAP = {
+  작업: '업무',
+  회의: '업무',
+  검토: '업무',
+  'AI Note': '메모'
+};
+const NOTE_SCHEDULE_SOURCES = ['AI Note', '메모', '프로젝트'];
 const DEFAULT_SCHEDULER_ITEMS = [
 ];
 
@@ -102,6 +111,11 @@ function saveDataInbox(items) {
   window.dispatchEvent(new CustomEvent('ai-assitant:data-inbox-updated', { detail: items }));
 }
 
+function normalizeSchedulerType(type) {
+  const raw = String(type || '').trim();
+  return SCHEDULER_LEGACY_TYPE_MAP[raw] || raw || '업무';
+}
+
 function apiUrlFor(path) {
   if (!path || /^https?:\/\//i.test(path)) return path;
   const baseUrl = readConnectionSettings().apiBaseUrl.trim().replace(/\/+$/, '');
@@ -117,7 +131,7 @@ export function addSchedulerItem(item) {
     title,
     date: item?.date || toDateKey(now),
     time: item?.time || '09:00',
-    type: item?.type || '작업',
+    type: normalizeSchedulerType(item?.type),
     memo: item?.memo || item?.note || '',
     recurrence: Object.keys(RECURRENCE_LABELS).includes(item?.recurrence) ? item.recurrence : 'none',
     recurrenceEnd: item?.recurrenceEnd || '',
@@ -274,7 +288,7 @@ function readCurrentSchedulerItems(session = readStoredAuth()) {
 function normalizeSchedulerItem(item) {
   return {
     ...item,
-    type: item?.type === 'AI Note' ? '메모' : item?.type,
+    type: normalizeSchedulerType(item?.type),
     recurrence: Object.keys(RECURRENCE_LABELS).includes(item?.recurrence) ? item.recurrence : 'none',
     recurrenceEnd: item?.recurrenceEnd || '',
     doneOverrides: item?.doneOverrides && typeof item.doneOverrides === 'object' ? item.doneOverrides : {},
@@ -536,7 +550,16 @@ function checklistContentWithItems(block, items) {
   ].join('\n');
 }
 
+function noteScheduleSource(block) {
+  return (block?.boardId || block?.sector) === 'project' ? '프로젝트' : '메모';
+}
+
+function blockHasScheduleMarker(block) {
+  return block?.type === 'schedule' || /#\d{4}-\d{2}-\d{2}/.test(block?.content || '');
+}
+
 function parseNoteScheduleBlock(block) {
+  const source = noteScheduleSource(block);
   const content = plainMarkdownText(block.content);
   if (!content) return null;
   const dateMatch = content.match(/#(\d{4}-\d{2}-\d{2})/);
@@ -550,30 +573,30 @@ function parseNoteScheduleBlock(block) {
     .trim();
   if (!title) return null;
   return {
-    id: `ai-note-${block.id}`,
+    id: `${source === '프로젝트' ? 'project-note' : 'ai-note'}-${block.id}`,
     title,
     date,
     time,
-    type: '메모',
+    type: source === '프로젝트' ? '업무' : '메모',
     memo: block.content.trim(),
     recurrence: 'none',
     recurrenceEnd: '',
-    source: '메모',
+    source,
     done: false
   };
 }
 
 function syncNoteSchedules(blocks) {
   const schedules = blocks
-    .filter((block) => block.type === 'schedule')
+    .filter(blockHasScheduleMarker)
     .map(parseNoteScheduleBlock)
     .filter(Boolean);
   const scheduleIds = new Set(schedules.map((item) => item.id));
   const storageKey = schedulerStorageKey();
   const current = readSchedulerItems(storageKey);
-  const withoutStaleNoteItems = current.filter((item) => !['AI Note', '메모'].includes(item.source) || scheduleIds.has(item.id));
+  const withoutStaleNoteItems = current.filter((item) => !NOTE_SCHEDULE_SOURCES.includes(item.source) || scheduleIds.has(item.id));
   const merged = [
-    ...withoutStaleNoteItems.filter((item) => !['AI Note', '메모'].includes(item.source)),
+    ...withoutStaleNoteItems.filter((item) => !NOTE_SCHEDULE_SOURCES.includes(item.source)),
     ...schedules.map((schedule) => {
       const existing = current.find((item) => item.id === schedule.id);
       return { ...schedule, done: Boolean(existing?.done), doneOverrides: existing?.doneOverrides || {} };
@@ -2542,6 +2565,31 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260528-robot-guide-meme',
+    content: `# 2026-05-28 앱 홈 로봇 가이드 이미지 추가
+
+- [x] 생성형 이미지로 만든 로봇 안내 캐릭터를 앱 정적 자산으로 추가
+- [x] /app 첫 화면에 로봇 말풍선형 사용 안내 카드를 배치
+- [x] 메모, 일정, 프로젝트 보드 진입 버튼을 로봇 안내 카드에 연결
+- [x] 프로젝트 카드에 날짜/시간 태그를 적으면 스케줄러 업무 일정으로 동기화`
+  },
+  {
+    id: 'admin1-memo-20260528-scheduler-categories',
+    content: `# 2026-05-28 스케줄러 카테고리 정리
+
+- [x] 스케줄러 분류를 업무, 개인, 공부, 여행, 집안일 기준으로 정리
+- [x] 기존 작업/회의/검토 분류는 업무로 보이도록 보정
+- [x] 스케줄러 필터와 일정 추가 선택지를 같은 카테고리 기준으로 통일`
+  },
+  {
+    id: 'admin1-memo-20260528-app-home-member-account-window',
+    content: `# 2026-05-28 앱 홈 로그인 상태 시작 창 숨김
+
+- [x] /app에서 회원 로그인 세션이면 Guest/Member 시작 창을 숨김
+- [x] 회원 로그인 상태의 앱 홈 인사 문구를 현재 계정 이름 기준으로 표시
+- [x] 게스트나 세션 없음 상태에서는 기존 Guest/Member 시작 흐름 유지`
+  },
+  {
     id: 'admin1-memo-20260527-auth-scheduler-user-scope',
     content: `# 2026-05-27 로그인과 사용자별 일정/메모 정리
 
@@ -3250,6 +3298,11 @@ function SpaceHomePage({ navigate }) {
     : session?.token
       ? 'guest'
       : 'none';
+  const isMemberSession = accountMode === 'member';
+  const heroLead = isMemberSession
+    ? `${session.username}님, 반갑습니다. 오늘도 스마트한 하루를 기록해 보세요.`
+    : '메모부터 여행 계획까지, 가볍게 정리해 보세요.';
+  const guideScheduleExample = `#${toDateKey(new Date())} 09:00`;
 
   useEffect(() => {
     document.title = '개인 앱 홈';
@@ -3311,41 +3364,62 @@ function SpaceHomePage({ navigate }) {
       <section className="spaceHero">
         <div className="spaceHeroCopy">
           <span className="spaceEyebrow">App Home</span>
-          <strong className="spaceHeroLead">메모부터 여행 계획까지, 가볍게 정리해 보세요.</strong>
-          <div className="spaceAccountWindow" aria-label="Guest and member start">
-            <div className="spaceAccountHead">
-              <span>Start</span>
-              <strong>
-                {accountMode === 'member'
-                  ? `${session.username} 계정 사용 중`
-                  : accountMode === 'guest'
-                    ? 'Guest 모드 사용 중'
-                    : 'Guest 또는 Member'}
-              </strong>
+          <strong className="spaceHeroLead">{heroLead}</strong>
+          {!isMemberSession ? (
+            <div className="spaceAccountWindow" aria-label="Guest and member start">
+              <div className="spaceAccountHead">
+                <span>Start</span>
+                <strong>{accountMode === 'guest' ? 'Guest 모드 사용 중' : 'Guest 또는 Member'}</strong>
+              </div>
+              <div className="spaceAccountChoices">
+                <button
+                  type="button"
+                  className={`spaceAccountChoice guest${accountMode === 'guest' ? ' active' : ''}`}
+                  onClick={startGuest}
+                  disabled={guestStarting}
+                >
+                  <span>Guest</span>
+                  <strong>{guestStarting ? '준비 중...' : '게스트로 시작'}</strong>
+                  <small>로그인 없이 먼저 둘러보기</small>
+                </button>
+                <button
+                  type="button"
+                  className="spaceAccountChoice member"
+                  onClick={() => navigate('/login?redirect=/scheduler')}
+                >
+                  <span>Member</span>
+                  <strong>회원으로 계속</strong>
+                  <small>내 계정으로 이어서 보기</small>
+                </button>
+              </div>
+              {accountError ? <p className="spaceAccountNotice">{accountError}</p> : null}
             </div>
-            <div className="spaceAccountChoices">
-              <button
-                type="button"
-                className={`spaceAccountChoice guest${accountMode === 'guest' ? ' active' : ''}`}
-                onClick={startGuest}
-                disabled={guestStarting}
-              >
-                <span>Guest</span>
-                <strong>{guestStarting ? '준비 중...' : '게스트로 시작'}</strong>
-                <small>로그인 없이 먼저 둘러보기</small>
-              </button>
-              <button
-                type="button"
-                className={`spaceAccountChoice member${accountMode === 'member' ? ' active' : ''}`}
-                onClick={() => navigate('/login?redirect=/scheduler')}
-              >
-                <span>Member</span>
-                <strong>회원으로 계속</strong>
-                <small>내 계정으로 이어서 보기</small>
-              </button>
+          ) : null}
+          <section className="robotGuideMeme" aria-label="로봇 사용 안내">
+            <div className="robotGuideImageWrap">
+              <img src="/robot-guide.png" alt="로봇 안내 캐릭터" />
             </div>
-            {accountError ? <p className="spaceAccountNotice">{accountError}</p> : null}
-          </div>
+            <div className="robotGuideBubble">
+              <span>Robot Guide</span>
+              <strong>메모를 남기고, 날짜를 붙이면 일정으로 이어져요.</strong>
+              <p>프로젝트 카드에 {guideScheduleExample}처럼 적으면 스케줄러에 업무 일정으로 보여요.</p>
+              <div className="robotGuideSteps">
+                <em>1. 메모 작성</em>
+                <em>2. 날짜/시간 추가</em>
+                <em>3. 일정에서 확인</em>
+              </div>
+              <div className="robotGuideActions">
+                <button type="button" onClick={() => navigate('/notes')}>
+                  <MemoNavIcon type="board" />
+                  메모/프로젝트
+                </button>
+                <button type="button" onClick={() => navigate('/scheduler')}>
+                  <MemoNavIcon type="calendar" />
+                  일정 보기
+                </button>
+              </div>
+            </div>
+          </section>
         </div>
         <aside className="spaceFeaturePanel" aria-label="assistant feature shortcuts">
           <article className="spaceFeatureCard memo">
@@ -4380,7 +4454,7 @@ function SchedulerPage({ navigate, embedded = false }) {
     title: '',
     date: toDateKey(new Date()),
     time: '09:00',
-    type: '작업',
+    type: '업무',
     recurrence: 'none',
     recurrenceEnd: '',
     memo: ''
@@ -4653,10 +4727,7 @@ function SchedulerPage({ navigate, embedded = false }) {
           <label>
             <span>분류</span>
             <select value={draft.type} onChange={(event) => setDraft((current) => ({ ...current, type: event.target.value }))}>
-              <option>작업</option>
-              <option>회의</option>
-              <option>검토</option>
-              <option>개인</option>
+              {SCHEDULER_CATEGORY_OPTIONS.map((category) => <option key={category}>{category}</option>)}
             </select>
           </label>
           <label>
@@ -4751,7 +4822,7 @@ function SchedulerPage({ navigate, embedded = false }) {
               <p>{selectedDate} · {filter} 보기 · {visibleItems.length}개</p>
             </div>
             <div className="schedulerFilters">
-              {['전체', '작업', '회의', '검토', '개인', '메모', '완료'].map((item) => (
+              {SCHEDULER_FILTER_OPTIONS.map((item) => (
                 <button key={item} type="button" className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>
                   {item}
                 </button>
