@@ -3,6 +3,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import LocalTripApp from './LocalTripApp.jsx';
 import ConnectionsApp from './ConnectionsApp.jsx';
+import MemoNavIcon from './components/MemoNavIcon.jsx';
+import WorkspaceQuickMenu from './components/WorkspaceQuickMenu.jsx';
 
 const AUTH_KEY = 'codex-workspace-auth';
 const LazyCodeEditor = lazy(() => import('./CodeEditor.jsx'));
@@ -2933,12 +2935,21 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260530-home-shortcuts-unified',
+    content: `# 2026-05-30 앱 홈 바로가기 통일
+
+- [x] /app 하단 바로가기를 /notes 메모 홈의 홈/메모/일정 아이콘 버튼 구조와 맞춤
+- [x] 연결은 제외하고 홈, 메모, 일정 3개 바로가기로 정리
+- [x] 앱 홈과 메모 홈이 같은 WorkspaceQuickMenu 컴포넌트를 쓰도록 분리
+- [x] 오늘/금주 일정 카드는 바로가기보다 낮은 보조 요약 카드 톤으로 보정`
+  },
+  {
     id: 'admin1-memo-20260530-notion-notes-localtrip-text-data',
     content: `# 2026-05-30 Notion형 메모와 장소 데이터 확장
 
 - [x] /notes를 폴더 트리, 메모 목록, 블록 에디터 3단 구조로 개편
 - [x] 모바일은 폴더, 메모 목록, 상세 작성 단계형 화면으로 분리
-- [x] 모바일 메모 홈에 프로필, 홈/메모/일정/연결 바로가기, 최근 항목 가로 카드, 내 워크스페이스 폴더 트리를 배치
+- [x] 모바일 메모 홈에 프로필, 홈/메모/일정 바로가기, 최근 항목 가로 카드, 내 워크스페이스 폴더 트리를 배치
 - [x] 폴더/메모의 추가와 더보기 액션을 연결하고 하단 검색, AI 질문, 새 메모 fixed 액션바를 적용
 - [x] /notes?board=...&block=... 진입과 폴더 선택, 메모 선택 라우팅을 보정
 - [x] 기존 markdown content를 heading/paragraph/bullet/checklist/code/divider 블록으로 변환
@@ -3355,138 +3366,6 @@ function BoardIcon({ type }) {
   );
 }
 
-function MemoNavIcon({ type }) {
-  const paths = {
-    home: <path d="M4 11.5 12 5l8 6.5V20H5v-8.5z" />,
-    calendar: (
-      <>
-        <path d="M5 5h14v15H5z" />
-        <path d="M8 3v4M16 3v4M5 10h14" />
-      </>
-    ),
-    trip: (
-      <>
-        <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z" />
-        <path d="M9 3v15M15 6v15" />
-      </>
-    ),
-    plus: (
-      <>
-        <path d="M12 5v14" />
-        <path d="M5 12h14" />
-      </>
-    ),
-    close: (
-      <>
-        <path d="M6 6l12 12" />
-        <path d="M18 6L6 18" />
-      </>
-    ),
-    bold: (
-      <>
-        <path d="M8 5h5.2a3 3 0 0 1 0 6H8z" />
-        <path d="M8 11h6a3.5 3.5 0 0 1 0 7H8z" />
-        <path d="M8 5v13" />
-      </>
-    ),
-    checkSquare: (
-      <>
-        <path d="M5 5h14v14H5z" />
-        <path d="m8.5 12.5 2.2 2.2 4.8-5.4" />
-      </>
-    ),
-    list: (
-      <>
-        <path d="M8 7h11" />
-        <path d="M8 12h11" />
-        <path d="M8 17h11" />
-        <path d="M4.5 7h.01" />
-        <path d="M4.5 12h.01" />
-        <path d="M4.5 17h.01" />
-      </>
-    ),
-    board: (
-      <>
-        <path d="M4 5h7v6H4z" />
-        <path d="M13 5h7v14h-7z" />
-        <path d="M4 13h7v6H4z" />
-      </>
-    ),
-    link: (
-      <>
-        <path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" />
-        <path d="M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20.1l1.1-1.1" />
-      </>
-    ),
-    mail: (
-      <>
-        <path d="M4 6h16v12H4z" />
-        <path d="m4 7 8 6 8-6" />
-      </>
-    ),
-    message: (
-      <>
-        <path d="M5 5h14v10H8l-3 3z" />
-        <path d="M8 9h8M8 12h5" />
-      </>
-    ),
-    spark: (
-      <>
-        <path d="M12 3l1.6 5.1L19 10l-5.4 1.9L12 17l-1.6-5.1L5 10l5.4-1.9z" />
-        <path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" />
-      </>
-    ),
-    shield: (
-      <>
-        <path d="M12 3l7 3v5c0 4.5-3 7.7-7 10-4-2.3-7-5.5-7-10V6z" />
-        <path d="m9 12 2 2 4-5" />
-      </>
-    ),
-    file: (
-      <>
-        <path d="M7 3h7l4 4v14H7z" />
-        <path d="M14 3v5h5" />
-      </>
-    ),
-    folder: (
-      <>
-        <path d="M4 6.5h6l1.8 2H20v9.5H4z" />
-        <path d="M4 8.5V6a1 1 0 0 1 1-1h4.2l1.7 2" />
-      </>
-    ),
-    chevronLeft: <path d="m15 6-6 6 6 6" />,
-    chevronRight: <path d="m9 6 6 6-6 6" />,
-    trash: (
-      <>
-        <path d="M5 7h14" />
-        <path d="M9 7V5h6v2" />
-        <path d="M8 10v8M12 10v8M16 10v8" />
-        <path d="M7 7l1 14h8l1-14" />
-      </>
-    ),
-    settings: (
-      <>
-        <circle cx="12" cy="12" r="3" />
-        <path d="M12 3.5v2.1" />
-        <path d="M12 18.4v2.1" />
-        <path d="M4.8 7.2l1.5 1.5" />
-        <path d="M17.7 15.3l1.5 1.5" />
-        <path d="M3.5 12h2.1" />
-        <path d="M18.4 12h2.1" />
-        <path d="M4.8 16.8l1.5-1.5" />
-        <path d="M17.7 8.7l1.5-1.5" />
-      </>
-    )
-  };
-  return (
-    <span className="memoNavIcon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-        {paths[type] || paths.file}
-      </svg>
-    </span>
-  );
-}
-
 function WorkspaceNavigator({ active, navigate }) {
   const items = PRIMARY_SHORTCUTS.map((item) => ({
     key: item.key,
@@ -3877,20 +3756,7 @@ function SpaceHomePage({ navigate }) {
             <img className="robotGuideCuttoonImage" src="/robot-guide-cuttoon.svg" alt="메모 작성, 일정 켜기, 내 일정 확인, 한눈에 관리 순서 안내" />
           </figure>
 
-          <nav className="spaceHomeTabs" aria-label="앱 주요 메뉴">
-            <button type="button" className="active" onClick={() => navigate('/notes')}>
-              <MemoNavIcon type="file" />
-              메모
-            </button>
-            <button type="button" onClick={() => navigate('/scheduler')}>
-              <MemoNavIcon type="calendar" />
-              일정
-            </button>
-            <button type="button" onClick={() => navigate('/connect')}>
-              <MemoNavIcon type="settings" />
-              관리
-            </button>
-          </nav>
+          <WorkspaceQuickMenu active="home" navigate={navigate} className="spaceHomeQuickMenu" ariaLabel="앱 바로가기" />
 
           <section className="spaceLaunchGrid" aria-label="빠른 시작">
             <button type="button" className="spaceLaunchCard schedule today" onClick={() => navigate('/scheduler')}>
@@ -5650,12 +5516,6 @@ function NotionNotesPage({ navigate }) {
   const breadcrumb = memoFolderPath(folders, activeFolderId);
   const accountName = session?.username && session.username !== 'guestuser' ? session.username : 'Guest';
   const accountPath = session?.username && session.username !== 'guestuser' && !session?.isGuest ? '/mypage' : '/login?redirect=/notes';
-  const quickLinks = [
-    { label: '홈', path: '/app', icon: 'home' },
-    { label: '메모', path: '/notes', icon: 'file' },
-    { label: '일정', path: '/scheduler', icon: 'calendar' },
-    { label: '연결', path: '/connect', icon: 'link' }
-  ];
 
   const replaceNotesRoute = (folderId = activeFolderId, noteId = '') => {
     const params = new URLSearchParams();
@@ -5930,14 +5790,7 @@ function NotionNotesPage({ navigate }) {
                   <button type="button" className="notesMobileProfile" onClick={() => navigate(accountPath)}>
                     <span>{accountName.slice(0, 1).toUpperCase()}</span>
                   </button>
-                  <div className="notesMobileQuickMenu" aria-label="상단 바로가기">
-                    {quickLinks.map((item) => (
-                      <button type="button" key={item.path} className={item.path === '/notes' ? 'active' : ''} onClick={() => navigate(item.path)}>
-                        <MemoNavIcon type={item.icon} />
-                        <span>{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  <WorkspaceQuickMenu active="notes" navigate={navigate} className="notesMobileQuickMenu" ariaLabel="상단 바로가기" />
                 </div>
                 <p>메모부터 일정, 여행 계획까지 한 곳에서 정리하세요.</p>
                 <button type="button" className="notesMobilePrimaryCta" onClick={() => createNote(activeFolderId || 'memo')}>

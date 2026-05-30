@@ -312,13 +312,14 @@
   box-shadow: 0 22px 52px rgba(15, 23, 42, 0.09) !important;
 }
 
-.spaceHomeTabs {
+.spaceHomeTabs,
+.spaceHomeQuickMenu {
   min-height: 78px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: center;
   gap: 8px;
-  padding: 9px 16px;
+  padding: 9px;
   border: 1px solid rgba(226, 232, 240, 0.96);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.95);
@@ -326,6 +327,7 @@
 }
 
 .spaceHomeTabs button,
+.spaceHomeQuickMenu button,
 .spaceLaunchCard {
   min-width: 0;
   border: 0;
@@ -333,30 +335,54 @@
   cursor: pointer;
 }
 
-.spaceHomeTabs button {
+.spaceHomeTabs button,
+.spaceHomeQuickMenu button {
   min-height: 56px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  padding: 5px 3px;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.spaceHomeTabs button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
-  border-radius: 8px;
-  background: transparent;
-  color: #64748b;
   font-size: 1rem;
-  font-weight: 900;
 }
 
 .spaceHomeTabs button.active {
   color: #0f766e;
 }
 
-.spaceHomeTabs button:nth-child(2) {
+.spaceHomeTabs button:nth-child(2),
+.spaceHomeQuickMenu button.active,
+.spaceHomeQuickMenu button:hover {
+  border-color: rgba(37, 99, 235, 0.24);
+  background: #eff6ff;
   color: #2563eb;
 }
 
-.spaceHomeTabs .memoNavIcon {
-  width: 30px;
-  height: 30px;
+.spaceHomeTabs .memoNavIcon,
+.spaceHomeQuickMenu .memoNavIcon {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  background: transparent;
+}
+
+.spaceHomeQuickMenu button.active .memoNavIcon,
+.spaceHomeQuickMenu button:hover .memoNavIcon {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
 }
 
 .spaceLaunchGrid {
@@ -438,6 +464,7 @@
 }
 
 .spaceHomeTabs button:hover,
+.spaceHomeQuickMenu button:hover,
 .spaceLaunchCard:hover,
 .spaceMemberWindow button:hover,
 .referenceHome .spaceAccountChoice:hover {
@@ -512,17 +539,20 @@
     font-size: 0.88rem !important;
   }
 
-  .spaceHomeTabs {
+  .spaceHomeTabs,
+  .spaceHomeQuickMenu {
     min-height: 66px;
     padding: 7px 10px;
   }
 
-  .spaceHomeTabs button {
+  .spaceHomeTabs button,
+  .spaceHomeQuickMenu button {
     min-height: 48px;
     font-size: 0.92rem;
   }
 
-  .spaceHomeTabs .memoNavIcon {
+  .spaceHomeTabs .memoNavIcon,
+  .spaceHomeQuickMenu .memoNavIcon {
     width: 25px;
     height: 25px;
   }
@@ -612,17 +642,20 @@
     width: 100%;
   }
 
-  .spaceHomeTabs {
+  .spaceHomeTabs,
+  .spaceHomeQuickMenu {
     gap: 3px;
     padding: 6px;
   }
 
-  .spaceHomeTabs button {
+  .spaceHomeTabs button,
+  .spaceHomeQuickMenu button {
     gap: 5px;
     font-size: 0.82rem;
   }
 
-  .spaceHomeTabs .memoNavIcon {
+  .spaceHomeTabs .memoNavIcon,
+  .spaceHomeQuickMenu .memoNavIcon {
     width: 22px;
     height: 22px;
   }
