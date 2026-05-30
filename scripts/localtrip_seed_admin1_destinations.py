@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -18,6 +19,7 @@ from typing import Sequence
 DEFAULT_WORKSPACE = "/data/workspace-data/users/admin1/workspace"
 DEFAULT_REPO_ROOT = "/home/lezzs5103/vibeCoding"
 DEFAULT_COMPOSE_FILE = "docker-compose.dev.yml"
+DEFAULT_APP_MOCK_SOURCE = "apps/api/src/main/java/com/platform/jupiter/localtrip/LocalTripDestinationService.java"
 SOURCE = "admin1-batch"
 
 
@@ -35,24 +37,11 @@ class DestinationSeed:
     description: str
     recommended_minutes: int
     popularity_score: int
-    image_url: str
+    image_url: str | None
 
 
-def img(query: str) -> str:
-    normalized = query.lower()
-    if any(token in normalized for token in ("busan", "haeundae", "gwangalli", "songjeong", "dadaepo")):
-        file_name = "Haeundae Beach Busan (45698772312).jpg"
-    elif "gamcheon" in normalized:
-        file_name = "Gamcheon culture village.jpg"
-    elif any(token in normalized for token in ("gyeongju", "bulguksa", "seokguram")):
-        file_name = "Bulguksa temple main building.jpg"
-    elif any(token in normalized for token in ("donggung", "wolji", "woljeong")):
-        file_name = "Donggung Palace and Wolji Pond in Gyeongju.jpg"
-    elif any(token in normalized for token in ("jeju", "seongsan", "udo", "hyeopjae", "aewol")):
-        file_name = "Seongsan Ilchulbong 01.jpg"
-    else:
-        file_name = "Gyeongbokgung Palace Main Gate.jpg"
-    return f"https://commons.wikimedia.org/wiki/Special:Redirect/file/{file_name.replace(' ', '%20')}?width=1200"
+def img(query: str) -> str | None:
+    return None
 
 
 DESTINATIONS: tuple[DestinationSeed, ...] = (
@@ -110,6 +99,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workspace", default=DEFAULT_WORKSPACE, help="admin1 workspace root.")
     parser.add_argument("--repo-root", default=DEFAULT_REPO_ROOT, help="Repository root containing docker-compose.dev.yml.")
     parser.add_argument("--compose-file", default=DEFAULT_COMPOSE_FILE, help="Compose file path, relative to repo root unless absolute.")
+    parser.add_argument("--app-mock-source", default=DEFAULT_APP_MOCK_SOURCE, help="Existing Java mock destination source, relative to repo root unless absolute.")
+    parser.add_argument("--skip-app-mock", action="store_true", help="Only use the handwritten admin1 seed list.")
     parser.add_argument("--db-service", default="db", help="Compose MariaDB service name.")
     parser.add_argument("--db-name", default=os.getenv("DB_NAME", "jupiter_web"))
     parser.add_argument("--db-user", default=os.getenv("DB_USER", "jupiter"))
@@ -124,11 +115,88 @@ def sql_quote(value: str) -> str:
 
 
 def sql_value(value: object) -> str:
+    if value is None:
+        return "NULL"
     if isinstance(value, int):
         return str(value)
     if isinstance(value, str):
         return sql_quote(value)
     raise TypeError(f"Unsupported SQL value: {value!r}")
+
+
+def normalize_key(value: str) -> str:
+    return re.sub(r"\s+", "", value.strip().lower())
+
+
+def split_java_strings(value: str) -> list[str]:
+    return re.findall(r'"([^"]*)"', value)
+
+
+def parse_app_mock_destinations(source_path: Path) -> list[DestinationSeed]:
+    if not source_path.exists():
+        return []
+    source = source_path.read_text(encoding="utf-8")
+    pattern = re.compile(
+        r'new MockDestination\("([^"]+)",\s*"([^"]+)",\s*"([^"]+)",\s*"([^"]+)",\s*"([^"]+)",\s*"([^"]+)",\s*'
+        r'List\.of\((.*?)\),\s*"([^"]+)",\s*"([^"]+)",\s*"([^"]+)",\s*(\d+),\s*(\d+)\)',
+        re.DOTALL,
+    )
+    destinations: list[DestinationSeed] = []
+    for match in pattern.finditer(source):
+        (
+            source_ref,
+            name,
+            region,
+            district,
+            category,
+            primary_style,
+            style_tags_source,
+            address,
+            headline,
+            description,
+            recommended_minutes,
+            popularity_score,
+        ) = match.groups()
+        destinations.append(
+            DestinationSeed(
+                source_ref=f"MOCK-{source_ref}",
+                name=name,
+                region=region,
+                district=district,
+                category=category,
+                primary_style=primary_style,
+                style_tags=tuple(split_java_strings(style_tags_source)),
+                address=address,
+                headline=headline,
+                description=description,
+                recommended_minutes=int(recommended_minutes),
+                popularity_score=int(popularity_score),
+                image_url=img(name),
+            )
+        )
+    return destinations
+
+
+def build_destination_catalog(args: argparse.Namespace) -> tuple[list[DestinationSeed], int]:
+    destinations = list(DESTINATIONS)
+    existing_keys = {
+        (normalize_key(destination.region), normalize_key(destination.name))
+        for destination in destinations
+    }
+    parsed_mock_count = 0
+    if not args.skip_app_mock:
+        source_path = Path(args.app_mock_source)
+        if not source_path.is_absolute():
+            source_path = Path(args.repo_root) / source_path
+        app_mock_destinations = parse_app_mock_destinations(source_path)
+        parsed_mock_count = len(app_mock_destinations)
+        for destination in app_mock_destinations:
+            key = (normalize_key(destination.region), normalize_key(destination.name))
+            if key in existing_keys:
+                continue
+            destinations.append(destination)
+            existing_keys.add(key)
+    return destinations, parsed_mock_count
 
 
 def build_sql(destinations: Sequence[DestinationSeed]) -> str:
@@ -171,7 +239,7 @@ def build_sql(destinations: Sequence[DestinationSeed]) -> str:
     )
 
 
-def write_outputs(workspace: Path, sql: str) -> tuple[Path, Path]:
+def write_outputs(workspace: Path, sql: str, destinations: Sequence[DestinationSeed], parsed_mock_count: int) -> tuple[Path, Path]:
     output_dir = workspace / "localtrip" / "seed"
     output_dir.mkdir(parents=True, exist_ok=True)
     sql_path = output_dir / "localtrip_admin1_destinations.sql"
@@ -180,13 +248,17 @@ def write_outputs(workspace: Path, sql: str) -> tuple[Path, Path]:
     manifest = {
         "generatedAtUtc": datetime.now(timezone.utc).isoformat(),
         "source": SOURCE,
-        "recordCount": len(DESTINATIONS),
-        "minimums": {"서울": 10, "부산": 10, "경주": 10},
-        "actualCounts": {
-            region: sum(1 for destination in DESTINATIONS if destination.region == region)
-            for region in sorted({destination.region for destination in DESTINATIONS})
+        "recordCount": len(destinations),
+        "sourceInputs": {
+            "handwrittenAdmin1": len(DESTINATIONS),
+            "parsedAppMock": parsed_mock_count,
         },
-        "destinations": [asdict(destination) for destination in DESTINATIONS],
+        "minimums": {"서울": 10, "부산": 10, "경주": 10, "제주": 10},
+        "actualCounts": {
+            region: sum(1 for destination in destinations if destination.region == region)
+            for region in sorted({destination.region for destination in destinations})
+        },
+        "destinations": [asdict(destination) for destination in destinations],
     }
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return sql_path, manifest_path
@@ -214,15 +286,21 @@ def apply_sql(args: argparse.Namespace, sql: str) -> None:
 def main() -> int:
     args = parse_args()
     workspace = Path(args.workspace)
-    sql = build_sql(DESTINATIONS)
-    sql_path, manifest_path = write_outputs(workspace, sql)
+    destinations, parsed_mock_count = build_destination_catalog(args)
+    sql = build_sql(destinations)
+    sql_path, manifest_path = write_outputs(workspace, sql, destinations, parsed_mock_count)
     if args.print_sql:
         print(sql)
     if args.apply:
         apply_sql(args, sql)
     print(f"Wrote SQL seed: {sql_path}")
     print(f"Wrote manifest: {manifest_path}")
-    print(f"Prepared {len(DESTINATIONS)} destinations: Seoul 12, Busan 12, Gyeongju 12, Jeju 10.")
+    counts = {
+        region: sum(1 for destination in destinations if destination.region == region)
+        for region in sorted({destination.region for destination in destinations})
+    }
+    print(f"Prepared {len(destinations)} destinations from {len(DESTINATIONS)} admin seeds and {parsed_mock_count} parsed app mock seeds.")
+    print("Region counts: " + ", ".join(f"{region} {count}" for region, count in counts.items()))
     if args.apply:
         print(f"Applied destination batch to {args.db_name}.localtrip_destination")
     return 0

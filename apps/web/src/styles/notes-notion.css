@@ -1,0 +1,884 @@
+/* Notion-style notes workspace */
+body:has(.notesShell) {
+  background: #f3f5f8 !important;
+}
+
+.notesShell.aiNoteShell {
+  --notes-blue: #2563eb;
+  --notes-blue-dark: #1d4ed8;
+  --notes-blue-soft: #eef5ff;
+  --notes-ink: #0f172a;
+  --notes-body: #475569;
+  --notes-muted: #7c8798;
+  --notes-line: #e5eaf1;
+  --notes-panel: #ffffff;
+  display: block !important;
+  min-height: 100svh !important;
+  background: #f3f5f8 !important;
+  color: var(--notes-ink) !important;
+}
+
+.notesShell * {
+  box-sizing: border-box;
+  letter-spacing: 0 !important;
+}
+
+.notesWorkspace {
+  width: min(1780px, calc(100% - 64px));
+  margin: 24px auto 48px;
+}
+
+.notesDesktopLayout {
+  min-height: calc(100svh - 150px);
+  display: grid;
+  grid-template-columns: 260px 340px minmax(0, 1fr);
+  gap: 16px;
+}
+
+.notesFolderPanel,
+.notesListPanel,
+.notesDetailPanel {
+  min-width: 0;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 8px;
+  background: var(--notes-panel);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
+}
+
+.notesFolderPanel,
+.notesListPanel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.notesFolderPanel header,
+.notesListPanel header {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px;
+  border-bottom: 1px solid var(--notes-line);
+}
+
+.notesFolderPanel header strong,
+.notesListPanel header strong {
+  display: block;
+  overflow: hidden;
+  color: var(--notes-ink);
+  font-size: 1rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notesListPanel header span {
+  color: var(--notes-muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.notesFolderPanel header button,
+.notesListPanel header button,
+.notesEmptyState button {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 8px;
+  background: var(--notes-blue);
+  color: #fff;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.notesFolderPanel header button .memoNavIcon,
+.notesListPanel header button .memoNavIcon,
+.notesEmptyState button .memoNavIcon {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.notesFolderTree,
+.notesList {
+  min-height: 0;
+  overflow: auto;
+  padding: 10px;
+}
+
+.notesFolderNode {
+  display: grid;
+  gap: 4px;
+}
+
+.notesFolderRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 30px 30px;
+  gap: 5px;
+  align-items: center;
+  padding-left: calc(var(--folder-depth, 0) * 14px);
+}
+
+.notesFolderSelect,
+.notesFolderRenameField {
+  min-width: 0;
+  min-height: 38px;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--notes-body);
+  padding: 0 8px;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-align: left;
+}
+
+.notesFolderRenameField {
+  grid-template-columns: 24px minmax(0, 1fr);
+}
+
+.notesFolderSelect:hover,
+.notesFolderRow.active .notesFolderSelect {
+  background: var(--notes-blue-soft);
+  color: var(--notes-blue-dark);
+}
+
+.notesFolderSelect span,
+.notesFolderRenameField input {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notesFolderRenameField input {
+  min-height: 28px;
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--notes-ink);
+  padding: 0 7px;
+  font: inherit;
+  font-weight: 850;
+}
+
+.notesFolderSelect small {
+  color: currentColor;
+  font-size: 0.72rem;
+  opacity: 0.72;
+}
+
+.notesFolderIconButton {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--notes-muted);
+  padding: 0;
+}
+
+.notesFolderIconButton:hover {
+  background: #f1f5f9;
+  color: var(--notes-blue-dark);
+}
+
+.notesFolderIconButton.danger:hover {
+  background: #fff1f2;
+  color: #dc2626;
+}
+
+.notesFolderIconButton .memoNavIcon {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  background: transparent;
+}
+
+.notesSearchField {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  margin: 12px 12px 0;
+  border: 1px solid var(--notes-line);
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 0 10px;
+}
+
+.notesSearchField input {
+  min-width: 0;
+  min-height: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--notes-ink);
+  font: inherit;
+  outline: none;
+}
+
+.notesList {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.notesListItem {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--notes-body);
+  padding: 12px;
+  font: inherit;
+  text-align: left;
+}
+
+.notesListItem:hover,
+.notesListItem.active {
+  border-color: rgba(37, 99, 235, 0.25);
+  background: #f8fbff;
+}
+
+.notesListItem.active {
+  box-shadow: inset 3px 0 0 var(--notes-blue);
+}
+
+.notesListItem strong {
+  overflow: hidden;
+  color: var(--notes-ink);
+  font-size: 0.98rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notesListItem span {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--notes-muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.notesListItem small {
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.notesDetailPanel {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.notesScheduleBar {
+  display: grid;
+  grid-template-columns: auto minmax(150px, 190px) minmax(130px, 170px) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--notes-line);
+  background: rgba(248, 250, 252, 0.86);
+}
+
+.notesScheduleBar label {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  color: var(--notes-muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.notesScheduleToggle {
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 8px !important;
+  color: var(--notes-body) !important;
+  font-size: 0.84rem !important;
+}
+
+.notesScheduleToggle input {
+  width: 36px;
+  height: 20px;
+  appearance: none;
+  border-radius: 999px;
+  background: #cbd5e1;
+  position: relative;
+  outline: none;
+  transition: background 0.16s ease;
+}
+
+.notesScheduleToggle input::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #fff;
+  transition: transform 0.16s ease;
+}
+
+.notesScheduleToggle input:checked {
+  background: var(--notes-blue);
+}
+
+.notesScheduleToggle input:checked::after {
+  transform: translateX(16px);
+}
+
+.notesScheduleBar input[type="date"],
+.notesScheduleBar input[type="time"] {
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid var(--notes-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--notes-ink);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.88rem;
+}
+
+.notesScheduleBar input:disabled {
+  background: #eef2f7;
+  color: #94a3b8;
+}
+
+.notesDeleteButton {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fff;
+  color: #dc2626;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.notesDeleteButton .memoNavIcon {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  background: #fff1f2;
+  color: #dc2626;
+}
+
+.notesDocument {
+  min-height: 0;
+  overflow: auto;
+  padding: clamp(24px, 4vw, 54px);
+}
+
+.notesTitleInput {
+  width: 100%;
+  min-height: 58px;
+  border: 0;
+  background: transparent;
+  color: var(--notes-ink);
+  padding: 0;
+  font: inherit;
+  font-size: clamp(1.7rem, 3vw, 2.45rem);
+  font-weight: 900;
+  line-height: 1.15;
+  outline: none;
+}
+
+.notionBlockEditor {
+  display: grid;
+  gap: 6px;
+  margin-top: 24px;
+}
+
+.notionEditorBlock {
+  position: relative;
+  min-width: 0;
+}
+
+.notionBlockPreview {
+  width: 100%;
+  min-height: 34px;
+  display: block;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--notes-body);
+  padding: 5px 8px;
+  font: inherit;
+  text-align: left;
+}
+
+.notionBlockPreview:hover,
+.notionEditorBlock.focused .notionBlockInputWrap {
+  border-color: rgba(37, 99, 235, 0.24);
+  background: #f8fbff;
+}
+
+.notionBlockPreview h2,
+.notionBlockPreview p,
+.notionBlockPreview pre {
+  margin: 0;
+}
+
+.notionBlockPreview h2 {
+  color: var(--notes-ink);
+  font-size: 1.35rem;
+  line-height: 1.34;
+}
+
+.notionBlockPreview p {
+  color: var(--notes-body);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.notionBullet {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.notionBullet span {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--notes-ink);
+  transform: translateY(-2px);
+}
+
+.notionChecklist {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--notes-body);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.notionChecklist input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--notes-blue);
+}
+
+.notionBlockPreview pre {
+  overflow-x: auto;
+  border-radius: 8px;
+  background: #111827;
+  color: #e5e7eb;
+  padding: 12px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.notionBlockPreview hr {
+  height: 1px;
+  border: 0;
+  background: var(--notes-line);
+}
+
+.notionBlockInputWrap {
+  position: relative;
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.notionBlockInputWrap textarea {
+  width: 100%;
+  min-height: 40px;
+  display: block;
+  border: 0;
+  background: transparent;
+  color: var(--notes-ink);
+  padding: 9px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  outline: none;
+  resize: none;
+}
+
+.slashCommandMenu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 10px;
+  width: min(320px, calc(100vw - 40px));
+  display: grid;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid var(--notes-line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.16);
+}
+
+.slashCommandMenu button {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 2px 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--notes-body);
+  padding: 8px;
+  font: inherit;
+  text-align: left;
+}
+
+.slashCommandMenu button.active,
+.slashCommandMenu button:hover {
+  background: var(--notes-blue-soft);
+  color: var(--notes-blue-dark);
+}
+
+.slashCommandMenu strong {
+  grid-row: span 2;
+  font-weight: 900;
+}
+
+.slashCommandMenu span {
+  color: var(--notes-ink);
+  font-weight: 850;
+}
+
+.slashCommandMenu small {
+  color: var(--notes-muted);
+  font-size: 0.75rem;
+}
+
+.notesEmptyState {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  color: var(--notes-muted);
+  padding: 22px 12px;
+}
+
+.notesEmptyState.large {
+  place-self: center;
+  max-width: 360px;
+  padding: 28px;
+}
+
+.notesEmptyState strong {
+  color: var(--notes-ink);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.notesStatusText {
+  margin: 12px 4px 0;
+  color: var(--notes-muted);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.notesMobileWorkspace,
+.notesMobileBottomTabs {
+  display: none;
+}
+
+.spaceLaunchCard.today,
+.spaceLaunchCard.week {
+  text-align: left;
+}
+
+.spaceLaunchCard.today small,
+.spaceLaunchCard.week small {
+  color: #2563eb;
+  font-weight: 900;
+}
+
+@media (max-width: 1120px) {
+  .notesWorkspace {
+    width: 100%;
+    margin: 0;
+    padding-bottom: 76px;
+  }
+
+  .notesDesktopLayout {
+    display: none;
+  }
+
+  .notesMobileWorkspace {
+    display: block;
+    min-height: calc(100svh - 68px);
+    background: #f3f5f8;
+  }
+
+  .notesMobileHeader {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--notes-line);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(14px);
+  }
+
+  .notesMobileHeader button {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--notes-line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--notes-body);
+    padding: 0 10px 0 6px;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 850;
+  }
+
+  .notesMobileHeader div {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+  }
+
+  .notesMobileHeader span,
+  .notesMobileHeader strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .notesMobileHeader span {
+    color: var(--notes-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+
+  .notesMobileHeader strong {
+    color: var(--notes-ink);
+    font-size: 0.98rem;
+    font-weight: 900;
+  }
+
+  .notesMobileFolders,
+  .notesMobileList,
+  .notesMobileDetail {
+    padding: 14px;
+  }
+
+  .notesMobileSectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 4px 0 10px;
+  }
+
+  .notesMobileSectionHeader.recent {
+    margin-top: 22px;
+  }
+
+  .notesMobileSectionHeader strong {
+    color: var(--notes-ink);
+    font-size: 1rem;
+    font-weight: 900;
+  }
+
+  .notesMobileSectionHeader button {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(37, 99, 235, 0.22);
+    border-radius: 8px;
+    background: var(--notes-blue);
+    color: #fff;
+    padding: 0 10px;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 850;
+  }
+
+  .notesMobileFolderList,
+  .notesMobileRecentList {
+    display: grid;
+    gap: 8px;
+  }
+
+  .notesMobileFolderRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 36px 36px;
+    gap: 6px;
+    align-items: center;
+    padding-left: calc(var(--mobile-folder-depth, 0) * 16px);
+  }
+
+  .notesMobileFolderOpen,
+  .notesMobileFolderAction,
+  .notesMobileRecentList button {
+    min-width: 0;
+    display: grid;
+    gap: 4px 10px;
+    border: 1px solid var(--notes-line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--notes-body);
+    padding: 13px;
+    font: inherit;
+    text-align: left;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+  }
+
+  .notesMobileFolderOpen {
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .notesMobileFolderAction {
+    width: 36px;
+    min-height: 46px;
+    place-items: center;
+    padding: 0;
+  }
+
+  .notesMobileFolderAction.danger {
+    color: #dc2626;
+  }
+
+  .notesMobileFolderOpen span,
+  .notesMobileRecentList strong,
+  .notesMobileRecentList span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .notesMobileRecentList strong {
+    color: var(--notes-ink);
+    font-size: 0.95rem;
+    font-weight: 900;
+  }
+
+  .notesMobileRecentList span {
+    color: var(--notes-muted);
+    font-size: 0.82rem;
+  }
+
+  .notesMobileList .notesListPanel,
+  .notesMobileDetail .notesDetailPanel {
+    min-height: calc(100svh - 156px);
+    border-radius: 8px;
+  }
+
+  .notesMobileList .notesListPanel {
+    display: grid;
+  }
+
+  .notesScheduleBar {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .notesScheduleToggle,
+  .notesDeleteButton {
+    grid-column: span 2;
+  }
+
+  .notesDocument {
+    padding: 20px 16px 28px;
+  }
+
+  .notesTitleInput {
+    min-height: 48px;
+    font-size: 1.55rem;
+  }
+
+  .notesMobileBottomTabs {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 80;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--notes-line);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(14px);
+  }
+
+  .notesMobileBottomTabs button {
+    min-width: 0;
+    min-height: 46px;
+    display: grid;
+    place-items: center;
+    gap: 2px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--notes-muted);
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 850;
+  }
+
+  .notesMobileBottomTabs button.active {
+    background: var(--notes-blue-soft);
+    color: var(--notes-blue-dark);
+  }
+
+  .notesMobileBottomTabs .memoNavIcon {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    background: transparent;
+  }
+}
+
+@media (max-width: 680px) {
+  .notesShell .workspaceNavigator {
+    display: none !important;
+  }
+
+  .notesMobileWorkspace {
+    min-height: 100svh;
+  }
+}

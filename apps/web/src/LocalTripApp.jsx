@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 
 const AUTH_KEY = 'codex-workspace-auth';
 const SCHEDULER_KEY = 'codex-personal-scheduler-items';
+const AI_NOTE_KEY = 'codex-ai-note-blocks';
+const AI_NOTE_BOARDS_KEY = 'codex-ai-note-boards';
 const LOCALTRIP_DAY_CHECK_KEY = 'localtrip-day-route-checks';
 const LOCALTRIP_DAY_ROUTE_KEY = 'localtrip-day-route-inputs';
 const LOCALTRIP_PLANNER_DRAFT_KEY = 'localtrip-planner-draft';
@@ -395,10 +397,25 @@ function readStoredAuth() {
   }
 }
 
-function schedulerStorageKey(session = readStoredAuth()) {
+function storageUsername(session = readStoredAuth()) {
   const username = session?.username;
-  const normalized = String(username || 'guestuser').trim().toLowerCase().replace(/[^a-z0-9._-]/g, '_') || 'guestuser';
-  return `${SCHEDULER_KEY}:${normalized}`;
+  return String(username || 'guestuser').trim().toLowerCase().replace(/[^a-z0-9._-]/g, '_') || 'guestuser';
+}
+
+function userStorageKey(baseKey, session = readStoredAuth()) {
+  return `${baseKey}:${storageUsername(session)}`;
+}
+
+function schedulerStorageKey(session = readStoredAuth()) {
+  return userStorageKey(SCHEDULER_KEY, session);
+}
+
+function noteBlocksStorageKey(session = readStoredAuth()) {
+  return userStorageKey(AI_NOTE_KEY, session);
+}
+
+function noteBoardsStorageKey(session = readStoredAuth()) {
+  return userStorageKey(AI_NOTE_BOARDS_KEY, session);
 }
 
 function migrateLegacySchedulerStorage(scopedKey) {
@@ -437,6 +454,30 @@ function dedupeSchedulerItems(items) {
     seen.add(key);
     return true;
   });
+}
+
+function readLocalArray(storageKey) {
+  try {
+    const raw = localStorage.getItem(storageKey);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function ensureMemoFolder(session = readStoredAuth()) {
+  const storageKey = noteBoardsStorageKey(session);
+  const boards = readLocalArray(storageKey);
+  const nextBoards = boards.length ? boards : [
+    { id: 'project', parentId: null, name: '프로젝트', title: '프로젝트', sortOrder: 0 },
+    { id: 'memo', parentId: null, name: '메모', title: '메모', sortOrder: 1 }
+  ];
+  if (!nextBoards.some((board) => board.id === 'memo')) {
+    nextBoards.push({ id: 'memo', parentId: null, name: '메모', title: '메모', sortOrder: nextBoards.length });
+  }
+  localStorage.setItem(storageKey, JSON.stringify(nextBoards));
+  return storageKey;
 }
 
 function isGuestSession(session) {
@@ -543,7 +584,7 @@ function normalizeDestination(raw, index = 0) {
     reviewCount,
     liveVisitors: reviewCount,
     occupancyRate: pickNumber(row.occupancyRate, row.congestionRate, row.busyRate),
-    imageUrl: destinationImage(row, index)
+    imageUrl: pickString(row.imageUrl, row.image_url, row.photoUrl, row.thumbnailUrl)
   };
 }
 
@@ -1078,6 +1119,104 @@ function addPlanToScheduler(plan) {
     window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { item: nextItem, items: nextItems, storageKey } }));
   } catch {
     // Scheduler sync is a convenience layer; plan creation should not fail because localStorage is unavailable.
+  }
+}
+
+function addPlanToMemoBoard(plan) {
+  if (!plan) return null;
+  try {
+    const session = readStoredAuth();
+    ensureMemoFolder(session);
+    const storageKey = noteBlocksStorageKey(session);
+    const notes = readLocalArray(storageKey);
+    const planId = plan.id || plan.key || Date.now();
+    const id = `travel-plan-memo-${planId}`;
+    if (notes.some((note) => note.id === id)) {
+      window.dispatchEvent(new CustomEvent('codex:notes-updated', { detail: { storageKey } }));
+      return notes.find((note) => note.id === id) || null;
+    }
+    const firstSlot = plan.itinerary?.[0]?.items?.[0];
+    const scheduleDate = plan.startDate || new Date().toISOString().slice(0, 10);
+    const scheduleTime = firstSlot?.startTime || '09:00';
+    const routeLines = (plan.itinerary || []).flatMap((day) => [
+      `## ${day.title || `${day.day || ''}일차`.trim() || '하루 코스'}`,
+      ...(day.items || []).map((item) => `- [ ] ${item.startTime || item.time || ''} ${item.title || item.destinationName || '장소'}${item.category ? ` · ${item.category}` : ''}`.trim())
+    ]);
+    const content = [
+      `# ${plan.title || `${plan.destinationName || '여행'} 코스`}`,
+      '',
+      `- 지역: ${plan.destinationName || plan.destinationRegion || '미정'}`,
+      `- 기간: ${formatDaysLabel(plan.days)}`,
+      `- 시작: ${scheduleDate} ${scheduleTime}`,
+      plan.summary ? `- 요약: ${plan.summary}` : '',
+      '',
+      ...routeLines
+    ].filter(Boolean).join('\n');
+    const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
+    const nextNote = {
+      id,
+      type: 'text',
+      title: plan.title || `${plan.destinationName || '여행'} 코스`,
+      content,
+      sector: 'memo',
+      boardId: 'memo',
+      status: 'todo',
+      parentId: '',
+      filePath: `memo-files/memo/${id}.md`,
+      schedule: { enabled: true, date: scheduleDate, time: scheduleTime },
+      createdAt: now,
+      updatedAt: now
+    };
+    const nextNotes = [nextNote, ...notes];
+    localStorage.setItem(storageKey, JSON.stringify(nextNotes));
+    if (localStorage.getItem(AI_NOTE_KEY)) {
+      localStorage.removeItem(AI_NOTE_KEY);
+    }
+    window.dispatchEvent(new CustomEvent('codex:notes-updated', { detail: { item: nextNote, items: nextNotes, storageKey } }));
+    return nextNote;
+  } catch {
+    // Memo sync is local convenience; travel plan creation should continue if storage is unavailable.
+    return null;
+  }
+}
+
+function savePlanToPersonalWorkspace(plan) {
+  const note = addPlanToMemoBoard(plan);
+  if (!note?.schedule?.enabled) {
+    addPlanToScheduler(plan);
+    return;
+  }
+  try {
+    const storageKey = schedulerStorageKey();
+    const items = dedupeSchedulerItems(readSchedulerArray(storageKey));
+    const scheduleId = `ai-note-${note.id}`;
+    const withoutExisting = items.filter((item) => item.id !== scheduleId && item.id !== `travel-plan-${plan.id || plan.key || ''}`);
+    const nextItem = {
+      id: scheduleId,
+      title: note.title || plan.title || `${plan.destinationName || '여행'} 코스`,
+      date: note.schedule.date,
+      time: note.schedule.time,
+      type: '여행',
+      memo: plan.summary || note.content || '',
+      recurrence: 'none',
+      recurrenceEnd: '',
+      source: '메모',
+      origin: {
+        kind: 'note',
+        blockId: note.id,
+        boardId: 'memo',
+        path: `/notes?board=memo&block=${encodeURIComponent(note.id)}`
+      },
+      done: false
+    };
+    const nextItems = [...withoutExisting, nextItem];
+    localStorage.setItem(storageKey, JSON.stringify(nextItems));
+    if (localStorage.getItem(SCHEDULER_KEY)) {
+      localStorage.removeItem(SCHEDULER_KEY);
+    }
+    window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { item: nextItem, items: nextItems, storageKey } }));
+  } catch {
+    addPlanToScheduler(plan);
   }
 }
 
@@ -1723,23 +1862,10 @@ function LocalTripNav({ path, navigate }) {
 function DestinationCard({ destination, compact = false, navigate }) {
   return (
     <article className={`ltDestinationCard ${compact ? 'compact' : ''}`}>
-      <div className="ltDestinationPhoto">
-        {destination.imageUrl ? (
-          <img
-            src={destination.imageUrl}
-            alt={destination.name}
-            loading="lazy"
-            decoding="async"
-            onError={(event) => imageFallback(event, destination.region)}
-          />
-        ) : (
-          <div className="ltPhotoPlaceholder" aria-hidden="true">{destination.region}</div>
-        )}
-        <span>{destination.category}</span>
-      </div>
       <div className="ltDestinationBody">
         <div className="ltCardTopline">
           <span>{destination.region}</span>
+          <em>{destination.category}</em>
           {destination.rating ? (
             <strong className="ltRatingBadge">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="#e11d48" stroke="#e11d48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1752,6 +1878,20 @@ function DestinationCard({ destination, compact = false, navigate }) {
         </div>
         <h3>{destination.name}</h3>
         <p>{destination.summary}</p>
+        <dl className="ltDestinationFacts">
+          {destination.address ? (
+            <>
+              <dt>주소</dt>
+              <dd>{destination.address}</dd>
+            </>
+          ) : null}
+          {destination.source ? (
+            <>
+              <dt>출처</dt>
+              <dd>{destination.source}{destination.sourceRef ? ` · ${destination.sourceRef}` : ''}</dd>
+            </>
+          ) : null}
+        </dl>
         <div className="ltTagRow">
           {destination.tags.map((tag) => <span key={tag}>{tag}</span>)}
         </div>
@@ -2120,7 +2260,7 @@ function DestinationsPage({ path, navigate }) {
         </section>
       </details>
 
-      {loading ? <EmptyState title="장소를 불러오는 중입니다" description="추천 장소와 이미지를 정리하고 있어요." /> : null}
+      {loading ? <EmptyState title="장소를 불러오는 중입니다" description="지역, 테마, 주소 데이터를 정리하고 있어요." /> : null}
       {!loading && !filtered.length ? <EmptyState title="조건에 맞는 장소가 없습니다" description="검색어를 줄이거나 다른 지역, 테마를 선택해보세요." /> : null}
       <div className="ltDestinationGrid">
         {filtered.map((destination) => (
@@ -2290,7 +2430,7 @@ function PlannerPage({ path, navigate }) {
       const response = await localTripRequest('/api/travel-plans/generate', { method: 'POST', body: payload });
       const plan = normalizePlan(response);
       setGeneratedPlan(plan);
-      addPlanToScheduler(plan);
+      savePlanToPersonalWorkspace(plan);
       if (plan.id) {
         navigate(`/plans/${encodeURIComponent(plan.id)}`);
       }
@@ -2512,21 +2652,9 @@ function PlannerPage({ path, navigate }) {
             <div className="ltMiniDestList">
               {countryDestinations.filter(d => selectedDestinationIds.includes(d.id)).map(d => (
                 <div key={d.id} className="ltMiniDestCard">
-                  {d.imageUrl ? (
-                    <img
-                      className="ltMiniDestPhoto"
-                      src={d.imageUrl}
-                      alt={d.name}
-                      loading="lazy"
-                      decoding="async"
-                      onError={(event) => imageFallback(event, d.region)}
-                    />
-                  ) : (
-                    <div className="ltMiniDestPhoto placeholder" aria-hidden="true">{d.region}</div>
-                  )}
                   <div>
                     <strong>{d.name}</strong>
-                    <span>{d.region}</span>
+                    <span>{[d.region, d.category, d.address].filter(Boolean).join(' · ')}</span>
                   </div>
                 </div>
               ))}
@@ -2934,8 +3062,8 @@ function PlanDetailActions({ plan, navigate, onDeleted }) {
   };
 
   const saveToScheduler = () => {
-    addPlanToScheduler(plan);
-    setStatus('스케줄러에 저장했습니다.');
+    savePlanToPersonalWorkspace(plan);
+    setStatus('메모와 일정에 저장했습니다.');
   };
 
   const exportText = () => {

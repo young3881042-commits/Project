@@ -197,7 +197,7 @@ public class LocalTripDestinationService {
         destination.setStyleTags(String.join(",", seed.styleTags()));
         destination.setAddress(seed.address());
         destination.setHeadline(seed.headline());
-        destination.setImageUrl(defaultImageUrl(seed.sourceRef()));
+        destination.setImageUrl(null);
         destination.setDescription(seed.description());
         destination.setRecommendedMinutes(seed.recommendedMinutes());
         destination.setPopularityScore(seed.popularityScore());
@@ -314,11 +314,5 @@ public class LocalTripDestinationService {
             String description,
             Integer recommendedMinutes,
             Integer popularityScore) {
-    }
-
-    private String defaultImageUrl(String sourceRef) {
-        Destination destination = new Destination();
-        destination.setSourceRef(sourceRef);
-        return LocalTripImageCatalog.resolve(destination);
     }
 }

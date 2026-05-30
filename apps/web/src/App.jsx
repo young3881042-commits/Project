@@ -415,8 +415,8 @@ function defaultNoteBlocks() {
 
 function defaultMemoBoards() {
   return [
-    { id: 'project', title: '프로젝트 보드' },
-    { id: 'memo', title: '메모 보드' }
+    { id: 'project', parentId: null, name: '프로젝트', title: '프로젝트', sortOrder: 0 },
+    { id: 'memo', parentId: null, name: '메모', title: '메모', sortOrder: 1 }
   ];
 }
 
@@ -437,12 +437,60 @@ function readMemoBoards(input = readStoredAuth()) {
 }
 
 function normalizeMemoBoard(board) {
-  const title = typeof board?.title === 'string' ? board.title.trim() : '';
-  if (!title) return null;
+  const name = (typeof board?.name === 'string' ? board.name : board?.title || '').trim();
+  if (!name) return null;
+  const parentId = typeof board?.parentId === 'string' && board.parentId ? board.parentId : null;
   return {
     id: board?.id || `board-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-    title
+    parentId,
+    name,
+    title: name,
+    sortOrder: Number.isFinite(Number(board?.sortOrder)) ? Number(board.sortOrder) : 0
   };
+}
+
+function memoFolderName(folder) {
+  return folder?.name || folder?.title || '메모';
+}
+
+function sortedMemoFolders(folders) {
+  return [...folders].sort((left, right) => {
+    const order = (Number(left.sortOrder) || 0) - (Number(right.sortOrder) || 0);
+    if (order) return order;
+    return memoFolderName(left).localeCompare(memoFolderName(right), 'ko');
+  });
+}
+
+function memoFolderChildren(folders, parentId = null) {
+  const normalizedParentId = parentId || null;
+  return sortedMemoFolders(folders).filter((folder) => (folder.parentId || null) === normalizedParentId);
+}
+
+function memoFolderPath(folders, folderId) {
+  const path = [];
+  const visited = new Set();
+  let current = folders.find((folder) => folder.id === folderId);
+  while (current && !visited.has(current.id)) {
+    path.unshift(current);
+    visited.add(current.id);
+    current = current.parentId ? folders.find((folder) => folder.id === current.parentId) : null;
+  }
+  return path;
+}
+
+function memoFolderDescendantIds(folders, folderId) {
+  const ids = new Set([folderId]);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    folders.forEach((folder) => {
+      if (folder.parentId && ids.has(folder.parentId) && !ids.has(folder.id)) {
+        ids.add(folder.id);
+        changed = true;
+      }
+    });
+  }
+  return ids;
 }
 
 function legacyScheduleFromContent(content) {
@@ -464,29 +512,182 @@ function normalizeNoteSchedule(schedule, block) {
   return { enabled, date, time };
 }
 
+const NOTE_EDITOR_BLOCK_TYPES = ['heading', 'paragraph', 'bullet', 'checklist', 'code', 'divider'];
+
+function newMemoEditorBlock(type = 'paragraph', patch = {}) {
+  const normalizedType = NOTE_EDITOR_BLOCK_TYPES.includes(type) ? type : 'paragraph';
+  return {
+    id: patch.id || `memo-block-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    type: normalizedType,
+    text: typeof patch.text === 'string' ? patch.text : '',
+    checked: Boolean(patch.checked),
+    level: Math.max(1, Math.min(3, Number(patch.level) || 1))
+  };
+}
+
+function normalizeMemoEditorBlock(block, index = 0) {
+  if (!block || typeof block !== 'object') {
+    return newMemoEditorBlock('paragraph', { id: `memo-block-${index}`, text: '' });
+  }
+  return newMemoEditorBlock(block.type, {
+    id: block.id || `memo-block-${index}`,
+    text: typeof block.text === 'string' ? block.text : '',
+    checked: Boolean(block.checked),
+    level: block.level
+  });
+}
+
+function splitMemoTitleAndBody(markdown, providedTitle = '') {
+  const source = `${markdown || ''}`.replace(/\r\n/g, '\n');
+  const lines = source.split('\n');
+  const firstContentIndex = lines.findIndex((line) => line.trim());
+  if (firstContentIndex === -1) {
+    return { title: providedTitle.trim() || '새 메모', body: '' };
+  }
+
+  const firstLine = lines[firstContentIndex].trim();
+  const headingMatch = firstLine.match(/^#{1,3}\s+(.+)$/);
+  if (headingMatch) {
+    const bodyLines = [...lines.slice(0, firstContentIndex), ...lines.slice(firstContentIndex + 1)];
+    return {
+      title: providedTitle.trim() || headingMatch[1].trim() || '새 메모',
+      body: bodyLines.join('\n').replace(/^\s+/, '')
+    };
+  }
+
+  if (providedTitle.trim()) {
+    return { title: providedTitle.trim(), body: source };
+  }
+
+  return {
+    title: plainMarkdownText(firstLine) || '새 메모',
+    body: lines.slice(firstContentIndex + 1).join('\n').replace(/^\s+/, '')
+  };
+}
+
+function markdownToMemoEditorBlocks(markdown) {
+  const lines = `${markdown || ''}`.replace(/\r\n/g, '\n').split('\n');
+  const blocks = [];
+  let codeBuffer = null;
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('```')) {
+      if (codeBuffer) {
+        blocks.push(newMemoEditorBlock('code', { text: codeBuffer.join('\n') }));
+        codeBuffer = null;
+      } else {
+        codeBuffer = [];
+      }
+      return;
+    }
+
+    if (codeBuffer) {
+      codeBuffer.push(line);
+      return;
+    }
+
+    if (!trimmed) return;
+    const headingMatch = trimmed.match(/^(#{1,3})\s+(.+)$/);
+    if (headingMatch) {
+      blocks.push(newMemoEditorBlock('heading', { level: headingMatch[1].length, text: headingMatch[2].trim() }));
+      return;
+    }
+    if (/^(-{3,}|\*{3,})$/.test(trimmed)) {
+      blocks.push(newMemoEditorBlock('divider'));
+      return;
+    }
+    const checklistMatch = trimmed.match(/^(?:[-*]\s*)?\[([ xX]?)\]\s*(.*)$/);
+    if (checklistMatch) {
+      blocks.push(newMemoEditorBlock('checklist', {
+        checked: checklistMatch[1].toLowerCase() === 'x',
+        text: checklistMatch[2].trim()
+      }));
+      return;
+    }
+    const bulletMatch = trimmed.match(/^[-*]\s+(.+)$/);
+    if (bulletMatch) {
+      blocks.push(newMemoEditorBlock('bullet', { text: bulletMatch[1].trim() }));
+      return;
+    }
+    blocks.push(newMemoEditorBlock('paragraph', { text: line.trim() }));
+  });
+
+  if (codeBuffer) {
+    blocks.push(newMemoEditorBlock('code', { text: codeBuffer.join('\n') }));
+  }
+
+  return blocks.length ? blocks : [newMemoEditorBlock('paragraph')];
+}
+
+function memoEditorBlockToMarkdown(block) {
+  const normalized = normalizeMemoEditorBlock(block);
+  const text = normalized.text || '';
+  if (normalized.type === 'heading') return `${'#'.repeat(normalized.level || 1)} ${text}`.trimEnd();
+  if (normalized.type === 'bullet') return `- ${text}`.trimEnd();
+  if (normalized.type === 'checklist') return `- [${normalized.checked ? 'x' : ' '}] ${text}`.trimEnd();
+  if (normalized.type === 'code') return ['```', text, '```'].join('\n');
+  if (normalized.type === 'divider') return '---';
+  return text;
+}
+
+function memoEditorBlocksToMarkdown(blocks) {
+  const normalized = Array.isArray(blocks) ? blocks.map(normalizeMemoEditorBlock) : [];
+  return normalized.map(memoEditorBlockToMarkdown).join('\n').trimEnd();
+}
+
+function memoContentFromTitleAndBlocks(title, blocks) {
+  const safeTitle = title?.trim() || '새 메모';
+  const body = memoEditorBlocksToMarkdown(blocks);
+  return [`# ${safeTitle}`, body].filter((part) => part && part.trim()).join('\n\n');
+}
+
+function noteContentParts(block) {
+  const split = splitMemoTitleAndBody(block?.content || '', typeof block?.title === 'string' ? block.title : '');
+  const bodyBlocks = Array.isArray(block?.blocks) && block.blocks.length
+    ? block.blocks.map(normalizeMemoEditorBlock)
+    : markdownToMemoEditorBlocks(split.body);
+  return {
+    title: split.title || '새 메모',
+    blocks: bodyBlocks,
+    content: memoContentFromTitleAndBlocks(split.title || '새 메모', bodyBlocks)
+  };
+}
+
 function readNoteBlocks(input = readStoredAuth()) {
   try {
     const storageKey = noteBlocksStorageKey(input);
     migrateLegacyArrayStorage(AI_NOTE_KEY, storageKey);
     const raw = localStorage.getItem(storageKey);
-    const parsed = raw ? JSON.parse(raw) : null;
-    return Array.isArray(parsed) && parsed.length ? parsed.map(normalizeNoteBlock) : defaultNoteBlocks();
+    if (raw === null) {
+      return defaultNoteBlocks();
+    }
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map(normalizeNoteBlock) : defaultNoteBlocks();
   } catch {
     return defaultNoteBlocks();
   }
 }
 
 function normalizeNoteBlock(block) {
-  const sector = ['project', 'memo'].includes(block?.sector) ? block.sector : 'project';
-  const boardId = typeof block?.boardId === 'string' && block.boardId ? block.boardId : sector;
+  const rawBoardId = typeof block?.boardId === 'string' && block.boardId
+    ? block.boardId
+    : typeof block?.sector === 'string' && block.sector
+      ? block.sector
+      : 'memo';
+  const sector = rawBoardId;
+  const boardId = rawBoardId;
   const projectBlock = boardId === 'project';
   const blockType = ['text', 'file', 'checklist'].includes(block?.type) ? block.type : 'text';
   const fallbackX = 24 + (Math.abs(String(block?.id || '').split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % 180);
   const fallbackY = 24 + (Math.abs(String(block?.id || '').split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % 220);
+  const contentParts = noteContentParts(block);
   return {
     id: block?.id || `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     type: blockType,
-    content: typeof block?.content === 'string' ? block.content : '',
+    title: contentParts.title,
+    blocks: contentParts.blocks,
+    content: contentParts.content,
     sector,
     boardId,
     status: ['todo', 'progress', 'review', 'done'].includes(block?.status) ? block.status : 'todo',
@@ -539,12 +740,20 @@ function normalizeMarkdownTasks(markdown) {
 }
 
 function noteBlockTitle(block) {
+  if (typeof block?.title === 'string' && block.title.trim()) return block.title.trim();
+  const firstHeading = Array.isArray(block?.blocks)
+    ? block.blocks.find((item) => item?.type === 'heading' && item.text?.trim())
+    : null;
+  if (firstHeading) return firstHeading.text.trim();
   const plain = plainMarkdownText(block?.content || '');
   const firstLine = plain.split('\n').map((line) => line.trim()).find(Boolean);
   return firstLine || '새 메모';
 }
 
 function noteBlockBody(block) {
+  if (Array.isArray(block?.blocks)) {
+    return memoEditorBlocksToMarkdown(block.blocks);
+  }
   const lines = `${block?.content || ''}`.split('\n');
   const firstContentIndex = lines.findIndex((line) => line.trim());
   if (firstContentIndex === -1) return '';
@@ -553,8 +762,7 @@ function noteBlockBody(block) {
 
 function noteBlockContentWithTitle(block, title) {
   const safeTitle = title.trim() || '새 메모';
-  const body = noteBlockBody(block);
-  return [`# ${safeTitle}`, body].filter(Boolean).join('\n\n');
+  return memoContentFromTitleAndBlocks(safeTitle, block?.blocks || markdownToMemoEditorBlocks(noteBlockBody(block)));
 }
 
 function checklistItemsFromBlock(block) {
@@ -2608,6 +2816,19 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260530-notion-notes-localtrip-text-data',
+    content: `# 2026-05-30 Notion형 메모와 장소 데이터 확장
+
+- [x] /notes를 폴더 트리, 메모 목록, 블록 에디터 3단 구조로 개편
+- [x] 모바일은 폴더, 메모 목록, 상세 작성 단계형 화면으로 분리
+- [x] 기존 markdown content를 heading/paragraph/bullet/checklist/code/divider 블록으로 변환
+- [x] 메모 일정 연결 bar를 유지하고 일정 연동 시 스케줄러에 반영
+- [x] /app 하단 빠른 시작을 메모 개수 대신 오늘/금주 일정 진행률로 변경
+- [x] 장소 찾기를 이미지 없는 텍스트형 데이터 카드로 변경
+- [x] 여행 코스 생성 시 메모 보드와 일정에 함께 저장
+- [x] admin1-batch 장소 데이터 109건을 이미지 없이 DB에 적재`
+  },
+  {
     id: 'admin1-memo-20260529-app-home-11png-reference',
     content: `# 2026-05-29 11.png 기준 앱 홈 메인 정리
 
@@ -3107,6 +3328,22 @@ function MemoNavIcon({ type }) {
         <path d="M14 3v5h5" />
       </>
     ),
+    folder: (
+      <>
+        <path d="M4 6.5h6l1.8 2H20v9.5H4z" />
+        <path d="M4 8.5V6a1 1 0 0 1 1-1h4.2l1.7 2" />
+      </>
+    ),
+    chevronLeft: <path d="m15 6-6 6 6 6" />,
+    chevronRight: <path d="m9 6 6 6-6 6" />,
+    trash: (
+      <>
+        <path d="M5 7h14" />
+        <path d="M9 7V5h6v2" />
+        <path d="M8 10v8M12 10v8M16 10v8" />
+        <path d="M7 7l1 14h8l1-14" />
+      </>
+    ),
     settings: (
       <>
         <circle cx="12" cy="12" r="3" />
@@ -3189,7 +3426,7 @@ function noteBlockFileContent(block) {
   if (block.type === 'file') {
     return `# ${title}\n\n`;
   }
-  return [`# ${title}`, '', block.content.trim()].filter(Boolean).join('\n');
+  return memoContentFromTitleAndBlocks(title, block?.blocks || markdownToMemoEditorBlocks(noteBlockBody(block)));
 }
 
 function checklistStatsForBlocks(blocks) {
@@ -3210,6 +3447,8 @@ function summarizeAppActivity() {
   const nextSevenDays = Array.from({ length: 7 }, (_, index) => toDateKey(addDays(new Date(), index)));
   const expandedWeekItems = expandSchedulerItemsForDates(schedulerItems, nextSevenDays);
   const todayItems = expandedWeekItems.filter((item) => item.date === today);
+  const todayDoneItems = todayItems.filter((item) => item.done);
+  const weekDoneItems = expandedWeekItems.filter((item) => item.done);
   const pendingWeekItems = expandedWeekItems.filter((item) => !item.done);
   const nextSchedule = pendingWeekItems
     .slice()
@@ -3233,6 +3472,11 @@ function summarizeAppActivity() {
 
   return {
     todayCount: todayItems.length,
+    todayDoneCount: todayDoneItems.length,
+    todayProgress: todayItems.length ? Math.round((todayDoneItems.length / todayItems.length) * 100) : 0,
+    weekCount: expandedWeekItems.length,
+    weekDoneCount: weekDoneItems.length,
+    weekProgress: expandedWeekItems.length ? Math.round((weekDoneItems.length / expandedWeekItems.length) * 100) : 0,
     weekPendingCount: pendingWeekItems.length,
     nextSchedule,
     totalScheduleCount: schedulerItems.length,
@@ -3249,6 +3493,11 @@ function summarizeAppActivity() {
 
 const EMPTY_APP_OVERVIEW = {
   todayCount: 0,
+  todayDoneCount: 0,
+  todayProgress: 0,
+  weekCount: 0,
+  weekDoneCount: 0,
+  weekProgress: 0,
   weekPendingCount: 0,
   nextSchedule: null,
   totalScheduleCount: 0,
@@ -3524,15 +3773,15 @@ function SpaceHomePage({ navigate }) {
           </nav>
 
           <section className="spaceLaunchGrid" aria-label="빠른 시작">
-            <button type="button" className="spaceLaunchCard memo" onClick={() => navigate('/notes')}>
-              <span><MemoNavIcon type="file" /></span>
-              <strong>메모</strong>
-              <small>메모 {appOverview.memoCount}</small>
-            </button>
-            <button type="button" className="spaceLaunchCard schedule" onClick={() => navigate('/scheduler')}>
+            <button type="button" className="spaceLaunchCard schedule today" onClick={() => navigate('/scheduler')}>
               <span><MemoNavIcon type="calendar" /></span>
-              <strong>일정</strong>
-              <small>오늘 {appOverview.todayCount}</small>
+              <strong>오늘 일정</strong>
+              <small>{appOverview.todayDoneCount}/{appOverview.todayCount} 완료 · {appOverview.todayProgress}%</small>
+            </button>
+            <button type="button" className="spaceLaunchCard schedule week" onClick={() => navigate('/scheduler')}>
+              <span><MemoNavIcon type="calendar" /></span>
+              <strong>금주 일정</strong>
+              <small>{appOverview.weekDoneCount}/{appOverview.weekCount} 완료 · {appOverview.weekProgress}%</small>
             </button>
           </section>
         </div>
@@ -4593,6 +4842,812 @@ function AiNotePage({ navigate }) {
   );
 }
 
+const NOTE_SLASH_COMMANDS = [
+  { command: '/h', label: '제목', type: 'heading', description: '큰 제목 블록' },
+  { command: '/check', label: '체크리스트', type: 'checklist', description: '완료 상태가 있는 항목' },
+  { command: '/bullet', label: '글머리 기호', type: 'bullet', description: '짧은 목록 항목' },
+  { command: '/code', label: '코드', type: 'code', description: '고정폭 코드 블록' },
+  { command: '/divider', label: '구분선', type: 'divider', description: '내용을 나누는 선' }
+];
+
+function memoEditorBlockToInput(block) {
+  const normalized = normalizeMemoEditorBlock(block);
+  const text = normalized.text || '';
+  if (normalized.type === 'heading') return `${'#'.repeat(normalized.level || 1)} ${text}`.trimEnd();
+  if (normalized.type === 'bullet') return `- ${text}`.trimEnd();
+  if (normalized.type === 'checklist') return `- [${normalized.checked ? 'x' : ' '}] ${text}`.trimEnd();
+  if (normalized.type === 'code') return ['```', text, '```'].join('\n');
+  if (normalized.type === 'divider') return '---';
+  return text;
+}
+
+function memoEditorBlockFromInput(input, current) {
+  const source = `${input || ''}`.replace(/\r\n/g, '\n');
+  const trimmed = source.trim();
+  if (current?.type === 'code') {
+    const fenced = source.match(/^```\n?([\s\S]*?)\n?```$/);
+    return { ...current, type: 'code', text: fenced ? fenced[1] : source };
+  }
+  if (trimmed.startsWith('/')) {
+    return { ...current, type: 'paragraph', text: trimmed };
+  }
+  const headingMatch = trimmed.match(/^(#{1,3})\s*(.*)$/);
+  if (headingMatch) {
+    return { ...current, type: 'heading', level: headingMatch[1].length, text: headingMatch[2] || '' };
+  }
+  if (/^(-{3,}|\*{3,})$/.test(trimmed)) {
+    return { ...current, type: 'divider', text: '' };
+  }
+  const checklistMatch = trimmed.match(/^(?:[-*]\s*)?\[([ xX]?)\]\s*(.*)$/);
+  if (checklistMatch) {
+    return {
+      ...current,
+      type: 'checklist',
+      checked: checklistMatch[1].toLowerCase() === 'x',
+      text: checklistMatch[2] || ''
+    };
+  }
+  const bulletMatch = trimmed.match(/^[-*]\s*(.*)$/);
+  if (bulletMatch) {
+    return { ...current, type: 'bullet', text: bulletMatch[1] || '' };
+  }
+  return { ...current, type: 'paragraph', text: source };
+}
+
+function memoEditorBlockIsEmpty(block) {
+  if (!block) return true;
+  if (block.type === 'divider') return true;
+  return !(block.text || '').trim();
+}
+
+function memoNoteExcerpt(note) {
+  const text = (note?.blocks || [])
+    .filter((block) => block.type !== 'divider')
+    .map((block) => block.text)
+    .join(' ')
+    .trim();
+  return text || '본문 없음';
+}
+
+function memoNoteUpdatedAt(note) {
+  return note?.updatedAt || note?.createdAt || '';
+}
+
+function MemoBottomTabs({ navigate }) {
+  return (
+    <nav className="notesMobileBottomTabs" aria-label="모바일 하단 메뉴">
+      <button type="button" className="active" onClick={() => navigate('/notes')}><MemoNavIcon type="file" />메모</button>
+      <button type="button" onClick={() => navigate('/scheduler')}><MemoNavIcon type="calendar" />일정</button>
+      <button type="button" onClick={() => navigate('/destinations')}><MemoNavIcon type="trip" />장소</button>
+      <button type="button" onClick={() => navigate('/analysisadmin')}><MemoNavIcon type="settings" />관리</button>
+    </nav>
+  );
+}
+
+function NotesFolderTree({ folders, activeFolderId, noteCounts, onSelect, onAddFolder, onRenameFolder, onDeleteFolder }) {
+  const [editingId, setEditingId] = useState('');
+  const [draft, setDraft] = useState('');
+  const commitRename = (folder) => {
+    const nextName = draft.trim();
+    if (nextName) onRenameFolder(folder.id, nextName);
+    setEditingId('');
+    setDraft('');
+  };
+  const renderFolder = (folder, depth = 0) => {
+    const children = memoFolderChildren(folders, folder.id);
+    const active = activeFolderId === folder.id;
+    return (
+      <div className="notesFolderNode" key={folder.id}>
+        <div className={`notesFolderRow ${active ? 'active' : ''}`} style={{ '--folder-depth': depth }}>
+          {editingId === folder.id ? (
+            <label className="notesFolderRenameField">
+              <MemoNavIcon type="folder" />
+              <input
+                autoFocus
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                onBlur={() => commitRename(folder)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    commitRename(folder);
+                  }
+                  if (event.key === 'Escape') {
+                    event.preventDefault();
+                    setEditingId('');
+                    setDraft('');
+                  }
+                }}
+                aria-label="폴더 이름"
+              />
+            </label>
+          ) : (
+            <button
+              type="button"
+              className="notesFolderSelect"
+              onClick={() => onSelect(folder.id)}
+              onDoubleClick={() => {
+                setEditingId(folder.id);
+                setDraft(memoFolderName(folder));
+              }}
+            >
+              <MemoNavIcon type="folder" />
+              <span>{memoFolderName(folder)}</span>
+              <small>{noteCounts[folder.id] || 0}</small>
+            </button>
+          )}
+          <button type="button" className="notesFolderIconButton" onClick={() => onAddFolder(folder.id)} aria-label="하위 폴더 추가" title="하위 폴더 추가">
+            <MemoNavIcon type="plus" />
+          </button>
+          {canDeleteMemoBoard(folder) ? (
+            <button type="button" className="notesFolderIconButton danger" onClick={() => onDeleteFolder(folder.id)} aria-label="폴더 삭제" title="폴더 삭제">
+              <MemoNavIcon type="trash" />
+            </button>
+          ) : null}
+        </div>
+        {children.length ? (
+          <div className="notesFolderChildren">
+            {children.map((child) => renderFolder(child, depth + 1))}
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+
+  return (
+    <aside className="notesFolderPanel" aria-label="폴더 트리">
+      <header>
+        <strong>폴더</strong>
+        <button type="button" onClick={() => onAddFolder(null)}><MemoNavIcon type="plus" />새 폴더</button>
+      </header>
+      <div className="notesFolderTree">
+        {memoFolderChildren(folders, null).map((folder) => renderFolder(folder))}
+      </div>
+    </aside>
+  );
+}
+
+function MemoListPanel({ folder, notes, activeId, onSelect, onCreate }) {
+  const [query, setQuery] = useState('');
+  const filteredNotes = notes.filter((note) => {
+    const keyword = query.trim().toLowerCase();
+    if (!keyword) return true;
+    return `${noteBlockTitle(note)} ${memoNoteExcerpt(note)}`.toLowerCase().includes(keyword);
+  });
+
+  return (
+    <aside className="notesListPanel" aria-label="메모 목록">
+      <header>
+        <div>
+          <span>현재 폴더</span>
+          <strong>{memoFolderName(folder)}</strong>
+        </div>
+        <button type="button" onClick={onCreate}><MemoNavIcon type="plus" />새 메모</button>
+      </header>
+      <label className="notesSearchField">
+        <MemoNavIcon type="file" />
+        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="메모 검색" />
+      </label>
+      <div className="notesList">
+        {filteredNotes.map((note) => (
+          <button
+            type="button"
+            key={note.id}
+            className={`notesListItem ${activeId === note.id ? 'active' : ''}`}
+            onClick={() => onSelect(note.id)}
+          >
+            <strong>{noteBlockTitle(note)}</strong>
+            <span>{memoNoteExcerpt(note)}</span>
+            <small>{memoNoteUpdatedAt(note) || '방금 전'}</small>
+          </button>
+        ))}
+        {filteredNotes.length ? null : (
+          <div className="notesEmptyState">
+            <strong>메모가 없습니다</strong>
+            <span>이 폴더에 새 메모를 작성해 보세요.</span>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+function NotesScheduleBar({ note, onScheduleChange, onDelete }) {
+  const schedule = normalizeNoteSchedule(note?.schedule, note);
+  return (
+    <section className={`notesScheduleBar ${schedule.enabled ? 'enabled' : ''}`} aria-label="일정 연결">
+      <label className="notesScheduleToggle">
+        <input
+          type="checkbox"
+          checked={schedule.enabled}
+          onChange={(event) => onScheduleChange({ enabled: event.target.checked })}
+        />
+        <span>일정 연결</span>
+      </label>
+      <label>
+        <span>날짜</span>
+        <input
+          type="date"
+          value={schedule.date}
+          disabled={!schedule.enabled}
+          onChange={(event) => onScheduleChange({ date: event.target.value })}
+        />
+      </label>
+      <label>
+        <span>시간</span>
+        <input
+          type="time"
+          value={schedule.time}
+          disabled={!schedule.enabled}
+          onChange={(event) => onScheduleChange({ time: event.target.value })}
+        />
+      </label>
+      <button type="button" className="notesDeleteButton" onClick={onDelete}><MemoNavIcon type="trash" />삭제</button>
+    </section>
+  );
+}
+
+function NotionBlockEditor({ blocks, onChange }) {
+  const normalizedBlocks = Array.isArray(blocks) && blocks.length ? blocks.map(normalizeMemoEditorBlock) : [newMemoEditorBlock('paragraph')];
+  const [focusedId, setFocusedId] = useState(normalizedBlocks[0]?.id || '');
+  const [slashIndex, setSlashIndex] = useState(0);
+  const inputRefs = useRef({});
+  const focusedBlock = normalizedBlocks.find((block) => block.id === focusedId);
+  const focusedInput = focusedBlock ? memoEditorBlockToInput(focusedBlock) : '';
+  const slashQuery = focusedInput.trim().startsWith('/') ? focusedInput.trim().slice(1).toLowerCase() : '';
+  const slashCommands = focusedInput.trim().startsWith('/')
+    ? NOTE_SLASH_COMMANDS.filter((item) => `${item.command} ${item.label}`.toLowerCase().includes(slashQuery))
+    : [];
+
+  useEffect(() => {
+    if (!focusedId) return;
+    const target = inputRefs.current[focusedId];
+    if (!target) return;
+    target.focus();
+    const length = target.value.length;
+    target.setSelectionRange?.(length, length);
+  }, [focusedId, normalizedBlocks.length]);
+
+  useEffect(() => {
+    setSlashIndex(0);
+  }, [slashQuery]);
+
+  const replaceBlocks = (nextBlocks, nextFocusId = focusedId) => {
+    onChange(nextBlocks.map(normalizeMemoEditorBlock));
+    if (nextFocusId) setFocusedId(nextFocusId);
+  };
+
+  const updateOne = (id, updater) => {
+    replaceBlocks(normalizedBlocks.map((block) => (block.id === id ? normalizeMemoEditorBlock(updater(block)) : block)), id);
+  };
+
+  const insertAfter = (id, type = 'paragraph') => {
+    const nextBlock = newMemoEditorBlock(type);
+    const currentIndex = normalizedBlocks.findIndex((block) => block.id === id);
+    const nextBlocks = [...normalizedBlocks];
+    nextBlocks.splice(currentIndex + 1, 0, nextBlock);
+    replaceBlocks(nextBlocks, nextBlock.id);
+  };
+
+  const deleteOne = (id) => {
+    if (normalizedBlocks.length <= 1) {
+      replaceBlocks([newMemoEditorBlock('paragraph', { id, text: '' })], id);
+      return;
+    }
+    const index = normalizedBlocks.findIndex((block) => block.id === id);
+    const nextBlocks = normalizedBlocks.filter((block) => block.id !== id);
+    const nextFocus = nextBlocks[Math.max(0, index - 1)]?.id || nextBlocks[0]?.id;
+    replaceBlocks(nextBlocks, nextFocus);
+  };
+
+  const applyCommand = (command, id = focusedId) => {
+    if (!command || !id) return;
+    updateOne(id, (block) => ({
+      ...block,
+      type: command.type,
+      text: '',
+      checked: false,
+      level: command.type === 'heading' ? 1 : block.level
+    }));
+  };
+
+  const renderPreview = (block) => {
+    if (block.type === 'heading') return <h2>{block.text || '제목'}</h2>;
+    if (block.type === 'bullet') return <p className="notionBullet"><span />{block.text || '목록'}</p>;
+    if (block.type === 'checklist') {
+      return (
+        <label className="notionChecklist" onClick={(event) => event.stopPropagation()}>
+          <input
+            type="checkbox"
+            checked={Boolean(block.checked)}
+            onChange={(event) => updateOne(block.id, (current) => ({ ...current, checked: event.target.checked }))}
+          />
+          <span>{block.text || '체크리스트'}</span>
+        </label>
+      );
+    }
+    if (block.type === 'code') return <pre><code>{block.text || 'code'}</code></pre>;
+    if (block.type === 'divider') return <hr />;
+    return <p>{block.text || '빈 블록'}</p>;
+  };
+
+  return (
+    <div className="notionBlockEditor" aria-label="블록 메모 에디터">
+      {normalizedBlocks.map((block) => {
+        const focused = focusedId === block.id;
+        const inputValue = memoEditorBlockToInput(block);
+        return (
+          <div className={`notionEditorBlock ${focused ? 'focused' : ''} ${block.type}`} key={block.id}>
+            {focused ? (
+              <div className="notionBlockInputWrap">
+                <textarea
+                  ref={(element) => {
+                    if (element) inputRefs.current[block.id] = element;
+                  }}
+                  value={inputValue}
+                  rows={Math.max(1, Math.min(8, inputValue.split('\n').length))}
+                  onFocus={() => setFocusedId(block.id)}
+                  onChange={(event) => updateOne(block.id, (current) => memoEditorBlockFromInput(event.target.value, current))}
+                  onKeyDown={(event) => {
+                    if (event.key === 'ArrowDown' && slashCommands.length) {
+                      event.preventDefault();
+                      setSlashIndex((current) => (current + 1) % slashCommands.length);
+                      return;
+                    }
+                    if (event.key === 'ArrowUp' && slashCommands.length) {
+                      event.preventDefault();
+                      setSlashIndex((current) => (current - 1 + slashCommands.length) % slashCommands.length);
+                      return;
+                    }
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault();
+                      if (slashCommands.length) {
+                        applyCommand(slashCommands[slashIndex] || slashCommands[0], block.id);
+                      } else {
+                        insertAfter(block.id);
+                      }
+                    }
+                    if (event.key === 'Backspace' && memoEditorBlockIsEmpty(block)) {
+                      event.preventDefault();
+                      deleteOne(block.id);
+                    }
+                    if (event.key === 'Escape') {
+                      event.currentTarget.blur();
+                    }
+                  }}
+                  placeholder="/ 로 블록 추가"
+                  aria-label="Markdown 원문 블록"
+                />
+                {slashCommands.length ? (
+                  <div className="slashCommandMenu">
+                    {slashCommands.map((command, index) => (
+                      <button
+                        type="button"
+                        key={command.command}
+                        className={index === slashIndex ? 'active' : ''}
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          applyCommand(command, block.id);
+                        }}
+                      >
+                        <strong>{command.command}</strong>
+                        <span>{command.label}</span>
+                        <small>{command.description}</small>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <button type="button" className="notionBlockPreview" onClick={() => setFocusedId(block.id)}>
+                {renderPreview(block)}
+              </button>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function NotesDetailPanel({ note, folder, onTitleChange, onBlocksChange, onScheduleChange, onDelete, onCreate }) {
+  if (!note) {
+    return (
+      <section className="notesDetailPanel empty">
+        <div className="notesEmptyState large">
+          <strong>{memoFolderName(folder)} 폴더가 비어 있습니다</strong>
+          <span>새 메모를 만들면 오른쪽에서 바로 작성할 수 있습니다.</span>
+          <button type="button" onClick={onCreate}><MemoNavIcon type="plus" />새 메모</button>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="notesDetailPanel" aria-label="메모 상세">
+      <NotesScheduleBar note={note} onScheduleChange={onScheduleChange} onDelete={onDelete} />
+      <article className="notesDocument">
+        <input
+          className="notesTitleInput"
+          value={noteBlockTitle(note)}
+          onChange={(event) => onTitleChange(event.target.value)}
+          aria-label="메모 제목"
+        />
+        <NotionBlockEditor blocks={note.blocks} onChange={onBlocksChange} />
+      </article>
+    </section>
+  );
+}
+
+function NotionNotesPage({ navigate }) {
+  const session = readStoredAuth();
+  const noteBlocksKey = noteBlocksStorageKey(session);
+  const noteBoardsKey = noteBoardsStorageKey(session);
+  const routeTargetRef = useRef({
+    applied: false,
+    folderId: new URLSearchParams(window.location.search).get('board') || '',
+    noteId: new URLSearchParams(window.location.search).get('block') || ''
+  });
+  const [folders, setFolders] = useState(() => readMemoBoards(session));
+  const [notes, setNotes] = useState(() => readNoteBlocks(session));
+  const [activeFolderId, setActiveFolderId] = useState(routeTargetRef.current.folderId || 'memo');
+  const [activeId, setActiveId] = useState(routeTargetRef.current.noteId || '');
+  const [mobileView, setMobileView] = useState(routeTargetRef.current.noteId ? 'detail' : routeTargetRef.current.folderId ? 'list' : 'folders');
+  const [statusText, setStatusText] = useState('');
+
+  useEffect(() => {
+    document.title = '메모';
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(noteBlocksKey, JSON.stringify(notes));
+    localStorage.removeItem(AI_NOTE_KEY);
+    window.dispatchEvent(new CustomEvent('codex:notes-updated', { detail: { storageKey: noteBlocksKey } }));
+    syncNoteSchedules(notes);
+  }, [notes, noteBlocksKey]);
+
+  useEffect(() => {
+    localStorage.setItem(noteBoardsKey, JSON.stringify(folders));
+    localStorage.removeItem(AI_NOTE_BOARDS_KEY);
+    window.dispatchEvent(new CustomEvent('codex:notes-updated', { detail: { storageKey: noteBoardsKey } }));
+  }, [folders, noteBoardsKey]);
+
+  useEffect(() => {
+    if (session?.username !== 'admin1') return;
+    setFolders((current) => (
+      current.some((folder) => folder.id === 'memo')
+        ? current
+        : [...current, { id: 'memo', parentId: null, name: '메모', title: '메모', sortOrder: 1 }]
+    ));
+    setNotes((current) => {
+      const existingIds = new Set(current.map((note) => note.id));
+      const missingTasks = ADMIN1_BOARD_TASKS.filter((task) => !existingIds.has(task.id));
+      const missingLogs = ADMIN1_MEMO_LOGS.filter((memo) => !existingIds.has(memo.id));
+      if (!missingTasks.length && !missingLogs.length) return current;
+      return [
+        ...missingTasks.map((task, index) => normalizeNoteBlock({
+          id: task.id,
+          type: 'text',
+          title: task.title,
+          content: `# ${task.title}\n\n- [ ] 진행 상태 확인\n- [ ] 운영 화면 확인`,
+          sector: 'project',
+          boardId: 'project',
+          status: task.status,
+          parentId: '',
+          filePath: `memo-files/admin1/${task.id}.md`,
+          sortOrder: index
+        })),
+        ...missingLogs.map((memo, index) => normalizeNoteBlock({
+          id: memo.id,
+          type: 'text',
+          content: memo.content,
+          sector: 'memo',
+          boardId: 'memo',
+          status: 'done',
+          parentId: '',
+          filePath: `memo-files/admin1/${memo.id}.md`,
+          sortOrder: index
+        })),
+        ...current
+      ];
+    });
+  }, [session?.username]);
+
+  useEffect(() => {
+    const existingIds = new Set(folders.map((folder) => folder.id));
+    const missingFolderIds = Array.from(new Set(notes
+      .map((note) => note.boardId || note.sector)
+      .filter((folderId) => folderId && !existingIds.has(folderId))));
+    if (!missingFolderIds.length) return;
+    setFolders((current) => [
+      ...current,
+      ...missingFolderIds.map((folderId, index) => ({
+        id: folderId,
+        parentId: null,
+        name: folderId === 'project' ? '프로젝트' : folderId === 'memo' ? '메모' : folderId,
+        title: folderId === 'project' ? '프로젝트' : folderId === 'memo' ? '메모' : folderId,
+        sortOrder: current.length + index
+      }))
+    ]);
+  }, [folders, notes]);
+
+  useEffect(() => {
+    if (!folders.some((folder) => folder.id === activeFolderId)) {
+      setActiveFolderId(folders.find((folder) => folder.id === 'memo')?.id || folders[0]?.id || '');
+    }
+  }, [activeFolderId, folders]);
+
+  useEffect(() => {
+    const folderNotes = notes.filter((note) => (note.boardId || note.sector) === activeFolderId && !note.parentId);
+    if (!activeId || !folderNotes.some((note) => note.id === activeId)) {
+      setActiveId(folderNotes[0]?.id || '');
+    }
+  }, [activeFolderId, activeId, notes]);
+
+  useEffect(() => {
+    const target = routeTargetRef.current;
+    if (target.applied || !target.noteId) return;
+    const targetNote = notes.find((note) => note.id === target.noteId);
+    if (!targetNote) return;
+    target.applied = true;
+    setActiveFolderId(target.folderId || targetNote.boardId || targetNote.sector || 'memo');
+    setActiveId(targetNote.id);
+    setMobileView('detail');
+  }, [notes]);
+
+  const activeFolder = folders.find((folder) => folder.id === activeFolderId) || folders[0] || null;
+  const folderNotes = notes
+    .filter((note) => (note.boardId || note.sector) === activeFolderId && !note.parentId)
+    .slice()
+    .sort((left, right) => (memoNoteUpdatedAt(right) || '').localeCompare(memoNoteUpdatedAt(left) || ''));
+  const activeNote = notes.find((note) => note.id === activeId) || folderNotes[0] || null;
+  const recentNotes = notes
+    .filter((note) => (note.boardId || note.sector) !== 'project')
+    .slice()
+    .sort((left, right) => (memoNoteUpdatedAt(right) || '').localeCompare(memoNoteUpdatedAt(left) || ''))
+    .slice(0, 5);
+  const noteCounts = notes.reduce((counts, note) => {
+    const folderId = note.boardId || note.sector || 'memo';
+    counts[folderId] = (counts[folderId] || 0) + 1;
+    return counts;
+  }, {});
+  const breadcrumb = memoFolderPath(folders, activeFolderId);
+
+  const updateNote = (id, updater) => {
+    setNotes((current) => current.map((note) => {
+      if (note.id !== id) return note;
+      const patch = typeof updater === 'function' ? updater(note) : updater;
+      const next = { ...note, ...patch, updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' ') };
+      const title = typeof next.title === 'string' && next.title.trim() ? next.title.trim() : noteBlockTitle(next);
+      const bodyBlocks = Array.isArray(next.blocks) && next.blocks.length ? next.blocks.map(normalizeMemoEditorBlock) : [newMemoEditorBlock('paragraph')];
+      return {
+        ...next,
+        title,
+        blocks: bodyBlocks,
+        content: memoContentFromTitleAndBlocks(title, bodyBlocks)
+      };
+    }));
+  };
+
+  const addFolder = (parentId = null) => {
+    const siblings = memoFolderChildren(folders, parentId);
+    const nextFolder = {
+      id: `folder-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      parentId: parentId || null,
+      name: '새 폴더',
+      title: '새 폴더',
+      sortOrder: siblings.length
+    };
+    setFolders((current) => [...current, nextFolder]);
+    setActiveFolderId(nextFolder.id);
+    setMobileView('list');
+    setStatusText('새 폴더를 만들었습니다.');
+  };
+
+  const renameFolder = (id, name) => {
+    setFolders((current) => current.map((folder) => (folder.id === id ? { ...folder, name, title: name } : folder)));
+  };
+
+  const deleteFolder = (id) => {
+    const target = folders.find((folder) => folder.id === id);
+    if (!canDeleteMemoBoard(target)) {
+      setStatusText('기본 프로젝트 폴더는 삭제하지 않습니다.');
+      return;
+    }
+    if (!window.confirm(`${memoFolderName(target)} 폴더와 안의 메모를 삭제할까요?`)) return;
+    const deleteIds = memoFolderDescendantIds(folders, id);
+    setFolders((current) => current.filter((folder) => !deleteIds.has(folder.id)));
+    setNotes((current) => current.filter((note) => !deleteIds.has(note.boardId || note.sector || 'memo')));
+    const nextFolder = folders.find((folder) => !deleteIds.has(folder.id)) || null;
+    setActiveFolderId(nextFolder?.id || '');
+    setActiveId('');
+    setMobileView('folders');
+    setStatusText('폴더를 삭제했습니다.');
+  };
+
+  const createNote = (folderId = activeFolderId) => {
+    const title = '새 메모';
+    const bodyBlocks = [newMemoEditorBlock('paragraph')];
+    const nextNote = normalizeNoteBlock({
+      id: `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      type: 'text',
+      title,
+      blocks: bodyBlocks,
+      content: memoContentFromTitleAndBlocks(title, bodyBlocks),
+      sector: folderId,
+      boardId: folderId,
+      status: 'todo',
+      parentId: '',
+      filePath: `memo-files/${folderId}/note-${Date.now()}.md`,
+      createdAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+      updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' ')
+    });
+    setNotes((current) => [nextNote, ...current]);
+    setActiveFolderId(folderId);
+    setActiveId(nextNote.id);
+    setMobileView('detail');
+    setStatusText('새 메모를 만들었습니다.');
+  };
+
+  const deleteNote = (id = activeNote?.id) => {
+    if (!id) return;
+    const target = notes.find((note) => note.id === id);
+    if (!window.confirm(`${noteBlockTitle(target)} 메모를 삭제할까요?`)) return;
+    setNotes((current) => current.filter((note) => note.id !== id));
+    setActiveId('');
+    setMobileView('list');
+    setStatusText('메모를 삭제했습니다.');
+  };
+
+  const updateSchedule = (patch) => {
+    if (!activeNote) return;
+    const current = normalizeNoteSchedule(activeNote.schedule, activeNote);
+    updateNote(activeNote.id, {
+      schedule: {
+        ...current,
+        ...patch,
+        enabled: Object.prototype.hasOwnProperty.call(patch, 'enabled') ? Boolean(patch.enabled) : current.enabled,
+        date: isDateKey(patch.date) ? patch.date : current.date,
+        time: isTimeKey(patch.time) ? patch.time : current.time
+      }
+    });
+  };
+
+  const selectFolder = (folderId) => {
+    setActiveFolderId(folderId);
+    setMobileView('list');
+  };
+
+  const selectNote = (noteId) => {
+    setActiveId(noteId);
+    setMobileView('detail');
+  };
+
+  const renderMobileFolderRows = (parentId = null, depth = 0) => memoFolderChildren(folders, parentId).flatMap((folder) => {
+    const children = renderMobileFolderRows(folder.id, depth + 1);
+    return [
+      <div className="notesMobileFolderRow" key={folder.id} style={{ '--mobile-folder-depth': depth }}>
+        <button type="button" className="notesMobileFolderOpen" onClick={() => selectFolder(folder.id)}>
+          <MemoNavIcon type="folder" />
+          <span>{memoFolderName(folder)}</span>
+          <small>{noteCounts[folder.id] || 0}</small>
+        </button>
+        <button type="button" className="notesMobileFolderAction" onClick={() => addFolder(folder.id)} aria-label="하위 폴더 추가">
+          <MemoNavIcon type="plus" />
+        </button>
+        {canDeleteMemoBoard(folder) ? (
+          <button type="button" className="notesMobileFolderAction danger" onClick={() => deleteFolder(folder.id)} aria-label="폴더 삭제">
+            <MemoNavIcon type="trash" />
+          </button>
+        ) : null}
+      </div>,
+      ...children
+    ];
+  });
+
+  const renderMobileHeader = () => (
+    <header className="notesMobileHeader">
+      {mobileView === 'folders' ? (
+        <button type="button" onClick={() => navigate('/app')}><MemoNavIcon type="chevronLeft" />홈</button>
+      ) : (
+        <button type="button" onClick={() => setMobileView(mobileView === 'detail' ? 'list' : 'folders')}><MemoNavIcon type="chevronLeft" />뒤로</button>
+      )}
+      <div>
+        <span>{breadcrumb.map(memoFolderName).join(' / ') || '메모'}</span>
+        <strong>{mobileView === 'detail' && activeNote ? noteBlockTitle(activeNote) : mobileView === 'list' ? memoFolderName(activeFolder) : '폴더'}</strong>
+      </div>
+    </header>
+  );
+
+  return (
+    <main className="aiNoteShell notesShell">
+      <WorkspaceNavigator active="notes" navigate={navigate} />
+      <section className="notesWorkspace" aria-label="메모 작업 화면">
+        <div className="notesDesktopLayout">
+          <NotesFolderTree
+            folders={folders}
+            activeFolderId={activeFolderId}
+            noteCounts={noteCounts}
+            onSelect={selectFolder}
+            onAddFolder={addFolder}
+            onRenameFolder={renameFolder}
+            onDeleteFolder={deleteFolder}
+          />
+          <MemoListPanel
+            folder={activeFolder}
+            notes={folderNotes}
+            activeId={activeNote?.id || ''}
+            onSelect={selectNote}
+            onCreate={() => createNote(activeFolderId)}
+          />
+          <NotesDetailPanel
+            note={activeNote}
+            folder={activeFolder}
+            onTitleChange={(title) => activeNote && updateNote(activeNote.id, { title })}
+            onBlocksChange={(bodyBlocks) => activeNote && updateNote(activeNote.id, { blocks: bodyBlocks })}
+            onScheduleChange={updateSchedule}
+            onDelete={() => deleteNote(activeNote?.id)}
+            onCreate={() => createNote(activeFolderId)}
+          />
+        </div>
+
+        <div className={`notesMobileWorkspace view-${mobileView}`}>
+          {renderMobileHeader()}
+          {mobileView === 'folders' ? (
+            <section className="notesMobileFolders">
+              <div className="notesMobileSectionHeader">
+                <strong>폴더</strong>
+                <button type="button" onClick={() => addFolder(null)}><MemoNavIcon type="plus" />폴더</button>
+              </div>
+              <div className="notesMobileFolderList">
+                {renderMobileFolderRows()}
+              </div>
+              <div className="notesMobileSectionHeader recent">
+                <strong>최근 메모</strong>
+              </div>
+              <div className="notesMobileRecentList">
+                {recentNotes.map((note) => (
+                  <button
+                    type="button"
+                    key={note.id}
+                    onClick={() => {
+                      setActiveFolderId(note.boardId || note.sector || 'memo');
+                      selectNote(note.id);
+                    }}
+                  >
+                    <strong>{noteBlockTitle(note)}</strong>
+                    <span>{memoNoteExcerpt(note)}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          ) : null}
+          {mobileView === 'list' ? (
+            <section className="notesMobileList">
+              <MemoListPanel folder={activeFolder} notes={folderNotes} activeId={activeNote?.id || ''} onSelect={selectNote} onCreate={() => createNote(activeFolderId)} />
+            </section>
+          ) : null}
+          {mobileView === 'detail' ? (
+            <section className="notesMobileDetail">
+              <NotesDetailPanel
+                note={activeNote}
+                folder={activeFolder}
+                onTitleChange={(title) => activeNote && updateNote(activeNote.id, { title })}
+                onBlocksChange={(bodyBlocks) => activeNote && updateNote(activeNote.id, { blocks: bodyBlocks })}
+                onScheduleChange={updateSchedule}
+                onDelete={() => deleteNote(activeNote?.id)}
+                onCreate={() => createNote(activeFolderId)}
+              />
+            </section>
+          ) : null}
+        </div>
+        {statusText ? <p className="notesStatusText">{statusText}</p> : null}
+      </section>
+      <MemoBottomTabs navigate={navigate} />
+    </main>
+  );
+}
+
 function SchedulerPage({ navigate, embedded = false }) {
   const session = readStoredAuth();
   const schedulerTitle = session?.username && session.username !== 'guestuser' ? `${session.username}님의 일정` : '내 일정';
@@ -5084,7 +6139,7 @@ export default function App() {
   }
 
   if (routePath === '/notes' || routePath.startsWith('/notes/')) {
-    return <AiNotePage navigate={navigate} />;
+    return <NotionNotesPage navigate={navigate} />;
   }
 
   if (routePath === '/portfolio' || routePath.startsWith('/portfolio/')) {

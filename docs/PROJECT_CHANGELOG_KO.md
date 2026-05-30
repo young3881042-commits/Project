@@ -1,5 +1,27 @@
 # 프로젝트 변경 상세 문서
 
+## 23. 2026-05-30 Notion형 메모와 장소 데이터 확장
+
+`12.png`를 최종 디자인 참고 방향으로 삼아 `/notes`를 기능 우선으로 재구성했습니다.
+
+변경 내용:
+
+- `/notes` 데스크톱을 폴더 트리, 메모 목록, 메모 상세/작성 3단 구조로 바꿨습니다.
+- 모바일 `/notes`는 폴더, 메모 목록, 상세 작성 화면을 한 단계씩 보여주도록 분리했습니다.
+- 기존 Markdown `content`는 heading, paragraph, bullet, checklist, code, divider 블록 배열로 변환하고 저장 시 `content`도 함께 유지합니다.
+- 블록 에디터는 현재 포커스된 블록만 Markdown 원문으로 보이고 나머지는 미리보기 형태로 렌더링합니다.
+- 메모 상세 상단의 일정 연결 bar는 유지하고, 여행 코스 생성 시 메모와 일정에 함께 저장되게 했습니다.
+- `/app` 하단 빠른 시작은 메모 개수 대신 오늘/금주 일정 완료 수와 진행률을 표시합니다.
+- 장소 찾기는 기본 이미지 카드 노출을 제거하고 텍스트 중심 데이터 카드로 정리했습니다.
+- TourAPI 수집은 페이지네이션을 확장하고, `admin1-batch` 장소 데이터 109건을 이미지 없이 DB에 적재했습니다.
+
+검증:
+
+- `npm --prefix apps/web run build`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web`
+- Docker DB에서 `admin1-batch`, `mock` 장소 이미지 URL이 비어 있는지 확인
+- `/app`, `/notes`, `/destinations`, `/api/destinations?size=1` 응답 확인
+
 ## 22. 2026-05-29 11.png 기준 앱 홈 메인 정리
 
 현재 경로의 `11.png` 참고 이미지를 기준으로 `/app` 메인 화면을 세로형 모바일 홈 흐름으로 다시 정리했습니다.
