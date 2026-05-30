@@ -14,8 +14,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class TourApiClient {
-    private static final List<String> AREA_CODES = List.of("1", "2", "3", "4", "5", "6", "7", "31", "32", "33", "34", "35", "36", "37", "38", "39");
+    private static final List<String> AREA_CODES = List.of("1", "2", "3", "4", "5", "6", "7", "8", "31", "32", "33", "34", "35", "36", "37", "38", "39");
     private static final List<String> CONTENT_TYPES = List.of("12", "14", "15", "28", "39");
+    private static final int PAGE_SIZE = 1000;
+    private static final int MAX_PAGES_PER_QUERY = 200;
+    private static final long REQUEST_PAUSE_MILLIS = 120L;
     private final TourApiProperties properties;
     private final ObjectMapper objectMapper;
     private final RestClient restClient;
@@ -36,20 +39,37 @@ public class TourApiClient {
                 for (TourApiDestination destination : fetchAreaBasedDestinations(areaCode, contentTypeId)) {
                     destinationsById.put(destination.contentId(), destination);
                 }
+                pauseBetweenRequests();
             }
         }
         return new ArrayList<>(destinationsById.values());
     }
 
     private List<TourApiDestination> fetchAreaBasedDestinations(String areaCode, String contentTypeId) {
+        List<TourApiDestination> destinations = new ArrayList<>();
+        for (int pageNo = 1; pageNo <= MAX_PAGES_PER_QUERY; pageNo++) {
+            TourApiPage page = fetchAreaBasedDestinations(areaCode, contentTypeId, pageNo);
+            if (page.destinations().isEmpty()) {
+                break;
+            }
+            destinations.addAll(page.destinations());
+            if (page.isLastPage(PAGE_SIZE)) {
+                break;
+            }
+            pauseBetweenRequests();
+        }
+        return destinations;
+    }
+
+    private TourApiPage fetchAreaBasedDestinations(String areaCode, String contentTypeId, int pageNo) {
         URI uri = UriComponentsBuilder.fromHttpUrl(properties.baseUrlOrDefault())
                 .path("/areaBasedList2")
                 .queryParam("MobileOS", "ETC")
                 .queryParam("MobileApp", "JupiterLocalTrip")
                 .queryParam("_type", "json")
                 .queryParam("arrange", "Q")
-                .queryParam("numOfRows", "100")
-                .queryParam("pageNo", "1")
+                .queryParam("numOfRows", PAGE_SIZE)
+                .queryParam("pageNo", pageNo)
                 .queryParam("areaCode", areaCode)
                 .queryParam("contentTypeId", contentTypeId)
                 .queryParam("serviceKey", properties.serviceKey())
@@ -61,21 +81,26 @@ public class TourApiClient {
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
-        return parseDestinations(body);
+        return parseDestinationsPage(body);
     }
 
-    private List<TourApiDestination> parseDestinations(String body) {
+    private TourApiPage parseDestinationsPage(String body) {
         if (body == null || body.isBlank()) {
-            return List.of();
+            return TourApiPage.empty();
         }
         try {
-            JsonNode items = objectMapper.readTree(body)
+            JsonNode responseBody = objectMapper.readTree(body)
                     .path("response")
-                    .path("body")
+                    .path("body");
+            JsonNode items = responseBody
                     .path("items")
                     .path("item");
             if (items.isMissingNode() || items.isNull()) {
-                return List.of();
+                return new TourApiPage(
+                        List.of(),
+                        responseBody.path("totalCount").asInt(0),
+                        responseBody.path("numOfRows").asInt(PAGE_SIZE),
+                        responseBody.path("pageNo").asInt(1));
             }
             List<TourApiDestination> destinations = new ArrayList<>();
             if (items.isArray()) {
@@ -85,9 +110,13 @@ public class TourApiClient {
             } else {
                 destinations.add(toDestination(items));
             }
-            return destinations.stream()
-                    .filter(destination -> !destination.contentId().isBlank() && !destination.title().isBlank())
-                    .toList();
+            return new TourApiPage(
+                    destinations.stream()
+                            .filter(destination -> !destination.contentId().isBlank() && !destination.title().isBlank())
+                            .toList(),
+                    responseBody.path("totalCount").asInt(0),
+                    responseBody.path("numOfRows").asInt(PAGE_SIZE),
+                    responseBody.path("pageNo").asInt(1));
         } catch (Exception exception) {
             throw new IllegalStateException("Failed to parse Tour API response.", exception);
         }
@@ -112,6 +141,15 @@ public class TourApiClient {
         return value == null || value.isBlank() ? fallback : value;
     }
 
+    private void pauseBetweenRequests() {
+        try {
+            Thread.sleep(REQUEST_PAUSE_MILLIS);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while throttling Tour API requests.", exception);
+        }
+    }
+
     private String areaName(String areaCode) {
         return switch (areaCode) {
             case "1" -> "서울";
@@ -133,5 +171,24 @@ public class TourApiClient {
             case "39" -> "제주";
             default -> "국내";
         };
+    }
+
+    private record TourApiPage(
+            List<TourApiDestination> destinations,
+            int totalCount,
+            int numOfRows,
+            int pageNo) {
+        static TourApiPage empty() {
+            return new TourApiPage(List.of(), 0, PAGE_SIZE, 1);
+        }
+
+        boolean isLastPage(int requestedPageSize) {
+            int effectiveRows = numOfRows > 0 ? numOfRows : requestedPageSize;
+            int effectivePage = Math.max(1, pageNo);
+            if (totalCount > 0) {
+                return ((effectivePage - 1) * effectiveRows) + destinations.size() >= totalCount;
+            }
+            return destinations.size() < effectiveRows;
+        }
     }
 }
