@@ -34,11 +34,11 @@ export default function MobileWorkspaceTabs({ active = 'notes', navigate, onNote
       </button>
       <button
         type="button"
-        className={`mobileWorkspaceTabButton ${active === 'trip' ? 'active' : ''}`}
-        onClick={() => navigate('/planner')}
+        className={`mobileWorkspaceTabButton ${active === 'plan' ? 'active' : ''}`}
+        onClick={() => navigate('/plans')}
       >
         <MemoNavIcon type="trip" />
-        <span>여행</span>
+        <span>계획</span>
       </button>
     </nav>
   );

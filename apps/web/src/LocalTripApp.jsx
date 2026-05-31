@@ -470,15 +470,122 @@ function readLocalArray(storageKey) {
 function ensureMemoFolder(session = readStoredAuth()) {
   const storageKey = noteBoardsStorageKey(session);
   const boards = readLocalArray(storageKey);
+  const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
   const nextBoards = boards.length ? boards : [
-    { id: 'project', parentId: null, name: '프로젝트', title: '프로젝트', sortOrder: 0 },
-    { id: 'memo', parentId: null, name: '메모', title: '메모', sortOrder: 1 }
+    { id: 'project', parentId: null, name: '프로젝트', title: '프로젝트', sortOrder: 0, createdAt: now, updatedAt: now },
+    { id: 'memo', parentId: null, name: '메모', title: '메모', sortOrder: 1, createdAt: now, updatedAt: now }
   ];
   if (!nextBoards.some((board) => board.id === 'memo')) {
-    nextBoards.push({ id: 'memo', parentId: null, name: '메모', title: '메모', sortOrder: nextBoards.length });
+    nextBoards.push({ id: 'memo', parentId: null, name: '메모', title: '메모', sortOrder: nextBoards.length, createdAt: now, updatedAt: now });
   }
   localStorage.setItem(storageKey, JSON.stringify(nextBoards));
   return storageKey;
+}
+
+function stableStringHash(value) {
+  let hash = 0;
+  const source = `${value || ''}`;
+  for (let index = 0; index < source.length; index += 1) {
+    hash = Math.imul(31, hash) + source.charCodeAt(index);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36);
+}
+
+function slugifyBoardPart(value) {
+  const slug = `${value || ''}`
+    .normalize('NFKD')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48);
+  return slug;
+}
+
+function travelPlanStorageKey(plan) {
+  const explicitId = pickString(plan?.id);
+  if (explicitId) {
+    return slugifyBoardPart(explicitId) || stableStringHash(explicitId);
+  }
+  const basis = [
+    plan?.title,
+    plan?.destinationRegion,
+    plan?.destinationName,
+    plan?.startDate,
+    plan?.days
+  ].filter(Boolean).join('|') || pickString(plan?.key) || 'travel-plan';
+  const slug = slugifyBoardPart(basis);
+  const hash = stableStringHash(basis);
+  return slug ? `${slug}-${hash}` : `plan-${hash}`;
+}
+
+function travelPlanBoardId(plan) {
+  return `travel-plan-board-${travelPlanStorageKey(plan)}`;
+}
+
+function travelPlanBoardName(plan) {
+  const title = pickString(plan?.title);
+  const region = pickString(plan?.destinationRegion, plan?.destinationName);
+  if (title && region && !title.includes(region)) return `${region} · ${title}`;
+  return title || `${region || '여행'} 코스`;
+}
+
+function ensureTravelMemoBoard(plan, session = readStoredAuth()) {
+  const storageKey = ensureMemoFolder(session);
+  const boards = readLocalArray(storageKey);
+  const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
+  const boardId = travelPlanBoardId(plan);
+  const boardName = travelPlanBoardName(plan);
+  let changed = false;
+  let nextBoards = boards;
+  const existingTravelBoard = nextBoards.find((board) => board.id === 'travel');
+  if (existingTravelBoard) {
+    const normalizedTravelBoard = {
+      ...existingTravelBoard,
+      parentId: null,
+      name: existingTravelBoard.name || '여행 계획',
+      title: existingTravelBoard.title || existingTravelBoard.name || '여행 계획'
+    };
+    if (JSON.stringify(normalizedTravelBoard) !== JSON.stringify(existingTravelBoard)) {
+      nextBoards = nextBoards.map((board) => (board.id === 'travel' ? normalizedTravelBoard : board));
+      changed = true;
+    }
+  } else {
+    const rootSortOrder = nextBoards.filter((board) => !board.parentId).length;
+    nextBoards = [
+      ...nextBoards,
+      { id: 'travel', parentId: null, name: '여행 계획', title: '여행 계획', sortOrder: rootSortOrder, createdAt: now, updatedAt: now }
+    ];
+    changed = true;
+  }
+  const existingBoard = nextBoards.find((board) => board.id === boardId);
+  if (existingBoard) {
+    const normalizedBoard = {
+      ...existingBoard,
+      parentId: 'travel',
+      name: existingBoard.name || boardName,
+      title: existingBoard.title || existingBoard.name || boardName
+    };
+    if (JSON.stringify(normalizedBoard) !== JSON.stringify(existingBoard)) {
+      nextBoards = nextBoards.map((board) => (board.id === boardId ? normalizedBoard : board));
+      changed = true;
+    }
+  } else {
+    const childSortOrder = nextBoards.filter((board) => board.parentId === 'travel').length;
+    nextBoards = [
+      ...nextBoards,
+      { id: boardId, parentId: 'travel', name: boardName, title: boardName, sortOrder: childSortOrder, createdAt: now, updatedAt: now }
+    ];
+    changed = true;
+  }
+  if (changed) {
+    localStorage.setItem(storageKey, JSON.stringify(nextBoards));
+    if (localStorage.getItem(AI_NOTE_BOARDS_KEY)) {
+      localStorage.removeItem(AI_NOTE_BOARDS_KEY);
+    }
+    window.dispatchEvent(new CustomEvent('codex:notes-updated', { detail: { storageKey, boardId } }));
+  }
+  return { storageKey, boardId, folderId: boardId, boardName };
 }
 
 function isGuestSession(session) {
@@ -732,7 +839,7 @@ function plannerGenerateErrorMessage(error) {
     return '일정을 만들지 못했습니다. 입력값을 확인한 뒤 다시 시도해 주세요.';
   }
   if (/openai|api\s*key|개인 api 키|키가 필요|401|403/i.test(text)) {
-    return '개인 OpenAI API 키가 필요합니다. 연결 화면의 고급 설정에서 키를 저장한 뒤 다시 시도해 주세요.';
+    return '기본 OpenAI API 키 설정을 확인한 뒤 다시 시도해 주세요.';
   }
   if (/timeout|timed out|network|failed to fetch|502|503|504/i.test(text)) {
     return '서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.';
@@ -1085,12 +1192,189 @@ function normalizePlans(payload) {
   return rows.map(normalizePlan);
 }
 
+function dateKeyWithOffset(dateKey, offset = 0) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(`${dateKey || ''}`);
+  if (!match) return '';
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  date.setUTCDate(date.getUTCDate() + offset);
+  return date.toISOString().slice(0, 10);
+}
+
+function travelPlanDayDate(plan, day, index = 0) {
+  const dayNumber = pickNumber(day?.day) || index + 1;
+  return dateKeyWithOffset(plan?.startDate, Math.max(0, dayNumber - 1));
+}
+
+function travelPlanFilePath(boardId, noteId) {
+  return `memo-files/travel/${boardId}/${noteId}.md`;
+}
+
+function travelPlanScheduleForNote(plan) {
+  const firstSlot = plan?.itinerary?.[0]?.items?.[0];
+  return {
+    enabled: true,
+    date: plan?.startDate || new Date().toISOString().slice(0, 10),
+    time: firstSlot?.startTime || '09:00'
+  };
+}
+
+function travelPlanItemChecklistLine(item, index = 0) {
+  const time = item?.startTime && item?.endTime
+    ? `${item.startTime}-${item.endTime}`
+    : item?.startTime || scheduleBlockLabel(item?.time, index);
+  const title = pickString(item?.title, item?.destinationName, '장소');
+  const place = pickString(item?.location, item?.place);
+  const details = [
+    item?.category,
+    place ? `장소: ${place}` : '',
+    item?.travelTimeFromPrevious ? `이동: ${item.travelTimeFromPrevious}` : '',
+    item?.recommendedMenu ? `추천 메뉴: ${item.recommendedMenu}` : '',
+    pickString(item?.description, item?.note)
+  ].filter(Boolean).join(' · ');
+  return `- [ ] ${time} ${title}${details ? ` · ${details}` : ''}`.trim();
+}
+
+function buildTravelPlanOverviewContent(plan, schedule) {
+  const routeLines = (plan?.itinerary || []).flatMap((day, dayIndex) => [
+    `## ${day.title || `${day.day || dayIndex + 1}일차`}`,
+    day.summary || '',
+    ...(day.items || []).map(travelPlanItemChecklistLine)
+  ]);
+  return [
+    `# ${plan?.title || `${plan?.destinationName || '여행'} 코스`}`,
+    '',
+    `- 지역: ${plan?.destinationName || plan?.destinationRegion || '미정'}`,
+    `- 기간: ${formatDaysLabel(plan?.days)}`,
+    `- 시작: ${schedule.date} ${schedule.time}`,
+    plan?.travelers ? `- 동행: ${plan.travelers}` : '',
+    plan?.pace ? `- 속도: ${plan.pace}` : '',
+    plan?.estimatedBudget ? `- 예산: ${plan.estimatedBudget}` : '',
+    plan?.summary ? `- 요약: ${plan.summary}` : '',
+    '',
+    ...routeLines
+  ].filter(Boolean).join('\n');
+}
+
+function buildTravelPlanDayContent(plan, day, index = 0) {
+  const dayNumber = pickNumber(day?.day) || index + 1;
+  const dayDate = travelPlanDayDate(plan, day, index);
+  const items = day?.items || [];
+  const firstItem = items[0];
+  const lastItem = items[items.length - 1];
+  const route = firstItem && lastItem
+    ? `${planRouteEndpoint(firstItem)} -> ${planRouteEndpoint(lastItem)}`
+    : plan?.destinationName || plan?.destinationRegion || '동선 미정';
+  return [
+    `# ${dayNumber}일차 ${day?.title || '여행 일정'}`.trim(),
+    '',
+    dayDate ? `- 날짜: ${dayDate}` : '',
+    `- 동선: ${route}`,
+    day?.summary ? `- 요약: ${day.summary}` : '',
+    '',
+    '## 일정 체크',
+    ...(items.length ? items.map(travelPlanItemChecklistLine) : ['- [ ] 세부 일정을 확인하기']),
+    '',
+    '## 준비 메모',
+    '- [ ] 이동 시간과 예약 시간을 다시 확인하기',
+    '- [ ] 식당/카페 후보와 영업시간 확인하기'
+  ].filter(Boolean).join('\n');
+}
+
+function buildTravelPlanChecklistContent(plan) {
+  const region = pickString(plan?.destinationRegion, plan?.destinationName, '여행지');
+  return [
+    '# 여행 준비 체크리스트',
+    '',
+    `- [ ] ${region} 숙소와 교통 예약 확인`,
+    '- [ ] 신분증, 결제 수단, 충전기 챙기기',
+    '- [ ] 날씨와 이동 동선을 보고 옷차림 정하기',
+    '- [ ] 방문 장소 영업시간과 휴무일 확인',
+    '- [ ] 식당/카페 예약 필요 여부 확인',
+    '- [ ] 비상 연락처와 여행 보험 확인'
+  ].join('\n');
+}
+
+function createTravelPlanNote({ id, title, content, boardId, schedule, now, sortOrder }) {
+  return {
+    id,
+    type: 'text',
+    title,
+    content,
+    folderId: boardId,
+    sector: boardId,
+    boardId,
+    status: 'todo',
+    parentId: '',
+    filePath: travelPlanFilePath(boardId, id),
+    schedule,
+    createdAt: now,
+    updatedAt: now,
+    sortOrder
+  };
+}
+
+function buildTravelPlanMemoNotes(plan, boardId) {
+  const planKey = travelPlanStorageKey(plan);
+  const schedule = travelPlanScheduleForNote(plan);
+  const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
+  const overviewId = `travel-plan-memo-${planKey}`;
+  const notes = [
+    createTravelPlanNote({
+      id: overviewId,
+      title: plan?.title || `${plan?.destinationName || '여행'} 코스`,
+      content: buildTravelPlanOverviewContent(plan, schedule),
+      boardId,
+      schedule,
+      now,
+      sortOrder: 0
+    })
+  ];
+  (plan?.itinerary || []).forEach((day, index) => {
+    const dayNumber = pickNumber(day?.day) || index + 1;
+    notes.push(createTravelPlanNote({
+      id: `travel-plan-day-${planKey}-${dayNumber}`,
+      title: `${dayNumber}일차 ${day?.title || '여행 일정'}`.trim(),
+      content: buildTravelPlanDayContent(plan, day, index),
+      boardId,
+      schedule: { enabled: false, date: travelPlanDayDate(plan, day, index), time: '09:00' },
+      now,
+      sortOrder: index + 1
+    }));
+  });
+  notes.push(createTravelPlanNote({
+    id: `travel-plan-checklist-${planKey}`,
+    title: '여행 준비 체크리스트',
+    content: buildTravelPlanChecklistContent(plan),
+    boardId,
+    schedule: { enabled: false, date: plan?.startDate || '', time: '09:00' },
+    now,
+    sortOrder: notes.length
+  }));
+  return notes;
+}
+
+function mergeTravelPlanNote(existing, desired) {
+  if (!existing) return desired;
+  const keepExistingSchedule = existing.schedule && typeof existing.schedule === 'object' && !desired.schedule?.enabled;
+  return {
+    ...existing,
+    ...desired,
+    title: pickString(existing.title) || desired.title,
+    content: pickString(existing.content) ? existing.content : desired.content,
+    blocks: Array.isArray(existing.blocks) && existing.blocks.length ? existing.blocks : desired.blocks,
+    schedule: keepExistingSchedule ? { ...desired.schedule, ...existing.schedule, enabled: Boolean(existing.schedule.enabled) } : desired.schedule,
+    createdAt: existing.createdAt || desired.createdAt,
+    updatedAt: existing.updatedAt || desired.updatedAt
+  };
+}
+
 function addPlanToScheduler(plan) {
   if (!plan) return;
   try {
     const storageKey = schedulerStorageKey();
     const items = dedupeSchedulerItems(readSchedulerArray(storageKey));
-    const id = `travel-plan-${plan.id || plan.key || Date.now()}`;
+    const planKey = travelPlanStorageKey(plan);
+    const id = `travel-plan-${planKey}`;
     const exists = items.some((item) => item.id === id);
     if (exists) {
       localStorage.setItem(storageKey, JSON.stringify(items));
@@ -1110,7 +1394,7 @@ function addPlanToScheduler(plan) {
       memo: `${plan.destinationName || plan.destinationRegion || '여행'} · ${formatDaysLabel(plan.days)} · ${plan.summary || '여행 코스에서 생성한 계획'}`,
       done: false,
       source: 'travel-plan',
-      planId: plan.id || plan.key || ''
+      planId: plan.id || plan.key || planKey
     };
     const nextItems = [...items, nextItem];
     localStorage.setItem(storageKey, JSON.stringify(nextItems));
@@ -1127,54 +1411,26 @@ function addPlanToMemoBoard(plan) {
   if (!plan) return null;
   try {
     const session = readStoredAuth();
-    ensureMemoFolder(session);
+    const boardContext = ensureTravelMemoBoard(plan, session);
     const storageKey = noteBlocksStorageKey(session);
     const notes = readLocalArray(storageKey);
-    const planId = plan.id || plan.key || Date.now();
-    const id = `travel-plan-memo-${planId}`;
-    if (notes.some((note) => note.id === id)) {
-      window.dispatchEvent(new CustomEvent('codex:notes-updated', { detail: { storageKey } }));
-      return notes.find((note) => note.id === id) || null;
-    }
-    const firstSlot = plan.itinerary?.[0]?.items?.[0];
-    const scheduleDate = plan.startDate || new Date().toISOString().slice(0, 10);
-    const scheduleTime = firstSlot?.startTime || '09:00';
-    const routeLines = (plan.itinerary || []).flatMap((day) => [
-      `## ${day.title || `${day.day || ''}일차`.trim() || '하루 코스'}`,
-      ...(day.items || []).map((item) => `- [ ] ${item.startTime || item.time || ''} ${item.title || item.destinationName || '장소'}${item.category ? ` · ${item.category}` : ''}`.trim())
-    ]);
-    const content = [
-      `# ${plan.title || `${plan.destinationName || '여행'} 코스`}`,
-      '',
-      `- 지역: ${plan.destinationName || plan.destinationRegion || '미정'}`,
-      `- 기간: ${formatDaysLabel(plan.days)}`,
-      `- 시작: ${scheduleDate} ${scheduleTime}`,
-      plan.summary ? `- 요약: ${plan.summary}` : '',
-      '',
-      ...routeLines
-    ].filter(Boolean).join('\n');
-    const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
-    const nextNote = {
-      id,
-      type: 'text',
-      title: plan.title || `${plan.destinationName || '여행'} 코스`,
-      content,
-      sector: 'memo',
-      boardId: 'memo',
-      status: 'todo',
-      parentId: '',
-      filePath: `memo-files/memo/${id}.md`,
-      schedule: { enabled: true, date: scheduleDate, time: scheduleTime },
-      createdAt: now,
-      updatedAt: now
-    };
-    const nextNotes = [nextNote, ...notes];
+    const desiredNotes = buildTravelPlanMemoNotes(plan, boardContext.boardId);
+    const desiredById = new Map(desiredNotes.map((note) => [note.id, note]));
+    const existingById = new Map(notes.map((note) => [note.id, note]));
+    const missingNotes = desiredNotes.filter((note) => !existingById.has(note.id));
+    const mergedExistingNotes = notes.map((note) => (
+      desiredById.has(note.id) ? mergeTravelPlanNote(note, desiredById.get(note.id)) : note
+    ));
+    const nextNotes = missingNotes.length ? [...missingNotes, ...mergedExistingNotes] : mergedExistingNotes;
     localStorage.setItem(storageKey, JSON.stringify(nextNotes));
     if (localStorage.getItem(AI_NOTE_KEY)) {
       localStorage.removeItem(AI_NOTE_KEY);
     }
-    window.dispatchEvent(new CustomEvent('codex:notes-updated', { detail: { item: nextNote, items: nextNotes, storageKey } }));
-    return nextNote;
+    const primaryNote = nextNotes.find((note) => note.id === desiredNotes[0]?.id) || desiredNotes[0] || null;
+    window.dispatchEvent(new CustomEvent('codex:notes-updated', {
+      detail: { item: primaryNote, items: nextNotes, storageKey, boardId: boardContext.boardId }
+    }));
+    return primaryNote;
   } catch {
     // Memo sync is local convenience; travel plan creation should continue if storage is unavailable.
     return null;
@@ -1190,8 +1446,15 @@ function savePlanToPersonalWorkspace(plan) {
   try {
     const storageKey = schedulerStorageKey();
     const items = dedupeSchedulerItems(readSchedulerArray(storageKey));
+    const planKey = travelPlanStorageKey(plan);
     const scheduleId = `ai-note-${note.id}`;
-    const withoutExisting = items.filter((item) => item.id !== scheduleId && item.id !== `travel-plan-${plan.id || plan.key || ''}`);
+    const legacyScheduleId = `travel-plan-${plan.id || plan.key || ''}`;
+    const withoutExisting = items.filter((item) => (
+      item.id !== scheduleId
+      && item.id !== `travel-plan-${planKey}`
+      && item.id !== legacyScheduleId
+    ));
+    const originBoardId = note.boardId || note.folderId || note.sector || travelPlanBoardId(plan);
     const nextItem = {
       id: scheduleId,
       title: note.title || plan.title || `${plan.destinationName || '여행'} 코스`,
@@ -1205,8 +1468,8 @@ function savePlanToPersonalWorkspace(plan) {
       origin: {
         kind: 'note',
         blockId: note.id,
-        boardId: 'memo',
-        path: `/notes?board=memo&block=${encodeURIComponent(note.id)}`
+        boardId: originBoardId,
+        path: `/notes?board=${encodeURIComponent(originBoardId)}&block=${encodeURIComponent(note.id)}`
       },
       done: false
     };
@@ -3453,7 +3716,7 @@ function AppShell({ path, navigate, children }) {
       <TravelWorkspaceNavigator navigate={navigate} />
       <LocalTripNav path={path} navigate={navigate} />
       {children}
-      <MobileWorkspaceTabs active="trip" navigate={navigate} />
+      <MobileWorkspaceTabs active="plan" navigate={navigate} />
       <footer className="ltFooter">
         <span>여행 코스</span>
         <span>장소 · 동선 · 저장</span>

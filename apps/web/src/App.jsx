@@ -53,6 +53,20 @@ const SCHEDULER_LEGACY_TYPE_MAP = {
 const NOTE_SCHEDULE_SOURCES = ['AI Note', '메모', '프로젝트'];
 const DEFAULT_SCHEDULER_ITEMS = [
 ];
+const HOME_PLAN_MODE_KEY = 'ai-assitant-home-plan-mode';
+const HOME_PLAN_MODES = ['general', 'travel', 'work', 'study', 'fitness'];
+
+function normalizeHomePlanMode(value) {
+  return HOME_PLAN_MODES.includes(value) ? value : 'general';
+}
+
+function readHomePlanMode() {
+  try {
+    return normalizeHomePlanMode(localStorage.getItem(HOME_PLAN_MODE_KEY));
+  } catch {
+    return 'general';
+  }
+}
 
 function memoTimestamp() {
   return new Date().toISOString().slice(0, 16).replace('T', ' ');
@@ -2940,6 +2954,33 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260531-workspace-plan-mode-selector',
+    content: `# 2026-05-31 개인 워크스페이스 Plan 모드 선택
+
+- [x] /app 기본 정체성을 개인 워크스페이스 / AI 일정 도우미로 변경
+- [x] 상단에서 개인, 여행, 업무, 공부, 운동 Plan 모드를 선택하고 실제 카운트를 표시
+- [x] 기본 모드 빠른 실행은 메모 작성, 일정 추가, 할 일 추가, AI 정리로 구성
+- [x] travel 모드는 여행 메모, 코스 만들기, 장소 찾기, 체크리스트로 분리
+- [x] 하단 탭을 홈 / 메모 / 일정 / 계획 구조로 변경`
+  },
+  {
+    id: 'admin1-memo-20260531-app-home-plan-or-today-section',
+    content: `# 2026-05-31 앱 홈 기본 섹션 자동 전환
+
+- [x] 저장된 여행 코스 메모가 있으면 /app 기본 섹션에서 여행지 1~3번을 코스 순서대로 표시
+- [x] 저장 코스가 없으면 같은 위치에서 오늘 일정 개수, 완료 수, 달성률을 표시
+- [x] 여행 코스 메모와 오늘 일정 모두 모바일 한 줄 카드에서 겹치지 않도록 스타일 보정`
+  },
+  {
+    id: 'admin1-memo-20260531-app-home-17png-default-api-key',
+    content: `# 2026-05-31 17.png 기준 여행 대시보드와 기본 API 키 적용
+
+- [x] /app 메인을 오늘의 여행 일정, 빠른 실행, 여행 메모, AI 추천, 여행 준비 현황 흐름으로 재구성
+- [x] Guest 시작 기본 이동을 /planner로 변경
+- [x] 여행 계획 생성이 서버 기본 APP_OPENAI_API_KEY 또는 OPENAI_API_KEY를 먼저 사용하게 변경
+- [x] 기본 키 오류 문구와 제품 방향 문서를 여행 계획 앱 기준으로 갱신`
+  },
+  {
     id: 'admin1-memo-20260531-app-home-16png-travel-identity',
     content: `# 2026-05-31 16.png 기준 여행 코스 홈 정체성 강화
 
@@ -3486,6 +3527,139 @@ function checklistStatsForBlocks(blocks) {
   }, { total: 0, done: 0 });
 }
 
+function textAfterMarkdownLabel(content, label) {
+  const match = `${content || ''}`.match(new RegExp(`^\\s*[-*]\\s+${label}:\\s*(.+)$`, 'm'));
+  return match?.[1]?.trim() || '';
+}
+
+function parseTravelPlanPlaceLine(line, index = 0) {
+  const parsed = parseChecklistLine(line);
+  if (!parsed?.text) return null;
+  const match = parsed.text.match(/^(([01]\d|2[0-3]):[0-5]\d)(?:\s*[-~]\s*(([01]\d|2[0-3]):[0-5]\d))?\s+(.+)$/);
+  if (!match) return null;
+  const time = match[3] ? `${match[1]}-${match[3]}` : match[1];
+  const parts = match[5].split(/\s+·\s+/).map((part) => part.trim()).filter(Boolean);
+  const title = parts.shift() || '여행지';
+  const category = parts.find((part) => !part.includes(':')) || '';
+  const place = parts.find((part) => part.startsWith('장소:'))?.replace(/^장소:\s*/, '') || '';
+  const move = parts.find((part) => part.startsWith('이동:'))?.replace(/^이동:\s*/, '') || '';
+  const meta = [time, place || category, move ? `이동 ${move}` : ''].filter(Boolean).join(' · ');
+  return {
+    id: `travel-place-${index}-${title}`,
+    order: index + 1,
+    title: plainMarkdownText(title),
+    tag: category || '여행지',
+    meta,
+    time,
+    done: Boolean(parsed.checked)
+  };
+}
+
+function travelPlanPreviewFromBlocks(blocks, todayKey) {
+  const candidates = blocks
+    .filter((block) => `${block.id || ''}`.startsWith('travel-plan-memo-') || `${block.boardId || block.folderId || ''}`.startsWith('travel-plan-board-'))
+    .map((block) => {
+      const lines = `${block.content || ''}`.split('\n');
+      const places = lines.map(parseTravelPlanPlaceLine).filter(Boolean);
+      if (!places.length) return null;
+      const scheduleDate = isDateKey(block.schedule?.date) ? block.schedule.date : '';
+      const daysUntil = scheduleDate ? diffDays(todayKey, scheduleDate) : 9999;
+      const totalCount = places.length;
+      const doneCount = places.filter((place) => place.done).length;
+      const region = textAfterMarkdownLabel(block.content, '지역');
+      const period = textAfterMarkdownLabel(block.content, '기간');
+      const start = textAfterMarkdownLabel(block.content, '시작');
+      const boardId = block.boardId || block.folderId || block.sector || 'travel';
+      return {
+        title: noteBlockTitle(block),
+        subtitle: [region, period].filter(Boolean).join(' · ') || start || '저장된 여행 코스',
+        date: scheduleDate,
+        dateLabel: scheduleDate ? formatDateLabel(scheduleDate) : '',
+        dDayLabel: scheduleDate
+          ? daysUntil > 0
+            ? `D-${daysUntil}`
+            : daysUntil === 0
+              ? 'D-Day'
+              : '여행 중'
+          : '코스',
+        progress: totalCount ? Math.round((doneCount / totalCount) * 100) : 0,
+        doneCount,
+        totalCount,
+        items: places.slice(0, 3),
+        notePath: `/notes?board=${encodeURIComponent(boardId)}&block=${encodeURIComponent(block.id)}`,
+        sortDate: scheduleDate || '9999-12-31',
+        updatedAt: block.updatedAt || block.createdAt || ''
+      };
+    })
+    .filter(Boolean);
+
+  if (!candidates.length) return null;
+  return candidates.sort((left, right) => {
+    const leftPast = left.sortDate < todayKey ? 1 : 0;
+    const rightPast = right.sortDate < todayKey ? 1 : 0;
+    if (leftPast !== rightPast) return leftPast - rightPast;
+    const dateOrder = left.sortDate.localeCompare(right.sortDate);
+    if (dateOrder) return dateOrder;
+    return `${right.updatedAt}`.localeCompare(`${left.updatedAt}`);
+  })[0];
+}
+
+function schedulerItemMatchesPlanMode(item, mode) {
+  const type = normalizeSchedulerType(item?.type);
+  if (mode === 'travel') return type === '여행' || item?.source === 'travel-plan' || `${item?.id || ''}`.startsWith('travel-plan-');
+  if (mode === 'work') return type === '업무';
+  if (mode === 'study') return type === '공부';
+  if (mode === 'fitness') return type === '운동';
+  return true;
+}
+
+function schedulerPreviewItemsForMode(items, mode) {
+  return items
+    .filter((item) => schedulerItemMatchesPlanMode(item, mode))
+    .slice()
+    .sort((left, right) => `${left.date || ''} ${left.time || '99:99'} ${left.title || ''}`.localeCompare(`${right.date || ''} ${right.time || '99:99'} ${right.title || ''}`))
+    .slice(0, 3)
+    .map((item) => ({
+      id: item.id,
+      title: item.title || '제목 없는 일정',
+      time: item.time || '',
+      date: item.date || '',
+      type: normalizeSchedulerType(item.type),
+      done: Boolean(item.done)
+    }));
+}
+
+function schedulerStatsForMode(items, mode) {
+  const matched = items.filter((item) => schedulerItemMatchesPlanMode(item, mode));
+  const done = matched.filter((item) => item.done).length;
+  return {
+    total: matched.length,
+    done,
+    progress: matched.length ? Math.round((done / matched.length) * 100) : 0
+  };
+}
+
+function recentMemoItemsFromBlocks(blocks) {
+  return blocks
+    .slice()
+    .sort((left, right) => `${right.updatedAt || right.createdAt || ''}`.localeCompare(`${left.updatedAt || left.createdAt || ''}`))
+    .slice(0, 3)
+    .map((block) => {
+      const boardId = block.boardId || block.folderId || block.sector || 'memo';
+      const plain = plainMarkdownText(block.content || '');
+      const lines = plain.split('\n').map((line) => line.trim()).filter(Boolean);
+      const title = noteBlockTitle(block);
+      const summary = lines.find((line) => line !== title) || '메모를 열어 내용을 정리하세요.';
+      return {
+        id: block.id,
+        title,
+        summary,
+        updatedAt: block.updatedAt || block.createdAt || '',
+        path: `/notes?board=${encodeURIComponent(boardId)}&block=${encodeURIComponent(block.id)}`
+      };
+    });
+}
+
 function summarizeAppActivity() {
   const session = readStoredAuth();
   const schedulerItems = readCurrentSchedulerItems(session);
@@ -3514,14 +3688,44 @@ function summarizeAppActivity() {
 
   const boards = readMemoBoards();
   const blocks = readNoteBlocks();
+  const travelPlanPreview = travelPlanPreviewFromBlocks(blocks, today);
   const adminSeedBlocks = blocks.filter((block) => `${block.id || ''}`.startsWith('admin1-goal-'));
   const projectBlocks = blocks.filter((block) => (block.boardId || block.sector) === 'project');
   const memoBoards = boards.filter((board) => board.id !== 'project');
   const memoBlocks = blocks.filter((block) => (block.boardId || block.sector) !== 'project');
+  const recentMemoItems = recentMemoItemsFromBlocks(memoBlocks);
   const seededChecklist = checklistStatsForBlocks(adminSeedBlocks);
   const expectedChecklistTotal = ADMIN1_BOARD_TASKS.length * 2;
   const checklistTotal = Math.max(seededChecklist.total, expectedChecklistTotal);
   const checklistDone = seededChecklist.done;
+  const travelPlanBlocks = blocks.filter((block) => `${block.id || ''}`.startsWith('travel-plan-memo-'));
+  const modeStats = {
+    general: {
+      total: todayItems.length,
+      done: todayDoneItems.length,
+      progress: todayItems.length ? Math.round((todayDoneItems.length / todayItems.length) * 100) : 0
+    },
+    travel: travelPlanPreview?.totalCount
+      ? { total: travelPlanPreview.totalCount, done: travelPlanPreview.doneCount, progress: travelPlanPreview.progress }
+      : schedulerStatsForMode(schedulerItems, 'travel'),
+    work: schedulerStatsForMode(schedulerItems, 'work'),
+    study: schedulerStatsForMode(schedulerItems, 'study'),
+    fitness: schedulerStatsForMode(schedulerItems, 'fitness')
+  };
+  const planTypeCounts = {
+    general: todayItems.length + memoBlocks.length,
+    travel: Math.max(travelPlanBlocks.length, travelScheduleItems.length),
+    work: modeStats.work.total,
+    study: modeStats.study.total,
+    fitness: modeStats.fitness.total
+  };
+  const modePreviewItems = {
+    general: todayPreviewItems,
+    travel: schedulerPreviewItemsForMode(expandedWeekItems, 'travel'),
+    work: schedulerPreviewItemsForMode(expandedWeekItems, 'work'),
+    study: schedulerPreviewItemsForMode(expandedWeekItems, 'study'),
+    fitness: schedulerPreviewItemsForMode(expandedWeekItems, 'fitness')
+  };
   const statusCounts = PROJECT_BOARD_COLUMNS.reduce((counts, column) => ({
     ...counts,
     [column.id]: projectBlocks.filter((block) => block.status === column.id).length
@@ -3537,6 +3741,11 @@ function summarizeAppActivity() {
     weekProgress: expandedWeekItems.length ? Math.round((weekDoneItems.length / expandedWeekItems.length) * 100) : 0,
     weekPendingCount: pendingWeekItems.length,
     nextSchedule,
+    travelPlanPreview,
+    modeStats,
+    modePreviewItems,
+    planTypeCounts,
+    recentMemoItems,
     totalScheduleCount: schedulerItems.length,
     travelScheduleCount: travelScheduleItems.length,
     boardCount: memoBoards.length,
@@ -3559,6 +3768,11 @@ const EMPTY_APP_OVERVIEW = {
   weekProgress: 0,
   weekPendingCount: 0,
   nextSchedule: null,
+  travelPlanPreview: null,
+  modeStats: {},
+  modePreviewItems: {},
+  planTypeCounts: {},
+  recentMemoItems: [],
   totalScheduleCount: 0,
   travelScheduleCount: 0,
   boardCount: 0,
@@ -3649,9 +3863,9 @@ function PortfolioHomePage({ navigate }) {
               <small>메모 보드</small>
             </article>
             <article>
-              <span>여행</span>
+              <span>계획</span>
               <strong>AI</strong>
-              <small>추천 코스</small>
+              <small>타입별 정리</small>
             </article>
           </div>
           <div className="portfolioPreviewList">
@@ -3682,6 +3896,7 @@ function PortfolioHomePage({ navigate }) {
 function SpaceHomePage({ navigate }) {
   const [appOverview, setAppOverview] = useState(() => summarizeAppActivity() || EMPTY_APP_OVERVIEW);
   const [session, setSession] = useState(readStoredAuth);
+  const [planMode, setPlanMode] = useState(readHomePlanMode);
   const [guestStarting, setGuestStarting] = useState(false);
   const [accountError, setAccountError] = useState('');
   const accountMode = session?.token && !session?.isGuest && session?.username !== 'guestuser'
@@ -3692,7 +3907,7 @@ function SpaceHomePage({ navigate }) {
   const isMemberSession = accountMode === 'member';
 
   useEffect(() => {
-    document.title = '여행 코스';
+    document.title = '개인 워크스페이스';
   }, []);
 
   useEffect(() => {
@@ -3710,6 +3925,9 @@ function SpaceHomePage({ navigate }) {
       ];
       if (!event.key || event.key === AUTH_KEY) {
         setSession(readStoredAuth());
+      }
+      if (!event.key || event.key === HOME_PLAN_MODE_KEY) {
+        setPlanMode(readHomePlanMode());
       }
       if (!event.key || watchedKeys.includes(event.key)) {
         refresh();
@@ -3738,11 +3956,21 @@ function SpaceHomePage({ navigate }) {
       localStorage.setItem(AUTH_KEY, JSON.stringify(normalized));
       setSession(normalized);
       setAppOverview(summarizeAppActivity() || EMPTY_APP_OVERVIEW);
-      navigate('/scheduler');
+      navigate('/app');
     } catch (error) {
       setAccountError(error.message || '게스트 세션을 만들 수 없습니다.');
     } finally {
       setGuestStarting(false);
+    }
+  };
+
+  const changePlanMode = (mode) => {
+    const nextMode = normalizeHomePlanMode(mode);
+    setPlanMode(nextMode);
+    try {
+      localStorage.setItem(HOME_PLAN_MODE_KEY, nextMode);
+    } catch {
+      // Local storage is a convenience for the home view; the selected mode can still update in memory.
     }
   };
 
@@ -3755,6 +3983,8 @@ function SpaceHomePage({ navigate }) {
       isMemberSession={isMemberSession}
       navigate={navigate}
       onStartGuest={startGuest}
+      onPlanModeChange={changePlanMode}
+      planMode={planMode}
       session={session}
     />
   );

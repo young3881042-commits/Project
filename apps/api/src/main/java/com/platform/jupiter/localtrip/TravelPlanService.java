@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.springframework.http.HttpStatus;
@@ -245,13 +246,22 @@ public class TravelPlanService {
     }
 
     private String resolveTravelPlanOpenAiApiKey(String username) {
-        return chatCredentialService.resolveOpenAiApiKey(username)
+        return resolveDefaultOpenAiApiKey()
+                .or(() -> chatCredentialService.resolveOpenAiApiKey(username))
                 .or(() -> ADMIN_PLAN_KEY_USERNAME.equals(username)
-                        ? java.util.Optional.empty()
+                        ? Optional.empty()
                         : chatCredentialService.resolveOpenAiApiKey(ADMIN_PLAN_KEY_USERNAME))
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "여행 계획 생성용 admin1 OpenAI API 키가 필요합니다. admin1 계정의 연결 화면에서 OpenAI 키를 저장해 주세요."));
+                        "여행 계획 생성용 기본 OpenAI API 키가 필요합니다. APP_OPENAI_API_KEY 또는 OPENAI_API_KEY를 설정해 주세요."));
+    }
+
+    private Optional<String> resolveDefaultOpenAiApiKey() {
+        String apiKey = appProperties.openAiApiKey();
+        if (apiKey == null || apiKey.isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.of(apiKey.trim()).filter(value -> !value.isBlank());
     }
 
     private String buildPrompt(TravelPlan plan, TravelPlanGenerateRequest request, List<Destination> candidates) {
@@ -521,10 +531,10 @@ public class TravelPlanService {
         String normalized = body == null ? "" : body.replaceAll("sk-[A-Za-z0-9_-]+", "sk-***").replaceAll("\\s+", " ").trim();
         String lower = normalized.toLowerCase();
         if (statusCode == 401 || statusCode == 403) {
-            return "저장된 사용자 OpenAI API 키의 권한을 확인해 주세요.";
+            return "기본 또는 저장된 OpenAI API 키의 권한을 확인해 주세요.";
         }
         if (statusCode == 429) {
-            return "저장된 사용자 OpenAI API 키의 사용량 한도 또는 결제 상태를 확인해 주세요.";
+            return "기본 또는 저장된 OpenAI API 키의 사용량 한도 또는 결제 상태를 확인해 주세요.";
         }
         if (lower.contains("model") || lower.contains("does not exist") || lower.contains("not found")) {
             return "OpenAI 모델 설정을 확인해 주세요. 현재 모델: " + openAiChatModel();

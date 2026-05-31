@@ -58,6 +58,12 @@ public class Destination {
     @Column(nullable = false)
     private Integer popularityScore;
 
+    @Column
+    private Double latitude;
+
+    @Column
+    private Double longitude;
+
     @Column(nullable = false, length = 40)
     private String source;
 
@@ -180,6 +186,22 @@ public class Destination {
 
     public void setPopularityScore(Integer popularityScore) {
         this.popularityScore = popularityScore;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 
     public String getSource() {

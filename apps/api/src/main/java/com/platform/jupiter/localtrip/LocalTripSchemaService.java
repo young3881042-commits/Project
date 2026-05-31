@@ -42,6 +42,8 @@ public class LocalTripSchemaService {
                     description TEXT NOT NULL,
                     recommended_minutes INT NOT NULL,
                     popularity_score INT NOT NULL,
+                    latitude DOUBLE,
+                    longitude DOUBLE,
                     source VARCHAR(40) NOT NULL,
                     source_ref VARCHAR(80) NOT NULL,
                     created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
@@ -50,6 +52,8 @@ public class LocalTripSchemaService {
                 )
                 """);
         jdbcTemplate.execute("ALTER TABLE localtrip_destination ADD COLUMN IF NOT EXISTS image_url VARCHAR(512)");
+        jdbcTemplate.execute("ALTER TABLE localtrip_destination ADD COLUMN IF NOT EXISTS latitude DOUBLE");
+        jdbcTemplate.execute("ALTER TABLE localtrip_destination ADD COLUMN IF NOT EXISTS longitude DOUBLE");
         jdbcTemplate.execute("""
                 CREATE TABLE IF NOT EXISTS localtrip_travel_plan (
                     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
