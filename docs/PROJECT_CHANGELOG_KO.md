@@ -6,7 +6,7 @@
 
 변경 내용:
 
-- `/api/travel-plans/generate`는 기존처럼 로그인 세션의 사용자 OpenAI 키만 사용합니다.
+- `/api/travel-plans/generate`는 로그인 세션의 사용자 OpenAI 키를 먼저 쓰고, 없으면 `admin1`에 저장된 OpenAI 키를 사용합니다.
 - Docker 기본 모델을 여행 생성용 Chat Completions 모델인 `gpt-4.1-mini`로 정리하고 Codex CLI 우선 모드는 끕니다.
 - OpenAI 키 없음, 권한, 한도, 모델 오류가 fallback 일정으로 조용히 저장되지 않고 사용자에게 표시되게 했습니다.
 - 플래너에 인원, 식사 취향, 휴식 기준, 하루 시작/종료 시간, 꼭 반영할 것, 피하고 싶은 것 입력을 추가했습니다.
@@ -16,7 +16,7 @@
 
 검증:
 
-- 저장된 사용자 OpenAI 키가 없는 상태에서 `/api/travel-plans/generate`가 `개인 API 키를 연결하세요. OpenAI API 키가 필요합니다.`를 반환하는 것을 확인했습니다.
+- 저장된 사용자/admin1 OpenAI 키가 없는 상태에서 `/api/travel-plans/generate`가 여행 계획 생성용 `admin1` OpenAI API 키 필요 메시지를 반환하는 흐름으로 보정했습니다.
 - 상세 옵션을 포함한 2일 서울 여행 계획 생성 payload로 `/api/travel-plans/generate`를 직접 호출했습니다.
 - `npm --prefix apps/web run build`
 - `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web`

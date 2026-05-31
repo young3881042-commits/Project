@@ -41,6 +41,7 @@ public class TravelPlanService {
             new FallbackSlot("18:20-19:30", "식당", 70),
             new FallbackSlot("20:00-20:50", "야경", 50));
     private static final String PLAN_PROVIDER = "openai";
+    private static final String ADMIN_PLAN_KEY_USERNAME = "admin1";
     private static final String CODEX_CLI_PATH = "/opt/jupiter-cli/bin/codex";
     private static final int MAX_OUTPUT_TOKENS = 3000;
     private static final int CODEX_TIMEOUT_SECONDS = 180;
@@ -130,8 +131,7 @@ public class TravelPlanService {
 
     private List<TravelPlanItem> generateItineraryWithLocalGpt(TravelPlan plan, TravelPlanGenerateRequest request, String username, List<Destination> candidates) {
         String prompt = buildPrompt(plan, request, candidates);
-        String apiKey = chatCredentialService.resolveOpenAiApiKey(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, ChatCredentialService.CONNECT_OPENAI_API_KEY_MESSAGE));
+        String apiKey = resolveTravelPlanOpenAiApiKey(username);
         if (Boolean.TRUE.equals(appProperties.enableCodexCliMode())) {
             List<TravelPlanItem> codexItems = generateItineraryWithCodexCli(plan, prompt, candidates, apiKey);
             if (!codexItems.isEmpty()) {
@@ -242,6 +242,16 @@ public class TravelPlanService {
         } catch (Exception ignored) {
             return List.of();
         }
+    }
+
+    private String resolveTravelPlanOpenAiApiKey(String username) {
+        return chatCredentialService.resolveOpenAiApiKey(username)
+                .or(() -> ADMIN_PLAN_KEY_USERNAME.equals(username)
+                        ? java.util.Optional.empty()
+                        : chatCredentialService.resolveOpenAiApiKey(ADMIN_PLAN_KEY_USERNAME))
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "여행 계획 생성용 admin1 OpenAI API 키가 필요합니다. admin1 계정의 연결 화면에서 OpenAI 키를 저장해 주세요."));
     }
 
     private String buildPrompt(TravelPlan plan, TravelPlanGenerateRequest request, List<Destination> candidates) {
