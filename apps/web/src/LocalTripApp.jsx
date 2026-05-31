@@ -1298,6 +1298,8 @@ function createTravelPlanNote({ id, title, content, boardId, schedule, now, sort
   return {
     id,
     type: 'text',
+    planType: 'travel',
+    labels: ['travel', '여행'],
     title,
     content,
     folderId: boardId,

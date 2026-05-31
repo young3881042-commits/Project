@@ -60,6 +60,38 @@ function normalizeHomePlanMode(value) {
   return HOME_PLAN_MODES.includes(value) ? value : 'general';
 }
 
+function normalizeNoteLabel(value) {
+  return `${value || ''}`.trim().toLowerCase();
+}
+
+function normalizeNoteLabels(labels) {
+  if (!Array.isArray(labels)) return [];
+  return [...new Set(labels.map(normalizeNoteLabel).filter(Boolean))];
+}
+
+function inferNotePlanType({ block, boardId, title, content }) {
+  const labels = normalizeNoteLabels([...(Array.isArray(block?.labels) ? block.labels : []), ...(Array.isArray(block?.tags) ? block.tags : [])]);
+  const explicit = normalizeHomePlanMode(block?.planType || block?.plan_type || labels.find((label) => HOME_PLAN_MODES.includes(label)));
+  if (explicit !== 'general') return explicit;
+  const source = [boardId, title, content, labels.join(' ')].join(' ').toLowerCase();
+  if (`${block?.id || ''}`.startsWith('travel-plan-') || source.includes('travel') || source.includes('여행')) return 'travel';
+  if (source.includes('work') || source.includes('project') || source.includes('업무') || source.includes('회의') || source.includes('마감')) return 'work';
+  if (source.includes('study') || source.includes('공부') || source.includes('학습') || source.includes('복습') || source.includes('과제')) return 'study';
+  if (source.includes('fitness') || source.includes('workout') || source.includes('운동') || source.includes('루틴')) return 'fitness';
+  return 'general';
+}
+
+function labelsForPlanType(planType) {
+  const labels = {
+    general: ['general', '개인'],
+    travel: ['travel', '여행'],
+    work: ['work', '업무'],
+    study: ['study', '공부'],
+    fitness: ['fitness', '운동']
+  };
+  return labels[normalizeHomePlanMode(planType)] || labels.general;
+}
+
 function readHomePlanMode() {
   try {
     return normalizeHomePlanMode(localStorage.getItem(HOME_PLAN_MODE_KEY));
@@ -814,9 +846,13 @@ function normalizeNoteBlock(block) {
   const createdAt = typeof block?.createdAt === 'string' && block.createdAt ? block.createdAt : memoTimestamp();
   const updatedAt = typeof block?.updatedAt === 'string' && block.updatedAt ? block.updatedAt : createdAt;
   const schedule = normalizeNoteSchedule(block?.schedule, block);
+  const planType = inferNotePlanType({ block, boardId, title: contentParts.title, content: contentParts.content });
+  const labels = [...new Set([...normalizeNoteLabels(block?.labels || block?.tags), ...labelsForPlanType(planType)])];
   return {
     id: block?.id || `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     type: blockType,
+    planType,
+    labels,
     folderId: boardId,
     title: contentParts.title,
     blocks: contentParts.blocks,
@@ -2954,6 +2990,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260531-section-data-label-filter',
+    content: `# 2026-05-31 섹션별 실제 데이터와 메모 라벨링
+
+- [x] 메모를 general, travel, work, study, fitness planType과 labels로 정규화
+- [x] 홈 모드별 최근 메모와 메모 카운트가 해당 planType 데이터만 보이도록 필터링
+- [x] 메모 목록 tag에 개인, 여행, 업무, 공부, 운동 라벨을 표시
+- [x] 여행 계획 생성 메모에는 travel planType과 labels를 저장`
+  },
+  {
     id: 'admin1-memo-20260531-workspace-plan-mode-selector',
     content: `# 2026-05-31 개인 워크스페이스 Plan 모드 선택
 
@@ -3639,8 +3684,22 @@ function schedulerStatsForMode(items, mode) {
   };
 }
 
-function recentMemoItemsFromBlocks(blocks) {
+function memoBlockMatchesPlanMode(block, mode) {
+  const normalizedMode = normalizeHomePlanMode(mode);
+  return normalizeHomePlanMode(block?.planType) === normalizedMode;
+}
+
+function memoCountsByModeFromBlocks(blocks) {
+  return HOME_PLAN_MODES.reduce((counts, mode) => ({
+    ...counts,
+    [mode]: blocks.filter((block) => memoBlockMatchesPlanMode(block, mode)).length
+  }), {});
+}
+
+function recentMemoItemsFromBlocks(blocks, mode = 'general') {
+  const normalizedMode = normalizeHomePlanMode(mode);
   return blocks
+    .filter((block) => memoBlockMatchesPlanMode(block, normalizedMode))
     .slice()
     .sort((left, right) => `${right.updatedAt || right.createdAt || ''}`.localeCompare(`${left.updatedAt || left.createdAt || ''}`))
     .slice(0, 3)
@@ -3654,6 +3713,9 @@ function recentMemoItemsFromBlocks(blocks) {
         id: block.id,
         title,
         summary,
+        label: labelsForPlanType(block.planType)[1],
+        planType: block.planType,
+        labels: block.labels || [],
         updatedAt: block.updatedAt || block.createdAt || '',
         path: `/notes?board=${encodeURIComponent(boardId)}&block=${encodeURIComponent(block.id)}`
       };
@@ -3693,7 +3755,11 @@ function summarizeAppActivity() {
   const projectBlocks = blocks.filter((block) => (block.boardId || block.sector) === 'project');
   const memoBoards = boards.filter((board) => board.id !== 'project');
   const memoBlocks = blocks.filter((block) => (block.boardId || block.sector) !== 'project');
-  const recentMemoItems = recentMemoItemsFromBlocks(memoBlocks);
+  const memoCountsByMode = memoCountsByModeFromBlocks(memoBlocks);
+  const recentMemoItems = HOME_PLAN_MODES.reduce((grouped, mode) => ({
+    ...grouped,
+    [mode]: recentMemoItemsFromBlocks(memoBlocks, mode)
+  }), {});
   const seededChecklist = checklistStatsForBlocks(adminSeedBlocks);
   const expectedChecklistTotal = ADMIN1_BOARD_TASKS.length * 2;
   const checklistTotal = Math.max(seededChecklist.total, expectedChecklistTotal);
@@ -3713,11 +3779,11 @@ function summarizeAppActivity() {
     fitness: schedulerStatsForMode(schedulerItems, 'fitness')
   };
   const planTypeCounts = {
-    general: todayItems.length + memoBlocks.length,
-    travel: Math.max(travelPlanBlocks.length, travelScheduleItems.length),
-    work: modeStats.work.total,
-    study: modeStats.study.total,
-    fitness: modeStats.fitness.total
+    general: todayItems.length + (memoCountsByMode.general || 0),
+    travel: Math.max(travelPlanBlocks.length, travelScheduleItems.length, memoCountsByMode.travel || 0),
+    work: modeStats.work.total + (memoCountsByMode.work || 0),
+    study: modeStats.study.total + (memoCountsByMode.study || 0),
+    fitness: modeStats.fitness.total + (memoCountsByMode.fitness || 0)
   };
   const modePreviewItems = {
     general: todayPreviewItems,
@@ -3745,6 +3811,7 @@ function summarizeAppActivity() {
     modeStats,
     modePreviewItems,
     planTypeCounts,
+    memoCountsByMode,
     recentMemoItems,
     totalScheduleCount: schedulerItems.length,
     travelScheduleCount: travelScheduleItems.length,
@@ -3772,7 +3839,8 @@ const EMPTY_APP_OVERVIEW = {
   modeStats: {},
   modePreviewItems: {},
   planTypeCounts: {},
-  recentMemoItems: [],
+  memoCountsByMode: {},
+  recentMemoItems: {},
   totalScheduleCount: 0,
   travelScheduleCount: 0,
   boardCount: 0,
@@ -5115,10 +5183,11 @@ function memoNoteUpdatedAt(note) {
 
 function memoNoteTag(note, folder) {
   const schedule = normalizeNoteSchedule(note?.schedule, note);
-  if (schedule.enabled) return '일정';
-  if (note?.status === 'done') return '완료';
-  if (note?.status === 'progress') return '진행';
-  return memoFolderName(folder);
+  const planLabel = labelsForPlanType(note?.planType)[1];
+  if (schedule.enabled) return `${planLabel} 일정`;
+  if (note?.status === 'done') return `${planLabel} 완료`;
+  if (note?.status === 'progress') return `${planLabel} 진행`;
+  return planLabel || memoFolderName(folder);
 }
 
 function NotionBlockEditor({ blocks, onChange }) {

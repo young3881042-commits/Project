@@ -306,7 +306,7 @@ export function HomeFeatureCards({ appOverview, navigate, planMode = 'general' }
 
 export function TravelInsightGrid({ appOverview, navigate, planMode = 'general' }) {
   const isTravelMode = planMode === 'travel';
-  const recentItems = appOverview.recentMemoItems || [];
+  const recentItems = appOverview.recentMemoItems?.[planMode] || [];
   const memoTitle = isTravelMode ? '여행 메모' : '최근 메모';
   const memoRows = recentItems.length ? recentItems : [
     { id: 'memo-empty-1', title: '첫 메모를 작성하세요', summary: '생각, 일정, 할 일을 메모로 시작할 수 있어요.', path: '/notes' },
@@ -337,7 +337,7 @@ export function TravelInsightGrid({ appOverview, navigate, planMode = 'general' 
           <button type="button" key={item.id} className="appHomeMemoRow" onClick={() => navigate(item.path || '/notes')}>
             <strong>{item.title}</strong>
             <span>{item.summary}</span>
-            <small>{item.updatedAt ? item.updatedAt.slice(5, 10) : '지금'}</small>
+            <small>{item.label || (item.updatedAt ? item.updatedAt.slice(5, 10) : '지금')}</small>
           </button>
         ))}
         <button type="button" className="appHomeMemoCreate" onClick={() => navigate('/notes')}>
@@ -369,19 +369,20 @@ export function TravelPrepPanel({ appOverview, navigate, planMode = 'general' })
   const checklistTotal = appOverview.checklistTotal || 12;
   const checklistDone = Math.min(checklistTotal, appOverview.checklistDone || 0);
   const modeStats = appOverview.modeStats?.[planMode] || {};
+  const modeMemoCount = appOverview.memoCountsByMode?.[planMode] || 0;
   const isTravelMode = planMode === 'travel';
   const panelLabel = isTravelMode ? '여행 준비 현황' : '워크스페이스 현황';
   const items = isTravelMode
     ? [
       { label: '여행 계획', value: `${appOverview.planTypeCounts?.travel || 0}개`, progress: appOverview.travelPlanPreview ? 100 : 0, path: '/plans' },
       { label: '체크리스트', value: `${checklistDone}/${checklistTotal}`, progress: checklistTotal ? Math.round((checklistDone / checklistTotal) * 100) : 0, path: appOverview.travelPlanPreview?.notePath || '/notes' },
-      { label: '메모', value: `${appOverview.noteCount || 0}개`, progress: appOverview.noteCount ? 65 : 25, path: '/notes' },
+      { label: '메모', value: `${modeMemoCount}개`, progress: modeMemoCount ? 65 : 0, path: '/notes' },
       { label: '일정', value: `${appOverview.travelScheduleCount || 0}개`, progress: modeStats.progress || 0, path: '/scheduler' }
     ]
     : [
       { label: '오늘 일정', value: `${appOverview.todayDoneCount || 0}/${appOverview.todayCount || 0}`, progress: appOverview.todayProgress || 0, path: '/scheduler' },
       { label: '이번 주 할 일', value: `${appOverview.weekDoneCount || 0}/${appOverview.weekCount || 0}`, progress: appOverview.weekProgress || 0, path: '/scheduler' },
-      { label: '최근 메모', value: `${appOverview.noteCount || 0}개`, progress: appOverview.noteCount ? 65 : 25, path: '/notes' },
+      { label: '최근 메모', value: `${modeMemoCount}개`, progress: modeMemoCount ? 65 : 0, path: '/notes' },
       { label: MODE_PANEL_COPY[planMode]?.title || '계획', value: `${modeStats.done || 0}/${modeStats.total || 0}`, progress: modeStats.progress || 0, path: '/scheduler' }
     ];
 
