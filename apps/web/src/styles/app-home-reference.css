@@ -1,4 +1,4 @@
-/* 2026-05-31 /app home rebuilt from the 15.png dashboard reference. */
+/* 2026-05-31 /app home rebuilt from the 16.png travel planner reference. */
 .referenceHome {
   min-height: 100svh !important;
   display: block !important;
@@ -25,7 +25,7 @@
   width: min(100% - 32px, 760px);
   min-height: 100svh;
   margin: 0 auto;
-  padding: 56px 30px 0;
+  padding: 44px 30px 0;
   border-left: 12px solid rgba(255, 255, 255, 0.88);
   border-right: 12px solid rgba(255, 255, 255, 0.88);
   border-radius: 8px;
@@ -34,9 +34,57 @@
   box-shadow: 0 26px 70px rgba(37, 99, 235, 0.13);
 }
 
+.appHomeTopBrand {
+  min-height: 58px;
+  display: inline-grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  color: #10203b;
+}
+
+.appHomeTopBrand > span {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #18c894 0%, #0aa76d 100%);
+  color: #ffffff;
+  box-shadow: 0 16px 30px rgba(18, 176, 123, 0.26);
+}
+
+.appHomeTopBrand .memoNavIcon {
+  width: 32px;
+  height: 32px;
+}
+
+.appHomeTopBrand div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.appHomeTopBrand strong {
+  color: #101827;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.appHomeTopBrand small {
+  color: #657289;
+  font-size: 0.92rem;
+  line-height: 1.2;
+  font-weight: 850;
+  letter-spacing: 0;
+}
+
 .appHomeBellButton {
   position: absolute;
-  top: 34px;
+  top: 46px;
   right: 32px;
   width: 54px;
   height: 54px;
@@ -67,7 +115,7 @@
 
 .appHomeHero {
   position: relative;
-  min-height: 300px;
+  min-height: 288px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 248px;
   align-items: end;
@@ -78,7 +126,7 @@
 .appHomeHeroCopy {
   align-self: start;
   max-width: 430px;
-  padding-top: 20px;
+  padding-top: 8px;
 }
 
 .appHomeHeroCopy h1 {
@@ -93,7 +141,7 @@
 
 .appHomeHeroCopy h1 span {
   display: block;
-  color: #3169ff;
+  color: #0eb77f;
 }
 
 .appHomeHeroCopy p {
@@ -114,6 +162,10 @@
   height: 230px;
   overflow: hidden;
   border-radius: 8px;
+  background:
+    radial-gradient(circle at 24% 24%, rgba(255, 255, 255, 0.92) 0 9%, transparent 10%),
+    radial-gradient(circle at 82% 22%, rgba(255, 255, 255, 0.72) 0 7%, transparent 8%),
+    linear-gradient(135deg, rgba(218, 249, 239, 0.9), rgba(232, 247, 255, 0.86));
 }
 
 .appHomeRobot img {
@@ -121,8 +173,9 @@
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: 54% 20%;
-  transform: scale(1.35) translateY(10%);
+  object-position: 54% 26%;
+  mix-blend-mode: multiply;
+  transform: scale(1.22) translateY(7%);
 }
 
 .appHomeGreetingCard,
@@ -238,28 +291,30 @@
 
 .appHomeFeatureGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
   margin-top: 22px;
 }
 
 .appHomeFeatureCard {
   position: relative;
   min-width: 0;
-  min-height: 138px;
+  min-height: 172px;
   display: grid;
   align-content: start;
-  gap: 16px;
-  padding: 24px 24px 20px;
+  justify-items: center;
+  gap: 12px;
+  padding: 20px 12px 48px;
   border-color: rgba(224, 232, 244, 0.92);
   color: #203553;
-  text-align: left;
+  text-align: center;
   font: inherit;
   cursor: pointer;
 }
 
 .appHomeFeatureTitle {
-  display: inline-flex;
+  display: grid;
+  justify-items: center;
   align-items: center;
   gap: 9px;
   color: #23bd84;
@@ -269,47 +324,71 @@
   color: #3169ff;
 }
 
+.appHomeFeatureCard.trip .appHomeFeatureTitle {
+  color: #16b99d;
+}
+
+.appHomeFeatureCard.search .appHomeFeatureTitle {
+  color: #0f9f78;
+}
+
 .appHomeFeatureTitle .memoNavIcon {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
 }
 
 .appHomeFeatureTitle strong {
-  font-size: 1.08rem;
+  min-height: 2.3em;
+  display: grid;
+  place-items: center;
+  font-size: 1.02rem;
+  line-height: 1.15;
   font-weight: 950;
+  word-break: keep-all;
 }
 
 .appHomeFeatureCard p {
-  max-width: 180px;
+  max-width: 94px;
   margin: 0;
   color: #526584;
-  font-size: 0.98rem;
-  line-height: 1.62;
+  font-size: 0.8rem;
+  line-height: 1.52;
   font-weight: 760;
   word-break: keep-all;
 }
 
 .appHomeFeatureIcon {
   position: absolute;
-  right: 20px;
-  bottom: 28px;
-  width: 58px;
-  height: 58px;
+  left: 50%;
+  right: auto;
+  bottom: 14px;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
   border-radius: 8px;
-  background: #e9fbf3;
-  color: #1ec483;
+  background: #f8fbff;
+  color: #7b8aa2;
+  border: 1px solid rgba(224, 232, 244, 0.96);
+  transform: translateX(-50%);
 }
 
 .appHomeFeatureCard.schedule .appHomeFeatureIcon {
-  background: #eef4ff;
+  background: #f8fbff;
   color: #3169ff;
 }
 
+.appHomeFeatureCard.trip .appHomeFeatureIcon {
+  color: #16b99d;
+}
+
+.appHomeFeatureCard.search .appHomeFeatureIcon {
+  color: #0f9f78;
+}
+
 .appHomeFeatureIcon .memoNavIcon {
-  width: 34px;
-  height: 34px;
+  width: 18px;
+  height: 18px;
 }
 
 .appHomeFeatureCard small {
@@ -765,20 +844,36 @@
 @media (max-width: 720px) {
   .spaceAppFrame.appHomeDashboard {
     width: min(100% - 18px, 560px);
-    padding: 46px 22px 0;
+    padding: 34px 22px 0;
     border-left-width: 8px;
     border-right-width: 8px;
   }
 
+  .appHomeTopBrand {
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 14px;
+    min-height: 52px;
+    margin-bottom: 26px;
+  }
+
+  .appHomeTopBrand > span {
+    width: 52px;
+    height: 52px;
+  }
+
+  .appHomeTopBrand strong {
+    font-size: 1.34rem;
+  }
+
   .appHomeBellButton {
-    top: 28px;
+    top: 36px;
     right: 24px;
     width: 48px;
     height: 48px;
   }
 
   .appHomeHero {
-    min-height: 284px;
+    min-height: 264px;
     grid-template-columns: minmax(0, 1fr) 176px;
     gap: 8px;
     padding-right: 0;
@@ -809,15 +904,17 @@
   }
 
   .appHomeFeatureCard {
-    min-height: 132px;
-    padding: 20px 18px 18px;
+    min-height: 158px;
+    padding: 18px 9px 44px;
   }
 
   .appHomeFeatureIcon {
-    right: 16px;
-    bottom: 20px;
-    width: 54px;
-    height: 54px;
+    left: 50%;
+    right: auto;
+    bottom: 12px;
+    width: 32px;
+    height: 32px;
+    transform: translateX(-50%);
   }
 
   .appHomePanel {
@@ -850,21 +947,46 @@
   .spaceAppFrame.appHomeDashboard {
     width: 100%;
     min-height: 100svh;
-    padding: 34px 18px 0;
+    padding: 30px 18px 0;
     border-left: 0;
     border-right: 0;
     border-radius: 0;
   }
 
+  .appHomeTopBrand {
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 12px;
+    min-height: 46px;
+    margin-bottom: 22px;
+  }
+
+  .appHomeTopBrand > span {
+    width: 46px;
+    height: 46px;
+  }
+
+  .appHomeTopBrand .memoNavIcon {
+    width: 27px;
+    height: 27px;
+  }
+
+  .appHomeTopBrand strong {
+    font-size: 1.18rem;
+  }
+
+  .appHomeTopBrand small {
+    font-size: 0.8rem;
+  }
+
   .appHomeBellButton {
-    top: 24px;
+    top: 30px;
     right: 18px;
     width: 48px;
     height: 48px;
   }
 
   .appHomeHero {
-    min-height: 284px;
+    min-height: 270px;
     grid-template-columns: minmax(0, 1fr) 132px;
     align-items: end;
   }
@@ -914,31 +1036,33 @@
   }
 
   .appHomeFeatureCard {
-    min-height: 124px;
+    min-height: 148px;
     gap: 13px;
-    padding: 16px 14px;
+    padding: 14px 8px 42px;
   }
 
   .appHomeFeatureTitle strong {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .appHomeFeatureCard p {
-    max-width: 118px;
-    font-size: 0.84rem;
+    max-width: 76px;
+    font-size: 0.72rem;
     line-height: 1.55;
   }
 
   .appHomeFeatureIcon {
-    right: 12px;
-    bottom: 16px;
-    width: 48px;
-    height: 48px;
+    left: 50%;
+    right: auto;
+    bottom: 11px;
+    width: 30px;
+    height: 30px;
+    transform: translateX(-50%);
   }
 
   .appHomeFeatureIcon .memoNavIcon {
-    width: 28px;
-    height: 28px;
+    width: 16px;
+    height: 16px;
   }
 
   .appHomePanel {
@@ -1042,11 +1166,7 @@
     width: 108px;
   }
 
-  .appHomeFeatureGrid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .appHomeFeatureCard p {
-    max-width: 210px;
+    max-width: 68px;
   }
 }

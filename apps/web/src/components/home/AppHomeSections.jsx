@@ -16,12 +16,12 @@ export function HomeGreetingCard({
   session
 }) {
   const greeting = isMemberSession
-    ? `${session?.username || 'Member'}님, 오늘 일정부터 정리해 보세요.`
-    : '안녕하세요! 오늘도 계획적인 하루 되세요.';
+    ? `${session?.username || 'Member'}님, 다음 여행을 코스로 정리해 보세요.`
+    : '안녕하세요! 오늘도 멋진 여행 되세요.';
 
   return (
     <section className="appHomeGreetingCard" aria-label="오늘 시작">
-      <button type="button" className="appHomeGreetingMain" onClick={() => navigate('/scheduler')}>
+      <button type="button" className="appHomeGreetingMain" onClick={() => navigate('/planner')}>
         <span className="appHomeGreetingAvatar">
           <img src="/robot-guide.png" alt="" />
         </span>
@@ -52,7 +52,7 @@ export function HomeGreetingCard({
   );
 }
 
-export function HomeFeatureCards({ appOverview, navigate }) {
+export function HomeFeatureCards({ navigate }) {
   return (
     <section className="appHomeFeatureGrid" aria-label="주요 기능">
       <button type="button" className="appHomeFeatureCard memo" onClick={() => navigate('/notes')}>
@@ -60,7 +60,7 @@ export function HomeFeatureCards({ appOverview, navigate }) {
           <MemoNavIcon type="board" />
           <strong>메모</strong>
         </span>
-        <p>빠르게 기록하고 체계적으로 정리해요.</p>
+        <p>여행 생각을 빠르게 기록해요.</p>
         <span className="appHomeFeatureIcon"><MemoNavIcon type="edit" /></span>
       </button>
       <button type="button" className="appHomeFeatureCard schedule" onClick={() => navigate('/scheduler')}>
@@ -68,9 +68,24 @@ export function HomeFeatureCards({ appOverview, navigate }) {
           <MemoNavIcon type="calendar" />
           <strong>일정</strong>
         </span>
-        <p>중요한 일정을 놓치지 않게 관리해요.</p>
+        <p>여행 일정을 날짜별로 계획해요.</p>
         <span className="appHomeFeatureIcon"><MemoNavIcon type="calendar" /></span>
-        <small>{appOverview.todayDoneCount}/{appOverview.todayCount} 완료</small>
+      </button>
+      <button type="button" className="appHomeFeatureCard trip" onClick={() => navigate('/planner')}>
+        <span className="appHomeFeatureTitle">
+          <MemoNavIcon type="trip" />
+          <strong>여행 코스</strong>
+        </span>
+        <p>나만의 코스를 만들어요.</p>
+        <span className="appHomeFeatureIcon"><MemoNavIcon type="trip" /></span>
+      </button>
+      <button type="button" className="appHomeFeatureCard search" onClick={() => navigate('/destinations')}>
+        <span className="appHomeFeatureTitle">
+          <MemoNavIcon type="search" />
+          <strong>장소 찾기</strong>
+        </span>
+        <p>좋은 장소를 찾아봐요.</p>
+        <span className="appHomeFeatureIcon"><MemoNavIcon type="search" /></span>
       </button>
     </section>
   );
@@ -80,13 +95,13 @@ export function TodaySchedulePanel({ appOverview, navigate }) {
   const items = appOverview.todayPreviewItems || [];
 
   return (
-    <section className="appHomePanel appHomeTodayPanel" aria-label="오늘 일정">
+    <section className="appHomePanel appHomeTodayPanel" aria-label="이번 여행 일정">
       <header className="appHomePanelHeader">
         <span>
           <MemoNavIcon type="calendar" />
-          <strong>오늘 일정</strong>
+          <strong>이번 여행 일정</strong>
         </span>
-        <button type="button" onClick={() => navigate('/scheduler')}>전체 보기</button>
+        <button type="button" onClick={() => navigate('/scheduler')}>일정 보기</button>
         <MemoNavIcon type="chevronDown" />
       </header>
 
@@ -108,13 +123,13 @@ export function TodaySchedulePanel({ appOverview, navigate }) {
         </div>
       ) : (
         <button type="button" className="appHomeEmptySchedule" onClick={() => navigate('/scheduler')}>
-          <span>오늘 등록된 일정이 없어요.</span>
-          <strong>일정 추가하기</strong>
+          <span>등록된 여행 일정이 없어요.</span>
+          <strong>여행 일정 추가하기</strong>
         </button>
       )}
 
       <button type="button" className="appHomePanelAction" onClick={() => navigate('/scheduler')}>
-        일정 더보기
+        여행 일정 더보기
         <MemoNavIcon type="chevronRight" />
       </button>
     </section>
@@ -138,7 +153,7 @@ export function ProgressPanel({ appOverview }) {
       </header>
       <div className="appHomeProgressGrid">
         <div className="appHomeProgressCard">
-          <span>이번 주 일정 진행 상황</span>
+          <span>이번 주 여행 준비 진행 상황</span>
           <div className="appHomeProgressBar" aria-label={`진행률 ${safeProgress}%`}>
             <i style={{ width: `${safeProgress}%` }} />
           </div>
@@ -150,8 +165,8 @@ export function ProgressPanel({ appOverview }) {
         </div>
         <div className="appHomeEncourageCard">
           <MemoNavIcon type="trophy" />
-          <strong>잘하고 있어요!</strong>
-          <span>조금만 더 힘내세요.</span>
+          <strong>여행 준비 중</strong>
+          <span>메모와 일정을 코스로 이어보세요.</span>
         </div>
       </div>
     </section>
@@ -165,11 +180,11 @@ export function TravelPlanBanner({ navigate }) {
         <MemoNavIcon type="trip" />
       </span>
       <div>
-        <strong>여행 계획 만들기</strong>
-        <p>AI로 여행 일정을 빠르게 생성해요.</p>
+        <strong>AI 추천 팁</strong>
+        <p>메모와 일정에 맞는 여행 코스를 추천받아요.</p>
       </div>
       <button type="button" onClick={() => navigate('/planner')}>
-        계획 시작
+        코스 만들기
         <MemoNavIcon type="chevronRight" />
       </button>
     </section>

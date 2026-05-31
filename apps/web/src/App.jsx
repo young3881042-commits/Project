@@ -2940,6 +2940,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260531-app-home-16png-travel-identity',
+    content: `# 2026-05-31 16.png 기준 여행 코스 홈 정체성 강화
+
+- [x] /app 상단 브랜드를 여행 코스 / AI 여행 플래너로 변경
+- [x] 히어로와 인사 카드를 여행 메모, 일정, 코스 준비 흐름으로 수정
+- [x] 주요 기능을 메모, 일정, 여행 코스, 장소 찾기 4개 카드로 확장
+- [x] 일정, 진행도, AI 추천 배너 문구를 여행 준비 기준으로 보정`
+  },
+  {
     id: 'admin1-memo-20260531-travel-planner-user-key-tabs',
     content: `# 2026-05-31 여행 계획 생성과 모바일 탭 정리
 
@@ -3683,7 +3692,7 @@ function SpaceHomePage({ navigate }) {
   const isMemberSession = accountMode === 'member';
 
   useEffect(() => {
-    document.title = '개인 앱 홈';
+    document.title = '여행 코스';
   }, []);
 
   useEffect(() => {

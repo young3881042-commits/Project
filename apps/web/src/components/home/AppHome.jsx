@@ -21,6 +21,16 @@ export default function AppHome({
   return (
     <main className={`spaceHome referenceHome${isMemberSession ? ' memberSession' : ''}`}>
       <section className="spaceAppFrame appHomeDashboard" aria-label="앱 홈">
+        <div className="appHomeTopBrand" aria-label="앱 이름">
+          <span>
+            <MemoNavIcon type="trip" />
+          </span>
+          <div>
+            <strong>여행 코스</strong>
+            <small>AI 여행 플래너</small>
+          </div>
+        </div>
+
         <button
           type="button"
           className="appHomeBellButton"
@@ -34,11 +44,11 @@ export default function AppHome({
         <header className="appHomeHero">
           <div className="appHomeHeroCopy">
             <h1>
-              메모부터 여행 계획까지,
+              여행 메모부터 코스까지,
               <span>가볍게 정리하고</span>
               똑똑하게 관리하세요.
             </h1>
-            <p>메모와 일정을 한눈에, 당신의 하루를 더 효율적으로.</p>
+            <p>남겨둔 여행 메모를 일정과 동선으로 이어서, 다음 여행을 더 쉽게 준비해요.</p>
           </div>
           <div className="appHomeRobot" aria-hidden="true">
             <img src="/robot-guide.png" alt="" />
