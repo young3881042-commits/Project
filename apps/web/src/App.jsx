@@ -2940,6 +2940,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260531-mobile-ui-hotfix',
+    content: `# 2026-05-31 모바일 UI/UX 긴급 보정
+
+- [x] 공용 하단 탭을 기존 메모 액션바 CSS와 분리
+- [x] /notes 모바일에서 상단 네비게이션이 다시 보이던 충돌을 제거
+- [x] 메모봇 이미지 크기와 기능 카드 그리드를 모바일 폭에 맞게 고정
+- [x] /app, /notes, /scheduler 하단 탭 겹침 방지 여백 추가`
+  },
+  {
     id: 'admin1-memo-20260531-notion-workspace-accordion',
     content: `# 2026-05-31 Notion형 메모/일정 워크스페이스 정리
 
@@ -3795,7 +3804,6 @@ function SpaceHomePage({ navigate }) {
           </section>
         </div>
       </section>
-      <MobileWorkspaceTabs active="home" navigate={navigate} />
     </main>
   );
 }
@@ -5590,7 +5598,18 @@ function NotionNotesPage({ navigate }) {
                   <button type="button" className="notesMobileProfile" onClick={() => navigate(accountPath)}>
                     <span>{accountName.slice(0, 1).toUpperCase()}</span>
                   </button>
-                  <WorkspaceQuickMenu active="notes" navigate={navigate} className="notesMobileQuickMenu" ariaLabel="상단 바로가기" />
+                  <div className="notesMobileTitleBlock">
+                    <span>{accountName}</span>
+                    <strong>메모</strong>
+                  </div>
+                  <button
+                    type="button"
+                    className="notesMobileTopAction"
+                    onClick={() => createNote(activeFolderId || 'memo')}
+                    aria-label="새 메모"
+                  >
+                    <MemoNavIcon type="plus" />
+                  </button>
                 </div>
                 <div className="notesMobileHeroCard">
                   <img src="/robot-guide.png" alt="" />

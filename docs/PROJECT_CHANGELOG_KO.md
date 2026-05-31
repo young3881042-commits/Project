@@ -1,5 +1,25 @@
 # 프로젝트 변경 상세 문서
 
+## 26. 2026-05-31 모바일 UI/UX 긴급 보정
+
+`/app`, `/notes`, `/scheduler` 모바일 화면에서 하단 탭과 기존 메모 액션바 CSS가 섞이며 레이아웃이 깨지는 문제를 보정했습니다.
+
+변경 내용:
+
+- 공용 하단 탭 class를 `.notesMobileActionBar`에서 `.mobileWorkspaceTabs`로 분리했습니다.
+- `/app`, `/notes`, `/scheduler`에는 하단 탭과 콘텐츠가 겹치지 않도록 모바일 safe-area 여백을 추가했습니다.
+- `/notes` 모바일에서 숨겨야 할 상단 `workspaceNavigator`가 다시 노출되던 CSS override 충돌을 막았습니다.
+- 메모봇 이미지는 모바일 카드 안에서 74px 고정 크기로 제한했습니다.
+- 모바일 주요 기능 카드는 3열 소형 카드로 정리해 첫 화면이 과하게 늘어나지 않게 했습니다.
+- 이번 긴급 보정 작업 로그를 `admin1` 메모 보드 시드에 추가했습니다.
+
+검증:
+
+- `git diff --check`
+- `npm --prefix apps/web run build`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web`
+- `/app`, `/notes`, `/scheduler` HTTP 200 확인
+
 ## 25. 2026-05-31 Notion형 메모/일정 워크스페이스 정리
 
 첨부 레퍼런스 방향과 추가 요구사항을 기준으로 `/notes`의 정보 노출량을 줄이고 접힘 구조를 강화했습니다.

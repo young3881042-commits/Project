@@ -1950,8 +1950,63 @@ body:has(.notesShell) {
     display: none !important;
   }
 
+  .notesShell .workspaceNavigator {
+    display: none !important;
+  }
+
+  .notesMobileWorkspace {
+    min-height: auto !important;
+    padding-bottom: 0 !important;
+  }
+
+  .notesMobileProfileRow {
+    grid-template-columns: 48px minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .notesMobileQuickMenu {
+    min-height: 0 !important;
+    display: none !important;
+  }
+
+  .notesMobileHeroCard {
+    grid-template-columns: 74px minmax(0, 1fr) !important;
+    align-items: center !important;
+  }
+
+  .notesMobileHeroCard img {
+    width: 74px !important;
+    height: 74px !important;
+    display: block !important;
+    object-fit: cover !important;
+    object-position: 50% 18% !important;
+    border-radius: 8px !important;
+  }
+
+  .notesMobileHeroCard div,
+  .notesMobileHeroCard p {
+    min-width: 0 !important;
+  }
+
+  .notesMobileHeroCard span {
+    display: block !important;
+    color: #0f766e !important;
+    font-size: 0.76rem !important;
+    font-weight: 900 !important;
+    line-height: 1.25 !important;
+  }
+
+  .notesMobileHeroCard p {
+    margin: 3px 0 0 !important;
+    color: #102033 !important;
+    font-size: 0.95rem !important;
+    font-weight: 850 !important;
+    line-height: 1.45 !important;
+    word-break: keep-all !important;
+  }
+
   .notesMobileFeatureGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   }
 
   .notesMobileHomeTop {
@@ -1962,9 +2017,28 @@ body:has(.notesShell) {
     grid-auto-columns: minmax(158px, 76vw) !important;
   }
 
-  .notesMobileActionBar:has(.notesMobileTabButton) {
-    right: 10px !important;
-    bottom: 10px !important;
-    left: 10px !important;
+  .notesMobileFeatureCard {
+    min-height: 92px !important;
+    padding: 10px 8px !important;
+    text-align: center !important;
+    justify-items: center !important;
+  }
+
+  .notesMobileFeatureCard .memoNavIcon {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+  }
+
+  .notesMobileFeatureCard strong {
+    font-size: 0.8rem !important;
+  }
+
+  .notesMobileFeatureCard small {
+    font-size: 0.68rem !important;
+  }
+
+  .notesMobileActionBar {
+    display: none !important;
   }
 }

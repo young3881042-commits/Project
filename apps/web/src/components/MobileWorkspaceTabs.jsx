@@ -7,10 +7,10 @@ export default function MobileWorkspaceTabs({ active = 'notes', navigate, onNote
   };
 
   return (
-    <nav className="notesMobileActionBar" aria-label="모바일 하단 탭">
+    <nav className="mobileWorkspaceTabs" aria-label="모바일 하단 탭">
       <button
         type="button"
-        className={`notesMobileTabButton ${active === 'home' ? 'active' : ''}`}
+        className={`mobileWorkspaceTabButton ${active === 'home' ? 'active' : ''}`}
         onClick={() => navigate('/app')}
       >
         <MemoNavIcon type="home" />
@@ -18,7 +18,7 @@ export default function MobileWorkspaceTabs({ active = 'notes', navigate, onNote
       </button>
       <button
         type="button"
-        className={`notesMobileTabButton ${active === 'notes' ? 'active' : ''}`}
+        className={`mobileWorkspaceTabButton ${active === 'notes' ? 'active' : ''}`}
         onClick={openNotes}
       >
         <MemoNavIcon type="board" />
@@ -26,7 +26,7 @@ export default function MobileWorkspaceTabs({ active = 'notes', navigate, onNote
       </button>
       <button
         type="button"
-        className={`notesMobileTabButton ${active === 'schedule' ? 'active' : ''}`}
+        className={`mobileWorkspaceTabButton ${active === 'schedule' ? 'active' : ''}`}
         onClick={() => navigate('/scheduler')}
       >
         <MemoNavIcon type="calendar" />
