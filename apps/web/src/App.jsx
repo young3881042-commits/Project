@@ -5,6 +5,7 @@ import LocalTripApp from './LocalTripApp.jsx';
 import ConnectionsApp from './ConnectionsApp.jsx';
 import MemoNavIcon from './components/MemoNavIcon.jsx';
 import MobileWorkspaceTabs from './components/MobileWorkspaceTabs.jsx';
+import AppHome from './components/home/AppHome.jsx';
 import MobileHomeSection from './components/notes/MobileHomeSection.jsx';
 import MemoList from './components/notes/MemoList.jsx';
 import NotesScheduleBar from './components/notes/NotesScheduleBar.jsx';
@@ -2939,6 +2940,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260531-app-home-15png-dashboard',
+    content: `# 2026-05-31 15.png 기준 앱 홈 대시보드 개편
+
+- [x] /app 메인 화면을 15.png 참고 이미지의 밝은 모바일 대시보드 구조로 재구성
+- [x] 홈 JSX를 components/home/AppHome.jsx와 AppHomeSections.jsx로 분리
+- [x] 오늘 일정, 주간 진행도, 메모/일정 카드, 여행 계획 CTA를 한 화면 흐름으로 정리
+- [x] 기존 11.png용 컷툰 중심 홈 CSS를 새 대시보드 CSS로 교체`
+  },
+  {
     id: 'admin1-memo-20260531-mobile-home-nav-dedupe',
     content: `# 2026-05-31 모바일 홈 중복 네비게이션 제거
 
@@ -3485,6 +3495,17 @@ function summarizeAppActivity() {
   const nextSevenDays = Array.from({ length: 7 }, (_, index) => toDateKey(addDays(new Date(), index)));
   const expandedWeekItems = expandSchedulerItemsForDates(schedulerItems, nextSevenDays);
   const todayItems = expandedWeekItems.filter((item) => item.date === today);
+  const todayPreviewItems = todayItems
+    .slice()
+    .sort((left, right) => `${left.time || '99:99'} ${left.title || ''}`.localeCompare(`${right.time || '99:99'} ${right.title || ''}`))
+    .slice(0, 3)
+    .map((item) => ({
+      id: item.id,
+      title: item.title || '제목 없는 일정',
+      time: item.time || '',
+      type: normalizeSchedulerType(item.type),
+      done: Boolean(item.done)
+    }));
   const todayDoneItems = todayItems.filter((item) => item.done);
   const weekDoneItems = expandedWeekItems.filter((item) => item.done);
   const pendingWeekItems = expandedWeekItems.filter((item) => !item.done);
@@ -3512,6 +3533,7 @@ function summarizeAppActivity() {
     todayCount: todayItems.length,
     todayDoneCount: todayDoneItems.length,
     todayProgress: todayItems.length ? Math.round((todayDoneItems.length / todayItems.length) * 100) : 0,
+    todayPreviewItems,
     weekCount: expandedWeekItems.length,
     weekDoneCount: weekDoneItems.length,
     weekProgress: expandedWeekItems.length ? Math.round((weekDoneItems.length / expandedWeekItems.length) * 100) : 0,
@@ -3533,6 +3555,7 @@ const EMPTY_APP_OVERVIEW = {
   todayCount: 0,
   todayDoneCount: 0,
   todayProgress: 0,
+  todayPreviewItems: [],
   weekCount: 0,
   weekDoneCount: 0,
   weekProgress: 0,
@@ -3726,90 +3749,16 @@ function SpaceHomePage({ navigate }) {
   };
 
   return (
-    <main className={`spaceHome referenceHome${isMemberSession ? ' memberSession' : ''}`}>
-      <section className="spaceAppFrame" aria-label="앱 홈">
-        <header className="spaceAppIntro">
-          <div className="spaceAppTitle">
-            <h1>
-              {isMemberSession ? (
-                <>
-                  {session.username}님,
-                  <br />
-                  오늘도 가볍게 정리해 보세요.
-                </>
-              ) : (
-                <>
-                  메모부터 여행 계획까지,
-                  <br />
-                  가볍게 정리해 보세요.
-                </>
-              )}
-            </h1>
-          </div>
-          <div className="spaceMascot" aria-hidden="true">
-            <img src="/robot-guide.png" alt="" />
-          </div>
-        </header>
-
-        <div className="spaceMainPanel">
-          {!isMemberSession ? (
-            <div className="spaceAccountWindow" aria-label="Guest and member start">
-              <div className="spaceAccountHead">
-                <span>Start</span>
-                <strong>{accountMode === 'guest' ? 'Guest 모드 사용 중' : 'Guest 또는 Member'}</strong>
-              </div>
-              <div className="spaceAccountChoices">
-                <button
-                  type="button"
-                  className={`spaceAccountChoice guest${accountMode === 'guest' ? ' active' : ''}`}
-                  onClick={startGuest}
-                  disabled={guestStarting}
-                >
-                  <span>Guest</span>
-                  <strong>{guestStarting ? '준비 중...' : '게스트로 시작'}</strong>
-                  <small>로그인 없이 먼저 둘러보기</small>
-                </button>
-                <button
-                  type="button"
-                  className="spaceAccountChoice member"
-                  onClick={() => navigate('/login?redirect=/scheduler')}
-                >
-                  <span>Member</span>
-                  <strong>회원으로 계속</strong>
-                  <small>내 계정으로 이어서 보기</small>
-                </button>
-              </div>
-              {accountError ? <p className="spaceAccountNotice">{accountError}</p> : null}
-            </div>
-          ) : (
-            <div className="spaceMemberWindow" aria-label="member account">
-              <div>
-                <span>Member</span>
-                <strong>{session.username} 계정 사용 중</strong>
-              </div>
-              <button type="button" onClick={() => navigate('/mypage')}>내 정보</button>
-            </div>
-          )}
-
-          <figure className="robotGuideMeme cuttoon" aria-label="로봇 사용 안내 컷툰">
-            <img className="robotGuideCuttoonImage" src="/robot-guide-cuttoon.svg" alt="메모 작성, 일정 켜기, 내 일정 확인, 한눈에 관리 순서 안내" />
-          </figure>
-
-          <section className="spaceLaunchGrid" aria-label="빠른 시작">
-            <button type="button" className="spaceLaunchCard memo" onClick={() => navigate('/notes')}>
-              <span><MemoNavIcon type="board" /></span>
-              <strong>메모</strong>
-              <small>{appOverview.noteCount}개 정리됨 · 바로 작성</small>
-            </button>
-            <button type="button" className="spaceLaunchCard schedule today" onClick={() => navigate('/scheduler')}>
-              <span><MemoNavIcon type="calendar" /></span>
-              <strong>오늘 일정</strong>
-              <small>{appOverview.todayDoneCount}/{appOverview.todayCount} 완료 · {appOverview.todayProgress}%</small>
-            </button>
-          </section>
-        </div>
-      </section>
-    </main>
+    <AppHome
+      accountError={accountError}
+      accountMode={accountMode}
+      appOverview={appOverview}
+      guestStarting={guestStarting}
+      isMemberSession={isMemberSession}
+      navigate={navigate}
+      onStartGuest={startGuest}
+      session={session}
+    />
   );
 }
 

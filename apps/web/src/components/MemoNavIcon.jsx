@@ -7,6 +7,33 @@ export default function MemoNavIcon({ type }) {
         <path d="M8 3v4M16 3v4M5 10h14" />
       </>
     ),
+    bell: (
+      <>
+        <path d="M7 11a5 5 0 0 1 10 0c0 3.1 1.2 4.3 2 5.2H5c.8-.9 2-2.1 2-5.2z" />
+        <path d="M10 19a2.2 2.2 0 0 0 4 0" />
+      </>
+    ),
+    edit: (
+      <>
+        <path d="M5 19h4l10-10-4-4L5 15z" />
+        <path d="M13.5 6.5l4 4" />
+      </>
+    ),
+    trophy: (
+      <>
+        <path d="M8 4h8v4a4 4 0 0 1-8 0z" />
+        <path d="M8 6H5a3 3 0 0 0 3 5" />
+        <path d="M16 6h3a3 3 0 0 1-3 5" />
+        <path d="M12 12v5" />
+        <path d="M9 20h6" />
+      </>
+    ),
+    chart: (
+      <>
+        <path d="M4 12a8 8 0 1 0 8-8v8z" />
+        <path d="M12 4a8 8 0 0 1 8 8h-8z" />
+      </>
+    ),
     trip: (
       <>
         <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z" />
@@ -105,6 +132,7 @@ export default function MemoNavIcon({ type }) {
     ),
     chevronLeft: <path d="m15 6-6 6 6 6" />,
     chevronRight: <path d="m9 6 6 6-6 6" />,
+    chevronDown: <path d="m6 9 6 6 6-6" />,
     trash: (
       <>
         <path d="M5 7h14" />

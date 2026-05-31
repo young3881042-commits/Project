@@ -1,5 +1,26 @@
 # 프로젝트 변경 상세 문서
 
+## 28. 2026-05-31 15.png 기준 앱 홈 대시보드 개편
+
+`15.png` 참고 이미지 방향에 맞춰 `/app` 메인 화면을 밝은 모바일 대시보드로 다시 구성했습니다.
+
+변경 내용:
+
+- 상단 큰 카피, 로봇 비주얼, 알림/계정 버튼을 첫 화면에 배치했습니다.
+- 인사 카드 안에 Guest/Member 시작 액션을 작게 유지했습니다.
+- 메모/일정 기능 카드, 오늘 일정 리스트, 주간 진행도, 여행 계획 CTA를 세로 흐름으로 정리했습니다.
+- 홈 하단에는 홈, 노트, 일정 탭을 화면 안쪽에 고정된 대시보드 탭처럼 배치했습니다.
+- `/app` 홈 JSX를 `apps/web/src/components/home/AppHome.jsx`와 `AppHomeSections.jsx`로 분리했습니다.
+- `App.jsx`는 기존처럼 세션, 스토리지 감시, 게스트 세션 생성만 담당하고 화면 조립은 홈 컴포넌트가 담당합니다.
+- 기존 11.png 기준 컷툰 중심 CSS를 `15.png` 대시보드 톤의 `app-home-reference.css`로 교체했습니다.
+
+검증:
+
+- `npm --prefix apps/web run build`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web`
+- `docker compose -f docker-compose.dev.yml exec -T web nginx -t`
+- `/app`, `/`, `/api/destinations?size=1` HTTP 응답 확인
+
 ## 27. 2026-05-31 모바일 홈 중복 네비게이션 제거
 
 `13.png` 방향의 메인 화면에 맞춰 `/app` 모바일 홈에서 본문 하단의 `홈/메모/일정` 중복 메뉴를 제거했습니다.
