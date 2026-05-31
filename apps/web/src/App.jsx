@@ -2990,6 +2990,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260531-inline-home-login',
+    content: `# 2026-05-31 홈 인라인 로그인과 빠른 실행 겹침 보정
+
+- [x] /app 홈의 알림/로그인 버튼이 /login으로 이동하지 않고 계정 카드 아래 로그인 폼을 펼치도록 변경
+- [x] 인라인 로그인/회원가입 성공 후 현재 홈 화면에 머물며 세션만 갱신
+- [x] 모바일 빠른 실행을 2열로 내려 일정 추가와 할 일 추가 카드 겹침 방지
+- [x] 기존 /login 라우트는 직접 접근용으로 유지`
+  },
+  {
     id: 'admin1-memo-20260531-home-v2-workspace-dashboard',
     content: `# 2026-05-31 홈 V2 개인 워크스페이스 대시보드
 
@@ -3978,6 +3987,12 @@ function SpaceHomePage({ navigate }) {
   const [planMode, setPlanMode] = useState(readHomePlanMode);
   const [guestStarting, setGuestStarting] = useState(false);
   const [accountError, setAccountError] = useState('');
+  const [inlineAuthOpen, setInlineAuthOpen] = useState(false);
+  const [inlineAuthMode, setInlineAuthMode] = useState('login');
+  const [inlineAuthUsername, setInlineAuthUsername] = useState('');
+  const [inlineAuthPassword, setInlineAuthPassword] = useState('');
+  const [inlineAuthLoading, setInlineAuthLoading] = useState(false);
+  const [inlineAuthError, setInlineAuthError] = useState('');
   const accountMode = session?.token && !session?.isGuest && session?.username !== 'guestuser'
     ? 'member'
     : session?.token
@@ -4034,12 +4049,59 @@ function SpaceHomePage({ navigate }) {
       const normalized = normalizeAuthSession({ ...guestSession, isGuest: true });
       localStorage.setItem(AUTH_KEY, JSON.stringify(normalized));
       setSession(normalized);
+      setInlineAuthOpen(false);
       setAppOverview(summarizeAppActivity() || EMPTY_APP_OVERVIEW);
       navigate('/app');
     } catch (error) {
       setAccountError(error.message || '게스트 세션을 만들 수 없습니다.');
     } finally {
       setGuestStarting(false);
+    }
+  };
+
+  const openInlineAuth = () => {
+    setInlineAuthOpen(true);
+    setInlineAuthError('');
+    setAccountError('');
+  };
+
+  const closeInlineAuth = () => {
+    setInlineAuthOpen(false);
+    setInlineAuthError('');
+  };
+
+  const changeInlineAuthMode = (mode) => {
+    setInlineAuthMode(mode === 'signup' ? 'signup' : 'login');
+    setInlineAuthError('');
+  };
+
+  const submitInlineAuth = async (event) => {
+    event.preventDefault();
+    if (inlineAuthLoading) return;
+    const validationError = validateAuthForm(inlineAuthMode, inlineAuthUsername, inlineAuthPassword);
+    if (validationError) {
+      setInlineAuthError(validationError);
+      return;
+    }
+    setInlineAuthLoading(true);
+    setInlineAuthError('');
+    setAccountError('');
+    try {
+      const authSession = await requestJson(inlineAuthMode === 'signup' ? '/api/auth/signup' : '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ username: inlineAuthUsername.trim(), password: inlineAuthPassword })
+      });
+      const normalized = normalizeAuthSession(authSession);
+      localStorage.setItem(AUTH_KEY, JSON.stringify(normalized));
+      setSession(normalized);
+      setInlineAuthOpen(false);
+      setInlineAuthPassword('');
+      setAppOverview(summarizeAppActivity() || EMPTY_APP_OVERVIEW);
+    } catch (error) {
+      setInlineAuthError(error.message || '로그인 중 문제가 발생했습니다.');
+    } finally {
+      setInlineAuthLoading(false);
     }
   };
 
@@ -4059,6 +4121,20 @@ function SpaceHomePage({ navigate }) {
       accountMode={accountMode}
       appOverview={appOverview}
       guestStarting={guestStarting}
+      inlineAuth={{
+        open: inlineAuthOpen && !isMemberSession,
+        mode: inlineAuthMode,
+        username: inlineAuthUsername,
+        password: inlineAuthPassword,
+        loading: inlineAuthLoading,
+        error: inlineAuthError,
+        onOpen: openInlineAuth,
+        onClose: closeInlineAuth,
+        onModeChange: changeInlineAuthMode,
+        onUsernameChange: setInlineAuthUsername,
+        onPasswordChange: setInlineAuthPassword,
+        onSubmit: submitInlineAuth
+      }}
       isMemberSession={isMemberSession}
       navigate={navigate}
       onStartGuest={startGuest}

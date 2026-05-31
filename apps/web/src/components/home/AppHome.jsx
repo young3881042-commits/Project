@@ -37,6 +37,7 @@ export default function AppHome({
   accountMode,
   appOverview,
   guestStarting,
+  inlineAuth,
   isMemberSession,
   navigate,
   onStartGuest,
@@ -63,7 +64,7 @@ export default function AppHome({
           type="button"
           className="appHomeBellButton"
           aria-label={isMemberSession ? '내 정보 열기' : '로그인 열기'}
-          onClick={() => navigate(isMemberSession ? '/mypage' : '/login?redirect=/app')}
+          onClick={() => (isMemberSession ? navigate('/mypage') : inlineAuth?.onOpen?.())}
         >
           <MemoNavIcon type="bell" />
           <i aria-hidden="true" />
@@ -93,6 +94,7 @@ export default function AppHome({
           accountError={accountError}
           accountMode={accountMode}
           guestStarting={guestStarting}
+          inlineAuth={inlineAuth}
           isMemberSession={isMemberSession}
           navigate={navigate}
           onStartGuest={onStartGuest}

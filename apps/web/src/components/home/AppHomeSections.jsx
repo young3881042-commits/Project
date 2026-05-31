@@ -210,11 +210,13 @@ export function HomeAccountStrip({
   accountMode,
   accountError,
   guestStarting,
+  inlineAuth,
   isMemberSession,
   navigate,
   onStartGuest,
   session
 }) {
+  const isSignup = inlineAuth?.mode === 'signup';
   return (
     <section className="appHomeAccountStrip" aria-label="계정 상태">
       <span>
@@ -231,8 +233,12 @@ export function HomeAccountStrip({
           >
             {guestStarting ? '준비 중' : accountMode === 'guest' ? 'Guest 사용 중' : 'Guest 시작'}
           </button>
-          <button type="button" onClick={() => navigate('/login?redirect=/app')}>
-            로그인
+          <button
+            type="button"
+            className={inlineAuth?.open ? 'active' : ''}
+            onClick={() => (inlineAuth?.open ? inlineAuth?.onClose?.() : inlineAuth?.onOpen?.())}
+          >
+            {inlineAuth?.open ? '닫기' : '로그인'}
           </button>
         </div>
       ) : (
@@ -241,6 +247,43 @@ export function HomeAccountStrip({
         </div>
       )}
       {accountError ? <p>{accountError}</p> : null}
+      {!isMemberSession && inlineAuth?.open ? (
+        <form className="appHomeInlineAuth" onSubmit={inlineAuth.onSubmit}>
+          <header>
+            <span>
+              <MemoNavIcon type="spark" />
+              <strong>{isSignup ? '계정 만들기' : '로그인'}</strong>
+            </span>
+            <button type="button" onClick={() => inlineAuth.onModeChange?.(isSignup ? 'login' : 'signup')}>
+              {isSignup ? '로그인으로' : '회원가입'}
+            </button>
+          </header>
+          <label>
+            <span>아이디</span>
+            <input
+              value={inlineAuth.username}
+              onChange={(event) => inlineAuth.onUsernameChange?.(event.target.value)}
+              placeholder="my-id"
+              autoComplete="username"
+            />
+          </label>
+          <label>
+            <span>비밀번호</span>
+            <input
+              type="password"
+              value={inlineAuth.password}
+              onChange={(event) => inlineAuth.onPasswordChange?.(event.target.value)}
+              placeholder="password"
+              autoComplete={isSignup ? 'new-password' : 'current-password'}
+            />
+          </label>
+          {isSignup ? <small>8자 이상, 영문·숫자·특수문자를 모두 포함하세요.</small> : null}
+          <button type="submit" disabled={inlineAuth.loading}>
+            {inlineAuth.loading ? '처리 중...' : isSignup ? '계정 만들기' : '로그인'}
+          </button>
+          {inlineAuth.error ? <p>{inlineAuth.error}</p> : null}
+        </form>
+      ) : null}
     </section>
   );
 }
