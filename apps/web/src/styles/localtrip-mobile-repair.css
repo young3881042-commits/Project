@@ -768,6 +768,26 @@
   }
 }
 
+/* Keep the travel sub-navigation above the shared workspace bottom tabs. */
+@media (max-width: 760px) {
+  .ltShell {
+    padding-bottom: calc(154px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .ltShell .ltPage {
+    padding-bottom: calc(154px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .ltShell .ltNavLinks {
+    bottom: calc(84px + env(safe-area-inset-bottom)) !important;
+    z-index: 210 !important;
+  }
+
+  .ltShell .mobileWorkspaceTabs {
+    z-index: 240 !important;
+  }
+}
+
 /* LocalTrip mobile UX pass: mobile-only, isolated from desktop layout. */
 @media (max-width: 900px) {
   .ltShell {

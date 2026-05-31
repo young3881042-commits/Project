@@ -11,38 +11,38 @@ const PLAN_MODE_OPTIONS = [
 
 const MODE_PANEL_COPY = {
   general: {
-    title: '오늘의 일정 달성률',
+    title: '오늘의 핵심',
     emptyTitle: '오늘 일정이 비어 있어요',
-    emptyMeta: '일정이나 메모에서 오늘 할 일을 추가하세요',
-    action: '오늘 일정 열기',
+    emptyMeta: '지금 일정부터 추가해보세요.',
+    action: '오늘 일정 추가',
     listAction: '일정 보기'
   },
   travel: {
-    title: '선택한 여행 계획',
+    title: '오늘의 핵심',
     emptyTitle: '여행 계획이 비어 있어요',
-    emptyMeta: '코스 만들기에서 여행 계획을 시작하세요',
+    emptyMeta: '코스 만들기에서 여행 계획을 시작해보세요.',
     action: '코스 만들기',
     listAction: '계획 보기'
   },
   work: {
-    title: '업무 계획',
+    title: '오늘의 핵심',
     emptyTitle: '업무 일정이 비어 있어요',
-    emptyMeta: '업무 일정과 할 일을 추가하세요',
-    action: '업무 일정 열기',
+    emptyMeta: '업무 일정과 할 일을 추가해보세요.',
+    action: '업무 일정 추가',
     listAction: '일정 보기'
   },
   study: {
-    title: '공부 계획',
+    title: '오늘의 핵심',
     emptyTitle: '공부 일정이 비어 있어요',
-    emptyMeta: '학습 목표와 복습 일정을 추가하세요',
-    action: '공부 일정 열기',
+    emptyMeta: '학습 목표와 복습 일정을 추가해보세요.',
+    action: '공부 일정 추가',
     listAction: '일정 보기'
   },
   fitness: {
-    title: '운동 루틴',
+    title: '오늘의 핵심',
     emptyTitle: '운동 일정이 비어 있어요',
-    emptyMeta: '운동 루틴과 체크리스트를 추가하세요',
-    action: '운동 일정 열기',
+    emptyMeta: '운동 루틴과 체크리스트를 추가해보세요.',
+    action: '운동 일정 추가',
     listAction: '일정 보기'
   }
 };
@@ -80,6 +80,39 @@ const QUICK_ACTIONS = {
   ]
 };
 
+const MODE_AI_COPY = {
+  general: {
+    title: '오늘 메모를 일정으로 정리할까요?',
+    body: '흩어진 메모, 일정, 할 일을 한 번에 보기 쉽게 정리할 수 있어요.',
+    action: 'AI 정리 열기',
+    path: '/notes'
+  },
+  travel: {
+    title: '여행 메모를 코스로 정리할까요?',
+    body: '장소 후보, 체크리스트, 이동 메모를 여행 흐름에 맞게 정리할 수 있어요.',
+    action: '코스 만들기',
+    path: '/planner'
+  },
+  work: {
+    title: '업무 메모를 실행 일정으로 정리할까요?',
+    body: '회의 메모와 할 일을 마감 일정 중심으로 보기 쉽게 묶을 수 있어요.',
+    action: 'AI 정리 열기',
+    path: '/notes'
+  },
+  study: {
+    title: '학습 메모를 복습 일정으로 정리할까요?',
+    body: '강의 노트, 과제, 복습할 내용을 공부 흐름에 맞게 정리할 수 있어요.',
+    action: 'AI 정리 열기',
+    path: '/notes'
+  },
+  fitness: {
+    title: '운동 기록을 루틴으로 정리할까요?',
+    body: '운동 메모와 체크리스트를 다음 루틴에 맞게 보기 쉽게 정리할 수 있어요.',
+    action: 'AI 정리 열기',
+    path: '/notes'
+  }
+};
+
 function scheduleTimeLabel(time) {
   return time || '종일';
 }
@@ -113,6 +146,30 @@ function travelPlaceRows(travelPlanPreview) {
     meta: item.meta || item.time || '',
     done: Boolean(item.done)
   }));
+}
+
+function homeCoreChips(appOverview, mode, hasTravelPlan = false) {
+  const modeStats = appOverview.modeStats?.[mode] || {};
+  const modeMemoCount = appOverview.memoCountsByMode?.[mode] || 0;
+  if (mode === 'travel' && hasTravelPlan) {
+    return [
+      { icon: 'trip', label: '코스', value: appOverview.travelPlanPreview?.totalCount || 0 },
+      { icon: 'checkSquare', label: '완료', value: appOverview.travelPlanPreview?.doneCount || 0 },
+      { icon: 'board', label: '메모', value: modeMemoCount }
+    ];
+  }
+  if (mode === 'general') {
+    return [
+      { icon: 'calendar', label: '일정', value: appOverview.todayCount || 0 },
+      { icon: 'checkSquare', label: '할 일', value: appOverview.weekPendingCount || 0 },
+      { icon: 'board', label: '메모', value: modeMemoCount }
+    ];
+  }
+  return [
+    { icon: 'calendar', label: '일정', value: modeStats.total || 0 },
+    { icon: 'checkSquare', label: '할 일', value: Math.max(0, (modeStats.total || 0) - (modeStats.done || 0)) },
+    { icon: 'board', label: '메모', value: modeMemoCount }
+  ];
 }
 
 function schedulerRowsForMode(appOverview, mode) {
@@ -194,12 +251,7 @@ export function TodaySchedulePanel({ appOverview, navigate, planMode = 'general'
   const hasTravelPlan = isTravelMode && Boolean(travelPlanPreview?.items?.length);
   const copy = MODE_PANEL_COPY[planMode] || MODE_PANEL_COPY.general;
   const modeStats = appOverview.modeStats?.[planMode] || appOverview.modeStats?.general || {};
-  const rows = hasTravelPlan
-    ? travelPlaceRows(travelPlanPreview)
-    : planMode === 'general'
-      ? routeRows(appOverview)
-      : schedulerRowsForMode(appOverview, planMode);
-  const progress = safeProgress(hasTravelPlan ? travelPlanPreview.progress : modeStats.progress || appOverview.todayProgress);
+  const chips = homeCoreChips(appOverview, planMode, hasTravelPlan);
   const todayPendingCount = Math.max(0, (appOverview.todayCount || 0) - (appOverview.todayDoneCount || 0));
   const pendingCount = Math.max(0, (modeStats.total || 0) - (modeStats.done || 0));
   const panelTitle = hasTravelPlan ? '선택한 여행 계획' : copy.title;
@@ -217,7 +269,6 @@ export function TodaySchedulePanel({ appOverview, navigate, planMode = 'general'
       : modeStats.total
         ? `완료 ${modeStats.done || 0}개 · 남은 ${pendingCount}개`
         : copy.emptyMeta;
-  const progressLabel = hasTravelPlan ? '코스 준비 진행률' : copy.title;
   const actionPath = hasTravelPlan ? travelPlanPreview.notePath || '/plans' : isTravelMode ? '/planner' : '/scheduler';
   const listPath = isTravelMode ? '/plans' : '/scheduler';
 
@@ -237,36 +288,21 @@ export function TodaySchedulePanel({ appOverview, navigate, planMode = 'general'
         <span className={`appHomeTripPhoto ${planMode}${hasTravelPlan ? ' plan' : ' today'}`} aria-hidden="true" />
         <div className="appHomeTripCopy">
           <strong>{summaryTitle}</strong>
-          <p>
-            <em>{hasTravelPlan ? travelPlanPreview.dDayLabel : `${progress}%`}</em>
-            <span>{summaryMeta}</span>
-          </p>
-          <div className="appHomeTripProgress" aria-label={`${progressLabel} ${progress}%`}>
-            <i style={{ width: `${progress}%` }} />
-            <b>{progress}%</b>
+          <p>{summaryMeta}</p>
+          <div className="appHomeCoreChips" aria-label="핵심 통계">
+            {chips.map((chip) => (
+              <span key={chip.label}>
+                <MemoNavIcon type={chip.icon} />
+                <em>{chip.label}</em>
+                <b>{chip.value}</b>
+              </span>
+            ))}
           </div>
         </div>
         <button type="button" className="appHomeTripContinue" onClick={() => navigate(actionPath)}>
           {hasTravelPlan ? '계획 메모 열기' : copy.action}
           <MemoNavIcon type="chevronRight" />
         </button>
-      </div>
-
-      <div className="appHomeScheduleList">
-        {rows.map((item, index) => (
-          <button
-            type="button"
-            key={item.id}
-            className={`appHomeScheduleRow ${hasTravelPlan ? 'place' : SCHEDULE_ACCENTS[index % SCHEDULE_ACCENTS.length]}${item.done ? ' done' : ''}${item.empty ? ' empty' : ''}`}
-            onClick={() => navigate(hasTravelPlan ? actionPath : isTravelMode ? '/planner' : '/scheduler')}
-          >
-            <time>{hasTravelPlan ? item.order : item.time}</time>
-            <strong>{item.title}</strong>
-            <span>{item.tag}</span>
-            {hasTravelPlan && item.meta ? <small>{item.meta}</small> : null}
-            <MemoNavIcon type="chevronRight" />
-          </button>
-        ))}
       </div>
     </section>
   );
@@ -312,19 +348,7 @@ export function TravelInsightGrid({ appOverview, navigate, planMode = 'general' 
     { id: 'memo-empty-1', title: '첫 메모를 작성하세요', summary: '생각, 일정, 할 일을 메모로 시작할 수 있어요.', path: '/notes' },
     { id: 'memo-empty-2', title: '일정과 연결하기', summary: '메모에 날짜를 붙이면 일정으로 이어집니다.', path: '/notes' }
   ];
-  const aiCopy = isTravelMode
-    ? {
-      title: '여행 계획 정리를 도와드려요',
-      body: '장소 후보와 체크리스트를 코스 흐름에 맞춰 정리할 수 있어요.',
-      action: '코스 만들기',
-      path: '/planner'
-    }
-    : {
-      title: '오늘의 메모와 일정을 정리해요',
-      body: '흩어진 메모, 일정, 할 일을 한 번에 보기 쉽게 정리할 수 있어요.',
-      action: 'AI 정리 열기',
-      path: '/notes'
-    };
+  const aiCopy = MODE_AI_COPY[planMode] || MODE_AI_COPY.general;
 
   return (
     <section className="appHomeInsightGrid" aria-label="메모와 AI 정리">
@@ -336,8 +360,7 @@ export function TravelInsightGrid({ appOverview, navigate, planMode = 'general' 
         {memoRows.slice(0, 2).map((item) => (
           <button type="button" key={item.id} className="appHomeMemoRow" onClick={() => navigate(item.path || '/notes')}>
             <strong>{item.title}</strong>
-            <span>{item.summary}</span>
-            <small>{item.label || (item.updatedAt ? item.updatedAt.slice(5, 10) : '지금')}</small>
+            <span>{`${item.updatedAt ? item.updatedAt.slice(0, 10).replace(/-/g, '.') : '방금 전'} · ${item.label || '개인'}`}</span>
           </button>
         ))}
         <button type="button" className="appHomeMemoCreate" onClick={() => navigate('/notes')}>
@@ -371,6 +394,12 @@ export function TravelPrepPanel({ appOverview, navigate, planMode = 'general' })
   const modeStats = appOverview.modeStats?.[planMode] || {};
   const modeMemoCount = appOverview.memoCountsByMode?.[planMode] || 0;
   const isTravelMode = planMode === 'travel';
+  const modeLabel = PLAN_MODE_OPTIONS.find((option) => option.id === planMode)?.label || '개인';
+  const todayDoneCount = appOverview.todayDoneCount || 0;
+  const todayCount = appOverview.todayCount || 0;
+  const weekCount = appOverview.weekCount || 0;
+  const weekPendingCount = appOverview.weekPendingCount ?? Math.max(0, weekCount - (appOverview.weekDoneCount || 0));
+  const modePendingCount = Math.max(0, (modeStats.total || 0) - (modeStats.done || 0));
   const panelLabel = isTravelMode ? '여행 준비 현황' : '워크스페이스 현황';
   const items = isTravelMode
     ? [
@@ -379,11 +408,18 @@ export function TravelPrepPanel({ appOverview, navigate, planMode = 'general' })
       { label: '메모', value: `${modeMemoCount}개`, progress: modeMemoCount ? 65 : 0, path: '/notes' },
       { label: '일정', value: `${appOverview.travelScheduleCount || 0}개`, progress: modeStats.progress || 0, path: '/scheduler' }
     ]
+    : planMode === 'general'
+      ? [
+        { label: '오늘 일정', value: `${todayDoneCount}/${todayCount}`, path: '/scheduler' },
+        { label: '미완료 할 일', value: `${weekPendingCount}/${weekCount}`, path: '/scheduler' },
+        { label: '최근 메모', value: `${modeMemoCount}개`, path: '/notes' },
+        { label: 'AI 추천', value: '1개', path: '/notes' }
+      ]
     : [
-      { label: '오늘 일정', value: `${appOverview.todayDoneCount || 0}/${appOverview.todayCount || 0}`, progress: appOverview.todayProgress || 0, path: '/scheduler' },
-      { label: '이번 주 할 일', value: `${appOverview.weekDoneCount || 0}/${appOverview.weekCount || 0}`, progress: appOverview.weekProgress || 0, path: '/scheduler' },
-      { label: '최근 메모', value: `${modeMemoCount}개`, progress: modeMemoCount ? 65 : 0, path: '/notes' },
-      { label: MODE_PANEL_COPY[planMode]?.title || '계획', value: `${modeStats.done || 0}/${modeStats.total || 0}`, progress: modeStats.progress || 0, path: '/scheduler' }
+      { label: `${modeLabel} 일정`, value: `${modeStats.done || 0}/${modeStats.total || 0}`, path: '/scheduler' },
+      { label: '미완료 할 일', value: `${modePendingCount}/${modeStats.total || 0}`, path: '/scheduler' },
+      { label: '최근 메모', value: `${modeMemoCount}개`, path: '/notes' },
+      { label: 'AI 추천', value: '1개', path: '/notes' }
     ];
 
   return (
@@ -397,7 +433,6 @@ export function TravelPrepPanel({ appOverview, navigate, planMode = 'general' })
           <button type="button" key={item.label} onClick={() => navigate(item.path)}>
             <strong>{item.label}</strong>
             <span>{item.value}</span>
-            <i><b style={{ width: `${safeProgress(item.progress)}%` }} /></i>
           </button>
         ))}
       </div>

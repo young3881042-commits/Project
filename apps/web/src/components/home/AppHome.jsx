@@ -88,6 +88,7 @@ export default function AppHome({
           </div>
         </header>
 
+        <TodaySchedulePanel appOverview={appOverview} navigate={navigate} planMode={planMode} />
         <HomeAccountStrip
           accountError={accountError}
           accountMode={accountMode}
@@ -98,8 +99,6 @@ export default function AppHome({
           planMode={planMode}
           session={session}
         />
-
-        <TodaySchedulePanel appOverview={appOverview} navigate={navigate} planMode={planMode} />
         <HomeFeatureCards appOverview={appOverview} navigate={navigate} planMode={planMode} />
         <TravelInsightGrid appOverview={appOverview} navigate={navigate} planMode={planMode} />
         <TravelPrepPanel appOverview={appOverview} navigate={navigate} planMode={planMode} />

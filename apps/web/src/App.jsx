@@ -2990,6 +2990,17 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260531-home-v2-workspace-dashboard',
+    content: `# 2026-05-31 홈 V2 개인 워크스페이스 대시보드
+
+- [x] /app 홈을 23.png 기준 개인 워크스페이스 / AI 일정 도우미 구조로 재정리
+- [x] 개인, 여행, 업무, 공부, 운동 섹터별 홈 카피, 빠른 실행, AI 제안 문구 분기
+- [x] 오늘의 핵심 카드에 실제 일정, 할 일, 메모 집계 칩을 표시
+- [x] 최근 메모는 선택 섹터별 최대 2개와 날짜/라벨만 노출
+- [x] 워크스페이스 현황은 progress bar 대신 숫자 요약 중심으로 변경
+- [x] 여행 내부 모바일 네비게이션을 공용 하단 탭 위로 올려 겹침 방지`
+  },
+  {
     id: 'admin1-memo-20260531-section-data-label-filter',
     content: `# 2026-05-31 섹션별 실제 데이터와 메모 라벨링
 
