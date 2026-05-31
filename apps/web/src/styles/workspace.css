@@ -265,16 +265,17 @@ body:has(.aiNoteShell) {
 @media (max-width: 760px) {
   .workspaceNavigator {
     min-height: auto;
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 10px;
     padding: 10px 12px;
   }
 
   .workspaceNavigatorLinks {
+    grid-column: 1 / -1;
     justify-self: stretch;
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 6px;
     padding: 5px;
   }
@@ -287,8 +288,9 @@ body:has(.aiNoteShell) {
   }
 
   .workspaceNavigatorAccount {
-    justify-self: stretch;
-    width: 100%;
+    justify-self: end;
+    width: min(148px, 42vw);
+    min-width: 0;
   }
 
   .schedulerShell > .schedulerPage,

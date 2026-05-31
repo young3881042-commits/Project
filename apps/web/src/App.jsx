@@ -5,6 +5,11 @@ import LocalTripApp from './LocalTripApp.jsx';
 import ConnectionsApp from './ConnectionsApp.jsx';
 import MemoNavIcon from './components/MemoNavIcon.jsx';
 import WorkspaceQuickMenu from './components/WorkspaceQuickMenu.jsx';
+import MobileWorkspaceTabs from './components/MobileWorkspaceTabs.jsx';
+import MobileHomeSection from './components/notes/MobileHomeSection.jsx';
+import MemoList from './components/notes/MemoList.jsx';
+import NotesScheduleBar from './components/notes/NotesScheduleBar.jsx';
+import SidebarFolderTree from './components/notes/SidebarFolderTree.jsx';
 
 const AUTH_KEY = 'codex-workspace-auth';
 const LazyCodeEditor = lazy(() => import('./CodeEditor.jsx'));
@@ -2935,6 +2940,24 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260531-notion-workspace-accordion',
+    content: `# 2026-05-31 Notion형 메모/일정 워크스페이스 정리
+
+- [x] /notes 폴더 트리를 기본 접힘 accordion 구조로 변경
+- [x] 선택 폴더의 메모만 중앙 목록에 표시하고 카드 정보를 제목, 요약, 날짜, 태그로 정리
+- [x] 상세 상단에 제목, 일정 연결, 날짜, 시간, 공유, 삭제 액션을 정렬
+- [x] 모바일 첫 화면을 메모봇, 주요 기능 카드, 접힘 가능한 노트/일정 섹션으로 정리`
+  },
+  {
+    id: 'admin1-memo-20260530-notes-ui-nav-realign',
+    content: `# 2026-05-30 메모 UI와 네비게이션 재정렬
+
+- [x] /notes 어두운 Notion형 색감을 앱 홈/일정과 맞는 밝은 작업 화면 톤으로 보정
+- [x] 모바일 메모에서 숨기던 공통 네비게이션을 다시 노출
+- [x] 상단 네비게이션 4개 메뉴가 한 줄에 들어가도록 모바일 그리드 수정
+- [x] 메모 빠른 메뉴와 하단 액션바를 공통 세그먼트 버튼 톤으로 정리`
+  },
+  {
     id: 'admin1-memo-20260530-home-shortcuts-unified',
     content: `# 2026-05-30 앱 홈 바로가기 통일
 
@@ -3381,7 +3404,7 @@ function WorkspaceNavigator({ active, navigate }) {
     <nav className="workspaceNavigator" aria-label="workspace navigator">
       <button type="button" className="workspaceNavigatorBrand" onClick={() => navigate(APP_SHORTCUTS.mainHub.path)}>
         <MemoNavIcon type="home" />
-        <span>Home</span>
+        <span>앱 홈</span>
       </button>
       <div className="workspaceNavigatorLinks">
         {items.map((item) => (
@@ -3772,6 +3795,7 @@ function SpaceHomePage({ navigate }) {
           </section>
         </div>
       </section>
+      <MobileWorkspaceTabs active="home" navigate={navigate} />
     </main>
   );
 }
@@ -4899,278 +4923,12 @@ function memoNoteUpdatedAt(note) {
   return note?.updatedAt || note?.createdAt || '';
 }
 
-function MemoBottomActionBar({ onSearch, onAskAi, onCreate }) {
-  return (
-    <nav className="notesMobileActionBar" aria-label="모바일 메모 액션">
-      <button type="button" className="notesMobileActionIcon" onClick={onSearch} aria-label="검색" title="검색">
-        <MemoNavIcon type="file" />
-      </button>
-      <button type="button" className="notesMobileAiButton" onClick={onAskAi}>
-        <span>AI에게 질문하기</span>
-      </button>
-      <button type="button" className="notesMobileActionIcon primary" onClick={onCreate} aria-label="새 메모 작성" title="새 메모 작성">
-        <MemoNavIcon type="plus" />
-      </button>
-    </nav>
-  );
-}
-
-function NotesFolderTree({ folders, activeFolderId, noteCounts, onSelect, onAddFolder, onCreateNote, onRenameFolder, onDeleteFolder }) {
-  const [editingId, setEditingId] = useState('');
-  const [draft, setDraft] = useState('');
-  const [expandedIds, setExpandedIds] = useState(() => new Set(defaultMemoBoards().map((folder) => folder.id)));
-  const [openMenu, setOpenMenu] = useState(null);
-
-  useEffect(() => {
-    setExpandedIds((current) => {
-      const next = new Set(current);
-      memoFolderChildren(folders, null).forEach((folder) => next.add(folder.id));
-      return next;
-    });
-  }, [folders]);
-
-  const commitRename = (folder) => {
-    const nextName = draft.trim();
-    if (nextName) onRenameFolder(folder.id, nextName);
-    setEditingId('');
-    setDraft('');
-  };
-  const toggleFolder = (folderId) => {
-    setExpandedIds((current) => {
-      const next = new Set(current);
-      if (next.has(folderId)) next.delete(folderId);
-      else next.add(folderId);
-      return next;
-    });
-  };
-  const renderFolder = (folder, depth = 0) => {
-    const children = memoFolderChildren(folders, folder.id);
-    const expanded = expandedIds.has(folder.id);
-    const active = activeFolderId === folder.id;
-    return (
-      <div className="notesFolderNode" key={folder.id}>
-        <div className={`notesFolderRow ${active ? 'active' : ''}`} style={{ '--folder-depth': depth }}>
-          <button
-            type="button"
-            className={`notesFolderToggle ${expanded ? 'expanded' : ''}`}
-            onClick={() => toggleFolder(folder.id)}
-            disabled={!children.length}
-            aria-label={expanded ? '폴더 접기' : '폴더 펼치기'}
-            title={expanded ? '폴더 접기' : '폴더 펼치기'}
-          >
-            <MemoNavIcon type="chevronRight" />
-          </button>
-          {editingId === folder.id ? (
-            <label className="notesFolderRenameField">
-              <MemoNavIcon type="folder" />
-              <input
-                autoFocus
-                value={draft}
-                onChange={(event) => setDraft(event.target.value)}
-                onBlur={() => commitRename(folder)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault();
-                    commitRename(folder);
-                  }
-                  if (event.key === 'Escape') {
-                    event.preventDefault();
-                    setEditingId('');
-                    setDraft('');
-                  }
-                }}
-                aria-label="폴더 이름"
-              />
-            </label>
-          ) : (
-            <button
-              type="button"
-              className="notesFolderSelect"
-              onClick={() => onSelect(folder.id)}
-              onDoubleClick={() => {
-                setEditingId(folder.id);
-                setDraft(memoFolderName(folder));
-              }}
-            >
-              <MemoNavIcon type="folder" />
-              <span>{memoFolderName(folder)}</span>
-              <small>{noteCounts[folder.id] || 0}</small>
-            </button>
-          )}
-          <div className="notesFolderMenuWrap">
-            <button
-              type="button"
-              className="notesFolderIconButton"
-              onClick={(event) => {
-                event.stopPropagation();
-                setOpenMenu(openMenu === `add-${folder.id}` ? null : `add-${folder.id}`);
-              }}
-              aria-label="폴더에 추가"
-              title="폴더에 추가"
-            >
-              <MemoNavIcon type="plus" />
-            </button>
-            {openMenu === `add-${folder.id}` ? (
-              <div className="notesFolderActionMenu">
-                <button type="button" onClick={() => { onAddFolder(folder.id); setOpenMenu(null); }}>하위 폴더</button>
-                <button type="button" onClick={() => { onCreateNote(folder.id); setOpenMenu(null); }}>메모</button>
-              </div>
-            ) : null}
-          </div>
-          <div className="notesFolderMenuWrap">
-            <button
-              type="button"
-              className="notesFolderIconButton"
-              onClick={(event) => {
-                event.stopPropagation();
-                setOpenMenu(openMenu === `more-${folder.id}` ? null : `more-${folder.id}`);
-              }}
-              aria-label="폴더 더보기"
-              title="폴더 더보기"
-            >
-              ...
-            </button>
-            {openMenu === `more-${folder.id}` ? (
-              <div className="notesFolderActionMenu">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingId(folder.id);
-                    setDraft(memoFolderName(folder));
-                    setOpenMenu(null);
-                  }}
-                >
-                  이름 변경
-                </button>
-                {canDeleteMemoBoard(folder) ? (
-                  <button type="button" className="danger" onClick={() => { onDeleteFolder(folder.id); setOpenMenu(null); }}>삭제</button>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        </div>
-        {children.length && expanded ? (
-          <div className="notesFolderChildren">
-            {children.map((child) => renderFolder(child, depth + 1))}
-          </div>
-        ) : null}
-      </div>
-    );
-  };
-
-  return (
-    <aside className="notesFolderPanel" aria-label="폴더 트리">
-      <header>
-        <strong>내 워크스페이스</strong>
-        <button type="button" onClick={() => onAddFolder(null)}><MemoNavIcon type="plus" />새 폴더</button>
-      </header>
-      <div className="notesFolderTree">
-        {memoFolderChildren(folders, null).map((folder) => renderFolder(folder))}
-      </div>
-    </aside>
-  );
-}
-
-function MemoListPanel({ folder, notes, activeId, onSelect, onCreate, onDelete }) {
-  const [query, setQuery] = useState('');
-  const [openMenuId, setOpenMenuId] = useState('');
-  const filteredNotes = notes.filter((note) => {
-    const keyword = query.trim().toLowerCase();
-    if (!keyword) return true;
-    return `${noteBlockTitle(note)} ${memoNoteExcerpt(note)}`.toLowerCase().includes(keyword);
-  });
-
-  return (
-    <aside className="notesListPanel" aria-label="메모 목록">
-      <header>
-        <div>
-          <span>현재 폴더</span>
-          <strong>{memoFolderName(folder)}</strong>
-        </div>
-        <button type="button" onClick={onCreate}><MemoNavIcon type="plus" />새 메모</button>
-      </header>
-      <label className="notesSearchField">
-        <MemoNavIcon type="file" />
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="메모 검색" />
-      </label>
-      <div className="notesList">
-        {filteredNotes.map((note) => (
-          <article
-            key={note.id}
-            className={`notesListItem ${activeId === note.id ? 'active' : ''}`}
-          >
-            <button type="button" className="notesListItemMain" onClick={() => onSelect(note.id)}>
-              <strong>{noteBlockTitle(note)}</strong>
-              <span>{memoNoteExcerpt(note)}</span>
-              <small>{memoNoteUpdatedAt(note) || '방금 전'}</small>
-            </button>
-            <div className="notesListItemActions">
-              <button type="button" onClick={onCreate} aria-label="같은 폴더에 메모 추가" title="같은 폴더에 메모 추가">
-                <MemoNavIcon type="plus" />
-              </button>
-              <div className="notesFolderMenuWrap">
-                <button
-                  type="button"
-                  onClick={() => setOpenMenuId(openMenuId === note.id ? '' : note.id)}
-                  aria-label="메모 더보기"
-                  title="메모 더보기"
-                >
-                  ...
-                </button>
-                {openMenuId === note.id ? (
-                  <div className="notesFolderActionMenu">
-                    <button type="button" onClick={() => { onSelect(note.id); setOpenMenuId(''); }}>열기</button>
-                    <button type="button" className="danger" onClick={() => { onDelete?.(note.id); setOpenMenuId(''); }}>삭제</button>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </article>
-        ))}
-        {filteredNotes.length ? null : (
-          <div className="notesEmptyState">
-            <strong>메모가 없습니다</strong>
-            <span>이 폴더에 새 메모를 작성해 보세요.</span>
-          </div>
-        )}
-      </div>
-    </aside>
-  );
-}
-
-function NotesScheduleBar({ note, onScheduleChange, onDelete }) {
+function memoNoteTag(note, folder) {
   const schedule = normalizeNoteSchedule(note?.schedule, note);
-  return (
-    <section className={`notesScheduleBar ${schedule.enabled ? 'enabled' : ''}`} aria-label="일정 연결">
-      <label className="notesScheduleToggle">
-        <input
-          type="checkbox"
-          checked={schedule.enabled}
-          onChange={(event) => onScheduleChange({ enabled: event.target.checked })}
-        />
-        <span>일정 연결</span>
-      </label>
-      <label>
-        <span>날짜</span>
-        <input
-          type="date"
-          value={schedule.date}
-          disabled={!schedule.enabled}
-          onChange={(event) => onScheduleChange({ date: event.target.value })}
-        />
-      </label>
-      <label>
-        <span>시간</span>
-        <input
-          type="time"
-          value={schedule.time}
-          disabled={!schedule.enabled}
-          onChange={(event) => onScheduleChange({ time: event.target.value })}
-        />
-      </label>
-      <button type="button" className="notesDeleteButton" onClick={onDelete}><MemoNavIcon type="trash" />삭제</button>
-    </section>
-  );
+  if (schedule.enabled) return '일정';
+  if (note?.status === 'done') return '완료';
+  if (note?.status === 'progress') return '진행';
+  return memoFolderName(folder);
 }
 
 function NotionBlockEditor({ blocks, onChange }) {
@@ -5336,7 +5094,7 @@ function NotionBlockEditor({ blocks, onChange }) {
   );
 }
 
-function NotesDetailPanel({ note, folder, breadcrumb = [], onTitleChange, onBlocksChange, onScheduleChange, onDelete, onCreate }) {
+function MemoDetail({ note, folder, breadcrumb = [], onTitleChange, onBlocksChange, onScheduleChange, onDelete, onCreate, onShare }) {
   if (!note) {
     return (
       <section className="notesDetailPanel empty">
@@ -5354,14 +5112,16 @@ function NotesDetailPanel({ note, folder, breadcrumb = [], onTitleChange, onBloc
       <header className="notesDetailCrumbs">
         <span>{breadcrumb.map(memoFolderName).join(' / ') || memoFolderName(folder)}</span>
       </header>
-      <NotesScheduleBar note={note} onScheduleChange={onScheduleChange} onDelete={onDelete} />
-      <article className="notesDocument">
+      <div className="notesDetailTopbar">
         <input
-          className="notesTitleInput"
+          className="notesTitleHeaderInput"
           value={noteBlockTitle(note)}
           onChange={(event) => onTitleChange(event.target.value)}
           aria-label="메모 제목"
         />
+        <NotesScheduleBar schedule={normalizeNoteSchedule(note?.schedule, note)} onScheduleChange={onScheduleChange} onDelete={onDelete} onShare={onShare} />
+      </div>
+      <article className="notesDocument">
         <NotionBlockEditor blocks={note.blocks} onChange={onBlocksChange} />
       </article>
     </section>
@@ -5383,7 +5143,8 @@ function NotionNotesPage({ navigate }) {
   const [activeId, setActiveId] = useState(routeTargetRef.current.noteId || '');
   const [mobileView, setMobileView] = useState(routeTargetRef.current.noteId ? 'detail' : routeTargetRef.current.folderId ? 'list' : 'folders');
   const [statusText, setStatusText] = useState('');
-  const [expandedMobileFolderIds, setExpandedMobileFolderIds] = useState(() => new Set(defaultMemoBoards().map((folder) => folder.id)));
+  const [expandedMobileFolderIds, setExpandedMobileFolderIds] = useState(() => new Set());
+  const [expandedMobileSections, setExpandedMobileSections] = useState(() => new Set());
   const [mobileFolderMenu, setMobileFolderMenu] = useState(null);
 
   useEffect(() => {
@@ -5466,11 +5227,8 @@ function NotionNotesPage({ navigate }) {
   }, [folders, notes]);
 
   useEffect(() => {
-    setExpandedMobileFolderIds((current) => {
-      const next = new Set(current);
-      memoFolderChildren(folders, null).forEach((folder) => next.add(folder.id));
-      return next;
-    });
+    const existingIds = new Set(folders.map((folder) => folder.id));
+    setExpandedMobileFolderIds((current) => new Set([...current].filter((folderId) => existingIds.has(folderId))));
   }, [folders]);
 
   useEffect(() => {
@@ -5498,6 +5256,11 @@ function NotionNotesPage({ navigate }) {
   }, [notes]);
 
   const activeFolder = folders.find((folder) => folder.id === activeFolderId) || folders[0] || null;
+  const todayKey = toDateKey(new Date());
+  const todayScheduleItems = expandSchedulerItemsForDates(readCurrentSchedulerItems(session), [todayKey])
+    .filter((item) => item.date === todayKey)
+    .slice()
+    .sort((left, right) => left.time.localeCompare(right.time));
   const folderNotes = notes
     .filter((note) => memoFolderIdForNote(note) === activeFolderId && !note.parentId)
     .slice()
@@ -5653,6 +5416,15 @@ function NotionNotesPage({ navigate }) {
     replaceNotesRoute(targetNote ? memoFolderIdForNote(targetNote) : activeFolderId, noteId);
   };
 
+  const toggleMobileSection = (sectionId) => {
+    setExpandedMobileSections((current) => {
+      const next = new Set(current);
+      if (next.has(sectionId)) next.delete(sectionId);
+      else next.add(sectionId);
+      return next;
+    });
+  };
+
   const toggleMobileFolder = (folderId) => {
     setExpandedMobileFolderIds((current) => {
       const next = new Set(current);
@@ -5671,9 +5443,10 @@ function NotionNotesPage({ navigate }) {
   const renderMobileFolderRows = (parentId = null, depth = 0) => memoFolderChildren(folders, parentId).map((folder) => {
     const children = memoFolderChildren(folders, folder.id);
     const expanded = expandedMobileFolderIds.has(folder.id);
+    const active = activeFolderId === folder.id;
     return (
       <div className="notesMobileFolderNode" key={folder.id}>
-        <div className="notesMobileFolderRow" style={{ '--mobile-folder-depth': depth }}>
+        <div className={`notesMobileFolderRow ${active ? 'active' : ''}`} style={{ '--mobile-folder-depth': depth }}>
         <button
           type="button"
           className={`notesMobileFolderToggle ${expanded ? 'expanded' : ''}`}
@@ -5683,7 +5456,14 @@ function NotionNotesPage({ navigate }) {
         >
           <MemoNavIcon type="chevronRight" />
         </button>
-        <button type="button" className="notesMobileFolderOpen" onClick={() => selectFolder(folder.id)}>
+        <button
+          type="button"
+          className="notesMobileFolderOpen"
+          onClick={() => {
+            selectFolder(folder.id);
+            if (children.length) toggleMobileFolder(folder.id);
+          }}
+        >
           <MemoNavIcon type="folder" />
           <span>{memoFolderName(folder)}</span>
           <small>{noteCounts[folder.id] || 0}</small>
@@ -5746,12 +5526,23 @@ function NotionNotesPage({ navigate }) {
     </header>
   );
 
+  const shareActiveNote = () => {
+    if (!activeNote) return;
+    const shareUrl = `${window.location.origin}/notes?board=${encodeURIComponent(memoFolderIdForNote(activeNote))}&block=${encodeURIComponent(activeNote.id)}`;
+    if (navigator.share) {
+      navigator.share({ title: noteBlockTitle(activeNote), url: shareUrl }).catch(() => {});
+      return;
+    }
+    navigator.clipboard?.writeText(shareUrl);
+    setStatusText('메모 링크를 복사했습니다.');
+  };
+
   return (
     <main className="aiNoteShell notesShell">
       <WorkspaceNavigator active="notes" navigate={navigate} />
       <section className="notesWorkspace" aria-label="메모 작업 화면">
         <div className="notesDesktopLayout">
-          <NotesFolderTree
+          <SidebarFolderTree
             folders={folders}
             activeFolderId={activeFolderId}
             noteCounts={noteCounts}
@@ -5760,16 +5551,24 @@ function NotionNotesPage({ navigate }) {
             onCreateNote={createNote}
             onRenameFolder={renameFolder}
             onDeleteFolder={deleteFolder}
+            getFolderChildren={memoFolderChildren}
+            getFolderName={memoFolderName}
+            canDeleteFolder={canDeleteMemoBoard}
           />
-          <MemoListPanel
+          <MemoList
             folder={activeFolder}
             notes={folderNotes}
             activeId={activeNote?.id || ''}
             onSelect={selectNote}
             onCreate={() => createNote(activeFolderId)}
             onDelete={deleteNote}
+            getTitle={noteBlockTitle}
+            getExcerpt={memoNoteExcerpt}
+            getUpdatedAt={memoNoteUpdatedAt}
+            getTag={memoNoteTag}
+            getFolderName={memoFolderName}
           />
-          <NotesDetailPanel
+          <MemoDetail
             note={activeNote}
             folder={activeFolder}
             breadcrumb={breadcrumb}
@@ -5778,6 +5577,7 @@ function NotionNotesPage({ navigate }) {
             onScheduleChange={updateSchedule}
             onDelete={() => deleteNote(activeNote?.id)}
             onCreate={() => createNote(activeFolderId)}
+            onShare={shareActiveNote}
           />
         </div>
 
@@ -5792,55 +5592,114 @@ function NotionNotesPage({ navigate }) {
                   </button>
                   <WorkspaceQuickMenu active="notes" navigate={navigate} className="notesMobileQuickMenu" ariaLabel="상단 바로가기" />
                 </div>
-                <p>메모부터 일정, 여행 계획까지 한 곳에서 정리하세요.</p>
-                <button type="button" className="notesMobilePrimaryCta" onClick={() => createNote(activeFolderId || 'memo')}>
-                  <MemoNavIcon type="plus" />
-                  새 메모 작성
-                </button>
+                <div className="notesMobileHeroCard">
+                  <img src="/robot-guide.png" alt="" />
+                  <div>
+                    <span>Memo bot</span>
+                    <p>메모와 일정을 가볍게 모아두고, 필요한 순간에 바로 펼쳐보세요.</p>
+                  </div>
+                </div>
+                <div className="notesMobileFeatureGrid" aria-label="주요 기능">
+                  <button type="button" className="notesMobileFeatureCard" onClick={() => createNote(activeFolderId || 'memo')}>
+                    <MemoNavIcon type="plus" />
+                    <strong>새 메모</strong>
+                    <small>바로 작성</small>
+                  </button>
+                  <button type="button" className="notesMobileFeatureCard" onClick={() => navigate('/scheduler')}>
+                    <MemoNavIcon type="calendar" />
+                    <strong>오늘 일정</strong>
+                    <small>{todayScheduleItems.length}개</small>
+                  </button>
+                  <button type="button" className="notesMobileFeatureCard" onClick={() => toggleMobileSection('folders')}>
+                    <MemoNavIcon type="folder" />
+                    <strong>폴더</strong>
+                    <small>{folders.length}개</small>
+                  </button>
+                </div>
               </section>
-              <div className="notesMobileSectionHeader recent">
-                <strong>최근 항목</strong>
-              </div>
-              <div className="notesMobileRecentCards">
-                {recentNotes.map((note) => {
-                  const notePath = memoFolderPath(folders, memoFolderIdForNote(note)).map(memoFolderName).join(' / ');
-                  return (
-                    <button
-                      type="button"
-                      key={note.id}
-                      onClick={() => {
-                        setActiveFolderId(memoFolderIdForNote(note));
-                        selectNote(note.id);
-                      }}
-                    >
-                      <MemoNavIcon type="file" />
-                      <strong>{noteBlockTitle(note)}</strong>
-                      <span>{memoNoteUpdatedAt(note) || note.status || '최근 수정'}</span>
-                      <small>{notePath || '내 워크스페이스'}</small>
+              <MobileHomeSection
+                id="notes"
+                title="최근 노트"
+                count={recentNotes.length}
+                expanded={expandedMobileSections.has('notes')}
+                onToggle={toggleMobileSection}
+              >
+                <div className="notesMobileRecentCards">
+                  {recentNotes.map((note) => {
+                    const notePath = memoFolderPath(folders, memoFolderIdForNote(note)).map(memoFolderName).join(' / ');
+                    return (
+                      <button
+                        type="button"
+                        key={note.id}
+                        onClick={() => {
+                          setActiveFolderId(memoFolderIdForNote(note));
+                          selectNote(note.id);
+                        }}
+                      >
+                        <MemoNavIcon type="file" />
+                        <strong>{noteBlockTitle(note)}</strong>
+                        <span>{memoNoteUpdatedAt(note) || note.status || '최근 수정'}</span>
+                        <small>{notePath || '내 워크스페이스'}</small>
+                      </button>
+                    );
+                  })}
+                  {recentNotes.length ? null : (
+                    <article className="notesMobileRecentEmpty">최근 열어본 메모가 없습니다.</article>
+                  )}
+                </div>
+              </MobileHomeSection>
+              <MobileHomeSection
+                id="schedule"
+                title="오늘 일정"
+                count={todayScheduleItems.length}
+                expanded={expandedMobileSections.has('schedule')}
+                onToggle={toggleMobileSection}
+              >
+                <div className="notesMobileScheduleList">
+                  {todayScheduleItems.map((item) => (
+                    <button type="button" key={item.id} onClick={() => navigate('/scheduler')}>
+                      <time>{item.time}</time>
+                      <strong>{item.title}</strong>
+                      <small>{item.type}{item.done ? ' · 완료' : ''}</small>
                     </button>
-                  );
-                })}
-                {recentNotes.length ? null : (
-                  <article className="notesMobileRecentEmpty">최근 열어본 메모가 없습니다.</article>
-                )}
-              </div>
-              <div className="notesMobileSectionHeader">
-                <strong>내 워크스페이스</strong>
-                <button type="button" onClick={() => addFolder(null)}><MemoNavIcon type="plus" />폴더</button>
-              </div>
-              <div className="notesMobileFolderList">
-                {renderMobileFolderRows()}
-              </div>
+                  ))}
+                  {todayScheduleItems.length ? null : <article className="notesMobileRecentEmpty">오늘 일정이 없습니다.</article>}
+                </div>
+              </MobileHomeSection>
+              <MobileHomeSection
+                id="folders"
+                title="내 워크스페이스"
+                count={folders.length}
+                expanded={expandedMobileSections.has('folders')}
+                onToggle={toggleMobileSection}
+                action={<button type="button" className="notesMobileInlineAction" onClick={() => addFolder(null)}><MemoNavIcon type="plus" />폴더 추가</button>}
+              >
+                <div className="notesMobileFolderList">
+                  {renderMobileFolderRows()}
+                </div>
+              </MobileHomeSection>
             </section>
           ) : null}
           {mobileView === 'list' ? (
             <section className="notesMobileList">
-              <MemoListPanel folder={activeFolder} notes={folderNotes} activeId={activeNote?.id || ''} onSelect={selectNote} onCreate={() => createNote(activeFolderId)} onDelete={deleteNote} />
+              <MemoList
+                folder={activeFolder}
+                notes={folderNotes}
+                activeId={activeNote?.id || ''}
+                onSelect={selectNote}
+                onCreate={() => createNote(activeFolderId)}
+                onDelete={deleteNote}
+                getTitle={noteBlockTitle}
+                getExcerpt={memoNoteExcerpt}
+                getUpdatedAt={memoNoteUpdatedAt}
+                getTag={memoNoteTag}
+                getFolderName={memoFolderName}
+              />
             </section>
           ) : null}
           {mobileView === 'detail' ? (
             <section className="notesMobileDetail">
-              <NotesDetailPanel
+              <MemoDetail
                 note={activeNote}
                 folder={activeFolder}
                 breadcrumb={breadcrumb}
@@ -5849,20 +5708,14 @@ function NotionNotesPage({ navigate }) {
                 onScheduleChange={updateSchedule}
                 onDelete={() => deleteNote(activeNote?.id)}
                 onCreate={() => createNote(activeFolderId)}
+                onShare={shareActiveNote}
               />
             </section>
           ) : null}
         </div>
         {statusText ? <p className="notesStatusText">{statusText}</p> : null}
       </section>
-      <MemoBottomActionBar
-        onSearch={() => {
-          setMobileView('list');
-          setStatusText('현재 폴더에서 검색할 수 있습니다.');
-        }}
-        onAskAi={() => setStatusText('AI 질문 입력은 다음 단계에서 연결합니다.')}
-        onCreate={() => createNote(activeFolderId || 'memo')}
-      />
+      <MobileWorkspaceTabs active="notes" navigate={navigate} onNotes={() => setMobileView('folders')} />
     </main>
   );
 }
@@ -6295,6 +6148,7 @@ function SchedulerPage({ navigate, embedded = false }) {
     <main className="schedulerShell">
       <WorkspaceNavigator active="schedule" navigate={navigate} />
       {schedulerContent}
+      <MobileWorkspaceTabs active="schedule" navigate={navigate} />
     </main>
   );
 }

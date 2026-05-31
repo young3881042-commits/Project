@@ -78,10 +78,10 @@ curl -I http://127.0.0.1/planner
 curl -I http://127.0.0.1/api/destinations?size=1
 ```
 
-환경변수로 포트를 바꿔 실행할 수 있습니다.
+운영 검증도 웹은 포트 `80` 기준으로 맞춥니다. DB/API 호스트 포트만 충돌을 피하려면 아래처럼 실행합니다.
 
 ```bash
-DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=18000 WEB_HTTPS_PORT=18443 \
+DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 \
 docker compose -f docker-compose.dev.yml up -d --build
 ```
 

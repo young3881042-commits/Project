@@ -8,10 +8,12 @@
 - Long-term target: after mobile UI and server APIs are stable, expand toward a phone-based personal AI assistant that can use user-granted access to messages, mail, local files, weather, nearby travel spots, and nearby restaurants. Web/PWA alone cannot read phone-local SMS/mail/files; native Android/iOS permissions or a native wrapper will be needed.
 - Avoid generic platform-operations work unless the user specifically asks for it. Keep the main work queue focused on mobile usability, routing/deployment stability, and real app API integrations.
 - The default app route is `/app`; `/` should not render a separate main screen.
-- Treat external web access for this deployment as port `80`. Local Docker checks may use an override such as `WEB_HTTP_PORT=18000`, but user-facing deployment notes should call out external port `80`.
+- Treat external web access for this deployment as port `80`. For Docker deploy/validation, use `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web` or the same command without `--build`; do not leave the web container mapped to `18000`.
+- Only use `WEB_HTTP_PORT=18000` as a temporary fallback when port `80` is genuinely unavailable, and switch back to `80` before handing work back to the user.
 - Keep `docs/NEXT_CHECKLIST_PLAN_KO.md` updated when a task changes UI behavior, routing, deployment steps, or follow-up work.
 - Check `docs/PROJECT_CHANGELOG_KO.md` for recent context before changing travel, notes, scheduler, login, or admin behavior.
 - Every completed work item should also leave an `admin1` memo-board entry. Prefer adding/updating a seeded `ADMIN1_MEMO_LOGS` item in `apps/web/src/App.jsx` so the log appears in `/notes` for `admin1`.
+- Do not keep growing `apps/web/src/App.jsx` for UI work. When touching shared navigation, app home, notes, scheduler, or other sizeable UI surfaces, split reusable pieces into `apps/web/src/components/` or feature-scoped files and keep `App.jsx` focused on routing, state wiring, and legacy glue.
 - Prefer updating the existing checklist and changelog instead of creating duplicate planning documents.
 - Keep the project documentation Docker-first. Do not add other deployment instructions or examples.
 - For normal implementation requests in this repo, finish with validation, an intentional commit, and a push unless the user explicitly says not to. Inspect `git status` first and stage only files that belong to the current task.

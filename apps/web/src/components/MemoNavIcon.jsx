@@ -91,6 +91,12 @@ export default function MemoNavIcon({ type }) {
         <path d="M14 3v5h5" />
       </>
     ),
+    search: (
+      <>
+        <circle cx="10.8" cy="10.8" r="5.8" />
+        <path d="m15.2 15.2 4.3 4.3" />
+      </>
+    ),
     folder: (
       <>
         <path d="M4 6.5h6l1.8 2H20v9.5H4z" />
