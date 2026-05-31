@@ -8,6 +8,7 @@ import com.platform.jupiter.chat.ChatUsageService;
 import com.platform.jupiter.config.AppProperties;
 import com.platform.jupiter.rag.RagQueryRequest;
 import com.platform.jupiter.rag.RagService;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -113,8 +114,8 @@ public class TravelPlanService {
         plan.setStartAddress(limitText(defaultText(request.startAddress(), ""), 255));
         plan.setEndPlace(limitText(defaultText(request.endPlace(), ""), 120));
         plan.setEndAddress(limitText(defaultText(request.endAddress(), ""), 255));
-        plan.setDepartureTime(limitText(defaultText(request.departureTime(), ""), 20));
-        plan.setArrivalTime(limitText(defaultText(request.arrivalTime(), ""), 20));
+        plan.setDepartureTime(limitText(defaultText(request.departureTime(), request.dayStartTime()), 20));
+        plan.setArrivalTime(limitText(defaultText(request.arrivalTime(), request.dayEndTime()), 20));
         plan.setEstimatedBudget("");
         plan.setSummary(regionLabel + "의 " + stylesLabel + " 취향을 반영한 " + travelerType + "용 "
                 + pace + " 속도 추천 일정입니다.");
@@ -138,7 +139,7 @@ public class TravelPlanService {
             }
         }
         try {
-            String model = codexModel();
+            String model = openAiChatModel();
             Map<String, Object> payload = new LinkedHashMap<>();
             payload.put("model", model);
             payload.put("max_tokens", MAX_OUTPUT_TOKENS);
@@ -161,7 +162,9 @@ public class TravelPlanService {
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                return fallbackItems(plan, candidates);
+                throw new ResponseStatusException(
+                        openAiFailureStatus(response.statusCode()),
+                        "OpenAI 여행 코스 생성에 실패했습니다. " + summarizeOpenAiError(response.statusCode(), response.body()));
             }
 
             JsonNode root = objectMapper.readTree(response.body());
@@ -176,11 +179,21 @@ public class TravelPlanService {
                 content = content.substring(0, content.lastIndexOf("```"));
             }
 
-            List<TravelPlanItem> items = parseGeneratedItems(plan, content, candidates);
+            List<TravelPlanItem> items;
+            try {
+                items = parseGeneratedItems(plan, content, candidates);
+            } catch (IOException parseException) {
+                return fallbackItems(plan, candidates);
+            }
             return items.isEmpty() ? fallbackItems(plan, candidates) : items;
 
         } catch (ResponseStatusException e) {
             throw e;
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "OpenAI API 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "OpenAI API 요청이 중단되었습니다. 다시 시도해 주세요.", e);
         } catch (Exception e) {
             return fallbackItems(plan, candidates);
         }
@@ -248,6 +261,11 @@ public class TravelPlanService {
             "- 속도: %s\n" +
             "- 이동수단: %s\n" +
             "- 예산: %s\n" +
+            "- 식사 취향: %s\n" +
+            "- 휴식 기준: %s\n" +
+            "- 하루 운영 시간: %s ~ %s\n" +
+            "- 꼭 반영할 것: %s\n" +
+            "- 피하고 싶은 것: %s\n" +
             "- 일자별 출발/도착 조건:\n%s\n" +
             "- 메모: %s\n" +
             "- 우선 사용할 장소 후보: %s\n\n" +
@@ -270,6 +288,12 @@ public class TravelPlanService {
             plan.getPace(),
             defaultText(request.transportType(), "대중교통"),
             defaultText(request.budgetLevel(), "보통"),
+            defaultText(request.mealPreference(), "지역 대표 음식과 실제 식당"),
+            defaultText(request.restPreference(), "중간 휴식 포함"),
+            defaultText(request.dayStartTime(), defaultText(request.departureTime(), "09:30")),
+            defaultText(request.dayEndTime(), defaultText(request.arrivalTime(), "21:00")),
+            defaultText(request.mustVisit(), "없음"),
+            defaultText(request.avoid(), "없음"),
             dailyRouteContext,
             defaultText(request.memo(), "없음"),
             candidateNames.isBlank() ? "지역 대표 명소" : candidateNames,
@@ -469,6 +493,36 @@ public class TravelPlanService {
     private String codexModel() {
         String model = appProperties.codexModel();
         return model == null || model.isBlank() ? ChatCredentialService.DEFAULT_CODEX_MODEL : model.trim();
+    }
+
+    private String openAiChatModel() {
+        String model = appProperties.openAiModel();
+        return model == null || model.isBlank() ? "gpt-4.1-mini" : model.trim();
+    }
+
+    private HttpStatus openAiFailureStatus(int statusCode) {
+        if (statusCode == 400 || statusCode == 401 || statusCode == 403 || statusCode == 429) {
+            return HttpStatus.BAD_REQUEST;
+        }
+        return HttpStatus.BAD_GATEWAY;
+    }
+
+    private String summarizeOpenAiError(int statusCode, String body) {
+        String normalized = body == null ? "" : body.replaceAll("sk-[A-Za-z0-9_-]+", "sk-***").replaceAll("\\s+", " ").trim();
+        String lower = normalized.toLowerCase();
+        if (statusCode == 401 || statusCode == 403) {
+            return "저장된 사용자 OpenAI API 키의 권한을 확인해 주세요.";
+        }
+        if (statusCode == 429) {
+            return "저장된 사용자 OpenAI API 키의 사용량 한도 또는 결제 상태를 확인해 주세요.";
+        }
+        if (lower.contains("model") || lower.contains("does not exist") || lower.contains("not found")) {
+            return "OpenAI 모델 설정을 확인해 주세요. 현재 모델: " + openAiChatModel();
+        }
+        if (normalized.isBlank()) {
+            return "HTTP " + statusCode;
+        }
+        return normalized.length() > 180 ? normalized.substring(0, 180) + "..." : normalized;
     }
 
     private String normalizeBaseUrl(String value) {

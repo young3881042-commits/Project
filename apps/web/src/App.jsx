@@ -2940,6 +2940,16 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260531-travel-planner-user-key-tabs',
+    content: `# 2026-05-31 여행 계획 생성과 모바일 탭 정리
+
+- [x] 여행 계획 생성이 로그인 사용자 OpenAI 키를 사용하도록 직접 Chat Completions 경로를 기본값으로 정리
+- [x] OpenAI 키/API 오류가 fallback 일정으로 숨지 않고 사용자에게 보이게 보정
+- [x] 플래너에 인원, 식사, 휴식, 하루 시작/종료, 꼭 반영할 것, 피할 것 세부 옵션 추가
+- [x] 모바일 하단 바로가기를 홈, 노트, 일정, 여행 4개로 변경
+- [x] 상단 공통 네비게이션의 내 일정/메모/장소 찾기/연결 링크 제거`
+  },
+  {
     id: 'admin1-memo-20260531-app-home-15png-dashboard',
     content: `# 2026-05-31 15.png 기준 앱 홈 대시보드 개편
 
@@ -3415,12 +3425,7 @@ function BoardIcon({ type }) {
   );
 }
 
-function WorkspaceNavigator({ active, navigate }) {
-  const items = PRIMARY_SHORTCUTS.map((item) => ({
-    key: item.key,
-    icon: item.icon,
-    ...APP_SHORTCUTS[item.shortcut]
-  }));
+function WorkspaceNavigator({ navigate }) {
   const session = readStoredAuth();
   const isGuest = !session || session.isGuest || session.username === 'guestuser';
   const accountPath = isGuest ? '/login' : '/mypage';
@@ -3432,22 +3437,6 @@ function WorkspaceNavigator({ active, navigate }) {
         <MemoNavIcon type="home" />
         <span>앱 홈</span>
       </button>
-      <div className="workspaceNavigatorLinks">
-        {items.map((item) => (
-          <a
-            key={item.key}
-            className={active === item.key ? 'active' : ''}
-            href={item.path}
-            onClick={(event) => {
-              event.preventDefault();
-              navigate(item.path);
-            }}
-          >
-            <MemoNavIcon type={item.icon} />
-            <span>{item.label}</span>
-          </a>
-        ))}
-      </div>
       <a
         className="workspaceNavigatorAccount"
         href={accountPath}

@@ -1,5 +1,28 @@
 # 프로젝트 변경 상세 문서
 
+## 29. 2026-05-31 여행 계획 생성 사용자 키와 상세 옵션 보강
+
+`/planner`에서 실제 여행 계획 생성 API가 로그인 사용자 OpenAI 키를 쓰도록 검증하고, 상세 옵션을 더 넣을 수 있게 보강했습니다.
+
+변경 내용:
+
+- `/api/travel-plans/generate`는 기존처럼 로그인 세션의 사용자 OpenAI 키만 사용합니다.
+- Docker 기본 모델을 여행 생성용 Chat Completions 모델인 `gpt-4.1-mini`로 정리하고 Codex CLI 우선 모드는 끕니다.
+- OpenAI 키 없음, 권한, 한도, 모델 오류가 fallback 일정으로 조용히 저장되지 않고 사용자에게 표시되게 했습니다.
+- 플래너에 인원, 식사 취향, 휴식 기준, 하루 시작/종료 시간, 꼭 반영할 것, 피하고 싶은 것 입력을 추가했습니다.
+- 새 상세 옵션은 서버 프롬프트에 포함되어 일자별 동선, 식당, 카페, 이동 팁 생성에 반영됩니다.
+- 모바일 하단 바로가기를 `홈`, `노트`, `일정`, `여행` 4개로 바꿨습니다.
+- 상단 공통 네비게이션에서 `내 일정`, `메모`, `장소 찾기`, `연결` 링크 묶음을 제거했습니다.
+
+검증:
+
+- 저장된 사용자 OpenAI 키가 없는 상태에서 `/api/travel-plans/generate`가 `개인 API 키를 연결하세요. OpenAI API 키가 필요합니다.`를 반환하는 것을 확인했습니다.
+- 상세 옵션을 포함한 2일 서울 여행 계획 생성 payload로 `/api/travel-plans/generate`를 직접 호출했습니다.
+- `npm --prefix apps/web run build`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web`
+- Docker API 환경에서 `APP_OPENAI_MODEL=gpt-4.1-mini`, `ENABLE_CODEX_CLI_MODE=false`가 적용된 것을 확인했습니다.
+- `/app`, `/api/destinations?size=1` HTTP 응답과 web `nginx -t`를 확인했습니다.
+
 ## 28. 2026-05-31 15.png 기준 앱 홈 대시보드 개편
 
 `15.png` 참고 이미지 방향에 맞춰 `/app` 메인 화면을 밝은 모바일 대시보드로 다시 구성했습니다.

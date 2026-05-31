@@ -437,7 +437,8 @@ body:has(.aiNoteShell) {
 
 @media (max-width: 760px) {
   .schedulerShell,
-  .notesShell {
+  .notesShell,
+  .ltShell {
     padding-bottom: calc(78px + env(safe-area-inset-bottom)) !important;
   }
 
@@ -448,7 +449,7 @@ body:has(.aiNoteShell) {
     left: 10px;
     z-index: 240;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 6px;
     padding: 7px;
     padding-bottom: calc(7px + env(safe-area-inset-bottom));

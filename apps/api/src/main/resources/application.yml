@@ -64,7 +64,7 @@ app:
   codex-model: ${APP_CODEX_MODEL:gpt-5.5}
   gemini-api-key: ${APP_GEMINI_API_KEY:}
   open-ai-api-key: ${APP_OPENAI_API_KEY:${OPENAI_API_KEY:}}
-  open-ai-model: ${APP_OPENAI_MODEL:${OPENAI_MODEL:gpt-5.2-codex}}
+  open-ai-model: ${APP_OPENAI_MODEL:${OPENAI_MODEL:gpt-4.1-mini}}
   grok-api-key: ${APP_GROK_API_KEY:}
   python-timeout-seconds: ${APP_PYTHON_TIMEOUT_SECONDS:120}
   enable-codex-cli-mode: ${ENABLE_CODEX_CLI_MODE:false}

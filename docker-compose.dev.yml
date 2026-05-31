@@ -27,12 +27,12 @@ services:
       APP_API_URL: http://localhost:8080/api
       APP_GATEWAY_URL: http://localhost:8080
       APP_CODEX_API_BASE_URL: ${APP_CODEX_API_BASE_URL:-https://api.openai.com/v1}
-      APP_CODEX_MODEL: ${APP_CODEX_MODEL:-gpt-5.5}
+      APP_CODEX_MODEL: ${APP_CODEX_MODEL:-gpt-5.2-codex}
       APP_OPENAI_API_KEY: ${APP_OPENAI_API_KEY:-}
-      APP_OPENAI_MODEL: ${APP_OPENAI_MODEL:-gpt-5.5}
+      APP_OPENAI_MODEL: ${APP_OPENAI_MODEL:-gpt-4.1-mini}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.5}
-      ENABLE_CODEX_CLI_MODE: ${ENABLE_CODEX_CLI_MODE:-true}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
+      ENABLE_CODEX_CLI_MODE: ${ENABLE_CODEX_CLI_MODE:-false}
       APP_ASSISTANT_DATA_ROOT: ${APP_ASSISTANT_DATA_ROOT:-/data/ai-assitant}
       APP_CONVERSATION_ROOT: ${APP_CONVERSATION_ROOT:-/data/ai-assitant/conversations}
       APP_WORKSPACE_ROOT: ${APP_WORKSPACE_ROOT:-/data/ai-assitant/workspace}

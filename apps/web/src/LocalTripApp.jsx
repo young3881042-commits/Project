@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import MobileWorkspaceTabs from './components/MobileWorkspaceTabs.jsx';
 
 const AUTH_KEY = 'codex-workspace-auth';
 const SCHEDULER_KEY = 'codex-personal-scheduler-items';
@@ -1529,17 +1530,7 @@ function TravelWorkspaceIcon({ type }) {
   );
 }
 
-function TravelWorkspaceNavigator({ path, navigate }) {
-  const items = [
-    { key: 'schedule', label: '내 일정', path: '/scheduler', icon: 'calendar' },
-    { key: 'notes', label: '메모', path: '/notes', icon: 'board' },
-    { key: 'trip', label: '장소 찾기', path: '/destinations', icon: 'trip' },
-    { key: 'connections', label: '연결', path: '/connect', icon: 'link' }
-  ];
-  const active = path.startsWith('/scheduler') ? 'schedule'
-    : path.startsWith('/notes') ? 'notes'
-      : path.startsWith('/connect') || path.startsWith('/connections') ? 'connections'
-        : 'trip';
+function TravelWorkspaceNavigator({ navigate }) {
   const session = readStoredAuth();
   const guest = isGuestSession(session);
   const accountPath = guest ? '/login' : '/mypage';
@@ -1551,19 +1542,6 @@ function TravelWorkspaceNavigator({ path, navigate }) {
         <TravelWorkspaceIcon type="home" />
         <span>Home</span>
       </button>
-      <div className="workspaceNavigatorLinks">
-        {items.map((item) => (
-          <a
-            key={item.key}
-            className={active === item.key ? 'active' : ''}
-            href={item.path}
-            onClick={(event) => routeClick(event, item.path, navigate)}
-          >
-            <TravelWorkspaceIcon type={item.icon} />
-            <span>{item.label}</span>
-          </a>
-        ))}
-      </div>
       <a className="workspaceNavigatorAccount" href={accountPath} onClick={(event) => routeClick(event, accountPath, navigate)}>
         <span>{displayName.slice(0, 1).toUpperCase()}</span>
         <strong>{displayName}</strong>
@@ -2283,9 +2261,16 @@ function PlannerPage({ path, navigate }) {
   const [startDate, setStartDate] = useState(plannerDraft?.startDate || '');
   const [days, setDays] = useState(plannerDraft?.days || 3);
   const [travelers, setTravelers] = useState(plannerDraft?.travelers || '커플');
+  const [travelerCount, setTravelerCount] = useState(plannerDraft?.travelerCount || 2);
   const [transportType, setTransportType] = useState('대중교통');
   const [pace, setPace] = useState(plannerDraft?.pace || '보통');
   const [budget, setBudget] = useState('보통');
+  const [mealPreference, setMealPreference] = useState(plannerDraft?.mealPreference || '지역 맛집');
+  const [restPreference, setRestPreference] = useState(plannerDraft?.restPreference || '중간 휴식');
+  const [dayStartTime, setDayStartTime] = useState(plannerDraft?.dayStartTime || '09:30');
+  const [dayEndTime, setDayEndTime] = useState(plannerDraft?.dayEndTime || '21:00');
+  const [mustVisit, setMustVisit] = useState(plannerDraft?.mustVisit || '');
+  const [avoid, setAvoid] = useState(plannerDraft?.avoid || '');
   const [exportFormat, setExportFormat] = useState('텍스트');
   const [selectedInterests, setSelectedInterests] = useState(plannerDraft?.interests?.length ? plannerDraft.interests : ['맛집', '역사']);
   const [notes, setNotes] = useState(plannerDraft?.notes || '');
@@ -2390,7 +2375,7 @@ function PlannerPage({ path, navigate }) {
 
   const routeDateSummary = routeInfoComplete ? `${formatDate(startDate)} · ${formatDaysLabel(days)}` : '출발일과 여행 일수';
   const dailyRouteSummary = dailyRouteCount ? `${dailyRouteCount}일차 세부 동선 입력` : '일자별 동선은 선택 입력';
-  const travelOptionSummary = `${travelers} · ${pace} · ${transportType} · ${budget}`;
+  const travelOptionSummary = `${travelers} ${travelerCount}명 · ${pace} · ${transportType} · ${budget}`;
 
   const submit = async (event) => {
     event.preventDefault();
@@ -2419,9 +2404,16 @@ function PlannerPage({ path, navigate }) {
       startDate: startDate || null,
       days: Number(days),
       transportType,
+      travelerCount: Number(travelerCount) || 1,
       travelerType: travelers,
       pace,
       budgetLevel: budget,
+      mealPreference,
+      restPreference,
+      mustVisit,
+      avoid,
+      dayStartTime,
+      dayEndTime,
       dailyRoutes: dayRoutes,
       exportFormat,
       memo: routeMemoLines.join('\n')
@@ -2599,10 +2591,24 @@ function PlannerPage({ path, navigate }) {
               >
                 <div className="ltInlinePlannerGrid">
                   <OptionGroup label="동행" value={travelers} options={['혼자', '커플', '친구', '가족']} onChange={setTravelers} />
+                  <label>
+                    <span>인원</span>
+                    <input type="number" min="1" max="12" value={travelerCount} onChange={(event) => setTravelerCount(event.target.value)} />
+                  </label>
                   <OptionGroup label="여행 속도" value={pace} options={['여유', '보통', '촘촘']} onChange={setPace} />
                   <OptionGroup label="이동수단" value={transportType} options={['대중교통', '자동차', '도보']} onChange={setTransportType} />
-                  <OptionGroup label="내보내기" value={exportFormat} options={['텍스트', '엑셀', 'PDF']} onChange={setExportFormat} />
                   <OptionGroup label="예산 성향" value={budget} options={['절약', '보통', '프리미엄']} onChange={setBudget} />
+                  <OptionGroup label="식사" value={mealPreference} options={['지역 맛집', '한식 위주', '카페·디저트', '아이 동반']} onChange={setMealPreference} />
+                  <OptionGroup label="휴식" value={restPreference} options={['중간 휴식', '많이 걷기', '짧은 이동', '야경 포함']} onChange={setRestPreference} />
+                  <label>
+                    <span>하루 시작</span>
+                    <input type="time" value={dayStartTime} onChange={(event) => setDayStartTime(event.target.value)} />
+                  </label>
+                  <label>
+                    <span>하루 종료</span>
+                    <input type="time" value={dayEndTime} onChange={(event) => setDayEndTime(event.target.value)} />
+                  </label>
+                  <OptionGroup label="내보내기" value={exportFormat} options={['텍스트', '엑셀', 'PDF']} onChange={setExportFormat} />
                 </div>
               </PlannerProgressiveCard>
             </div>
@@ -2632,6 +2638,14 @@ function PlannerPage({ path, navigate }) {
                 ))}
               </div>
             </div>
+            <label>
+              <span>꼭 반영할 것</span>
+              <textarea value={mustVisit} onChange={(event) => setMustVisit(event.target.value)} placeholder="꼭 가고 싶은 장소, 먹고 싶은 메뉴, 기념일 일정 등을 적어주세요" />
+            </label>
+            <label>
+              <span>피하고 싶은 것</span>
+              <textarea value={avoid} onChange={(event) => setAvoid(event.target.value)} placeholder="긴 도보, 웨이팅 많은 곳, 매운 음식, 늦은 귀가 등 피하고 싶은 조건을 적어주세요" />
+            </label>
             <label>
               <span>요청사항</span>
               <textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="도착 시간, 꼭 가고 싶은 곳, 아이 동반 여부 등을 적어주세요" />
@@ -3436,9 +3450,10 @@ function LoginPage({ navigate }) {
 function AppShell({ path, navigate, children }) {
   return (
     <div className="ltShell">
-      <TravelWorkspaceNavigator path={path} navigate={navigate} />
+      <TravelWorkspaceNavigator navigate={navigate} />
       <LocalTripNav path={path} navigate={navigate} />
       {children}
+      <MobileWorkspaceTabs active="trip" navigate={navigate} />
       <footer className="ltFooter">
         <span>여행 코스</span>
         <span>장소 · 동선 · 저장</span>
