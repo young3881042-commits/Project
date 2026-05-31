@@ -4,7 +4,6 @@ import remarkGfm from 'remark-gfm';
 import LocalTripApp from './LocalTripApp.jsx';
 import ConnectionsApp from './ConnectionsApp.jsx';
 import MemoNavIcon from './components/MemoNavIcon.jsx';
-import WorkspaceQuickMenu from './components/WorkspaceQuickMenu.jsx';
 import MobileWorkspaceTabs from './components/MobileWorkspaceTabs.jsx';
 import MobileHomeSection from './components/notes/MobileHomeSection.jsx';
 import MemoList from './components/notes/MemoList.jsx';
@@ -2940,13 +2939,21 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260531-mobile-home-nav-dedupe',
+    content: `# 2026-05-31 모바일 홈 중복 네비게이션 제거
+
+- [x] /app 본문 하단의 홈/메모/일정 중복 메뉴 제거
+- [x] 메모와 오늘 일정만 빠른 실행 카드로 노출
+- [x] /notes 모바일 상단은 계정, 메모 제목, 새 메모 버튼 구조로 유지`
+  },
+  {
     id: 'admin1-memo-20260531-mobile-ui-hotfix',
     content: `# 2026-05-31 모바일 UI/UX 긴급 보정
 
 - [x] 공용 하단 탭을 기존 메모 액션바 CSS와 분리
 - [x] /notes 모바일에서 상단 네비게이션이 다시 보이던 충돌을 제거
 - [x] 메모봇 이미지 크기와 기능 카드 그리드를 모바일 폭에 맞게 고정
-- [x] /app, /notes, /scheduler 하단 탭 겹침 방지 여백 추가`
+- [x] /notes, /scheduler 하단 탭 겹침 방지 여백 추가`
   },
   {
     id: 'admin1-memo-20260531-notion-workspace-accordion',
@@ -3788,18 +3795,16 @@ function SpaceHomePage({ navigate }) {
             <img className="robotGuideCuttoonImage" src="/robot-guide-cuttoon.svg" alt="메모 작성, 일정 켜기, 내 일정 확인, 한눈에 관리 순서 안내" />
           </figure>
 
-          <WorkspaceQuickMenu active="home" navigate={navigate} className="spaceHomeQuickMenu" ariaLabel="앱 바로가기" />
-
           <section className="spaceLaunchGrid" aria-label="빠른 시작">
+            <button type="button" className="spaceLaunchCard memo" onClick={() => navigate('/notes')}>
+              <span><MemoNavIcon type="board" /></span>
+              <strong>메모</strong>
+              <small>{appOverview.noteCount}개 정리됨 · 바로 작성</small>
+            </button>
             <button type="button" className="spaceLaunchCard schedule today" onClick={() => navigate('/scheduler')}>
               <span><MemoNavIcon type="calendar" /></span>
               <strong>오늘 일정</strong>
               <small>{appOverview.todayDoneCount}/{appOverview.todayCount} 완료 · {appOverview.todayProgress}%</small>
-            </button>
-            <button type="button" className="spaceLaunchCard schedule week" onClick={() => navigate('/scheduler')}>
-              <span><MemoNavIcon type="calendar" /></span>
-              <strong>금주 일정</strong>
-              <small>{appOverview.weekDoneCount}/{appOverview.weekCount} 완료 · {appOverview.weekProgress}%</small>
             </button>
           </section>
         </div>
