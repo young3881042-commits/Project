@@ -837,7 +837,7 @@ body:has(.notesShell) {
 
   .notesMobileProfileRow {
     display: grid;
-    grid-template-columns: 48px minmax(0, 1fr);
+    grid-template-columns: 48px minmax(0, 1fr) 44px;
     gap: 12px;
     align-items: center;
   }
@@ -854,6 +854,55 @@ body:has(.notesShell) {
     font: inherit;
     font-size: 1.05rem;
     font-weight: 900;
+  }
+
+  .notesMobileTitleBlock {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+  }
+
+  .notesMobileTitleBlock span,
+  .notesMobileTitleBlock strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .notesMobileTitleBlock span {
+    color: var(--notes-muted);
+    font-size: 0.76rem;
+    font-weight: 850;
+  }
+
+  .notesMobileTitleBlock strong {
+    color: var(--notes-ink);
+    font-size: 1.22rem;
+    font-weight: 950;
+    line-height: 1.15;
+  }
+
+  .notesMobileTopAction {
+    width: 44px;
+    min-height: 44px;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid rgba(37, 99, 235, 0.22);
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #2563eb;
+    padding: 0;
+    font: inherit;
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.06);
+  }
+
+  .notesMobileTopAction .memoNavIcon {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    background: transparent;
+    color: currentColor;
   }
 
   .notesMobileQuickMenu {
@@ -1960,7 +2009,7 @@ body:has(.notesShell) {
   }
 
   .notesMobileProfileRow {
-    grid-template-columns: 48px minmax(0, 1fr) !important;
+    grid-template-columns: 48px minmax(0, 1fr) 44px !important;
     gap: 10px !important;
   }
 
