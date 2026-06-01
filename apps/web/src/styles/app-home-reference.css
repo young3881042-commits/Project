@@ -1,220 +1,430 @@
-/* 2026-05-31 /app home rebuilt from the 17.png travel dashboard reference. */
 .referenceHome {
   min-height: 100svh !important;
   display: block !important;
   overflow-x: hidden !important;
-  background:
-    radial-gradient(circle at 18% 12%, rgba(99, 230, 190, 0.16), transparent 28%),
-    radial-gradient(circle at 82% 0%, rgba(96, 165, 250, 0.14), transparent 34%),
-    linear-gradient(180deg, #f2fffb 0%, #eef9ff 52%, #f9fbff 100%) !important;
+  background: linear-gradient(180deg, #effdf8 0%, #f3fbff 48%, #f7f8fb 100%) !important;
   color: #111827 !important;
 }
 
-.referenceHome::before {
-  content: "" !important;
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 0 !important;
-  pointer-events: none !important;
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.16)),
-    repeating-linear-gradient(90deg, rgba(20, 184, 166, 0.025) 0 1px, transparent 1px 96px),
-    repeating-linear-gradient(0deg, rgba(37, 99, 235, 0.02) 0 1px, transparent 1px 96px) !important;
+.referenceHome *,
+.referenceHome *::before,
+.referenceHome *::after {
+  box-sizing: border-box;
 }
 
 .spaceAppFrame.appHomeDashboard {
   position: relative;
-  z-index: 1;
-  width: min(100% - 32px, 760px);
+  width: min(100%, 430px);
   min-height: 100svh;
   margin: 0 auto;
-  padding: 34px 28px 0;
-  border-left: 12px solid rgba(255, 255, 255, 0.88);
-  border-right: 12px solid rgba(255, 255, 255, 0.88);
-  border-radius: 8px;
-  background:
-    linear-gradient(180deg, rgba(247, 255, 252, 0.98) 0%, rgba(239, 250, 255, 0.95) 48%, rgba(255, 255, 255, 0.98) 100%);
-  box-shadow: 0 28px 80px rgba(30, 95, 128, 0.14);
+  padding: 22px 18px 0;
+  overflow-x: hidden;
+  background: linear-gradient(180deg, rgba(250, 255, 253, 0.98) 0%, rgba(247, 251, 255, 0.98) 100%);
 }
 
-.appHomeTopBrand {
-  min-height: 58px;
-  display: inline-grid;
-  grid-template-columns: 58px minmax(0, 1fr);
+.appHomeHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 14px;
-  color: #10203b;
+  gap: 14px;
+  margin-bottom: 16px;
 }
 
-.appHomeTopBrand > span {
-  width: 58px;
-  height: 58px;
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #27d6aa 0%, #05a979 100%);
-  color: #ffffff;
-  box-shadow: 0 16px 32px rgba(14, 181, 127, 0.28);
-}
-
-.appHomeTopBrand .memoNavIcon {
-  width: 31px;
-  height: 31px;
-}
-
-.appHomeTopBrand div {
+.appHomeTitleGroup {
   min-width: 0;
-  display: grid;
-  gap: 5px;
 }
 
-.appHomeTopBrand strong {
-  color: #101827;
-  font-size: 1.45rem;
-  line-height: 1.1;
+.appHomeTitleGroup h1 {
+  margin: 0;
+  color: #10203b;
+  font-size: 1.48rem;
+  line-height: 1.18;
   font-weight: 950;
   letter-spacing: 0;
+  word-break: keep-all;
 }
 
-.appHomeTopBrand small {
-  color: #64748b;
-  font-size: 0.93rem;
+.appHomeTitleGroup p {
+  margin: 5px 0 0;
+  color: #6b7280;
+  font-size: 0.88rem;
   line-height: 1.2;
   font-weight: 850;
   letter-spacing: 0;
 }
 
-.appHomeBellButton {
-  position: absolute;
-  top: 40px;
-  right: 30px;
-  width: 52px;
-  height: 52px;
+.appHomeHeaderActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.appHomeHeaderActions button {
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
-  border: 0;
+  border: 1px solid rgba(196, 213, 226, 0.82);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.9);
+  background: #ffffff;
   color: #1f2937;
-  box-shadow: 0 12px 30px rgba(15, 118, 110, 0.12);
+  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.09);
   cursor: pointer;
 }
 
-.appHomeBellButton .memoNavIcon {
-  width: 27px;
-  height: 27px;
+.appHomeHeaderActions .memoNavIcon {
+  width: 22px;
+  height: 22px;
 }
 
-.appHomeBellButton i {
-  position: absolute;
-  top: 9px;
-  right: 8px;
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: #12b981;
-}
-
-.appHomeHero {
-  position: relative;
-  min-height: 204px;
+.appHomeModeSelector {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 238px;
-  align-items: end;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.appHomeHero::after {
-  content: "";
-  position: absolute;
-  right: 18px;
-  bottom: 0;
-  z-index: -1;
-  width: 340px;
-  height: 170px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 5px;
+  border: 1px solid rgba(204, 219, 230, 0.86);
   border-radius: 8px;
-  background:
-    linear-gradient(180deg, transparent 58%, rgba(45, 181, 138, 0.24) 59% 100%),
-    radial-gradient(circle at 72% 58%, rgba(105, 211, 185, 0.58), transparent 22%),
-    radial-gradient(circle at 40% 68%, rgba(173, 226, 208, 0.44), transparent 30%);
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 10px 28px rgba(20, 83, 92, 0.08);
 }
 
-.appHomeHeroCopy {
-  align-self: start;
-  max-width: 420px;
-  padding-top: 8px;
+.appHomeModeSelector button {
+  min-width: 0;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #6b7280;
+  font: inherit;
+  font-size: 0.94rem;
+  font-weight: 920;
+  letter-spacing: 0;
+  cursor: pointer;
 }
 
-.appHomeHeroCopy h1 {
-  margin: 0;
+.appHomeModeSelector .memoNavIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.appHomeModeSelector button.active {
+  background: linear-gradient(135deg, #10b981 0%, #16a36f 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(16, 185, 129, 0.24);
+}
+
+.appHomeCard,
+.appHomeAccountStrip {
+  width: 100%;
+  min-width: 0;
+  margin-top: 14px;
+  border: 1px solid rgba(207, 221, 232, 0.86);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 34px rgba(30, 88, 105, 0.09);
+}
+
+.appHomeCard {
+  padding: 18px;
+}
+
+.appHomeCardHeader {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.appHomeCardHeader span {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #0f9f78;
+}
+
+.appHomeCardHeader .memoNavIcon {
+  width: 21px;
+  height: 21px;
+}
+
+.appHomeCardHeader strong {
+  min-width: 0;
   color: #111827;
-  font-size: 2.58rem;
-  line-height: 1.32;
+  font-size: 1.03rem;
+  line-height: 1.2;
   font-weight: 950;
+  letter-spacing: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.appHomeCardHeader button {
+  min-height: 32px;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  color: #0f9f78;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.appHomeCardLead {
+  margin: 0 0 14px;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  font-weight: 760;
   letter-spacing: 0;
   word-break: keep-all;
 }
 
-.appHomeHeroCopy h1 span {
-  display: block;
+.appHomeTodayStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.appHomeTodayStats span {
+  min-width: 0;
+  min-height: 68px;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid #dceee8;
+  border-radius: 8px;
+  background: #f7fffb;
+}
+
+.appHomeTodayStats em {
+  color: #64748b;
+  font-style: normal;
+  font-size: 0.75rem;
+  line-height: 1.1;
+  font-weight: 850;
+  letter-spacing: 0;
+}
+
+.appHomeTodayStats strong {
+  color: #0f766e;
+  font-size: 1.05rem;
+  line-height: 1.1;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.appHomeFlowPreview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 2px 0 14px;
+  padding-top: 14px;
+  border-top: 1px solid #edf2f7;
+}
+
+.appHomeFlowPreview div {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.appHomeFlowPreview b {
+  color: #334155;
+  font-size: 0.78rem;
+  line-height: 1.2;
+  font-weight: 920;
+}
+
+.appHomeFlowPreview span {
+  min-width: 0;
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.32;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.appHomePrimaryCta {
+  width: 100%;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(16, 185, 129, 0.56);
+  border-radius: 8px;
+  background: #10b981;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.94rem;
+  font-weight: 950;
+  letter-spacing: 0;
+  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.2);
+  cursor: pointer;
+}
+
+.appHomePrimaryCta .memoNavIcon {
+  width: 19px;
+  height: 19px;
+}
+
+.appHomeActionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.appHomeActionGrid button {
+  min-width: 0;
+  min-height: 76px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid #dfe9f1;
+  border-radius: 8px;
+  background: #fbfdff;
+  color: #334155;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+.appHomeActionGrid button:nth-child(1),
+.appHomeActionGrid button:nth-child(4) {
+  border-color: rgba(16, 185, 129, 0.28);
+  background: #f4fffa;
+}
+
+.appHomeActionGrid .memoNavIcon {
+  width: 24px;
+  height: 24px;
   color: #10b981;
 }
 
-.appHomeHeroCopy p {
-  max-width: 370px;
-  margin: 20px 0 0;
-  color: #5f6b80;
-  font-size: 1.04rem;
-  line-height: 1.65;
+.appHomeActionGrid button:nth-child(2) .memoNavIcon {
+  color: #2563eb;
+}
+
+.appHomeActionGrid button:nth-child(3) .memoNavIcon {
+  color: #d97706;
+}
+
+.appHomeActionGrid span {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.appHomeMemoList {
+  display: grid;
+  gap: 2px;
+}
+
+.appHomeMemoList button {
+  width: 100%;
+  min-height: 58px;
+  display: grid;
+  gap: 5px;
+  padding: 11px 0;
+  border: 0;
+  border-bottom: 1px solid #eef2f7;
+  background: transparent;
+  color: #111827;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.appHomeMemoList button:last-child {
+  border-bottom: 0;
+}
+
+.appHomeMemoList strong {
+  min-width: 0;
+  color: #111827;
+  font-size: 0.92rem;
+  line-height: 1.22;
+  font-weight: 920;
+  letter-spacing: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.appHomeMemoList span {
+  min-width: 0;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.25;
+  font-weight: 780;
+  letter-spacing: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.appHomeAiSuggestionCard {
+  display: block;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.appHomeAiSuggestionCard .appHomeCardHeader {
+  margin-bottom: 10px;
+}
+
+.appHomeAiSuggestionCard small {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #0f766e;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.appHomeAiSuggestionCard p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 0.91rem;
+  line-height: 1.55;
   font-weight: 800;
   letter-spacing: 0;
   word-break: keep-all;
 }
 
-.appHomeRobot {
-  align-self: end;
-  justify-self: end;
-  width: 238px;
-  height: 176px;
-  overflow: hidden;
-  border-radius: 8px;
-}
-
-.appHomeRobot img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  object-position: 54% 17%;
-  mix-blend-mode: multiply;
-  transform: scale(1.18) translateY(8%);
-}
-
-.appHomeAccountStrip,
-.appHomeFeatureCard,
-.appHomePanel,
-.appHomeMemoPanel,
-.appHomeAiPanel,
-.appHomePrepPanel {
-  border: 1px solid rgba(206, 224, 240, 0.88);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 18px 46px rgba(33, 83, 112, 0.09);
-  backdrop-filter: blur(16px);
-}
-
 .appHomeAccountStrip {
-  min-height: 48px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
-  margin-bottom: 14px;
-  padding: 8px 10px 8px 14px;
-  border-color: rgba(20, 184, 166, 0.22);
-  background: rgba(247, 255, 252, 0.9);
+  padding: 12px;
+  border-color: rgba(16, 185, 129, 0.25);
+  background: #f7fffb;
 }
 
 .appHomeAccountStrip > span {
@@ -233,8 +443,9 @@
 .appHomeAccountStrip strong {
   min-width: 0;
   color: #164e63;
-  font-size: 0.9rem;
-  font-weight: 900;
+  font-size: 0.86rem;
+  line-height: 1.2;
+  font-weight: 920;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -246,9 +457,9 @@
 }
 
 .appHomeAccountStrip button {
-  min-height: 32px;
+  min-height: 34px;
   padding: 0 10px;
-  border: 1px solid rgba(20, 184, 166, 0.24);
+  border: 1px solid rgba(16, 185, 129, 0.28);
   border-radius: 8px;
   background: #ffffff;
   color: #0f766e;
@@ -262,1626 +473,25 @@
 .appHomeAccountStrip button.active,
 .appHomeAccountStrip button:hover {
   background: #e9fff8;
-  border-color: rgba(20, 184, 166, 0.44);
-}
-
-.appHomeAccountStrip button:disabled {
-  cursor: wait;
-  opacity: 0.68;
 }
 
 .appHomeAccountStrip p {
   grid-column: 1 / -1;
   margin: 0;
   color: #be123c;
-  font-size: 0.78rem;
-  font-weight: 850;
-}
-
-.appHomeModeSelector {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0 60px 20px 0;
-  padding: 6px;
-  border: 1px solid rgba(206, 224, 240, 0.78);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 14px 34px rgba(33, 83, 112, 0.08);
-}
-
-.appHomeModeSelector button {
-  min-width: 0;
-  min-height: 56px;
-  display: grid;
-  grid-template-columns: 22px minmax(0, 1fr);
-  align-items: center;
-  gap: 3px 6px;
-  padding: 8px 7px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: #64748b;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.appHomeModeSelector .memoNavIcon {
-  grid-row: 1 / span 2;
-  width: 21px;
-  height: 21px;
-}
-
-.appHomeModeSelector span {
-  min-width: 0;
-  color: inherit;
-  font-size: 0.82rem;
-  font-weight: 950;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.appHomeModeSelector strong {
-  justify-self: start;
-  min-width: 24px;
-  min-height: 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: #f1f5f9;
-  color: #64748b;
-  font-size: 0.68rem;
-  font-weight: 950;
-}
-
-.appHomeModeSelector button.active {
-  background: linear-gradient(135deg, #10b981, #24d6a7);
-  color: #ffffff;
-  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.22);
-}
-
-.appHomeModeSelector button.active strong {
-  background: rgba(255, 255, 255, 0.24);
-  color: #ffffff;
-}
-
-.appHomePanel {
-  margin-top: 16px;
-  padding: 22px;
-}
-
-.appHomePanelHeader {
-  min-height: 34px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.appHomePanelHeader span {
-  min-width: 0;
-  flex: 1 1 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: #10b981;
-}
-
-.appHomePanelHeader span .memoNavIcon {
-  width: 25px;
-  height: 25px;
-}
-
-.appHomePanelHeader strong {
-  color: #111827;
-  font-size: 1.24rem;
-  line-height: 1.15;
-  font-weight: 950;
-}
-
-.appHomePanelHeader button {
-  min-height: 32px;
-  padding: 0 12px;
-  border: 1px solid #dce8f4;
-  border-radius: 8px;
-  background: #f8fbff;
-  color: #64748b;
-  font: inherit;
-  font-size: 0.78rem;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.appHomeTripSummary {
-  display: grid;
-  grid-template-columns: 110px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 22px;
-  margin-bottom: 18px;
-}
-
-.appHomeTripPhoto {
-  width: 110px;
-  aspect-ratio: 1;
-  border-radius: 8px;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.18)),
-    radial-gradient(circle at 70% 30%, #a7f3d0 0 12%, transparent 13%),
-    linear-gradient(160deg, #38bdf8 0 32%, #e0f2fe 33% 42%, #22c55e 43% 58%, #fef3c7 59% 100%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6), 0 14px 26px rgba(8, 145, 178, 0.12);
-}
-
-.appHomeTripPhoto.today {
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08)),
-    radial-gradient(circle at 64% 28%, #fef3c7 0 13%, transparent 14%),
-    linear-gradient(160deg, #dbeafe 0 34%, #ecfeff 35% 48%, #99f6e4 49% 64%, #e0f2fe 65% 100%);
-}
-
-.appHomeTripPhoto.travel {
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.18)),
-    radial-gradient(circle at 70% 30%, #a7f3d0 0 12%, transparent 13%),
-    linear-gradient(160deg, #38bdf8 0 32%, #e0f2fe 33% 42%, #22c55e 43% 58%, #fef3c7 59% 100%);
-}
-
-.appHomeTripPhoto.work {
-  background:
-    radial-gradient(circle at 70% 26%, #bfdbfe 0 14%, transparent 15%),
-    linear-gradient(160deg, #e0f2fe 0 34%, #dbeafe 35% 58%, #93c5fd 59% 100%);
-}
-
-.appHomeTripPhoto.study {
-  background:
-    radial-gradient(circle at 68% 26%, #ddd6fe 0 14%, transparent 15%),
-    linear-gradient(160deg, #f5f3ff 0 34%, #ede9fe 35% 58%, #c4b5fd 59% 100%);
-}
-
-.appHomeTripPhoto.fitness {
-  background:
-    radial-gradient(circle at 68% 26%, #bbf7d0 0 14%, transparent 15%),
-    linear-gradient(160deg, #ecfdf5 0 34%, #dcfce7 35% 58%, #86efac 59% 100%);
-}
-
-.appHomeTripCopy {
-  min-width: 0;
-  display: grid;
-  gap: 10px;
-}
-
-.appHomeTripCopy > strong {
-  min-width: 0;
-  color: #111827;
-  font-size: 1.58rem;
-  line-height: 1.18;
-  font-weight: 950;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.appHomeTripCopy p {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0;
-  color: #64748b;
-  font-weight: 850;
-}
-
-.appHomeTripCopy em {
-  min-width: 54px;
-  min-height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: #10b981;
-  color: #ffffff;
-  font-style: normal;
-  font-size: 0.9rem;
-  font-weight: 950;
-}
-
-.appHomeTripCopy span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.appHomeTripProgress {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 44px;
-  align-items: center;
-  gap: 10px;
-}
-
-.appHomeTripProgress::before {
-  content: "";
-  grid-column: 1;
-  grid-row: 1;
-  height: 8px;
-  border-radius: 999px;
-  background: #dbe9ef;
-}
-
-.appHomeTripProgress i {
-  grid-column: 1;
-  grid-row: 1;
-  display: block;
-  height: 8px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #0fb981, #31d9aa);
-}
-
-.appHomeTripProgress b {
-  grid-column: 2;
-  color: #0d9488;
-  font-size: 0.9rem;
-  font-weight: 950;
-}
-
-.appHomeTripContinue {
-  min-width: 146px;
-  min-height: 60px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 0 18px;
-  border: 1px solid rgba(16, 185, 129, 0.56);
-  border-radius: 8px;
-  background: #f3fffb;
-  color: #0f8f68;
-  font: inherit;
-  font-size: 0.96rem;
-  font-weight: 950;
-  cursor: pointer;
-}
-
-.appHomeTripContinue .memoNavIcon {
-  width: 19px;
-  height: 19px;
-}
-
-.appHomeScheduleList {
-  overflow: hidden;
-  border: 1px solid #e2eaf3;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.76);
-}
-
-.appHomeScheduleRow {
-  min-width: 0;
-  min-height: 52px;
-  display: grid;
-  grid-template-columns: 104px minmax(0, 1fr) auto 18px;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 0 14px;
-  border: 0;
-  border-bottom: 1px solid #e8eef6;
-  background: transparent;
-  color: #10203b;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.appHomeScheduleRow:last-child {
-  border-bottom: 0;
-}
-
-.appHomeScheduleRow time {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  color: #64748b;
-  font-size: 0.96rem;
-  font-weight: 850;
-}
-
-.appHomeScheduleRow time::after {
-  content: "";
-  display: block;
-  justify-self: center;
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: #10b981;
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
-}
-
-.appHomeScheduleRow strong {
-  min-width: 0;
-  color: #17243f;
-  font-size: 0.98rem;
-  font-weight: 850;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.appHomeScheduleRow > span {
-  min-width: 70px;
-  min-height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 10px;
-  border-radius: 8px;
-  background: #edf5ff;
-  color: #2563eb;
   font-size: 0.76rem;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.appHomeScheduleRow.green > span {
-  background: #fff7e8;
-  color: #c26a09;
-}
-
-.appHomeScheduleRow.violet > span {
-  background: #f2ecff;
-  color: #7c3aed;
-}
-
-.appHomeScheduleRow > .memoNavIcon {
-  width: 18px;
-  height: 18px;
-  color: #8a99ad;
-}
-
-.appHomeScheduleRow.done strong {
-  color: #8c99ad;
-  text-decoration: line-through;
-}
-
-.appHomeScheduleRow.empty strong {
-  color: #2563eb;
-}
-
-.appHomeScheduleRow.place {
-  grid-template-columns: 46px minmax(0, 1fr) auto minmax(118px, 0.72fr) 18px;
-}
-
-.appHomeScheduleRow.place time {
-  width: 34px;
-  height: 34px;
-  justify-content: center;
-  border-radius: 999px;
-  background: #ecfdf5;
-  color: #0f8f68;
-  font-weight: 950;
-}
-
-.appHomeScheduleRow.place time::after {
-  display: none;
-}
-
-.appHomeScheduleRow.place small {
-  min-width: 0;
-  color: #64748b;
-  font-size: 0.76rem;
-  font-weight: 800;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.appHomeQuickSection {
-  margin-top: 20px;
-}
-
-.appHomeQuickSection h2 {
-  margin: 0 0 12px 4px;
-  color: #111827;
-  font-size: 1rem;
-  font-weight: 950;
-}
-
-.appHomeFeatureGrid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.appHomeFeatureCard {
-  position: relative;
-  min-width: 0;
-  min-height: 118px;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 10px;
-  padding: 15px 8px;
-  text-align: center;
-  font: inherit;
-  cursor: pointer;
-}
-
-.appHomeFeatureCard.memo {
-  border-color: rgba(20, 184, 166, 0.28);
-}
-
-.appHomeFeatureCard.schedule {
-  border-color: rgba(59, 130, 246, 0.26);
-}
-
-.appHomeFeatureCard.trip {
-  border-color: rgba(6, 182, 212, 0.28);
-}
-
-.appHomeFeatureCard.search {
-  border-color: rgba(124, 58, 237, 0.22);
-}
-
-.appHomeFeatureCard.todo {
-  border-color: rgba(245, 158, 11, 0.24);
-}
-
-.appHomeFeatureCard.ai {
-  border-color: rgba(20, 184, 166, 0.32);
-  background:
-    radial-gradient(circle at 80% 0%, rgba(20, 184, 166, 0.12), transparent 34%),
-    rgba(255, 255, 255, 0.92);
-}
-
-.appHomeFeatureTitle {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  color: #14b8a6;
-}
-
-.appHomeFeatureCard.schedule .appHomeFeatureTitle {
-  color: #3169ff;
-}
-
-.appHomeFeatureCard.trip .appHomeFeatureTitle {
-  color: #0fba98;
-}
-
-.appHomeFeatureCard.search .appHomeFeatureTitle {
-  color: #7c3aed;
-}
-
-.appHomeFeatureCard.todo .appHomeFeatureTitle {
-  color: #d97706;
-}
-
-.appHomeFeatureCard.ai .appHomeFeatureTitle {
-  color: #0f8f68;
-}
-
-.appHomeFeatureTitle .memoNavIcon {
-  width: 31px;
-  height: 31px;
-}
-
-.appHomeFeatureTitle strong {
-  min-height: 1.2em;
-  color: #111827;
-  font-size: 0.96rem;
-  line-height: 1.12;
-  font-weight: 950;
-  word-break: keep-all;
-}
-
-.appHomeFeatureCard p {
-  max-width: 96px;
-  margin: 0;
-  color: #64748b;
-  font-size: 0.76rem;
-  line-height: 1.35;
-  font-weight: 780;
-  word-break: keep-all;
-}
-
-.appHomeInsightGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 22px;
-}
-
-.appHomeMemoPanel,
-.appHomeAiPanel {
-  min-width: 0;
-  min-height: 220px;
-  padding: 18px;
-}
-
-.appHomeMemoPanel header,
-.appHomeAiPanel header,
-.appHomePrepPanel header {
-  min-height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.appHomeMemoPanel header span,
-.appHomeAiPanel header span,
-.appHomePrepPanel header span {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #111827;
-  font-size: 1rem;
-  font-weight: 950;
-}
-
-.appHomeMemoPanel header .memoNavIcon,
-.appHomeAiPanel header .memoNavIcon,
-.appHomePrepPanel header .memoNavIcon {
-  width: 22px;
-  height: 22px;
-  color: #10b981;
-}
-
-.appHomeMemoPanel header button,
-.appHomePrepPanel header button {
-  border: 0;
-  background: transparent;
-  color: #64748b;
-  font: inherit;
-  font-size: 0.78rem;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.appHomeMemoRow {
-  position: relative;
-  width: 100%;
-  min-height: 58px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 42px;
-  gap: 4px 10px;
-  padding: 10px 0;
-  border: 0;
-  border-bottom: 1px solid #eef2f7;
-  background: transparent;
-  color: #111827;
-  text-align: left;
-  font: inherit;
-  cursor: pointer;
-}
-
-.appHomeMemoRow strong {
-  min-width: 0;
-  font-size: 0.9rem;
-  font-weight: 900;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.appHomeMemoRow span {
-  min-width: 0;
-  color: #64748b;
-  font-size: 0.78rem;
-  font-weight: 760;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.appHomeMemoRow small {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: center;
-  justify-self: end;
-  color: #94a3b8;
-  font-size: 0.75rem;
   font-weight: 850;
-}
-
-.appHomeMemoCreate {
-  width: 100%;
-  min-height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: #fbfdff;
-  color: #475569;
-  font: inherit;
-  font-size: 0.88rem;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.appHomeMemoCreate .memoNavIcon {
-  width: 18px;
-  height: 18px;
-}
-
-.appHomeAiPanel {
-  position: relative;
-  overflow: hidden;
-  border-color: rgba(124, 58, 237, 0.16);
-  background:
-    radial-gradient(circle at 100% 100%, rgba(45, 212, 191, 0.22), transparent 30%),
-    rgba(255, 255, 255, 0.92);
-}
-
-.appHomeAiPanel header small {
-  min-height: 26px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #ede9fe;
-  color: #7c3aed;
-  font-size: 0.76rem;
-  font-weight: 950;
-}
-
-.appHomeAiPanel > strong {
-  position: relative;
-  z-index: 1;
-  display: block;
-  max-width: 250px;
-  color: #0f9f78;
-  font-size: 1.05rem;
-  line-height: 1.45;
-  font-weight: 950;
-  word-break: keep-all;
-}
-
-.appHomeAiPanel p {
-  position: relative;
-  z-index: 1;
-  max-width: 260px;
-  margin: 12px 0 18px;
-  color: #64748b;
-  font-size: 0.88rem;
-  line-height: 1.55;
-  font-weight: 780;
-  word-break: keep-all;
-}
-
-.appHomeAiPanel button {
-  position: relative;
-  z-index: 1;
-  min-height: 44px;
-  padding: 0 18px;
-  border: 1px solid rgba(20, 184, 166, 0.42);
-  border-radius: 8px;
-  background: #effff9;
-  color: #0f8f68;
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 950;
-  cursor: pointer;
-}
-
-.appHomeAiMap {
-  position: absolute;
-  right: -20px;
-  bottom: -28px;
-  width: 152px;
-  height: 142px;
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, transparent 0 43%, rgba(14, 165, 233, 0.16) 44% 100%),
-    radial-gradient(circle at 34% 46%, rgba(16, 185, 129, 0.22), transparent 16%),
-    linear-gradient(135deg, rgba(240, 253, 250, 0.92), rgba(219, 234, 254, 0.9));
-  transform: rotate(-8deg);
-}
-
-.appHomeAiMap::before {
-  content: "";
-  position: absolute;
-  left: 35px;
-  top: 35px;
-  width: 70px;
-  height: 74px;
-  border: 2px dashed rgba(20, 184, 166, 0.55);
-  border-top-color: transparent;
-  border-left-color: transparent;
-  border-radius: 48%;
-}
-
-.appHomeAiMap i,
-.appHomeAiMap b {
-  position: absolute;
-  width: 22px;
-  height: 30px;
-  border-radius: 999px 999px 999px 0;
-  background: #10b981;
-  transform: rotate(-45deg);
-}
-
-.appHomeAiMap i {
-  left: 42px;
-  top: 38px;
-}
-
-.appHomeAiMap b {
-  right: 42px;
-  bottom: 42px;
-}
-
-.appHomePrepPanel {
-  margin-top: 22px;
-  padding: 18px;
-}
-
-.appHomePrepGrid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  overflow: hidden;
-  border: 1px solid #eef2f7;
-  border-radius: 8px;
-}
-
-.appHomePrepGrid button {
-  min-width: 0;
-  min-height: 86px;
-  display: grid;
-  align-content: center;
-  gap: 8px;
-  padding: 14px;
-  border: 0;
-  border-right: 1px solid #eef2f7;
-  background: #ffffff;
-  color: #475569;
-  text-align: left;
-  font: inherit;
-  cursor: pointer;
-}
-
-.appHomePrepGrid button:last-child {
-  border-right: 0;
-}
-
-.appHomePrepGrid strong {
-  color: #111827;
-  font-size: 0.86rem;
-  font-weight: 950;
-}
-
-.appHomePrepGrid span {
-  color: #64748b;
-  font-size: 0.78rem;
-  font-weight: 850;
-}
-
-.appHomePrepGrid i {
-  width: 100%;
-  height: 7px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #e5edf2;
-}
-
-.appHomePrepGrid b {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #0fb981, #31d9aa);
-}
-
-.referenceHome .mobileWorkspaceTabs {
-  position: sticky;
-  right: auto;
-  bottom: 0;
-  left: auto;
-  z-index: 5;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  width: calc(100% + 56px);
-  min-height: 96px;
-  margin: 28px -28px 0;
-  padding: 14px 54px calc(14px + env(safe-area-inset-bottom));
-  border: 0;
-  border-top: 1px solid rgba(222, 232, 245, 0.78);
-  border-radius: 0;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: none;
-  backdrop-filter: blur(18px);
-}
-
-.referenceHome .mobileWorkspaceTabButton {
-  min-width: 0;
-  min-height: 64px;
-  display: grid;
-  place-items: center;
-  gap: 4px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: #64748b;
-  padding: 4px;
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 850;
-  cursor: pointer;
-}
-
-.referenceHome .mobileWorkspaceTabButton .memoNavIcon {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  color: currentColor;
-  background: transparent;
-}
-
-.referenceHome .mobileWorkspaceTabButton.active {
-  color: #10b981;
-}
-
-.referenceHome .mobileWorkspaceTabButton.active::after {
-  content: "";
-  width: 50px;
-  height: 4px;
-  border-radius: 99px;
-  background: currentColor;
-}
-
-.appHomeBellButton:hover,
-.appHomeModeSelector button:hover,
-.appHomeAccountStrip button:hover,
-.appHomeFeatureCard:hover,
-.appHomePanelHeader button:hover,
-.appHomeTripContinue:hover,
-.appHomeScheduleRow:hover,
-.appHomeMemoPanel button:hover,
-.appHomeAiPanel button:hover,
-.appHomePrepGrid button:hover,
-.referenceHome .mobileWorkspaceTabButton:hover {
-  transform: translateY(-1px);
-}
-
-@media (max-width: 720px) {
-  .spaceAppFrame.appHomeDashboard {
-    width: min(100% - 18px, 560px);
-    padding: 30px 22px 0;
-    border-left-width: 8px;
-    border-right-width: 8px;
-  }
-
-  .appHomeTopBrand {
-    grid-template-columns: 52px minmax(0, 1fr);
-    gap: 14px;
-    min-height: 52px;
-    margin-bottom: 24px;
-  }
-
-  .appHomeTopBrand > span {
-    width: 52px;
-    height: 52px;
-  }
-
-  .appHomeTopBrand strong {
-    font-size: 1.32rem;
-  }
-
-  .appHomeBellButton {
-    top: 34px;
-    right: 24px;
-    width: 48px;
-    height: 48px;
-  }
-
-  .appHomeHero {
-    min-height: 206px;
-    grid-template-columns: minmax(0, 1fr) 176px;
-  }
-
-  .appHomeHeroCopy h1 {
-    font-size: 2.08rem;
-  }
-
-  .appHomeHeroCopy p {
-    max-width: 300px;
-    margin-top: 18px;
-    font-size: 0.96rem;
-  }
-
-  .appHomeRobot {
-    width: 176px;
-    height: 164px;
-  }
-
-  .appHomeTripSummary {
-    grid-template-columns: 92px minmax(0, 1fr);
-    gap: 16px;
-  }
-
-  .appHomeTripPhoto {
-    width: 92px;
-  }
-
-  .appHomeTripContinue {
-    grid-column: 2;
-    justify-self: start;
-    min-width: 132px;
-    min-height: 48px;
-  }
-
-  .appHomeFeatureGrid {
-    gap: 12px;
-  }
-
-  .appHomeFeatureCard {
-    min-height: 112px;
-  }
-
-  .appHomeInsightGrid {
-    gap: 14px;
-  }
-
-  .appHomePrepGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .appHomePrepGrid button:nth-child(2) {
-    border-right: 0;
-  }
-
-  .appHomePrepGrid button:nth-child(-n+2) {
-    border-bottom: 1px solid #eef2f7;
-  }
-
-  .referenceHome .mobileWorkspaceTabs {
-    width: calc(100% + 44px);
-    margin-left: -22px;
-    margin-right: -22px;
-    padding-left: 34px;
-    padding-right: 34px;
-  }
-}
-
-@media (max-width: 520px) {
-  .spaceAppFrame.appHomeDashboard {
-    width: 100%;
-    min-height: 100svh;
-    padding: 28px 18px 0;
-    border-left: 0;
-    border-right: 0;
-    border-radius: 0;
-  }
-
-  .appHomeTopBrand {
-    grid-template-columns: 46px minmax(0, 1fr);
-    gap: 12px;
-    min-height: 46px;
-    margin-bottom: 18px;
-  }
-
-  .appHomeTopBrand > span {
-    width: 46px;
-    height: 46px;
-  }
-
-  .appHomeTopBrand .memoNavIcon {
-    width: 27px;
-    height: 27px;
-  }
-
-  .appHomeTopBrand strong {
-    font-size: 1.18rem;
-  }
-
-  .appHomeTopBrand small {
-    font-size: 0.8rem;
-  }
-
-  .appHomeBellButton {
-    top: 28px;
-    right: 18px;
-    width: 46px;
-    height: 46px;
-  }
-
-  .appHomeModeSelector {
-    grid-template-columns: repeat(5, minmax(58px, 1fr));
-    gap: 6px;
-    margin: 0 0 14px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .appHomeModeSelector::-webkit-scrollbar {
-    display: none;
-  }
-
-  .appHomeModeSelector button {
-    min-height: 52px;
-    grid-template-columns: 20px minmax(0, 1fr);
-    padding: 7px 6px;
-  }
-
-  .appHomeModeSelector span {
-    font-size: 0.74rem;
-  }
-
-  .appHomeHero {
-    min-height: 192px;
-    grid-template-columns: minmax(0, 1fr) 126px;
-    margin-bottom: 8px;
-  }
-
-  .appHomeHero::after {
-    right: -10px;
-    width: 230px;
-    height: 128px;
-  }
-
-  .appHomeHeroCopy {
-    padding-top: 18px;
-  }
-
-  .appHomeHeroCopy h1 {
-    font-size: 1.75rem;
-    line-height: 1.32;
-  }
-
-  .appHomeHeroCopy p {
-    max-width: 210px;
-    font-size: 0.86rem;
-    line-height: 1.62;
-  }
-
-  .appHomeRobot {
-    width: 126px;
-    height: 144px;
-  }
-
-  .appHomeAccountStrip {
-    grid-template-columns: minmax(0, 1fr);
-    padding: 10px;
-  }
-
-  .appHomeAccountStrip div {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .appHomePanel {
-    margin-top: 14px;
-    padding: 16px;
-  }
-
-  .appHomePanelHeader {
-    margin-bottom: 14px;
-  }
-
-  .appHomePanelHeader strong {
-    font-size: 1.08rem;
-  }
-
-  .appHomeTripSummary {
-    grid-template-columns: 74px minmax(0, 1fr);
-    gap: 12px;
-    margin-bottom: 14px;
-  }
-
-  .appHomeTripPhoto {
-    width: 74px;
-  }
-
-  .appHomeTripCopy > strong {
-    font-size: 1.18rem;
-  }
-
-  .appHomeTripCopy p {
-    gap: 8px;
-  }
-
-  .appHomeTripCopy em {
-    min-width: 46px;
-    min-height: 28px;
-    font-size: 0.78rem;
-  }
-
-  .appHomeTripProgress {
-    grid-template-columns: minmax(0, 1fr) 38px;
-  }
-
-  .appHomeTripContinue {
-    grid-column: 1 / -1;
-    width: 100%;
-    min-height: 46px;
-  }
-
-  .appHomeScheduleRow {
-    min-height: 50px;
-    grid-template-columns: 72px minmax(0, 1fr) 66px 16px;
-    gap: 8px;
-    padding: 0 10px;
-  }
-
-  .appHomeScheduleRow time {
-    font-size: 0.82rem;
-  }
-
-  .appHomeScheduleRow time::after {
-    width: 8px;
-    height: 8px;
-  }
-
-  .appHomeScheduleRow strong {
-    font-size: 0.84rem;
-  }
-
-  .appHomeScheduleRow > span {
-    min-width: 58px;
-    padding: 0 6px;
-    font-size: 0.68rem;
-  }
-
-  .appHomeScheduleRow.place {
-    min-height: 66px;
-    grid-template-columns: 36px minmax(0, 1fr) 58px 16px;
-    align-items: center;
-    gap: 5px 8px;
-    padding-top: 8px;
-    padding-bottom: 8px;
-  }
-
-  .appHomeScheduleRow.place time {
-    width: 28px;
-    height: 28px;
-    font-size: 0.8rem;
-  }
-
-  .appHomeScheduleRow.place strong {
-    align-self: end;
-  }
-
-  .appHomeScheduleRow.place > span {
-    align-self: end;
-    min-width: 54px;
-  }
-
-  .appHomeScheduleRow.place small {
-    grid-column: 2 / 4;
-    color: #64748b;
-    font-size: 0.68rem;
-  }
-
-  .appHomeScheduleRow.place > .memoNavIcon {
-    grid-column: 4;
-    grid-row: 1 / span 2;
-  }
-
-  .appHomeQuickSection {
-    margin-top: 16px;
-  }
-
-  .appHomeFeatureGrid {
-    gap: 9px;
-  }
-
-  .appHomeFeatureCard {
-    min-height: 104px;
-    padding: 12px 6px;
-  }
-
-  .appHomeFeatureTitle .memoNavIcon {
-    width: 27px;
-    height: 27px;
-  }
-
-  .appHomeFeatureTitle strong {
-    font-size: 0.8rem;
-  }
-
-  .appHomeFeatureCard p {
-    max-width: 72px;
-    font-size: 0.68rem;
-  }
-
-  .appHomeInsightGrid {
-    grid-template-columns: minmax(0, 1fr);
-    margin-top: 18px;
-  }
-
-  .appHomeMemoPanel,
-  .appHomeAiPanel,
-  .appHomePrepPanel {
-    padding: 16px;
-  }
-
-  .appHomeAiPanel {
-    min-height: 200px;
-  }
-
-  .appHomePrepGrid button {
-    min-height: 78px;
-    padding: 12px;
-  }
-
-  .referenceHome .mobileWorkspaceTabs {
-    width: calc(100% + 36px);
-    min-height: 88px;
-    margin-left: -18px;
-    margin-right: -18px;
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-
-  .referenceHome .mobileWorkspaceTabButton {
-    min-height: 58px;
-    font-size: 0.82rem;
-  }
-}
-
-@media (max-width: 380px) {
-  .appHomeHero {
-    grid-template-columns: minmax(0, 1fr) 104px;
-  }
-
-  .appHomeHeroCopy h1 {
-    font-size: 1.5rem;
-  }
-
-  .appHomeRobot {
-    width: 104px;
-  }
-
-  .appHomeFeatureGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .appHomeFeatureCard p {
-    max-width: 100px;
-  }
-}
-
-/* 2026-05-31 23.png V2 personal workspace dashboard pass. */
-.spaceAppFrame.appHomeDashboard {
-  padding-top: 28px;
-}
-
-.appHomeTopBrand {
-  margin-bottom: 16px;
-}
-
-.appHomeModeSelector {
-  margin-bottom: 14px;
-}
-
-.appHomeModeSelector button {
-  min-height: 50px;
-}
-
-.appHomeHero {
-  min-height: 146px;
-  grid-template-columns: minmax(0, 1fr) 158px;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.appHomeHero::after {
-  right: 4px;
-  width: 230px;
-  height: 104px;
-}
-
-.appHomeHeroCopy {
-  align-self: center;
-  padding-top: 0;
-}
-
-.appHomeHeroCopy h1 {
-  font-size: 1.82rem;
-  line-height: 1.24;
-}
-
-.appHomeHeroCopy p {
-  max-width: 320px;
-  margin-top: 8px;
-  font-size: 0.86rem;
-  line-height: 1.5;
-}
-
-.appHomeRobot {
-  width: 158px;
-  height: 124px;
-}
-
-.appHomeRobot img {
-  object-position: 54% 20%;
-  transform: scale(1.14) translateY(6%);
-}
-
-.appHomeTodayPanel {
-  margin-top: 12px;
-  padding: 18px;
-}
-
-.appHomePanelHeader {
-  margin-bottom: 14px;
-}
-
-.appHomeTripSummary {
-  grid-template-columns: 78px minmax(0, 1fr) auto;
-  gap: 14px;
-  margin-bottom: 0;
-}
-
-.appHomeTripPhoto {
-  position: relative;
-  width: 78px;
-  overflow: hidden;
-}
-
-.appHomeTripPhoto.today::before,
-.appHomeTripPhoto.general::before {
-  content: "";
-  position: absolute;
-  inset: 18px 15px 15px;
-  border-radius: 8px;
-  background:
-    linear-gradient(#10b981 0 16px, #ffffff 17px 100%);
-  box-shadow: 0 8px 18px rgba(15, 118, 110, 0.18);
-}
-
-.appHomeTripPhoto.today::after,
-.appHomeTripPhoto.general::after {
-  content: "";
-  position: absolute;
-  left: 31px;
-  top: 43px;
-  width: 18px;
-  height: 10px;
-  border-left: 4px solid #10b981;
-  border-bottom: 4px solid #10b981;
-  transform: rotate(-45deg);
-}
-
-.appHomeTripCopy {
-  gap: 8px;
-}
-
-.appHomeTripCopy > strong {
-  font-size: 1.16rem;
-}
-
-.appHomeTripCopy p {
-  display: block;
-  font-size: 0.84rem;
-  line-height: 1.45;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.appHomeCoreChips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.appHomeCoreChips span {
-  min-width: 0;
-  min-height: 30px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 9px;
-  border: 1px solid #dcefe8;
-  border-radius: 999px;
-  background: #f6fffb;
-  color: #0f766e;
-  font-size: 0.74rem;
-  font-weight: 900;
-}
-
-.appHomeCoreChips .memoNavIcon {
-  width: 14px;
-  height: 14px;
-}
-
-.appHomeCoreChips em {
-  min-width: 0;
-  min-height: 0;
-  padding: 0;
-  background: transparent;
-  color: #64748b;
-  font-style: normal;
-  font-size: inherit;
-  font-weight: 900;
-}
-
-.appHomeCoreChips b {
-  color: #0f766e;
-  font-size: 0.78rem;
-  font-weight: 950;
-}
-
-.appHomeTripContinue {
-  min-width: 132px;
-  min-height: 46px;
-  background: #10b981;
-  color: #ffffff;
-  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.2);
-}
-
-.appHomeAccountStrip {
-  margin-top: 12px;
-  margin-bottom: 18px;
-}
-
-.appHomeFeatureCard.memo {
-  border-color: rgba(16, 185, 129, 0.36);
-  background:
-    radial-gradient(circle at 78% 0%, rgba(16, 185, 129, 0.15), transparent 34%),
-    #f1fff9;
-}
-
-.appHomeMemoRow {
-  grid-template-columns: minmax(0, 1fr);
-  min-height: 54px;
-  gap: 5px;
-  padding: 10px 0;
-}
-
-.appHomeMemoRow strong,
-.appHomeMemoRow span {
-  grid-column: 1;
-}
-
-.appHomeAiPanel > strong {
-  max-width: 280px;
-}
-
-.appHomePrepGrid button {
-  min-height: 72px;
-  gap: 5px;
-  background: #fbfdff;
-}
-
-.appHomePrepGrid strong {
-  color: #64748b;
-  font-size: 0.76rem;
-}
-
-.appHomePrepGrid span {
-  color: #111827;
-  font-size: 1.06rem;
-  font-weight: 950;
-}
-
-@media (max-width: 760px) {
-  .appHomeHero {
-    min-height: 136px;
-    grid-template-columns: minmax(0, 1fr) 126px;
-  }
-
-  .appHomeRobot {
-    width: 126px;
-    height: 112px;
-  }
-
-  .appHomeTripSummary {
-    grid-template-columns: 74px minmax(0, 1fr);
-  }
-
-  .appHomeTripPhoto {
-    width: 74px;
-  }
-
-  .appHomeTripContinue {
-    grid-column: 1 / -1;
-    justify-self: stretch;
-    width: 100%;
-  }
-}
-
-@media (max-width: 520px) {
-  .spaceAppFrame.appHomeDashboard {
-    padding-top: 24px;
-  }
-
-  .appHomeTopBrand {
-    margin-bottom: 14px;
-  }
-
-  .appHomeModeSelector {
-    margin-bottom: 12px;
-    padding: 5px;
-  }
-
-  .appHomeModeSelector button {
-    min-height: 46px;
-  }
-
-  .appHomeHero {
-    min-height: 124px;
-    grid-template-columns: minmax(0, 1fr) 106px;
-  }
-
-  .appHomeHero::after {
-    width: 178px;
-    height: 92px;
-  }
-
-  .appHomeHeroCopy h1 {
-    font-size: 1.4rem;
-    line-height: 1.28;
-  }
-
-  .appHomeHeroCopy p {
-    max-width: 205px;
-    margin-top: 6px;
-    font-size: 0.76rem;
-  }
-
-  .appHomeRobot {
-    width: 106px;
-    height: 102px;
-  }
-
-  .appHomeTodayPanel {
-    padding: 16px;
-  }
-
-  .appHomeTripCopy > strong {
-    font-size: 1rem;
-  }
-
-  .appHomeTripCopy p {
-    white-space: normal;
-  }
-
-  .appHomeCoreChips span {
-    min-height: 28px;
-    padding: 0 8px;
-    font-size: 0.7rem;
-  }
-
-  .appHomePrepGrid span {
-    font-size: 0.98rem;
-  }
-}
-
-@media (max-width: 380px) {
-  .appHomeHero {
-    grid-template-columns: minmax(0, 1fr) 86px;
-  }
-
-  .appHomeHeroCopy h1 {
-    font-size: 1.25rem;
-  }
-
-  .appHomeRobot {
-    width: 86px;
-    height: 92px;
-  }
 }
 
 .appHomeInlineAuth {
   grid-column: 1 / -1;
   display: grid;
   gap: 10px;
-  margin-top: 6px;
-  padding: 14px;
-  border: 1px solid rgba(16, 185, 129, 0.22);
+  margin-top: 4px;
+  padding: 12px;
+  border: 1px solid rgba(16, 185, 129, 0.24);
   border-radius: 8px;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.12), transparent 34%),
-    #ffffff;
+  background: #ffffff;
 }
 
 .appHomeInlineAuth header {
@@ -1895,17 +505,6 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-}
-
-.appHomeInlineAuth header .memoNavIcon {
-  width: 20px;
-  height: 20px;
-  color: #10b981;
-}
-
-.appHomeInlineAuth header strong {
-  color: #111827;
-  font-size: 0.98rem;
 }
 
 .appHomeInlineAuth label {
@@ -1950,33 +549,117 @@
   color: #ffffff;
 }
 
-.appHomeInlineAuth > button[type="submit"]:disabled {
-  cursor: wait;
-  opacity: 0.68;
+.appHomeHeaderActions button:hover,
+.appHomeModeSelector button:hover,
+.appHomeActionGrid button:hover,
+.appHomeMemoList button:hover,
+.appHomeCardHeader button:hover,
+.appHomePrimaryCta:hover,
+.appHomeAiSuggestionCard:hover,
+.appHomeAccountStrip button:hover {
+  transform: translateY(-1px);
 }
 
-.appHomeInlineAuth > p {
-  margin: 0;
-  color: #be123c;
-  font-size: 0.76rem;
+.referenceHome .mobileWorkspaceTabs {
+  position: sticky;
+  right: auto;
+  bottom: 0;
+  left: auto;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  width: calc(100% + 36px);
+  min-height: 82px;
+  margin: 18px -18px 0;
+  padding: 10px 18px calc(10px + env(safe-area-inset-bottom));
+  border: 0;
+  border-top: 1px solid rgba(222, 232, 245, 0.9);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: none;
+  backdrop-filter: blur(18px);
+}
+
+.referenceHome .mobileWorkspaceTabButton {
+  min-width: 0;
+  min-height: 58px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  padding: 4px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  font: inherit;
+  font-size: 0.78rem;
+  line-height: 1.1;
   font-weight: 850;
+  letter-spacing: 0;
+  cursor: pointer;
 }
 
-@media (max-width: 520px) {
-  .appHomeFeatureGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+.referenceHome .mobileWorkspaceTabButton .memoNavIcon {
+  width: 23px;
+  height: 23px;
+  min-width: 23px;
+  color: currentColor;
+  background: transparent;
+}
+
+.referenceHome .mobileWorkspaceTabButton.active {
+  color: #10b981;
+  background: #effff9;
+}
+
+@media (min-width: 680px) {
+  .referenceHome {
+    padding: 24px 0;
   }
 
-  .appHomeFeatureCard {
-    min-height: 96px;
-    padding: 12px 10px;
+  .spaceAppFrame.appHomeDashboard {
+    min-height: calc(100svh - 48px);
+    border: 1px solid rgba(214, 228, 238, 0.88);
+    border-radius: 8px;
+    box-shadow: 0 28px 80px rgba(30, 95, 128, 0.15);
+  }
+}
+
+@media (max-width: 380px) {
+  .spaceAppFrame.appHomeDashboard {
+    padding-right: 14px;
+    padding-left: 14px;
   }
 
-  .appHomeFeatureCard p {
-    max-width: 120px;
+  .appHomeTitleGroup h1 {
+    font-size: 1.34rem;
   }
 
-  .appHomeInlineAuth {
-    padding: 12px;
+  .appHomeHeaderActions button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .appHomeTodayStats {
+    gap: 6px;
+  }
+
+  .appHomeTodayStats span {
+    min-height: 64px;
+    padding: 8px;
+  }
+
+  .appHomeFlowPreview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .referenceHome .mobileWorkspaceTabs {
+    width: calc(100% + 28px);
+    margin-right: -14px;
+    margin-left: -14px;
+    padding-right: 14px;
+    padding-left: 14px;
   }
 }

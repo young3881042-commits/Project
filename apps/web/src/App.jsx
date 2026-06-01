@@ -42,9 +42,27 @@ const RECURRENCE_LABELS = {
   weekly: '매주',
   monthly: '매월'
 };
-const SCHEDULER_CATEGORY_OPTIONS = ['업무', '개인', '공부', '여행', '집안일'];
+const SCHEDULER_CATEGORY_OPTIONS = ['개인', '업무'];
 const SCHEDULER_FILTER_OPTIONS = ['전체', ...SCHEDULER_CATEGORY_OPTIONS, '메모', '완료'];
 const SCHEDULER_LEGACY_TYPE_MAP = {
+  personal: '개인',
+  PERSONAL: '개인',
+  general: '개인',
+  GENERAL: '개인',
+  개인: '개인',
+  study: '개인',
+  STUDY: '개인',
+  fitness: '개인',
+  FITNESS: '개인',
+  travel: '개인',
+  TRAVEL: '개인',
+  공부: '개인',
+  여행: '개인',
+  운동: '개인',
+  집안일: '개인',
+  work: '업무',
+  WORK: '업무',
+  업무: '업무',
   작업: '업무',
   회의: '업무',
   검토: '업무',
@@ -54,10 +72,26 @@ const NOTE_SCHEDULE_SOURCES = ['AI Note', '메모', '프로젝트'];
 const DEFAULT_SCHEDULER_ITEMS = [
 ];
 const HOME_PLAN_MODE_KEY = 'ai-assitant-home-plan-mode';
-const HOME_PLAN_MODES = ['general', 'travel', 'work', 'study', 'fitness'];
+const HOME_PLAN_MODES = ['personal', 'work'];
+const HOME_WORKSPACE_ALIASES = {
+  personal: 'personal',
+  PERSONAL: 'personal',
+  general: 'personal',
+  GENERAL: 'personal',
+  개인: 'personal',
+  work: 'work',
+  WORK: 'work',
+  업무: 'work'
+};
 
 function normalizeHomePlanMode(value) {
-  return HOME_PLAN_MODES.includes(value) ? value : 'general';
+  const raw = `${value || ''}`.trim();
+  return HOME_WORKSPACE_ALIASES[raw] || HOME_WORKSPACE_ALIASES[raw.toLowerCase()] || 'personal';
+}
+
+function isHomeWorkspaceValue(value) {
+  const raw = `${value || ''}`.trim();
+  return Boolean(HOME_WORKSPACE_ALIASES[raw] || HOME_WORKSPACE_ALIASES[raw.toLowerCase()]);
 }
 
 function normalizeNoteLabel(value) {
@@ -71,32 +105,26 @@ function normalizeNoteLabels(labels) {
 
 function inferNotePlanType({ block, boardId, title, content }) {
   const labels = normalizeNoteLabels([...(Array.isArray(block?.labels) ? block.labels : []), ...(Array.isArray(block?.tags) ? block.tags : [])]);
-  const explicit = normalizeHomePlanMode(block?.planType || block?.plan_type || labels.find((label) => HOME_PLAN_MODES.includes(label)));
-  if (explicit !== 'general') return explicit;
+  const explicitValue = block?.planType || block?.plan_type || labels.find(isHomeWorkspaceValue);
+  if (explicitValue) return normalizeHomePlanMode(explicitValue);
   const source = [boardId, title, content, labels.join(' ')].join(' ').toLowerCase();
-  if (`${block?.id || ''}`.startsWith('travel-plan-') || source.includes('travel') || source.includes('여행')) return 'travel';
   if (source.includes('work') || source.includes('project') || source.includes('업무') || source.includes('회의') || source.includes('마감')) return 'work';
-  if (source.includes('study') || source.includes('공부') || source.includes('학습') || source.includes('복습') || source.includes('과제')) return 'study';
-  if (source.includes('fitness') || source.includes('workout') || source.includes('운동') || source.includes('루틴')) return 'fitness';
-  return 'general';
+  return 'personal';
 }
 
 function labelsForPlanType(planType) {
   const labels = {
-    general: ['general', '개인'],
-    travel: ['travel', '여행'],
-    work: ['work', '업무'],
-    study: ['study', '공부'],
-    fitness: ['fitness', '운동']
+    personal: ['PERSONAL', '개인'],
+    work: ['WORK', '업무']
   };
-  return labels[normalizeHomePlanMode(planType)] || labels.general;
+  return labels[normalizeHomePlanMode(planType)] || labels.personal;
 }
 
 function readHomePlanMode() {
   try {
     return normalizeHomePlanMode(localStorage.getItem(HOME_PLAN_MODE_KEY));
   } catch {
-    return 'general';
+    return 'personal';
   }
 }
 
@@ -2990,6 +3018,16 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260531-personal-work-home-redesign',
+    content: `# 2026-05-31 개인/업무 워크스페이스 홈 단순화
+
+- [x] /app 홈 상단을 개인 워크스페이스 / AI 일정 도우미와 알림/메뉴 아이콘 구조로 정리
+- [x] 워크스페이스 전환을 개인 / 업무 segmented control 두 개로 축소
+- [x] 첫 화면을 오늘의 흐름, 빠른 실행, 최근 메모, AI 정리 제안 순서로 재배치
+- [x] 업무 탭은 업무 메모, 일정, 할 일 기준 데이터로 바뀌게 보정
+- [x] 하단 탭을 홈, 노트, 일정, 더보기로 단순화`
+  },
+  {
     id: 'admin1-memo-20260531-inline-home-login',
     content: `# 2026-05-31 홈 인라인 로그인과 빠른 실행 겹침 보정
 
@@ -3671,11 +3709,8 @@ function travelPlanPreviewFromBlocks(blocks, todayKey) {
 
 function schedulerItemMatchesPlanMode(item, mode) {
   const type = normalizeSchedulerType(item?.type);
-  if (mode === 'travel') return type === '여행' || item?.source === 'travel-plan' || `${item?.id || ''}`.startsWith('travel-plan-');
   if (mode === 'work') return type === '업무';
-  if (mode === 'study') return type === '공부';
-  if (mode === 'fitness') return type === '운동';
-  return true;
+  return type !== '업무';
 }
 
 function schedulerPreviewItemsForMode(items, mode) {
@@ -3716,7 +3751,7 @@ function memoCountsByModeFromBlocks(blocks) {
   }), {});
 }
 
-function recentMemoItemsFromBlocks(blocks, mode = 'general') {
+function recentMemoItemsFromBlocks(blocks, mode = 'personal') {
   const normalizedMode = normalizeHomePlanMode(mode);
   return blocks
     .filter((block) => memoBlockMatchesPlanMode(block, normalizedMode))
@@ -3786,31 +3821,20 @@ function summarizeAppActivity() {
   const checklistDone = seededChecklist.done;
   const travelPlanBlocks = blocks.filter((block) => `${block.id || ''}`.startsWith('travel-plan-memo-'));
   const modeStats = {
-    general: {
+    personal: {
       total: todayItems.length,
       done: todayDoneItems.length,
       progress: todayItems.length ? Math.round((todayDoneItems.length / todayItems.length) * 100) : 0
     },
-    travel: travelPlanPreview?.totalCount
-      ? { total: travelPlanPreview.totalCount, done: travelPlanPreview.doneCount, progress: travelPlanPreview.progress }
-      : schedulerStatsForMode(schedulerItems, 'travel'),
-    work: schedulerStatsForMode(schedulerItems, 'work'),
-    study: schedulerStatsForMode(schedulerItems, 'study'),
-    fitness: schedulerStatsForMode(schedulerItems, 'fitness')
+    work: schedulerStatsForMode(schedulerItems, 'work')
   };
   const planTypeCounts = {
-    general: todayItems.length + (memoCountsByMode.general || 0),
-    travel: Math.max(travelPlanBlocks.length, travelScheduleItems.length, memoCountsByMode.travel || 0),
-    work: modeStats.work.total + (memoCountsByMode.work || 0),
-    study: modeStats.study.total + (memoCountsByMode.study || 0),
-    fitness: modeStats.fitness.total + (memoCountsByMode.fitness || 0)
+    personal: todayItems.length + (memoCountsByMode.personal || 0),
+    work: modeStats.work.total + (memoCountsByMode.work || 0)
   };
   const modePreviewItems = {
-    general: todayPreviewItems,
-    travel: schedulerPreviewItemsForMode(expandedWeekItems, 'travel'),
-    work: schedulerPreviewItemsForMode(expandedWeekItems, 'work'),
-    study: schedulerPreviewItemsForMode(expandedWeekItems, 'study'),
-    fitness: schedulerPreviewItemsForMode(expandedWeekItems, 'fitness')
+    personal: todayPreviewItems,
+    work: schedulerPreviewItemsForMode(expandedWeekItems, 'work')
   };
   const statusCounts = PROJECT_BOARD_COLUMNS.reduce((counts, column) => ({
     ...counts,
@@ -6090,7 +6114,7 @@ function SchedulerPage({ navigate, embedded = false }) {
     title: '',
     date: toDateKey(new Date()),
     time: '09:00',
-    type: '업무',
+    type: '개인',
     recurrence: 'none',
     recurrenceEnd: '',
     memo: ''

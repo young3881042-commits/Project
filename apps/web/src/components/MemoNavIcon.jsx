@@ -13,6 +13,27 @@ export default function MemoNavIcon({ type }) {
         <path d="M10 19a2.2 2.2 0 0 0 4 0" />
       </>
     ),
+    user: (
+      <>
+        <circle cx="12" cy="8" r="4" />
+        <path d="M5 21a7 7 0 0 1 14 0" />
+      </>
+    ),
+    briefcase: (
+      <>
+        <path d="M9 6V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1" />
+        <path d="M4 7h16v12H4z" />
+        <path d="M4 12h16" />
+        <path d="M10 12v2h4v-2" />
+      </>
+    ),
+    menu: (
+      <>
+        <path d="M5 7h14" />
+        <path d="M5 12h14" />
+        <path d="M5 17h14" />
+      </>
+    ),
     edit: (
       <>
         <path d="M5 19h4l10-10-4-4L5 15z" />
