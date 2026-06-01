@@ -1,5 +1,28 @@
 # 프로젝트 변경 상세 문서
 
+## 43. 2026-06-01 홈 여행 탭 제거와 모바일 D-Day 보정
+
+`/app` 홈은 개인 워크스페이스로 고정하고, 여행 기능은 `/more`에서 선택창으로 열리도록 정리했습니다.
+
+변경 내용:
+
+- `/app` 홈 상단의 `개인 / 여행` 선택 탭을 제거했습니다.
+- 홈 빠른 실행과 최근 메모는 항상 개인 워크스페이스 기준으로 표시합니다.
+- `/more`의 `여행` 카드는 바로 이동하지 않고 기존 여행 선택창을 열어 `여행지 찾기`, `여행 만들기`, `저장 코스`, `여행 메모`를 선택하게 했습니다.
+- 모바일 여행 홈 D-Day 카드에 상단 여백을 추가하고 D-Day 배지를 오른쪽에 고정해 sticky 상단 바와 겹치지 않게 했습니다.
+- 이번 작업 로그를 `admin1` 메모 보드 시드에 추가했습니다.
+
+검증:
+
+- `git diff --check`
+- `npm --prefix apps/web run build`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml ps`
+- `curl -I http://127.0.0.1/app`
+- `curl -I http://127.0.0.1/more`
+- `curl -I http://127.0.0.1/destinations`
+- `curl -I http://127.0.0.1/api/destinations?size=1`
+
 ## 42. 2026-06-01 홈 여행 오버레이와 더보기 확장 카드
 
 `/app` 개인 홈에서 여행 기능이 바로 섞여 보이지 않도록 여행 진입을 전체 오버레이로 분리했습니다.

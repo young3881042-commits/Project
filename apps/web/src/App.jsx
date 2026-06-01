@@ -6,6 +6,7 @@ import ConnectionsApp from './ConnectionsApp.jsx';
 import MemoNavIcon from './components/MemoNavIcon.jsx';
 import MobileWorkspaceTabs from './components/MobileWorkspaceTabs.jsx';
 import AppHome from './components/home/AppHome.jsx';
+import { TravelWorkspaceOverlay } from './components/home/AppHomeSections.jsx';
 import MobileHomeSection from './components/notes/MobileHomeSection.jsx';
 import MemoList from './components/notes/MemoList.jsx';
 import NotesScheduleBar from './components/notes/NotesScheduleBar.jsx';
@@ -71,7 +72,6 @@ const SCHEDULER_LEGACY_TYPE_MAP = {
 const NOTE_SCHEDULE_SOURCES = ['AI Note', '메모', '프로젝트'];
 const DEFAULT_SCHEDULER_ITEMS = [
 ];
-const HOME_PLAN_MODE_KEY = 'ai-assitant-home-plan-mode';
 const HOME_PLAN_MODES = ['personal', 'travel'];
 const HOME_WORKSPACE_ALIASES = {
   personal: 'personal',
@@ -125,14 +125,6 @@ function labelsForPlanType(planType) {
     travel: ['TRAVEL', '여행']
   };
   return labels[normalizeHomePlanMode(planType)] || labels.personal;
-}
-
-function readHomePlanMode() {
-  try {
-    return normalizeHomePlanMode(localStorage.getItem(HOME_PLAN_MODE_KEY));
-  } catch {
-    return 'personal';
-  }
 }
 
 function memoTimestamp() {
@@ -3025,6 +3017,14 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260601-remove-home-travel-tab-more-overlay-dday',
+    content: `# 2026-06-01 홈 여행 탭 제거와 더보기 여행 선택창 보정
+
+- [x] /app 홈 상단의 개인/여행 선택 탭을 제거하고 개인 워크스페이스 화면으로 고정
+- [x] /more 여행 카드가 바로 이동하지 않고 기존 여행 선택창을 열게 변경
+- [x] 모바일 여행 홈 D-Day 카드가 상단 바와 겹치지 않도록 여백과 배지 배치 보정`
+  },
+  {
     id: 'admin1-memo-20260601-home-travel-overlay-more-features',
     content: `# 2026-06-01 홈 여행 오버레이와 더보기 기능 카드 정리
 
@@ -4133,7 +4133,6 @@ function PortfolioHomePage({ navigate }) {
 function SpaceHomePage({ navigate }) {
   const [appOverview, setAppOverview] = useState(() => summarizeAppActivity() || EMPTY_APP_OVERVIEW);
   const [session, setSession] = useState(readStoredAuth);
-  const [planMode, setPlanMode] = useState('personal');
   const [guestStarting, setGuestStarting] = useState(false);
   const [accountError, setAccountError] = useState('');
   const [inlineAuthOpen, setInlineAuthOpen] = useState(false);
@@ -4251,20 +4250,6 @@ function SpaceHomePage({ navigate }) {
     }
   };
 
-  const changePlanMode = (mode) => {
-    const nextMode = normalizeHomePlanMode(mode);
-    if (nextMode === 'travel') {
-      navigate('/destinations');
-      return;
-    }
-    setPlanMode(nextMode);
-    try {
-      localStorage.setItem(HOME_PLAN_MODE_KEY, nextMode);
-    } catch {
-      // Local storage is a convenience for the home view; the selected mode can still update in memory.
-    }
-  };
-
   const toggleHomeSchedule = (item, done) => {
     if (!item?.sourceId && !item?.id) return;
     const schedulerKey = schedulerStorageKey(session);
@@ -4321,23 +4306,21 @@ function SpaceHomePage({ navigate }) {
       isMemberSession={isMemberSession}
       navigate={navigate}
       onStartGuest={startGuest}
-      onPlanModeChange={changePlanMode}
       onScheduleToggle={toggleHomeSchedule}
-      planMode={planMode}
       session={session}
     />
   );
 }
 
 function MorePage({ navigate }) {
+  const [travelOverlayOpen, setTravelOverlayOpen] = useState(false);
   const extraFeatures = [
     {
       key: 'travel',
       title: '여행',
       description: '여행 코스와 D-Day를 관리해요.',
       icon: 'trip',
-      path: '/destinations',
-      status: '사용 가능'
+      status: '열기'
     },
     {
       key: 'budget',
@@ -4366,6 +4349,34 @@ function MorePage({ navigate }) {
     document.title = '더보기';
   }, []);
 
+  useEffect(() => {
+    if (!travelOverlayOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setTravelOverlayOpen(false);
+      }
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [travelOverlayOpen]);
+
+  const openFeature = (feature) => {
+    if (feature.key === 'travel') {
+      setTravelOverlayOpen(true);
+    }
+  };
+
+  const navigateTravel = (path) => {
+    setTravelOverlayOpen(false);
+    navigate(path);
+  };
+
   return (
     <main className="spaceHome referenceHome">
       <section className="spaceAppFrame appHomeDashboard morePageDashboard" aria-label="더보기">
@@ -4382,9 +4393,9 @@ function MorePage({ navigate }) {
               <button
                 type="button"
                 key={feature.key}
-                className={feature.path ? '' : 'pending'}
-                aria-disabled={!feature.path}
-                onClick={() => (feature.path ? navigate(feature.path) : undefined)}
+                className={feature.key === 'travel' ? '' : 'pending'}
+                aria-disabled={feature.key !== 'travel'}
+                onClick={() => openFeature(feature)}
               >
                 <span>
                   <MemoNavIcon type={feature.icon} />
@@ -4397,6 +4408,12 @@ function MorePage({ navigate }) {
           </div>
         </section>
 
+        {travelOverlayOpen ? (
+          <TravelWorkspaceOverlay
+            navigate={navigateTravel}
+            onClose={() => setTravelOverlayOpen(false)}
+          />
+        ) : null}
         <MobileWorkspaceTabs active="more" navigate={navigate} />
       </section>
     </main>

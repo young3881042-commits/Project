@@ -1,13 +1,10 @@
-import { useEffect, useState } from 'react';
 import MobileWorkspaceTabs from '../MobileWorkspaceTabs.jsx';
 import {
   HomeAccountStrip,
-  HomeModeSelector,
   HomeRobotHero,
   QuickActionCard,
   RecentMemoCard,
-  TodayFlowCard,
-  TravelWorkspaceOverlay
+  TodayFlowCard
 } from './AppHomeSections.jsx';
 
 export default function AppHome({
@@ -19,35 +16,10 @@ export default function AppHome({
   isMemberSession,
   navigate,
   onStartGuest,
-  onPlanModeChange,
   onScheduleToggle,
-  planMode = 'personal',
   session
 }) {
   const showAccountPanel = Boolean(accountError || inlineAuth?.open);
-  const [travelOverlayOpen, setTravelOverlayOpen] = useState(false);
-
-  useEffect(() => {
-    if (!travelOverlayOpen) return undefined;
-    const previousOverflow = document.body.style.overflow;
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        setTravelOverlayOpen(false);
-      }
-    };
-
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [travelOverlayOpen]);
-
-  const navigateTravel = (path) => {
-    setTravelOverlayOpen(false);
-    navigate(path);
-  };
 
   return (
     <main className={`spaceHome referenceHome${isMemberSession ? ' memberSession' : ''}`}>
@@ -68,16 +40,6 @@ export default function AppHome({
           </div>
         </header>
 
-        <HomeModeSelector
-          activeMode="personal"
-          onSelect={(mode) => (mode === 'travel' ? setTravelOverlayOpen(true) : onPlanModeChange?.('personal'))}
-        />
-        {travelOverlayOpen ? (
-          <TravelWorkspaceOverlay
-            navigate={navigateTravel}
-            onClose={() => setTravelOverlayOpen(false)}
-          />
-        ) : null}
         <HomeRobotHero appOverview={appOverview} navigate={navigate} planMode="personal" />
 
         {showAccountPanel ? (
@@ -94,8 +56,8 @@ export default function AppHome({
         ) : null}
 
         <TodayFlowCard appOverview={appOverview} navigate={navigate} onScheduleToggle={onScheduleToggle} />
-        <QuickActionCard navigate={navigate} planMode={planMode} />
-        <RecentMemoCard appOverview={appOverview} navigate={navigate} planMode={planMode} />
+        <QuickActionCard navigate={navigate} planMode="personal" />
+        <RecentMemoCard appOverview={appOverview} navigate={navigate} planMode="personal" />
         <MobileWorkspaceTabs active="home" navigate={navigate} />
       </section>
     </main>
