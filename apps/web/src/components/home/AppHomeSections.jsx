@@ -52,6 +52,33 @@ const QUICK_ACTIONS_BY_MODE = {
   ]
 };
 
+const TRAVEL_WORKSPACE_ACTIONS = [
+  {
+    title: '여행지 찾기',
+    description: '지역, 취향, 목적에 맞는 장소를 찾아요.',
+    icon: 'search',
+    path: '/destinations?focus=places'
+  },
+  {
+    title: '여행 만들기',
+    description: '날짜와 인원에 맞춰 여행 코스를 만들어요.',
+    icon: 'trip',
+    path: '/planner'
+  },
+  {
+    title: '저장 코스',
+    description: '만들어둔 여행 일정과 D-Day를 확인해요.',
+    icon: 'calendar',
+    path: '/plans'
+  },
+  {
+    title: '여행 메모',
+    description: '준비물, 후보 장소, 체크리스트를 정리해요.',
+    icon: 'edit',
+    path: '/notes'
+  }
+];
+
 function normalizeWorkspaceMode(mode) {
   return mode === 'travel' ? 'travel' : 'personal';
 }
@@ -181,6 +208,49 @@ export function HomeModeSelector({ activeMode = 'personal', onSelect }) {
         </button>
       ))}
     </section>
+  );
+}
+
+export function TravelWorkspaceOverlay({ navigate, onClose }) {
+  return (
+    <div className="appHomeTravelOverlay" role="presentation" onClick={onClose}>
+      <section
+        className="appHomeTravelSheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label="여행 메뉴"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <header className="appHomeTravelSheetHeader">
+          <span>
+            <MemoNavIcon type="trip" />
+            <strong>여행</strong>
+          </span>
+          <button type="button" onClick={onClose} aria-label="여행 메뉴 닫기">
+            <MemoNavIcon type="close" />
+          </button>
+        </header>
+
+        <div className="appHomeTravelSheetHero">
+          <span>여행 워크스페이스</span>
+          <h2>여행 준비는 따로 열어볼게요</h2>
+          <p>장소 찾기, 코스 만들기, 저장 코스를 여행 화면에서 이어서 관리하세요.</p>
+        </div>
+
+        <div className="appHomeTravelActionList">
+          {TRAVEL_WORKSPACE_ACTIONS.map((action) => (
+            <button type="button" key={action.path} onClick={() => navigate(action.path)}>
+              <span>
+                <MemoNavIcon type={action.icon} />
+              </span>
+              <strong>{action.title}</strong>
+              <small>{action.description}</small>
+              <MemoNavIcon type="chevronRight" />
+            </button>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
 

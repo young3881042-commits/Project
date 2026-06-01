@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import MobileWorkspaceTabs from '../MobileWorkspaceTabs.jsx';
 import {
   HomeAccountStrip,
@@ -5,7 +6,8 @@ import {
   HomeRobotHero,
   QuickActionCard,
   RecentMemoCard,
-  TodayFlowCard
+  TodayFlowCard,
+  TravelWorkspaceOverlay
 } from './AppHomeSections.jsx';
 
 export default function AppHome({
@@ -23,6 +25,29 @@ export default function AppHome({
   session
 }) {
   const showAccountPanel = Boolean(accountError || inlineAuth?.open);
+  const [travelOverlayOpen, setTravelOverlayOpen] = useState(false);
+
+  useEffect(() => {
+    if (!travelOverlayOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setTravelOverlayOpen(false);
+      }
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [travelOverlayOpen]);
+
+  const navigateTravel = (path) => {
+    setTravelOverlayOpen(false);
+    navigate(path);
+  };
 
   return (
     <main className={`spaceHome referenceHome${isMemberSession ? ' memberSession' : ''}`}>
@@ -45,8 +70,14 @@ export default function AppHome({
 
         <HomeModeSelector
           activeMode="personal"
-          onSelect={(mode) => (mode === 'travel' ? navigate('/destinations') : onPlanModeChange?.('personal'))}
+          onSelect={(mode) => (mode === 'travel' ? setTravelOverlayOpen(true) : onPlanModeChange?.('personal'))}
         />
+        {travelOverlayOpen ? (
+          <TravelWorkspaceOverlay
+            navigate={navigateTravel}
+            onClose={() => setTravelOverlayOpen(false)}
+          />
+        ) : null}
         <HomeRobotHero appOverview={appOverview} navigate={navigate} planMode="personal" />
 
         {showAccountPanel ? (

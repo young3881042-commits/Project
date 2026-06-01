@@ -3025,6 +3025,14 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260601-home-travel-overlay-more-features',
+    content: `# 2026-06-01 홈 여행 오버레이와 더보기 기능 카드 정리
+
+- [x] /app 홈의 여행 탭이 바로 여행 화면으로 이동하지 않고 전체 오버레이를 열게 변경
+- [x] 여행 오버레이에서 여행지 찾기, 여행 만들기, 저장 코스, 여행 메모를 분리해 선택하게 정리
+- [x] /more에 가계부, 운동, 스터디 준비 중 카드를 기존 여행 카드와 같은 인터페이스로 추가`
+  },
+  {
     id: 'admin1-memo-20260601-mobile-home-more-travel-nav',
     content: `# 2026-06-01 모바일 홈·더보기·여행 네비게이션 정리
 
@@ -4328,7 +4336,29 @@ function MorePage({ navigate }) {
       title: '여행',
       description: '여행 코스와 D-Day를 관리해요.',
       icon: 'trip',
-      path: '/destinations'
+      path: '/destinations',
+      status: '사용 가능'
+    },
+    {
+      key: 'budget',
+      title: '가계부',
+      description: '지출 기록과 월 예산 관리는 준비 중이에요.',
+      icon: 'chart',
+      status: '준비 중'
+    },
+    {
+      key: 'fitness',
+      title: '운동',
+      description: '운동 루틴과 기록 관리는 준비 중이에요.',
+      icon: 'trophy',
+      status: '준비 중'
+    },
+    {
+      key: 'study',
+      title: '스터디',
+      description: '학습 계획과 복습 관리는 준비 중이에요.',
+      icon: 'board',
+      status: '준비 중'
     }
   ];
 
@@ -4349,12 +4379,19 @@ function MorePage({ navigate }) {
         <section className="appHomeCard moreFeatureCard" aria-label="확장 기능">
           <div className="moreFeatureList">
             {extraFeatures.map((feature) => (
-              <button type="button" key={feature.key} onClick={() => navigate(feature.path)}>
+              <button
+                type="button"
+                key={feature.key}
+                className={feature.path ? '' : 'pending'}
+                aria-disabled={!feature.path}
+                onClick={() => (feature.path ? navigate(feature.path) : undefined)}
+              >
                 <span>
                   <MemoNavIcon type={feature.icon} />
                 </span>
                 <strong>{feature.title}</strong>
                 <small>{feature.description}</small>
+                <em>{feature.status}</em>
               </button>
             ))}
           </div>

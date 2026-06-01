@@ -125,6 +125,193 @@
   box-shadow: 0 10px 22px rgba(16, 185, 129, 0.24);
 }
 
+.appHomeTravelOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: stretch center;
+  padding: max(14px, env(safe-area-inset-top)) 16px max(14px, env(safe-area-inset-bottom));
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(16px);
+  overflow-y: auto;
+}
+
+.appHomeTravelSheet {
+  width: min(100%, 430px);
+  min-height: calc(100svh - 28px);
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(218, 232, 242, 0.96);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(249, 255, 253, 0.98) 0%, rgba(239, 249, 255, 0.98) 100%),
+    #ffffff;
+  box-shadow: 0 30px 90px rgba(15, 23, 42, 0.26);
+}
+
+.appHomeTravelSheetHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.appHomeTravelSheetHeader span {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #10203b;
+  font-size: 1.04rem;
+  line-height: 1.1;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.appHomeTravelSheetHeader .memoNavIcon {
+  width: 23px;
+  height: 23px;
+  color: #0f766e;
+}
+
+.appHomeTravelSheetHeader button {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+}
+
+.appHomeTravelSheetHeader button .memoNavIcon {
+  width: 20px;
+  height: 20px;
+  color: currentColor;
+}
+
+.appHomeTravelSheetHero {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(224, 242, 254, 0.86) 0%, rgba(220, 252, 231, 0.8) 100%),
+    #f8fafc;
+}
+
+.appHomeTravelSheetHero span {
+  width: fit-content;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0369a1;
+  font-size: 0.72rem;
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.appHomeTravelSheetHero h2 {
+  margin: 0;
+  color: #10203b;
+  font-size: 1.3rem;
+  line-height: 1.2;
+  font-weight: 950;
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+
+.appHomeTravelSheetHero p {
+  margin: 0;
+  color: #52647a;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  font-weight: 780;
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+
+.appHomeTravelActionList {
+  display: grid;
+  gap: 10px;
+}
+
+.appHomeTravelActionList button {
+  min-width: 0;
+  min-height: 82px;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 24px;
+  grid-template-areas:
+    "icon title arrow"
+    "icon desc arrow";
+  align-items: center;
+  gap: 4px 12px;
+  padding: 14px;
+  border: 1px solid #dceee8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(15, 118, 110, 0.08);
+}
+
+.appHomeTravelActionList button > span {
+  grid-area: icon;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #dcfce7;
+  color: #0f766e;
+}
+
+.appHomeTravelActionList strong {
+  grid-area: title;
+  min-width: 0;
+  color: #111827;
+  font-size: 0.98rem;
+  line-height: 1.2;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.appHomeTravelActionList small {
+  grid-area: desc;
+  min-width: 0;
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  font-weight: 780;
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+
+.appHomeTravelActionList .memoNavIcon {
+  width: 24px;
+  height: 24px;
+}
+
+.appHomeTravelActionList button > .memoNavIcon {
+  grid-area: arrow;
+  width: 20px;
+  height: 20px;
+  justify-self: end;
+  color: #94a3b8;
+}
+
 .appHomeRobotHero {
   min-width: 0;
   display: grid;
@@ -732,10 +919,10 @@
   width: 100%;
   min-height: 86px;
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-columns: 48px minmax(0, 1fr) auto;
   grid-template-areas:
-    "icon title"
-    "icon desc";
+    "icon title status"
+    "icon desc desc";
   align-items: center;
   gap: 4px 12px;
   padding: 14px;
@@ -746,6 +933,12 @@
   text-align: left;
   font: inherit;
   cursor: pointer;
+}
+
+.moreFeatureList button.pending {
+  background: #ffffff;
+  color: #111827;
+  cursor: default;
 }
 
 .moreFeatureList button > span {
@@ -782,6 +975,29 @@
   line-height: 1.35;
   font-weight: 780;
   letter-spacing: 0;
+}
+
+.moreFeatureList em {
+  grid-area: status;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.68rem;
+  line-height: 1;
+  font-style: normal;
+  font-weight: 950;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.moreFeatureList button.pending em {
+  background: #f1f5f9;
+  color: #64748b;
 }
 
 .appHomeAccountStrip {
@@ -919,12 +1135,19 @@
 .appHomeHeaderActions button:hover,
 .appHomeModeSelector button:hover,
 .appHomeRobotHeroCopy button:hover,
+.appHomeTravelSheetHeader button:hover,
+.appHomeTravelActionList button:hover,
 .appHomeActionGrid button:hover,
 .appHomeMemoList button:hover,
+.moreFeatureList button:hover,
 .appHomeCardHeader button:hover,
 .appHomePrimaryCta:hover,
 .appHomeAccountStrip button:hover {
   transform: translateY(-1px);
+}
+
+.moreFeatureList button.pending:hover {
+  transform: none;
 }
 
 .referenceHome .mobileWorkspaceTabs {

@@ -1,5 +1,28 @@
 # 프로젝트 변경 상세 문서
 
+## 42. 2026-06-01 홈 여행 오버레이와 더보기 확장 카드
+
+`/app` 개인 홈에서 여행 기능이 바로 섞여 보이지 않도록 여행 진입을 전체 오버레이로 분리했습니다.
+
+변경 내용:
+
+- `/app` 홈의 `여행` 탭을 누르면 바로 `/destinations`로 이동하지 않고 전체 오버레이가 열립니다.
+- 여행 오버레이에서 `여행지 찾기`, `여행 만들기`, `저장 코스`, `여행 메모`를 선택할 수 있게 했습니다.
+- `/more` 확장 기능 목록에 `가계부`, `운동`, `스터디`를 추가했습니다.
+- 미구현 기능은 기존 여행 카드와 같은 인터페이스 안에서 `준비 중` 상태로 표시합니다.
+- 이번 작업 로그를 `admin1` 메모 보드 시드에 추가했습니다.
+
+검증:
+
+- `git diff --check`
+- `npm --prefix apps/web run build`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml ps`
+- `curl -I http://127.0.0.1/app`
+- `curl -I http://127.0.0.1/more`
+- `curl -I http://127.0.0.1/destinations`
+- `curl -I http://127.0.0.1/api/destinations?size=1`
+
 ## 41. 2026-06-01 모바일 홈 일정 목록과 여행 D-Day 네비게이션 정리
 
 `/app` 홈을 개인 워크스페이스 기본 화면으로 고정하고, 여행은 `/more`에서 진입하는 부가 기능으로 정리했습니다.
