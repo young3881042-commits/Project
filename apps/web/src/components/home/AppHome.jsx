@@ -1,4 +1,3 @@
-import MemoNavIcon from '../MemoNavIcon.jsx';
 import MobileWorkspaceTabs from '../MobileWorkspaceTabs.jsx';
 import {
   AiSuggestionCard,
@@ -34,15 +33,12 @@ export default function AppHome({
             <p>AI 일정 · 여행 도우미</p>
           </div>
           <div className="appHomeHeaderActions">
-            <button type="button" aria-label="알림" onClick={() => navigate('/scheduler')}>
-              <MemoNavIcon type="bell" />
-            </button>
             <button
               type="button"
-              aria-label="메뉴"
+              className="appHomeLoginButton"
               onClick={() => (isMemberSession ? navigate('/mypage') : inlineAuth?.onOpen?.())}
             >
-              <MemoNavIcon type="menu" />
+              {isMemberSession ? '내 정보' : '로그인'}
             </button>
           </div>
         </header>

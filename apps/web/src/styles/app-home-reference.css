@@ -60,16 +60,23 @@
 }
 
 .appHomeHeaderActions button {
-  width: 44px;
+  min-width: 70px;
   height: 44px;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
   border: 1px solid rgba(196, 213, 226, 0.82);
   border-radius: 8px;
   background: #ffffff;
   color: #1f2937;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 900;
+  letter-spacing: 0;
   box-shadow: 0 10px 24px rgba(15, 118, 110, 0.09);
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .appHomeHeaderActions .memoNavIcon {
@@ -323,7 +330,7 @@
 
 .appHomeTodayStats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 14px;
 }
@@ -770,8 +777,9 @@
   }
 
   .appHomeHeaderActions button {
-    width: 40px;
+    min-width: 64px;
     height: 40px;
+    padding: 0 12px;
   }
 
   .appHomeRobotHero {

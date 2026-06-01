@@ -3025,6 +3025,14 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260601-simple-home-login-schedule-rate',
+    content: `# 2026-06-01 홈 로그인 버튼과 내 일정 단순화
+
+- [x] /app 우측 상단을 로그인 또는 내 정보 버튼 하나만 보이게 정리
+- [x] 내 일정 카드에서 메모/할 일 개수 대신 오늘 일정 달성률과 금주 일정 달성률만 표시
+- [x] 내 일정 카드의 기본 이동을 스케줄러로 맞춤`
+  },
+  {
     id: 'admin1-memo-20260601-personal-travel-robot-home',
     content: `# 2026-06-01 개인/여행 홈과 로봇 비주얼 복구
 

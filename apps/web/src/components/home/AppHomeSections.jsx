@@ -248,59 +248,29 @@ export function HomeAccountStrip({
   );
 }
 
-export function TodayFlowCard({ appOverview, navigate, planMode = 'personal' }) {
-  const data = buildWorkspaceHomeData(appOverview, planMode);
-  const isTravel = data.workspace === 'travel';
-  const ctaLabel = isTravel ? '여행 메모 작성' : '메모 작성';
-  const stats = isTravel
-    ? [
-        { label: '메모', value: `${data.memoCount}개` },
-        { label: '일정', value: `${data.scheduleCount}개` },
-        { label: '코스', value: `${data.planCount}개` }
-      ]
-    : [
-        { label: '메모', value: `${data.memoCount}개` },
-        { label: '일정', value: `${data.scheduleCount}개` },
-        { label: '할 일', value: `${data.todoCount}개` }
-      ];
+export function TodayFlowCard({ appOverview, navigate }) {
+  const stats = [
+    { label: '오늘 일정 달성률', value: `${Number(appOverview.todayProgress || 0)}%` },
+    { label: '금주 일정 달성률', value: `${Number(appOverview.weekProgress || 0)}%` }
+  ];
 
   return (
-    <section className="appHomeCard appHomeFlowCard" aria-label="오늘의 흐름">
+    <section className="appHomeCard appHomeFlowCard" aria-label="내 일정">
       <header className="appHomeCardHeader">
         <span>
           <MemoNavIcon type="chart" />
-          <strong>오늘의 흐름</strong>
+          <strong>내 일정</strong>
         </span>
       </header>
-      <p className="appHomeCardLead">{isTravel ? '여행 메모, 코스, 일정을 한곳에서 정리해요.' : '메모, 일정, 할 일을 한곳에서 정리해요.'}</p>
+      <p className="appHomeCardLead">오늘과 이번 주 일정 달성률만 간단히 확인하세요.</p>
       <div className="appHomeTodayStats" aria-label="한눈에 보는 오늘">
         {stats.map((stat) => (
           <span key={stat.label}><em>{stat.label}</em><strong>{stat.value}</strong></span>
         ))}
       </div>
-      {(data.scheduleRows.length || data.todoRows.length) ? (
-        <div className="appHomeFlowPreview" aria-label={`${data.label} 미리보기`}>
-          {data.scheduleRows.length ? (
-            <div>
-              <b>오늘 일정</b>
-              {data.scheduleRows.map((item) => (
-                <span key={item.id}>{item.time} {item.title}</span>
-              ))}
-            </div>
-          ) : null}
-          {data.todoRows.length ? (
-            <div>
-              <b>할 일</b>
-              {data.todoRows.map((item) => (
-                <span key={item.id}>{item.title}</span>
-              ))}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-      <button type="button" className="appHomePrimaryCta" onClick={() => navigate('/notes')}>
-        <MemoNavIcon type="edit" />
-        {ctaLabel}
+      <button type="button" className="appHomePrimaryCta" onClick={() => navigate('/scheduler')}>
+        <MemoNavIcon type="calendar" />
+        일정 보기
       </button>
     </section>
   );
