@@ -18,6 +18,7 @@ export default function AppHome({
   navigate,
   onStartGuest,
   onPlanModeChange,
+  onScheduleToggle,
   planMode = 'personal',
   session
 }) {
@@ -42,8 +43,11 @@ export default function AppHome({
           </div>
         </header>
 
-        <HomeModeSelector activeMode={planMode} onSelect={onPlanModeChange} />
-        <HomeRobotHero navigate={navigate} planMode={planMode} />
+        <HomeModeSelector
+          activeMode="personal"
+          onSelect={(mode) => (mode === 'travel' ? navigate('/destinations') : onPlanModeChange?.('personal'))}
+        />
+        <HomeRobotHero appOverview={appOverview} navigate={navigate} planMode="personal" />
 
         {showAccountPanel ? (
           <HomeAccountStrip
@@ -58,7 +62,7 @@ export default function AppHome({
           />
         ) : null}
 
-        <TodayFlowCard appOverview={appOverview} navigate={navigate} planMode={planMode} />
+        <TodayFlowCard appOverview={appOverview} navigate={navigate} onScheduleToggle={onScheduleToggle} />
         <QuickActionCard navigate={navigate} planMode={planMode} />
         <RecentMemoCard appOverview={appOverview} navigate={navigate} planMode={planMode} />
         <MobileWorkspaceTabs active="home" navigate={navigate} />

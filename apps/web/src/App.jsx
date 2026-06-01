@@ -3025,6 +3025,16 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260601-mobile-home-more-travel-nav',
+    content: `# 2026-06-01 모바일 홈·더보기·여행 네비게이션 정리
+
+- [x] /app 기본 화면을 개인 워크스페이스로 고정하고 오늘/금주 일정 체크 목록을 우선 노출
+- [x] 일정 체크 상태를 스케줄러 저장소에 반영해 새로고침 후에도 유지
+- [x] /more 확장 기능 진입점을 추가하고 현재 기능은 여행만 노출
+- [x] /destinations 여행 홈 상단에 D-Day 카드를 배치
+- [x] 여행 화면 모바일 하단 네비게이션은 홈/노트/일정/더보기 공용 탭 하나만 보이게 정리`
+  },
+  {
     id: 'admin1-memo-20260601-remove-home-ai-suggestion',
     content: `# 2026-06-01 홈 AI 정리 제안 제거
 
@@ -3770,6 +3780,22 @@ function schedulerPreviewItemsForMode(items, mode) {
     }));
 }
 
+function homeScheduleItemFromExpanded(item, extras = {}) {
+  return {
+    id: item.id,
+    sourceId: item.sourceId || item.id,
+    title: item.title || '제목 없는 일정',
+    time: item.time || '',
+    date: item.date || '',
+    type: normalizeSchedulerType(item.type),
+    memo: item.memo || '',
+    done: Boolean(item.done),
+    recurring: Boolean(item.recurring),
+    recurrenceLabel: item.recurrenceLabel || '',
+    ...extras
+  };
+}
+
 function schedulerStatsForMode(items, mode) {
   const matched = items.filter((item) => schedulerItemMatchesPlanMode(item, mode));
   const done = matched.filter((item) => item.done).length;
@@ -3822,8 +3848,10 @@ function summarizeAppActivity() {
   const session = readStoredAuth();
   const schedulerItems = readCurrentSchedulerItems(session);
   const today = toDateKey(new Date());
-  const nextSevenDays = Array.from({ length: 7 }, (_, index) => toDateKey(addDays(new Date(), index)));
-  const expandedWeekItems = expandSchedulerItemsForDates(schedulerItems, nextSevenDays);
+  const weekDays = buildWeekDays(today);
+  const weekDateKeys = weekDays.map((day) => day.key);
+  const weekDayLabelByDate = weekDays.reduce((labels, day) => ({ ...labels, [day.key]: day.weekday }), {});
+  const expandedWeekItems = expandSchedulerItemsForDates(schedulerItems, weekDateKeys);
   const todayItems = expandedWeekItems.filter((item) => item.date === today);
   const todayPreviewItems = todayItems
     .slice()
@@ -3850,8 +3878,24 @@ function summarizeAppActivity() {
       type: normalizeSchedulerType(item.type),
       done: Boolean(item.done)
     }));
+  const personalTodayScheduleItems = personalTodayItems
+    .slice()
+    .sort((left, right) => `${left.time || '99:99'} ${left.title || ''}`.localeCompare(`${right.time || '99:99'} ${right.title || ''}`))
+    .map((item) => homeScheduleItemFromExpanded(item, {
+      weekday: weekDayLabelByDate[item.date] || '',
+      dateLabel: formatDateLabel(item.date)
+    }));
   const weekDoneItems = expandedWeekItems.filter((item) => item.done);
   const pendingWeekItems = expandedWeekItems.filter((item) => !item.done);
+  const personalWeekItems = expandedWeekItems
+    .filter((item) => schedulerItemMatchesPlanMode(item, 'personal'))
+    .slice()
+    .sort((left, right) => `${left.date || ''} ${left.time || '99:99'} ${left.title || ''}`.localeCompare(`${right.date || ''} ${right.time || '99:99'} ${right.title || ''}`))
+    .map((item) => homeScheduleItemFromExpanded(item, {
+      weekday: weekDayLabelByDate[item.date] || '',
+      dateLabel: formatDateLabel(item.date)
+    }));
+  const personalWeekDoneItems = personalWeekItems.filter((item) => item.done);
   const nextSchedule = pendingWeekItems
     .slice()
     .sort((left, right) => `${left.date} ${left.time}`.localeCompare(`${right.date} ${right.time}`))[0];
@@ -3906,6 +3950,14 @@ function summarizeAppActivity() {
     weekDoneCount: weekDoneItems.length,
     weekProgress: expandedWeekItems.length ? Math.round((weekDoneItems.length / expandedWeekItems.length) * 100) : 0,
     weekPendingCount: pendingWeekItems.length,
+    personalTodayItems: personalTodayScheduleItems,
+    personalTodayCount: personalTodayScheduleItems.length,
+    personalTodayDoneCount: personalTodayDoneItems.length,
+    personalTodayProgress: personalTodayScheduleItems.length ? Math.round((personalTodayDoneItems.length / personalTodayScheduleItems.length) * 100) : 0,
+    personalWeekItems,
+    personalWeekCount: personalWeekItems.length,
+    personalWeekDoneCount: personalWeekDoneItems.length,
+    personalWeekProgress: personalWeekItems.length ? Math.round((personalWeekDoneItems.length / personalWeekItems.length) * 100) : 0,
     nextSchedule,
     travelPlanPreview,
     modeStats,
@@ -3935,6 +3987,14 @@ const EMPTY_APP_OVERVIEW = {
   weekDoneCount: 0,
   weekProgress: 0,
   weekPendingCount: 0,
+  personalTodayItems: [],
+  personalTodayCount: 0,
+  personalTodayDoneCount: 0,
+  personalTodayProgress: 0,
+  personalWeekItems: [],
+  personalWeekCount: 0,
+  personalWeekDoneCount: 0,
+  personalWeekProgress: 0,
   nextSchedule: null,
   travelPlanPreview: null,
   modeStats: {},
@@ -4065,7 +4125,7 @@ function PortfolioHomePage({ navigate }) {
 function SpaceHomePage({ navigate }) {
   const [appOverview, setAppOverview] = useState(() => summarizeAppActivity() || EMPTY_APP_OVERVIEW);
   const [session, setSession] = useState(readStoredAuth);
-  const [planMode, setPlanMode] = useState(readHomePlanMode);
+  const [planMode, setPlanMode] = useState('personal');
   const [guestStarting, setGuestStarting] = useState(false);
   const [accountError, setAccountError] = useState('');
   const [inlineAuthOpen, setInlineAuthOpen] = useState(false);
@@ -4100,9 +4160,6 @@ function SpaceHomePage({ navigate }) {
       ];
       if (!event.key || event.key === AUTH_KEY) {
         setSession(readStoredAuth());
-      }
-      if (!event.key || event.key === HOME_PLAN_MODE_KEY) {
-        setPlanMode(readHomePlanMode());
       }
       if (!event.key || watchedKeys.includes(event.key)) {
         refresh();
@@ -4188,12 +4245,49 @@ function SpaceHomePage({ navigate }) {
 
   const changePlanMode = (mode) => {
     const nextMode = normalizeHomePlanMode(mode);
+    if (nextMode === 'travel') {
+      navigate('/destinations');
+      return;
+    }
     setPlanMode(nextMode);
     try {
       localStorage.setItem(HOME_PLAN_MODE_KEY, nextMode);
     } catch {
       // Local storage is a convenience for the home view; the selected mode can still update in memory.
     }
+  };
+
+  const toggleHomeSchedule = (item, done) => {
+    if (!item?.sourceId && !item?.id) return;
+    const schedulerKey = schedulerStorageKey(session);
+    const sourceId = item.sourceId || item.id;
+    const nextItems = readCurrentSchedulerItems(session).map((source) => {
+      if (source.id !== sourceId) return source;
+      if (item.recurring) {
+        return {
+          ...source,
+          doneOverrides: {
+            ...(source.doneOverrides || {}),
+            [item.date]: Boolean(done)
+          }
+        };
+      }
+      return { ...source, done: Boolean(done) };
+    });
+
+    try {
+      localStorage.setItem(schedulerKey, JSON.stringify(nextItems));
+      if (localStorage.getItem(SCHEDULER_KEY)) {
+        localStorage.removeItem(SCHEDULER_KEY);
+      }
+    } catch {
+      return;
+    }
+
+    window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', {
+      detail: { item: { ...item, done: Boolean(done) }, items: nextItems, storageKey: schedulerKey }
+    }));
+    setAppOverview(summarizeAppActivity() || EMPTY_APP_OVERVIEW);
   };
 
   return (
@@ -4220,9 +4314,55 @@ function SpaceHomePage({ navigate }) {
       navigate={navigate}
       onStartGuest={startGuest}
       onPlanModeChange={changePlanMode}
+      onScheduleToggle={toggleHomeSchedule}
       planMode={planMode}
       session={session}
     />
+  );
+}
+
+function MorePage({ navigate }) {
+  const extraFeatures = [
+    {
+      key: 'travel',
+      title: '여행',
+      description: '여행 코스와 D-Day를 관리해요.',
+      icon: 'trip',
+      path: '/destinations'
+    }
+  ];
+
+  useEffect(() => {
+    document.title = '더보기';
+  }, []);
+
+  return (
+    <main className="spaceHome referenceHome">
+      <section className="spaceAppFrame appHomeDashboard morePageDashboard" aria-label="더보기">
+        <header className="appHomeHeader">
+          <div className="appHomeTitleGroup">
+            <h1>더보기</h1>
+            <p>필요한 기능을 선택하세요.</p>
+          </div>
+        </header>
+
+        <section className="appHomeCard moreFeatureCard" aria-label="확장 기능">
+          <div className="moreFeatureList">
+            {extraFeatures.map((feature) => (
+              <button type="button" key={feature.key} onClick={() => navigate(feature.path)}>
+                <span>
+                  <MemoNavIcon type={feature.icon} />
+                </span>
+                <strong>{feature.title}</strong>
+                <small>{feature.description}</small>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <MobileWorkspaceTabs active="more" navigate={navigate} />
+      </section>
+    </main>
   );
 }
 
@@ -6655,6 +6795,10 @@ export default function App() {
 
   if (routePath === '/portfolio' || routePath.startsWith('/portfolio/')) {
     return <PortfolioHomePage navigate={navigate} />;
+  }
+
+  if (routePath === '/more' || routePath.startsWith('/more/')) {
+    return <MorePage navigate={navigate} />;
   }
 
   if (routePath === '/login') {

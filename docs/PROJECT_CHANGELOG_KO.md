@@ -1,5 +1,30 @@
 # 프로젝트 변경 상세 문서
 
+## 41. 2026-06-01 모바일 홈 일정 목록과 여행 D-Day 네비게이션 정리
+
+`/app` 홈을 개인 워크스페이스 기본 화면으로 고정하고, 여행은 `/more`에서 진입하는 부가 기능으로 정리했습니다.
+
+변경 내용:
+
+- `/app` 홈의 `개인 / 여행` 선택기에서 개인은 기본 상태로 유지하고, 여행 선택은 `/destinations` 여행 홈으로 이동하게 했습니다.
+- 개인 홈의 기존 퍼센트 중심 `내 일정` 카드 대신 `오늘 일정`, `금주 일정` 체크 목록을 노출했습니다.
+- 홈 일정 체크 상태는 기존 스케줄러 localStorage에 반영해 새로고침 후에도 유지되게 했습니다.
+- `/more` 라우트를 추가하고 현재 기능 목록은 `여행` 하나만 렌더링합니다.
+- `/destinations` 여행 화면 상단에 저장 여행 코스 기준 D-Day 카드를 추가했습니다.
+- 모바일 여행 화면에서 내부 여행 하단 탭을 숨기고 공통 하단 탭 `홈 / 노트 / 일정 / 더보기` 하나만 보이게 했습니다.
+- 이번 작업 로그를 `admin1` 메모 보드 시드에 추가했습니다.
+
+검증:
+
+- `npm --prefix apps/web run build`
+- `git diff --check`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml ps`
+- `curl -I http://127.0.0.1/app`
+- `curl -I http://127.0.0.1/more`
+- `curl -I http://127.0.0.1/destinations`
+- `curl -I http://127.0.0.1/api/destinations?size=1`
+
 ## 40. 2026-06-01 홈 AI 정리 제안 제거
 
 `/app` 메인 화면에서 별도 `AI 정리 제안` 카드를 제거했습니다.

@@ -35,7 +35,7 @@ export default function MobileWorkspaceTabs({ active = 'notes', navigate, onNote
       <button
         type="button"
         className={`mobileWorkspaceTabButton ${active === 'more' || active === 'plan' ? 'active' : ''}`}
-        onClick={() => navigate('/plans')}
+        onClick={() => navigate('/more')}
       >
         <MemoNavIcon type="menu" />
         <span>더보기</span>

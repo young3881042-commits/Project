@@ -1507,6 +1507,70 @@ function formatDaysLabel(value) {
   return Number.isFinite(days) && days > 0 ? `${days}일` : '일정 미정';
 }
 
+function parseDateOnly(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(`${value || ''}`.slice(0, 10));
+  if (!match) return null;
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+function formatDateCompact(value) {
+  const raw = `${value || ''}`.slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw.replace(/-/g, '.') : '날짜 미정';
+}
+
+function dateDiffInDays(fromDate, toDate) {
+  const from = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+  const to = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
+  return Math.round((to.getTime() - from.getTime()) / 86400000);
+}
+
+function travelDdayInfo(plan) {
+  const startDate = parseDateOnly(plan?.startDate);
+  if (!startDate) {
+    return {
+      label: 'D-Day',
+      status: '날짜를 정해주세요',
+      range: '날짜 미정',
+      duration: formatDaysLabel(plan?.days)
+    };
+  }
+
+  const today = new Date();
+  const daysUntil = dateDiffInDays(today, startDate);
+  const days = Number(plan?.days);
+  const duration = Number.isFinite(days) && days > 0
+    ? days === 1 ? '당일치기' : `${days - 1}박 ${days}일`
+    : '일정 미정';
+  const endDate = Number.isFinite(days) && days > 0
+    ? dateKeyWithOffset(plan.startDate, days - 1)
+    : '';
+
+  return {
+    label: daysUntil > 0 ? `D-${daysUntil}` : daysUntil === 0 ? 'D-Day' : `D+${Math.abs(daysUntil)}`,
+    status: daysUntil > 0 ? '다가오는 여행' : daysUntil === 0 ? '오늘 출발' : '완료된 여행',
+    range: [formatDateCompact(plan.startDate), endDate ? formatDateCompact(endDate) : ''].filter(Boolean).join(' - '),
+    duration
+  };
+}
+
+function selectDdayPlan(plans = []) {
+  const today = new Date();
+  const datedPlans = plans
+    .map((plan, index) => ({ plan, index, startDate: parseDateOnly(plan.startDate) }))
+    .filter((item) => item.startDate);
+  if (!datedPlans.length) return plans[0] || null;
+
+  return datedPlans.sort((left, right) => {
+    const leftDiff = dateDiffInDays(today, left.startDate);
+    const rightDiff = dateDiffInDays(today, right.startDate);
+    const leftPast = leftDiff < 0 ? 1 : 0;
+    const rightPast = rightDiff < 0 ? 1 : 0;
+    if (leftPast !== rightPast) return leftPast - rightPast;
+    if (leftPast) return rightDiff - leftDiff;
+    return leftDiff - rightDiff;
+  })[0].plan;
+}
+
 function formatPlanStatus(status) {
   const value = pickString(status);
   if (!value) return '준비 완료';
@@ -1901,6 +1965,102 @@ function EmptyState({ title, description, action }) {
   );
 }
 
+function TravelQuickIcon({ type }) {
+  const paths = {
+    search: (
+      <>
+        <circle cx="11" cy="11" r="7"></circle>
+        <path d="m20 20-3.5-3.5"></path>
+      </>
+    ),
+    route: (
+      <>
+        <circle cx="6" cy="18" r="2.4"></circle>
+        <circle cx="18" cy="6" r="2.4"></circle>
+        <path d="M8.4 18H12a4 4 0 0 0 0-8h-.4a4 4 0 0 1 0-8H15"></path>
+      </>
+    ),
+    calendar: (
+      <>
+        <path d="M5 5h14v15H5z"></path>
+        <path d="M8 3v4M16 3v4M5 10h14"></path>
+      </>
+    ),
+    memo: (
+      <>
+        <path d="M5 4h14v16H5z"></path>
+        <path d="M9 8h6M9 12h6M9 16h4"></path>
+      </>
+    )
+  };
+
+  return (
+    <span className="ltTravelQuickIcon" aria-hidden="true">
+      <Icon size={20}>{paths[type] || paths.route}</Icon>
+    </span>
+  );
+}
+
+function TravelDdayCard({ loading, plan, navigate }) {
+  if (loading) {
+    return (
+      <section className="ltTravelDdayCard loading" aria-label="여행 D-Day">
+        <div>
+          <span>여행 코스</span>
+          <h1>여행 정보를 확인 중입니다</h1>
+          <p>저장한 여행 코스를 불러오고 있어요.</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (!plan) {
+    return (
+      <section className="ltTravelDdayCard empty" aria-label="여행 D-Day">
+        <div>
+          <span>여행 코스</span>
+          <h1>다가오는 여행이 없어요.</h1>
+          <p>새 여행을 만들어보세요.</p>
+          <button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>여행 만들기</button>
+        </div>
+      </section>
+    );
+  }
+
+  const dday = travelDdayInfo(plan);
+  return (
+    <section className="ltTravelDdayCard" aria-label="여행 D-Day">
+      <div>
+        <span>{dday.status}</span>
+        <h1>{plan.title || plan.destinationName || '여행 코스'}</h1>
+        <p>{dday.range}</p>
+        <small>{dday.duration}</small>
+      </div>
+      <strong>{dday.label}</strong>
+    </section>
+  );
+}
+
+function TravelQuickActions({ navigate }) {
+  const actions = [
+    { title: '장소 찾기', icon: 'search', path: '/destinations?focus=places' },
+    { title: '코스 만들기', icon: 'route', path: '/planner' },
+    { title: '내 일정', icon: 'calendar', path: '/plans' },
+    { title: '여행 메모', icon: 'memo', path: '/notes' }
+  ];
+
+  return (
+    <section className="ltTravelQuickActions" aria-label="여행 빠른 실행">
+      {actions.map((action) => (
+        <button type="button" key={action.title} onClick={() => navigate(action.path)}>
+          <TravelQuickIcon type={action.icon} />
+          <span>{action.title}</span>
+        </button>
+      ))}
+    </section>
+  );
+}
+
 function StatCard({ label, value, hint }) {
   return (
     <div className="ltFactItem">
@@ -2048,7 +2208,7 @@ function LocalTripNav({ path, navigate }) {
           <div className="ltServiceSwitchLinks">
             <a className={path.startsWith('/scheduler') ? 'active' : ''} href="/scheduler" onClick={(event) => routeClick(event, '/scheduler', navigate)}>내 일정</a>
             <a className={path.startsWith('/notes') ? 'active' : ''} href="/notes" onClick={(event) => routeClick(event, '/notes', navigate)}>메모</a>
-            <a className={path.startsWith('/destinations') || path.startsWith('/planner') || path.startsWith('/plans') ? 'active' : ''} href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)}>장소 찾기</a>
+            <a className={path.startsWith('/destinations') || path.startsWith('/travel') || path.startsWith('/planner') || path.startsWith('/plans') ? 'active' : ''} href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)}>장소 찾기</a>
             <a className={path.startsWith('/connect') || path.startsWith('/connections') ? 'active' : ''} href="/connect" onClick={(event) => routeClick(event, '/connect', navigate)}>연결</a>
           </div>
         </div>
@@ -2432,11 +2592,13 @@ function HomePage({ navigate }) {
 
 function DestinationsPage({ path, navigate }) {
   const { destinations, loading, error, usingFallback, reload } = useDestinations();
+  const { plans, loading: plansLoading } = usePlans();
   const params = new URLSearchParams(path.split('?')[1] || '');
   const initialQuery = params.get('query') || '';
   const [query, setQuery] = useState(initialQuery);
   const [region, setRegion] = useState('all');
   const [tag, setTag] = useState('all');
+  const ddayPlan = useMemo(() => selectDdayPlan(plans), [plans]);
 
   useEffect(() => {
     setQuery(initialQuery);
@@ -2467,7 +2629,10 @@ function DestinationsPage({ path, navigate }) {
   }, [destinations, query, region, tag]);
 
   return (
-    <main className="ltPage">
+    <main className="ltPage ltTravelHomePage">
+      <TravelDdayCard loading={plansLoading} plan={ddayPlan} navigate={navigate} />
+      <TravelQuickActions navigate={navigate} />
+
       <PageHeader
         eyebrow="장소 찾기"
         title="취향에 맞는 장소 찾기"
@@ -3715,10 +3880,9 @@ function LoginPage({ navigate }) {
 function AppShell({ path, navigate, children }) {
   return (
     <div className="ltShell">
-      <TravelWorkspaceNavigator navigate={navigate} />
       <LocalTripNav path={path} navigate={navigate} />
       {children}
-      <MobileWorkspaceTabs active="plan" navigate={navigate} />
+      <MobileWorkspaceTabs active="more" navigate={navigate} />
       <footer className="ltFooter">
         <span>여행 코스</span>
         <span>장소 · 동선 · 저장</span>
@@ -3737,7 +3901,7 @@ export default function LocalTripApp({ path, navigate }) {
   let page;
   if (cleanPath === '/') {
     page = <HomePage navigate={navigate} />;
-  } else if (cleanPath === '/destinations') {
+  } else if (cleanPath === '/destinations' || cleanPath === '/travel') {
     page = <DestinationsPage path={normalizedPath} navigate={navigate} />;
   } else if (cleanPath === '/planner') {
     page = <PlannerPage path={normalizedPath} navigate={navigate} />;

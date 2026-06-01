@@ -259,7 +259,191 @@
   color: #13735d;
 }
 
+.ltTravelHomePage {
+  display: grid;
+  gap: 16px;
+}
+
+.ltTravelDdayCard {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid rgba(16, 185, 129, 0.24);
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(240, 253, 250, 0.98) 0%, rgba(239, 246, 255, 0.94) 100%),
+    #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 118, 110, 0.1);
+}
+
+.ltTravelDdayCard > div {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.ltTravelDdayCard span {
+  width: fit-content;
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #0f766e;
+  font-size: 0.74rem;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.ltTravelDdayCard h1,
+.ltTravelDdayCard strong {
+  margin: 0;
+  color: #10203b;
+  letter-spacing: 0;
+}
+
+.ltTravelDdayCard h1 {
+  min-width: 0;
+  font-size: clamp(1.25rem, 4vw, 1.85rem);
+  line-height: 1.15;
+  font-weight: 950;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ltTravelDdayCard p,
+.ltTravelDdayCard small {
+  margin: 0;
+  color: #526071;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  font-weight: 820;
+}
+
+.ltTravelDdayCard > strong {
+  min-width: 96px;
+  min-height: 96px;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  background: #10b981;
+  color: #ffffff;
+  font-size: 1.85rem;
+  line-height: 1;
+  font-weight: 950;
+  box-shadow: 0 14px 24px rgba(16, 185, 129, 0.22);
+}
+
+.ltTravelDdayCard.empty,
+.ltTravelDdayCard.loading {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ltTravelDdayCard.empty .ltPrimaryButton {
+  width: fit-content;
+  min-width: 128px;
+  margin-top: 4px;
+  border-radius: 8px;
+}
+
+.ltTravelQuickActions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ltTravelQuickActions button {
+  min-width: 0;
+  min-height: 78px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid #dbe8e3;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #334155;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.ltTravelQuickIcon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #ecfdf5;
+  color: #0f766e;
+}
+
 @media (max-width: 760px) {
+  .ltShell {
+    padding-bottom: calc(94px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .ltShell .ltPage {
+    padding-bottom: calc(112px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .ltShell .ltNavLinks {
+    display: none !important;
+  }
+
+  .ltShell .mobileWorkspaceTabs {
+    z-index: 260 !important;
+  }
+
+  .ltTravelHomePage {
+    gap: 12px;
+  }
+
+  .ltTravelDdayCard {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    padding: 18px;
+    border-radius: 10px;
+  }
+
+  .ltTravelDdayCard h1 {
+    white-space: normal;
+  }
+
+  .ltTravelDdayCard > strong {
+    width: 100%;
+    min-width: 0;
+    min-height: 72px;
+    font-size: 1.62rem;
+  }
+
+  .ltTravelQuickActions {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .ltTravelQuickActions button {
+    min-height: 72px;
+    padding: 8px 4px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+  }
+
+  .ltTravelQuickIcon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+  }
+
   .ltDestinationGrid {
     grid-template-columns: 1fr;
   }
