@@ -2,7 +2,7 @@ import MemoNavIcon from '../MemoNavIcon.jsx';
 
 const WORKSPACE_OPTIONS = [
   { id: 'personal', label: '개인', icon: 'user' },
-  { id: 'work', label: '업무', icon: 'briefcase' }
+  { id: 'travel', label: '여행', icon: 'trip' }
 ];
 
 const FALLBACK_WORKSPACE_DATA = {
@@ -10,6 +10,7 @@ const FALLBACK_WORKSPACE_DATA = {
     memoCount: 2,
     scheduleCount: 0,
     todoCount: 0,
+    planCount: 0,
     recentMemos: [
       { id: 'personal-fallback-memo-1', title: '장보기 메모', updatedAt: '2026-05-30', label: '개인', path: '/notes' },
       { id: 'personal-fallback-memo-2', title: '주말 계획', updatedAt: '2026-05-29', label: '개인', path: '/notes' }
@@ -17,38 +18,46 @@ const FALLBACK_WORKSPACE_DATA = {
     scheduleRows: [],
     todoRows: []
   },
-  work: {
-    memoCount: 3,
-    scheduleCount: 2,
-    todoCount: 4,
+  travel: {
+    memoCount: 1,
+    scheduleCount: 1,
+    todoCount: 2,
+    planCount: 1,
     recentMemos: [
-      { id: 'work-fallback-memo-1', title: '주간 회의 정리', updatedAt: '2026-05-30', label: '업무', path: '/notes' },
-      { id: 'work-fallback-memo-2', title: '고객 요청 사항', updatedAt: '2026-05-29', label: '업무', path: '/notes' }
+      { id: 'travel-fallback-memo-1', title: '경주 여행 준비', updatedAt: '2026-05-30', label: '여행', path: '/notes' },
+      { id: 'travel-fallback-memo-2', title: '주말 코스 후보', updatedAt: '2026-05-29', label: '여행', path: '/notes' }
     ],
     scheduleRows: [
-      { id: 'work-fallback-schedule-1', time: '10:00', title: '팀 미팅' },
-      { id: 'work-fallback-schedule-2', time: '15:00', title: '배포 점검' }
+      { id: 'travel-fallback-schedule-1', time: '10:00', title: '숙소 체크인 확인' }
     ],
     todoRows: [
-      { id: 'work-fallback-todo-1', title: '보고서 초안 작성' },
-      { id: 'work-fallback-todo-2', title: '이슈 로그 확인' }
+      { id: 'travel-fallback-todo-1', title: '동선 후보 정리' },
+      { id: 'travel-fallback-todo-2', title: '식당 리스트 확인' }
     ]
   }
 };
 
-const QUICK_ACTIONS = [
-  { title: '메모 작성', icon: 'edit', path: '/notes' },
-  { title: '일정 추가', icon: 'calendar', path: '/scheduler' },
-  { title: '할 일 추가', icon: 'checkSquare', path: '/scheduler' },
-  { title: 'AI 정리', icon: 'spark', path: '/notes' }
-];
+const QUICK_ACTIONS_BY_MODE = {
+  personal: [
+    { title: '메모 작성', icon: 'edit', path: '/notes' },
+    { title: '일정 추가', icon: 'calendar', path: '/scheduler' },
+    { title: '할 일 추가', icon: 'checkSquare', path: '/scheduler' },
+    { title: 'AI 정리', icon: 'spark', path: '/notes' }
+  ],
+  travel: [
+    { title: '여행 메모', icon: 'edit', path: '/notes' },
+    { title: '코스 만들기', icon: 'trip', path: '/planner' },
+    { title: '장소 찾기', icon: 'search', path: '/destinations' },
+    { title: '일정 보기', icon: 'calendar', path: '/scheduler' }
+  ]
+};
 
 function normalizeWorkspaceMode(mode) {
-  return mode === 'work' ? 'work' : 'personal';
+  return mode === 'travel' ? 'travel' : 'personal';
 }
 
 function workspaceLabel(mode) {
-  return normalizeWorkspaceMode(mode) === 'work' ? '업무' : '개인';
+  return normalizeWorkspaceMode(mode) === 'travel' ? '여행' : '개인';
 }
 
 function formatMemoDate(value, fallback = '2026.05.30') {
@@ -81,10 +90,11 @@ function buildWorkspaceHomeData(appOverview, mode) {
   const memoCount = Number(appOverview.memoCountsByMode?.[workspace] || 0);
   const scheduleCount = Number(modeStats.total || 0);
   const todoCount = Math.max(0, scheduleCount - Number(modeStats.done || 0));
+  const planCount = workspace === 'travel' ? Number(appOverview.travelPlanCount || 0) : 0;
   const recentMemos = appOverview.recentMemoItems?.[workspace] || [];
   const previewItems = appOverview.modePreviewItems?.[workspace] || [];
   const seededRecentOnly = Boolean(recentMemos.length) && recentMemos.every((item) => `${item.id || ''}`.startsWith('seed-'));
-  const hasRealWorkspaceData = Boolean(scheduleCount || previewItems.length || (memoCount && !seededRecentOnly));
+  const hasRealWorkspaceData = Boolean(scheduleCount || planCount || previewItems.length || (memoCount && !seededRecentOnly));
 
   if (!hasRealWorkspaceData) {
     return {
@@ -102,6 +112,7 @@ function buildWorkspaceHomeData(appOverview, mode) {
     memoCount,
     scheduleCount,
     todoCount,
+    planCount,
     recentMemos: recentMemos.length ? recentMemos.slice(0, 2) : fallback.recentMemos,
     scheduleRows: scheduleRows.length ? scheduleRows : fallback.scheduleRows,
     todoRows: todoRows.length ? todoRows : []
@@ -123,6 +134,34 @@ export function HomeModeSelector({ activeMode = 'personal', onSelect }) {
           <span>{workspace.label}</span>
         </button>
       ))}
+    </section>
+  );
+}
+
+export function HomeRobotHero({ navigate, planMode = 'personal' }) {
+  const workspace = normalizeWorkspaceMode(planMode);
+  const isTravel = workspace === 'travel';
+
+  return (
+    <section className={`appHomeRobotHero ${isTravel ? 'travel' : 'personal'}`} aria-label="AI 로봇 홈">
+      <div className="appHomeRobotHeroCopy">
+        <span>{isTravel ? 'Travel mode' : 'Today mode'}</span>
+        <strong>{isTravel ? '여행 준비, 같이 정리해요' : '오늘 할 일, 같이 정리해요'}</strong>
+        <p>{isTravel ? '코스 메모와 일정을 한 화면에서 이어서 봅니다.' : '메모와 일정을 가볍게 모아두세요.'}</p>
+        <div>
+          <button type="button" onClick={() => navigate(isTravel ? '/planner' : '/notes')}>
+            <MemoNavIcon type={isTravel ? 'trip' : 'edit'} />
+            {isTravel ? '코스 만들기' : '메모 작성'}
+          </button>
+          <button type="button" onClick={() => navigate(isTravel ? '/destinations' : '/scheduler')}>
+            <MemoNavIcon type={isTravel ? 'search' : 'calendar'} />
+            {isTravel ? '장소 찾기' : '일정 보기'}
+          </button>
+        </div>
+      </div>
+      <figure className="appHomeRobotImage">
+        <img src="/robot-guide.png" alt="" />
+      </figure>
     </section>
   );
 }
@@ -211,7 +250,19 @@ export function HomeAccountStrip({
 
 export function TodayFlowCard({ appOverview, navigate, planMode = 'personal' }) {
   const data = buildWorkspaceHomeData(appOverview, planMode);
-  const ctaLabel = data.workspace === 'work' ? '업무 메모 작성' : '메모 작성';
+  const isTravel = data.workspace === 'travel';
+  const ctaLabel = isTravel ? '여행 메모 작성' : '메모 작성';
+  const stats = isTravel
+    ? [
+        { label: '메모', value: `${data.memoCount}개` },
+        { label: '일정', value: `${data.scheduleCount}개` },
+        { label: '코스', value: `${data.planCount}개` }
+      ]
+    : [
+        { label: '메모', value: `${data.memoCount}개` },
+        { label: '일정', value: `${data.scheduleCount}개` },
+        { label: '할 일', value: `${data.todoCount}개` }
+      ];
 
   return (
     <section className="appHomeCard appHomeFlowCard" aria-label="오늘의 흐름">
@@ -221,11 +272,11 @@ export function TodayFlowCard({ appOverview, navigate, planMode = 'personal' }) 
           <strong>오늘의 흐름</strong>
         </span>
       </header>
-      <p className="appHomeCardLead">메모, 일정, 할 일을 한곳에서 정리해요.</p>
+      <p className="appHomeCardLead">{isTravel ? '여행 메모, 코스, 일정을 한곳에서 정리해요.' : '메모, 일정, 할 일을 한곳에서 정리해요.'}</p>
       <div className="appHomeTodayStats" aria-label="한눈에 보는 오늘">
-        <span><em>메모</em><strong>{data.memoCount}개</strong></span>
-        <span><em>일정</em><strong>{data.scheduleCount}개</strong></span>
-        <span><em>할 일</em><strong>{data.todoCount}개</strong></span>
+        {stats.map((stat) => (
+          <span key={stat.label}><em>{stat.label}</em><strong>{stat.value}</strong></span>
+        ))}
       </div>
       {(data.scheduleRows.length || data.todoRows.length) ? (
         <div className="appHomeFlowPreview" aria-label={`${data.label} 미리보기`}>
@@ -255,7 +306,8 @@ export function TodayFlowCard({ appOverview, navigate, planMode = 'personal' }) 
   );
 }
 
-export function QuickActionCard({ navigate }) {
+export function QuickActionCard({ navigate, planMode = 'personal' }) {
+  const actions = QUICK_ACTIONS_BY_MODE[normalizeWorkspaceMode(planMode)] || QUICK_ACTIONS_BY_MODE.personal;
   return (
     <section className="appHomeCard appHomeQuickCard" aria-label="빠른 실행">
       <header className="appHomeCardHeader">
@@ -265,7 +317,7 @@ export function QuickActionCard({ navigate }) {
         </span>
       </header>
       <div className="appHomeActionGrid">
-        {QUICK_ACTIONS.map((action) => (
+        {actions.map((action) => (
           <button type="button" key={action.title} onClick={() => navigate(action.path)}>
             <MemoNavIcon type={action.icon} />
             <span>{action.title}</span>
@@ -301,8 +353,8 @@ export function RecentMemoCard({ appOverview, navigate, planMode = 'personal' })
 
 export function AiSuggestionCard({ navigate, planMode = 'personal' }) {
   const workspace = normalizeWorkspaceMode(planMode);
-  const body = workspace === 'work'
-    ? '업무 메모를 일정과 할 일로 정리해 드려요.'
+  const body = workspace === 'travel'
+    ? '여행 메모를 코스와 준비 일정으로 정리해 드려요.'
     : '오늘의 메모를 일정과 할 일로 정리해 드려요.';
 
   return (

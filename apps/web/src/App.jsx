@@ -72,16 +72,23 @@ const NOTE_SCHEDULE_SOURCES = ['AI Note', '메모', '프로젝트'];
 const DEFAULT_SCHEDULER_ITEMS = [
 ];
 const HOME_PLAN_MODE_KEY = 'ai-assitant-home-plan-mode';
-const HOME_PLAN_MODES = ['personal', 'work'];
+const HOME_PLAN_MODES = ['personal', 'travel'];
 const HOME_WORKSPACE_ALIASES = {
   personal: 'personal',
   PERSONAL: 'personal',
   general: 'personal',
   GENERAL: 'personal',
   개인: 'personal',
-  work: 'work',
-  WORK: 'work',
-  업무: 'work'
+  study: 'personal',
+  STUDY: 'personal',
+  fitness: 'personal',
+  FITNESS: 'personal',
+  work: 'personal',
+  WORK: 'personal',
+  업무: 'personal',
+  travel: 'travel',
+  TRAVEL: 'travel',
+  여행: 'travel'
 };
 
 function normalizeHomePlanMode(value) {
@@ -108,14 +115,14 @@ function inferNotePlanType({ block, boardId, title, content }) {
   const explicitValue = block?.planType || block?.plan_type || labels.find(isHomeWorkspaceValue);
   if (explicitValue) return normalizeHomePlanMode(explicitValue);
   const source = [boardId, title, content, labels.join(' ')].join(' ').toLowerCase();
-  if (source.includes('work') || source.includes('project') || source.includes('업무') || source.includes('회의') || source.includes('마감')) return 'work';
+  if (source.includes('travel') || source.includes('trip') || source.includes('여행') || source.includes('코스') || source.includes('숙소')) return 'travel';
   return 'personal';
 }
 
 function labelsForPlanType(planType) {
   const labels = {
     personal: ['PERSONAL', '개인'],
-    work: ['WORK', '업무']
+    travel: ['TRAVEL', '여행']
   };
   return labels[normalizeHomePlanMode(planType)] || labels.personal;
 }
@@ -3018,6 +3025,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260601-personal-travel-robot-home',
+    content: `# 2026-06-01 개인/여행 홈과 로봇 비주얼 복구
+
+- [x] /app 홈 상단 선택을 개인 / 여행 두 개 모드로 변경
+- [x] 기존 robot-guide.png 자산을 홈 첫 화면 로봇 히어로로 다시 배치
+- [x] 여행 모드 빠른 실행을 여행 메모, 코스 만들기, 장소 찾기, 일정 보기로 분기
+- [x] 홈 데이터 집계를 개인 일정/메모와 여행 코스/여행 메모 기준으로 분리`
+  },
+  {
     id: 'admin1-memo-20260531-personal-work-home-redesign',
     content: `# 2026-05-31 개인/업무 워크스페이스 홈 단순화
 
@@ -3708,9 +3724,19 @@ function travelPlanPreviewFromBlocks(blocks, todayKey) {
 }
 
 function schedulerItemMatchesPlanMode(item, mode) {
+  const normalizedMode = normalizeHomePlanMode(mode);
   const type = normalizeSchedulerType(item?.type);
-  if (mode === 'work') return type === '업무';
-  return type !== '업무';
+  const source = `${item?.source || ''} ${item?.id || ''} ${item?.title || ''} ${item?.memo || ''}`.toLowerCase();
+  const isTravel = item?.source === 'travel-plan'
+    || `${item?.id || ''}`.startsWith('travel-plan-')
+    || type === '여행'
+    || source.includes('travel')
+    || source.includes('trip')
+    || source.includes('여행')
+    || source.includes('코스')
+    || source.includes('숙소');
+  if (normalizedMode === 'travel') return isTravel;
+  return !isTravel;
 }
 
 function schedulerPreviewItemsForMode(items, mode) {
@@ -3796,6 +3822,19 @@ function summarizeAppActivity() {
       done: Boolean(item.done)
     }));
   const todayDoneItems = todayItems.filter((item) => item.done);
+  const personalTodayItems = todayItems.filter((item) => schedulerItemMatchesPlanMode(item, 'personal'));
+  const personalTodayDoneItems = personalTodayItems.filter((item) => item.done);
+  const personalTodayPreviewItems = personalTodayItems
+    .slice()
+    .sort((left, right) => `${left.time || '99:99'} ${left.title || ''}`.localeCompare(`${right.time || '99:99'} ${right.title || ''}`))
+    .slice(0, 3)
+    .map((item) => ({
+      id: item.id,
+      title: item.title || '제목 없는 일정',
+      time: item.time || '',
+      type: normalizeSchedulerType(item.type),
+      done: Boolean(item.done)
+    }));
   const weekDoneItems = expandedWeekItems.filter((item) => item.done);
   const pendingWeekItems = expandedWeekItems.filter((item) => !item.done);
   const nextSchedule = pendingWeekItems
@@ -3822,19 +3861,21 @@ function summarizeAppActivity() {
   const travelPlanBlocks = blocks.filter((block) => `${block.id || ''}`.startsWith('travel-plan-memo-'));
   const modeStats = {
     personal: {
-      total: todayItems.length,
-      done: todayDoneItems.length,
-      progress: todayItems.length ? Math.round((todayDoneItems.length / todayItems.length) * 100) : 0
+      total: personalTodayItems.length,
+      done: personalTodayDoneItems.length,
+      progress: personalTodayItems.length
+        ? Math.round((personalTodayDoneItems.length / personalTodayItems.length) * 100)
+        : 0
     },
-    work: schedulerStatsForMode(schedulerItems, 'work')
+    travel: schedulerStatsForMode(schedulerItems, 'travel')
   };
   const planTypeCounts = {
-    personal: todayItems.length + (memoCountsByMode.personal || 0),
-    work: modeStats.work.total + (memoCountsByMode.work || 0)
+    personal: modeStats.personal.total + (memoCountsByMode.personal || 0),
+    travel: modeStats.travel.total + (memoCountsByMode.travel || 0)
   };
   const modePreviewItems = {
-    personal: todayPreviewItems,
-    work: schedulerPreviewItemsForMode(expandedWeekItems, 'work')
+    personal: personalTodayPreviewItems,
+    travel: schedulerPreviewItemsForMode(expandedWeekItems, 'travel')
   };
   const statusCounts = PROJECT_BOARD_COLUMNS.reduce((counts, column) => ({
     ...counts,
@@ -3857,6 +3898,7 @@ function summarizeAppActivity() {
     planTypeCounts,
     memoCountsByMode,
     recentMemoItems,
+    travelPlanCount: travelPlanBlocks.length,
     totalScheduleCount: schedulerItems.length,
     travelScheduleCount: travelScheduleItems.length,
     boardCount: memoBoards.length,

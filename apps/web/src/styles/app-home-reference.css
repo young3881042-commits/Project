@@ -118,6 +118,137 @@
   box-shadow: 0 10px 22px rgba(16, 185, 129, 0.24);
 }
 
+.appHomeRobotHero {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 132px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid rgba(151, 181, 214, 0.48);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(239, 246, 255, 0.94) 100%),
+    #ffffff;
+  box-shadow: 0 16px 34px rgba(37, 99, 235, 0.1);
+  overflow: hidden;
+}
+
+.appHomeRobotHero.travel {
+  border-color: rgba(14, 165, 233, 0.32);
+  background:
+    linear-gradient(135deg, rgba(240, 249, 255, 0.96) 0%, rgba(236, 253, 245, 0.94) 100%),
+    #ffffff;
+}
+
+.appHomeRobotHeroCopy {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.appHomeRobotHeroCopy > span {
+  width: fit-content;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.7rem;
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.appHomeRobotHero.travel .appHomeRobotHeroCopy > span {
+  background: #dcfce7;
+  color: #0f766e;
+}
+
+.appHomeRobotHeroCopy strong {
+  min-width: 0;
+  color: #10203b;
+  font-size: 1.08rem;
+  line-height: 1.24;
+  font-weight: 950;
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+
+.appHomeRobotHeroCopy p {
+  margin: 0;
+  color: #52647a;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  font-weight: 780;
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+
+.appHomeRobotHeroCopy div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 2px;
+}
+
+.appHomeRobotHeroCopy button {
+  min-width: 0;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 1px solid rgba(15, 118, 110, 0.26);
+  border-radius: 8px;
+  background: #10b981;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.78rem;
+  line-height: 1.15;
+  font-weight: 930;
+  letter-spacing: 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.appHomeRobotHeroCopy button:last-child {
+  border-color: rgba(37, 99, 235, 0.2);
+  background: #ffffff;
+  color: #2563eb;
+}
+
+.appHomeRobotHeroCopy .memoNavIcon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+.appHomeRobotImage {
+  width: 132px;
+  aspect-ratio: 1;
+  margin: 0;
+  border: 1px solid rgba(219, 229, 240, 0.88);
+  border-radius: 8px;
+  background: #fff7ed;
+  overflow: hidden;
+  box-shadow: 0 16px 26px rgba(15, 23, 42, 0.08);
+}
+
+.appHomeRobotImage img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center 42%;
+  transform: scale(1.08);
+}
+
 .appHomeCard,
 .appHomeAccountStrip {
   width: 100%;
@@ -551,6 +682,7 @@
 
 .appHomeHeaderActions button:hover,
 .appHomeModeSelector button:hover,
+.appHomeRobotHeroCopy button:hover,
 .appHomeActionGrid button:hover,
 .appHomeMemoList button:hover,
 .appHomeCardHeader button:hover,
@@ -640,6 +772,28 @@
   .appHomeHeaderActions button {
     width: 40px;
     height: 40px;
+  }
+
+  .appHomeRobotHero {
+    grid-template-columns: minmax(0, 1fr) 110px;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .appHomeRobotHeroCopy strong {
+    font-size: 1rem;
+  }
+
+  .appHomeRobotHeroCopy p {
+    font-size: 0.78rem;
+  }
+
+  .appHomeRobotHeroCopy div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .appHomeRobotImage {
+    width: 110px;
   }
 
   .appHomeTodayStats {

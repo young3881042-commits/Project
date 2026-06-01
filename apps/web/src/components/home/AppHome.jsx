@@ -4,6 +4,7 @@ import {
   AiSuggestionCard,
   HomeAccountStrip,
   HomeModeSelector,
+  HomeRobotHero,
   QuickActionCard,
   RecentMemoCard,
   TodayFlowCard
@@ -30,7 +31,7 @@ export default function AppHome({
         <header className="appHomeHeader">
           <div className="appHomeTitleGroup">
             <h1>개인 워크스페이스</h1>
-            <p>AI 일정 도우미</p>
+            <p>AI 일정 · 여행 도우미</p>
           </div>
           <div className="appHomeHeaderActions">
             <button type="button" aria-label="알림" onClick={() => navigate('/scheduler')}>
@@ -47,6 +48,7 @@ export default function AppHome({
         </header>
 
         <HomeModeSelector activeMode={planMode} onSelect={onPlanModeChange} />
+        <HomeRobotHero navigate={navigate} planMode={planMode} />
 
         {showAccountPanel ? (
           <HomeAccountStrip
@@ -62,7 +64,7 @@ export default function AppHome({
         ) : null}
 
         <TodayFlowCard appOverview={appOverview} navigate={navigate} planMode={planMode} />
-        <QuickActionCard navigate={navigate} />
+        <QuickActionCard navigate={navigate} planMode={planMode} />
         <RecentMemoCard appOverview={appOverview} navigate={navigate} planMode={planMode} />
         <AiSuggestionCard navigate={navigate} planMode={planMode} />
         <MobileWorkspaceTabs active="home" navigate={navigate} />
