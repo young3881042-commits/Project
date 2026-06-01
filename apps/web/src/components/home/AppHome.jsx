@@ -1,6 +1,5 @@
 import MobileWorkspaceTabs from '../MobileWorkspaceTabs.jsx';
 import {
-  AiSuggestionCard,
   HomeAccountStrip,
   HomeModeSelector,
   HomeRobotHero,
@@ -62,7 +61,6 @@ export default function AppHome({
         <TodayFlowCard appOverview={appOverview} navigate={navigate} planMode={planMode} />
         <QuickActionCard navigate={navigate} planMode={planMode} />
         <RecentMemoCard appOverview={appOverview} navigate={navigate} planMode={planMode} />
-        <AiSuggestionCard navigate={navigate} planMode={planMode} />
         <MobileWorkspaceTabs active="home" navigate={navigate} />
       </section>
     </main>

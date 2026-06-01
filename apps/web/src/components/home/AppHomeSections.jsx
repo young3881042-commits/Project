@@ -320,23 +320,3 @@ export function RecentMemoCard({ appOverview, navigate, planMode = 'personal' })
     </section>
   );
 }
-
-export function AiSuggestionCard({ navigate, planMode = 'personal' }) {
-  const workspace = normalizeWorkspaceMode(planMode);
-  const body = workspace === 'travel'
-    ? '여행 메모를 코스와 준비 일정으로 정리해 드려요.'
-    : '오늘의 메모를 일정과 할 일로 정리해 드려요.';
-
-  return (
-    <button type="button" className="appHomeCard appHomeAiSuggestionCard" onClick={() => navigate('/notes')}>
-      <header className="appHomeCardHeader">
-        <span>
-          <MemoNavIcon type="spark" />
-          <strong>AI 정리 제안</strong>
-        </span>
-        <small>NEW</small>
-      </header>
-      <p>{body}</p>
-    </button>
-  );
-}

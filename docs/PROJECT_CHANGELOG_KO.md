@@ -1,5 +1,24 @@
 # 프로젝트 변경 상세 문서
 
+## 40. 2026-06-01 홈 AI 정리 제안 제거
+
+`/app` 메인 화면에서 별도 `AI 정리 제안` 카드를 제거했습니다.
+
+변경 내용:
+
+- 홈 렌더링에서 `AI 정리 제안` 카드를 제거했습니다.
+- 사용하지 않는 `AiSuggestionCard` 컴포넌트를 삭제했습니다.
+- 관련 전용 CSS를 정리했습니다.
+- 이번 작업 로그를 `admin1` 메모 보드 시드에 추가했습니다.
+
+검증:
+
+- `npm --prefix apps/web run build`
+- `git diff --check`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web`
+- `curl -I http://127.0.0.1/app`
+- `curl -I http://127.0.0.1/api/destinations?size=1`
+
 ## 39. 2026-06-01 홈 로그인 버튼과 내 일정 단순화
 
 `/app` 홈을 더 단순하게 보이도록 우측 상단 액션과 일정 요약 카드를 줄였습니다.

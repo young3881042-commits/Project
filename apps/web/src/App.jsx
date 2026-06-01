@@ -3025,6 +3025,13 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260601-remove-home-ai-suggestion',
+    content: `# 2026-06-01 홈 AI 정리 제안 제거
+
+- [x] /app 메인 화면에서 AI 정리 제안 카드를 제거
+- [x] 관련 홈 컴포넌트와 전용 스타일 정리`
+  },
+  {
     id: 'admin1-memo-20260601-simple-home-login-schedule-rate',
     content: `# 2026-06-01 홈 로그인 버튼과 내 일정 단순화
 

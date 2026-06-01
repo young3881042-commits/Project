@@ -520,41 +520,6 @@
   white-space: nowrap;
 }
 
-.appHomeAiSuggestionCard {
-  display: block;
-  text-align: left;
-  font: inherit;
-  cursor: pointer;
-}
-
-.appHomeAiSuggestionCard .appHomeCardHeader {
-  margin-bottom: 10px;
-}
-
-.appHomeAiSuggestionCard small {
-  min-height: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 9px;
-  border-radius: 999px;
-  background: #dcfce7;
-  color: #0f766e;
-  font-size: 0.72rem;
-  font-weight: 950;
-  letter-spacing: 0;
-}
-
-.appHomeAiSuggestionCard p {
-  margin: 0;
-  color: #4b5563;
-  font-size: 0.91rem;
-  line-height: 1.55;
-  font-weight: 800;
-  letter-spacing: 0;
-  word-break: keep-all;
-}
-
 .appHomeAccountStrip {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -694,7 +659,6 @@
 .appHomeMemoList button:hover,
 .appHomeCardHeader button:hover,
 .appHomePrimaryCta:hover,
-.appHomeAiSuggestionCard:hover,
 .appHomeAccountStrip button:hover {
   transform: translateY(-1px);
 }
