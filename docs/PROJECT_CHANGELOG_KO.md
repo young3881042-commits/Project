@@ -1,5 +1,35 @@
 # 프로젝트 변경 상세 문서
 
+## 44. 2026-06-01 메모·여행 모바일 상단 네비게이션 통일
+
+일정 화면과 메모/여행 화면의 모바일 상단 진입감이 달라 보이던 문제를 정리했습니다.
+
+변경 내용:
+
+- `/more`의 `여행` 카드는 선택창을 열지 않고 `/travel` 여행 메인 화면으로 바로 이동합니다.
+- `/travel`은 장소 목록이 아니라 여행 홈 화면을 렌더링합니다.
+- 여행 화면 상단 바를 기존 여행 전용 네비게이션 대신 일정 화면과 같은 `workspaceNavigator` 톤으로 통일했습니다.
+- 메모 모바일에서도 일정 화면과 같은 공통 상단 네비게이션이 보이도록 보정했습니다.
+- Playwright 모바일 뷰포트 스크린샷 검증을 추가해 `/more`, `/travel`, `/notes`, `/scheduler` 상단바와 본문 겹침 여부를 확인했습니다.
+- 루트 디스크가 99%까지 찬 상태라 Docker 빌드 캐시를 정리해 여유 공간을 확보했습니다.
+- 이번 작업 로그를 `admin1` 메모 보드 시드에 추가했습니다.
+
+검증:
+
+- `git diff --check`
+- `npm --prefix apps/web run build`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml ps`
+- `curl -I http://127.0.0.1/app`
+- `curl -I http://127.0.0.1/more`
+- `curl -I http://127.0.0.1/travel`
+- `curl -I http://127.0.0.1/notes`
+- `curl -I http://127.0.0.1/scheduler`
+- `curl -I http://127.0.0.1/api/destinations?size=1`
+- `env PLAYWRIGHT_BROWSERS_PATH=/data/ms-playwright node /tmp/codex-playwright/capture.js`
+- 스크린샷 저장 경로: `/tmp/codex-playwright/screenshots`
+- 루트 디스크 정리 확인: `/` 사용률 99% → 57%
+
 ## 43. 2026-06-01 홈 여행 탭 제거와 모바일 D-Day 보정
 
 `/app` 홈은 개인 워크스페이스로 고정하고, 여행 기능은 `/more`에서 선택창으로 열리도록 정리했습니다.

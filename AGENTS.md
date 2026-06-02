@@ -5,7 +5,7 @@
 - Treat `/data/ai-assitant` and `/data/jupiter-assistant` as local runtime data, not source. Do not commit secrets or raw personal exports copied from those paths.
 - Before changing this repo, read `docs/NEXT_CHECKLIST_PLAN_KO.md` and align the work with its operating rules, task queue, and validation list.
 - Current product direction: this is not yet a finished AI assistant service. Treat it as a mobile-first personal workspace and AI schedule assistant by default. Travel planning is one selectable `Plan` type, not the default app identity.
-- Home UX rule: `/app` must default to `개인 워크스페이스 / AI 일정 · 여행 도우미`. Do not show a `개인 / 여행` switch at the top of the home screen; travel should be opened from `/more` through the travel selection sheet. Work, study, fitness, and other plan categories should stay out of the home screen.
+- Home UX rule: `/app` must default to `개인 워크스페이스 / AI 일정 · 여행 도우미`. Do not show a `개인 / 여행` switch at the top of the home screen; travel should open directly from `/more` to the travel main page at `/travel`. Work, study, fitness, and other plan categories should stay out of the home screen.
 - Long-term target: after mobile UI and server APIs are stable, expand toward a phone-based personal AI assistant that can use user-granted access to messages, mail, local files, weather, nearby travel spots, and nearby restaurants. Web/PWA alone cannot read phone-local SMS/mail/files; native Android/iOS permissions or a native wrapper will be needed.
 - Avoid generic platform-operations work unless the user specifically asks for it. Keep the main work queue focused on mobile workspace usability, AI-assisted schedule/memo flows, selectable plan types, routing/deployment stability, and real app API integrations.
 - The default app route is `/app`; `/` should not render a separate main screen.
@@ -13,6 +13,7 @@
 - Only use `WEB_HTTP_PORT=18000` as a temporary fallback when port `80` is genuinely unavailable, and switch back to `80` before handing work back to the user.
 - Keep `docs/NEXT_CHECKLIST_PLAN_KO.md` updated when a task changes UI behavior, routing, deployment steps, or follow-up work.
 - Check `docs/PROJECT_CHANGELOG_KO.md` for recent context before changing travel, notes, scheduler, login, or admin behavior.
+- For mobile UI/UX changes, include screenshot validation with a real browser when feasible. Prefer Playwright mobile viewport screenshots after Docker deploy, and record the checked routes in the changelog.
 - Every completed work item should also leave an `admin1` memo-board entry. Prefer adding/updating a seeded `ADMIN1_MEMO_LOGS` item in `apps/web/src/App.jsx` so the log appears in `/notes` for `admin1`.
 - Do not keep growing `apps/web/src/App.jsx` for UI work. When touching shared navigation, app home, notes, scheduler, or other sizeable UI surfaces, split reusable pieces into `apps/web/src/components/` or feature-scoped files and keep `App.jsx` focused on routing, state wiring, and legacy glue.
 - Prefer updating the existing checklist and changelog instead of creating duplicate planning documents.

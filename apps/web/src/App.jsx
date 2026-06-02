@@ -6,7 +6,6 @@ import ConnectionsApp from './ConnectionsApp.jsx';
 import MemoNavIcon from './components/MemoNavIcon.jsx';
 import MobileWorkspaceTabs from './components/MobileWorkspaceTabs.jsx';
 import AppHome from './components/home/AppHome.jsx';
-import { TravelWorkspaceOverlay } from './components/home/AppHomeSections.jsx';
 import MobileHomeSection from './components/notes/MobileHomeSection.jsx';
 import MemoList from './components/notes/MemoList.jsx';
 import NotesScheduleBar from './components/notes/NotesScheduleBar.jsx';
@@ -3017,6 +3016,16 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260601-unify-mobile-nav-travel-direct',
+    content: `# 2026-06-01 메모·여행 상단 네비게이션 통일과 여행 직접 진입
+
+- [x] /more 여행 카드가 선택창 없이 여행 메인 화면으로 바로 이동하게 변경
+- [x] 여행 화면 상단 바를 일정 화면과 같은 workspace navigator 톤으로 통일
+- [x] 메모 모바일에서도 일정 화면과 같은 공통 상단 네비게이션이 보이게 보정
+- [x] Playwright 모바일 스크린샷으로 /more, /travel, /notes, /scheduler 상단바 겹침 여부 확인
+- [x] Docker 빌드 캐시 16GB 정리 후 루트 디스크 여유 공간 확보`
+  },
+  {
     id: 'admin1-memo-20260601-remove-home-travel-tab-more-overlay-dday',
     content: `# 2026-06-01 홈 여행 탭 제거와 더보기 여행 선택창 보정
 
@@ -4313,13 +4322,13 @@ function SpaceHomePage({ navigate }) {
 }
 
 function MorePage({ navigate }) {
-  const [travelOverlayOpen, setTravelOverlayOpen] = useState(false);
   const extraFeatures = [
     {
       key: 'travel',
       title: '여행',
       description: '여행 코스와 D-Day를 관리해요.',
       icon: 'trip',
+      path: '/travel',
       status: '열기'
     },
     {
@@ -4349,34 +4358,6 @@ function MorePage({ navigate }) {
     document.title = '더보기';
   }, []);
 
-  useEffect(() => {
-    if (!travelOverlayOpen) return undefined;
-    const previousOverflow = document.body.style.overflow;
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        setTravelOverlayOpen(false);
-      }
-    };
-
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [travelOverlayOpen]);
-
-  const openFeature = (feature) => {
-    if (feature.key === 'travel') {
-      setTravelOverlayOpen(true);
-    }
-  };
-
-  const navigateTravel = (path) => {
-    setTravelOverlayOpen(false);
-    navigate(path);
-  };
-
   return (
     <main className="spaceHome referenceHome">
       <section className="spaceAppFrame appHomeDashboard morePageDashboard" aria-label="더보기">
@@ -4395,7 +4376,7 @@ function MorePage({ navigate }) {
                 key={feature.key}
                 className={feature.key === 'travel' ? '' : 'pending'}
                 aria-disabled={feature.key !== 'travel'}
-                onClick={() => openFeature(feature)}
+                onClick={() => (feature.path ? navigate(feature.path) : undefined)}
               >
                 <span>
                   <MemoNavIcon type={feature.icon} />
@@ -4408,12 +4389,6 @@ function MorePage({ navigate }) {
           </div>
         </section>
 
-        {travelOverlayOpen ? (
-          <TravelWorkspaceOverlay
-            navigate={navigateTravel}
-            onClose={() => setTravelOverlayOpen(false)}
-          />
-        ) : null}
         <MobileWorkspaceTabs active="more" navigate={navigate} />
       </section>
     </main>

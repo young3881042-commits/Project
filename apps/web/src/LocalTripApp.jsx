@@ -1869,7 +1869,7 @@ function TravelWorkspaceNavigator({ navigate }) {
     <nav className="workspaceNavigator travelWorkspaceNavigator" aria-label="workspace navigator">
       <button type="button" className="workspaceNavigatorBrand" onClick={() => navigate('/app')}>
         <TravelWorkspaceIcon type="home" />
-        <span>Home</span>
+        <span>앱 홈</span>
       </button>
       <a className="workspaceNavigatorAccount" href={accountPath} onClick={(event) => routeClick(event, accountPath, navigate)}>
         <span>{displayName.slice(0, 1).toUpperCase()}</span>
@@ -3877,10 +3877,10 @@ function LoginPage({ navigate }) {
   );
 }
 
-function AppShell({ path, navigate, children }) {
+function AppShell({ navigate, children }) {
   return (
     <div className="ltShell">
-      <LocalTripNav path={path} navigate={navigate} />
+      <TravelWorkspaceNavigator navigate={navigate} />
       {children}
       <MobileWorkspaceTabs active="more" navigate={navigate} />
       <footer className="ltFooter">
@@ -3899,9 +3899,9 @@ export default function LocalTripApp({ path, navigate }) {
   const normalizedPath = path || '/';
   const cleanPath = normalizedPath.split('?')[0];
   let page;
-  if (cleanPath === '/') {
+  if (cleanPath === '/' || cleanPath === '/travel') {
     page = <HomePage navigate={navigate} />;
-  } else if (cleanPath === '/destinations' || cleanPath === '/travel') {
+  } else if (cleanPath === '/destinations') {
     page = <DestinationsPage path={normalizedPath} navigate={navigate} />;
   } else if (cleanPath === '/planner') {
     page = <PlannerPage path={normalizedPath} navigate={navigate} />;
@@ -3919,5 +3919,5 @@ export default function LocalTripApp({ path, navigate }) {
     page = <NotFoundPage navigate={navigate} />;
   }
 
-  return <AppShell path={cleanPath} navigate={navigate}>{page}</AppShell>;
+  return <AppShell navigate={navigate}>{page}</AppShell>;
 }

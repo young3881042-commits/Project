@@ -2091,3 +2091,42 @@ body:has(.notesShell) {
     display: none !important;
   }
 }
+
+@media (max-width: 680px) {
+  .notesShell .workspaceNavigator {
+    min-height: 64px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(112px, auto) !important;
+    gap: 10px !important;
+    padding: 8px 12px !important;
+  }
+
+  .notesShell .workspaceNavigatorBrand {
+    min-height: 44px !important;
+    font-size: 0.94rem !important;
+  }
+
+  .notesShell .workspaceNavigatorAccount {
+    min-width: 112px !important;
+    min-height: 44px !important;
+    grid-template-columns: 30px minmax(0, 1fr) !important;
+    padding: 6px 8px !important;
+  }
+
+  .notesShell .workspaceNavigatorAccount > span {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .notesShell .workspaceNavigatorAccount strong {
+    font-size: 0.8rem !important;
+  }
+
+  .notesShell .workspaceNavigatorAccount small {
+    font-size: 0.68rem !important;
+  }
+
+  .notesWorkspace {
+    margin-top: 12px !important;
+  }
+}

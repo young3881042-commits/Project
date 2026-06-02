@@ -566,8 +566,11 @@ body:has(.ltShell) {
 }
 
 .ltShell {
-  grid-template-columns: 248px minmax(0, 1fr) !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
   grid-template-rows: auto minmax(0, 1fr) auto !important;
+  min-height: 100vh !important;
+  background: #f7f8fa !important;
 }
 
 .ltShell > .travelWorkspaceNavigator {
@@ -575,25 +578,14 @@ body:has(.ltShell) {
   grid-row: 1 !important;
 }
 
-.ltShell > .ltNav {
-  grid-column: 1 !important;
-  grid-row: 2 / 4 !important;
-  top: 74px !important;
-  min-height: calc(100vh - 74px) !important;
-}
-
 .ltShell > .ltPage {
-  grid-column: 2 !important;
+  grid-column: 1 !important;
   grid-row: 2 !important;
 }
 
 .ltShell > .ltFooter {
-  grid-column: 2 !important;
+  grid-column: 1 !important;
   grid-row: 3 !important;
-}
-
-.ltShell .ltServiceSwitch {
-  display: none !important;
 }
 
 .ltValueHero {
@@ -718,7 +710,7 @@ body:has(.ltShell) {
 @media (max-width: 900px) {
   .ltShell {
     grid-template-columns: 1fr !important;
-    grid-template-rows: auto auto minmax(0, 1fr) auto !important;
+    grid-template-rows: auto minmax(0, 1fr) auto !important;
   }
 
   .ltShell > .travelWorkspaceNavigator {
@@ -726,27 +718,14 @@ body:has(.ltShell) {
     grid-row: 1 !important;
   }
 
-  .ltShell > .ltNav {
-    grid-column: 1 !important;
-    grid-row: 2 !important;
-    top: 74px !important;
-    min-height: auto !important;
-  }
-
   .ltShell > .ltPage {
     grid-column: 1 !important;
-    grid-row: 3 !important;
+    grid-row: 2 !important;
   }
 
   .ltShell > .ltFooter {
     grid-column: 1 !important;
-    grid-row: 4 !important;
-  }
-
-  .ltShell .ltNavInner {
-    grid-template-areas:
-      "brand account"
-      "tabs tabs" !important;
+    grid-row: 3 !important;
   }
 
   .ltValuePoints {
