@@ -483,107 +483,39 @@ function formatDateLabel(dateKey) {
 }
 
 function defaultNoteBlocks() {
-  const projectTasks = PROJECT_BOARD_COLUMNS.flatMap((column) => column.tasks.map((task, index) => ({
-    id: `memo-${column.id}-${index}`,
-    type: 'text',
-    content: `## ${task}\n\n`,
-    sector: 'project',
-    boardId: 'project',
-    status: column.id,
-    parentId: '',
-    filePath: `memo-files/${column.id}-${index}.md`
-  })));
-  const workspaceNotes = [
-    {
-      id: 'seed-personal-today',
-      folderId: 'work-202411',
-      boardId: 'work-202411',
-      title: '문체부&한국은행_20241111',
-      content: '# 문체부&한국은행_20241111\n\n- [x] 문체부 본부 관리자페이지 SSL 적용하여 재가동.\n- [x] 국립국악원 담당 주무관 변경되어 현황 자료 및 관리대상 제외 내용 전달.\n- [x] 현대미술관 로그 전송모듈 재기동 필요하여 방문 예정(2024.11.14)\n- [x] 한국은행 내용 정리 메일 전송.\n- [ ] 할 일',
-      status: 'progress'
-    },
-    {
-      id: 'seed-personal-ideas',
-      folderId: 'work-202411',
-      boardId: 'work-202411',
-      title: '한국은행 내용 정리 메일 전송',
-      content: '# 한국은행 내용 정리 메일 전송\n\n- [x] 요청 내용과 전달 대상 확인\n- [x] 정리 메일 본문 작성\n- [x] 관련 현황 자료 첨부 확인\n- [ ] 회신 여부 확인',
-      status: 'progress'
-    },
-    {
-      id: 'seed-project-web-copy',
-      folderId: 'company-ndap',
-      boardId: 'company-ndap',
-      title: '국립국악원 담당 주무관 변경 및 현황 공유',
-      content: '# 국립국악원 담당 주무관 변경 및 현황 공유\n\n- [x] 담당 주무관 변경 사항 확인\n- [x] 현황 자료 전달\n- [x] 관리대상 제외 내용 공유\n- [ ] 후속 문의 여부 확인',
-      status: 'progress'
-    },
-    {
-      id: 'seed-project-mobile-responsive',
-      folderId: 'company-ndap',
-      boardId: 'company-ndap',
-      title: '모바일 반응형',
-      content: '# 모바일 반응형\n\n- [ ] 메모 홈 리스트 확인\n- [ ] 메모 상세 체크리스트 확인\n- [ ] 하단 바로가기 문구 확인',
-      status: 'todo'
-    },
-    {
-      id: 'seed-project-deploy-checklist',
-      folderId: 'company-dev-server',
-      boardId: 'company-dev-server',
-      title: '회사 개발서버 배포 체크리스트',
-      content: '# 회사 개발서버 배포 체크리스트\n\n- [ ] web build 확인\n- [ ] api build 확인\n- [ ] Docker compose up 확인\n- [ ] /app, /notes, /travel 진입 확인',
-      status: 'todo'
-    },
-    {
-      id: 'seed-travel-gyeongju',
-      folderId: 'work-202411',
-      boardId: 'work-202411',
-      title: '현대미술관 로그 전송모듈 재기동 방문 예정',
-      content: '# 현대미술관 로그 전송모듈 재기동 방문 예정\n\n- [x] 로그 전송모듈 재기동 필요 사항 확인\n- [ ] 방문 일정 2024.11.14 확정\n- [ ] 현장 점검 항목 정리\n- [ ] 작업 후 전송 상태 확인',
-      status: 'progress'
-    },
-    {
-      id: 'seed-travel-food',
-      folderId: 'company-docker-board',
-      boardId: 'company-docker-board',
-      title: 'Docker 게시판 참고자료',
-      content: '# Docker 게시판 참고자료\n\n- [ ] 게시판 컨테이너 구성 확인\n- [ ] 참고 링크와 명령어 정리\n- [ ] 운영 반영 전 백업 절차 확인',
-      status: 'todo'
-    },
-    {
-      id: 'seed-travel-schedule',
-      folderId: 'company-incheon',
-      boardId: 'company-incheon',
-      title: '인천시청 업무 확인',
-      content: '# 인천시청 업무 확인\n\n- [ ] 요청 범위 정리\n- [ ] 담당자 연락 내역 확인\n- [ ] 처리 결과 공유',
-      status: 'todo'
-    }
-  ];
-  return [...workspaceNotes, ...projectTasks].map(normalizeNoteBlock);
+  return [];
+}
+
+const LEGACY_SAMPLE_BOARD_IDS = new Set([
+  'project',
+  'personal-today',
+  'personal-ideas',
+  'personal-review',
+  'work-202411',
+  'work-202606',
+  'work-202607',
+  'project-web-refresh',
+  'project-android',
+  'travel',
+  'travel-gyeongju',
+  'travel-food',
+  'travel-schedule',
+  'company-ndap',
+  'company-docker-board',
+  'company-dev-server',
+  'company-miniconda',
+  'company-incheon'
+]);
+
+function isLegacySampleNote(block) {
+  const id = `${block?.id || ''}`;
+  return id.startsWith('seed-') || /^memo-(todo|progress|review|done)-\d+$/.test(id);
 }
 
 function defaultMemoBoards() {
   const createdAt = memoTimestamp();
   return [
-    { id: 'memo', parentId: null, name: '업무 정리', title: '업무 정리', sortOrder: 0, createdAt, updatedAt: createdAt },
-    { id: 'personal-today', parentId: 'memo', name: '2024', title: '2024', sortOrder: 0, createdAt, updatedAt: createdAt },
-    { id: 'personal-ideas', parentId: 'memo', name: '2025', title: '2025', sortOrder: 1, createdAt, updatedAt: createdAt },
-    { id: 'personal-review', parentId: 'memo', name: '2026', title: '2026', sortOrder: 2, createdAt, updatedAt: createdAt },
-    { id: 'work-202411', parentId: 'personal-today', name: '202411', title: '202411', sortOrder: 0, createdAt, updatedAt: createdAt },
-    { id: 'work-202606', parentId: 'personal-review', name: '202606', title: '202606', sortOrder: 0, createdAt, updatedAt: createdAt },
-    { id: 'work-202607', parentId: 'personal-review', name: '202607', title: '202607', sortOrder: 1, createdAt, updatedAt: createdAt },
-    { id: 'project', parentId: null, name: '프로젝트', title: '프로젝트', sortOrder: 1, createdAt, updatedAt: createdAt },
-    { id: 'project-web-refresh', parentId: 'project', name: '웹 리프레시', title: '웹 리프레시', sortOrder: 0, createdAt, updatedAt: createdAt },
-    { id: 'project-android', parentId: 'project', name: 'Android APK', title: 'Android APK', sortOrder: 1, createdAt, updatedAt: createdAt },
-    { id: 'travel', parentId: null, name: '회사', title: '회사', sortOrder: 2, createdAt, updatedAt: createdAt },
-    { id: 'travel-gyeongju', parentId: 'travel', name: 'NDAP 발명진흥회', title: 'NDAP 발명진흥회', sortOrder: 0, createdAt, updatedAt: createdAt },
-    { id: 'travel-food', parentId: 'travel', name: 'Docker 게시판 참고자료', title: 'Docker 게시판 참고자료', sortOrder: 1, createdAt, updatedAt: createdAt },
-    { id: 'travel-schedule', parentId: 'travel', name: '회사 개발서버', title: '회사 개발서버', sortOrder: 2, createdAt, updatedAt: createdAt },
-    { id: 'company-ndap', parentId: 'travel-gyeongju', name: '국립국악원', title: '국립국악원', sortOrder: 0, createdAt, updatedAt: createdAt },
-    { id: 'company-docker-board', parentId: 'travel-food', name: '게시판 운영', title: '게시판 운영', sortOrder: 0, createdAt, updatedAt: createdAt },
-    { id: 'company-dev-server', parentId: 'travel-schedule', name: '배포 점검', title: '배포 점검', sortOrder: 0, createdAt, updatedAt: createdAt },
-    { id: 'company-miniconda', parentId: 'travel', name: '미니콘다', title: '미니콘다', sortOrder: 3, createdAt, updatedAt: createdAt },
-    { id: 'company-incheon', parentId: 'travel', name: '인천시청', title: '인천시청', sortOrder: 4, createdAt, updatedAt: createdAt }
+    { id: 'memo', parentId: null, name: '내 메모', title: '내 메모', sortOrder: 0, createdAt, updatedAt: createdAt }
   ];
 }
 
@@ -596,7 +528,9 @@ function readMemoBoards(input = readStoredAuth()) {
       return defaultMemoBoards();
     }
     const parsed = JSON.parse(raw);
-    const boards = Array.isArray(parsed) ? parsed.map(normalizeMemoBoard).filter(Boolean) : defaultMemoBoards();
+    const boards = Array.isArray(parsed)
+      ? parsed.map(normalizeMemoBoard).filter((board) => board && !LEGACY_SAMPLE_BOARD_IDS.has(board.id))
+      : defaultMemoBoards();
     if (!boards.length) return defaultMemoBoards();
     const defaults = defaultMemoBoards();
     const defaultById = new Map(defaults.map((board) => [board.id, board]));
@@ -870,7 +804,7 @@ function readNoteBlocks(input = readStoredAuth()) {
     }
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return defaultNoteBlocks();
-    const notes = parsed.map(normalizeNoteBlock);
+    const notes = parsed.map(normalizeNoteBlock).filter((note) => !isLegacySampleNote(note));
     const defaults = defaultNoteBlocks();
     const defaultById = new Map(defaults.map((note) => [note.id, note]));
     const refreshedNotes = notes.map((note) => (defaultById.has(note.id) ? defaultById.get(note.id) : note));
@@ -3044,11 +2978,20 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260603-notes-white-no-dummy-volume-web',
+    content: `# 2026-06-03 메모 화이트 UX와 web 소스 마운트 정리
+
+- [x] /notes 모바일 첫 화면을 흰색 작업 화면 톤으로 되돌림
+- [x] /notes와 /app에서 최신/최근 메모 노출을 제거
+- [x] 기본 샘플 메모와 기존 seed 더미 데이터를 저장소 읽기 단계에서 제거
+- [x] Docker web을 nginx 게이트웨이와 bind mount Vite web-source 구조로 정리`
+  },
+  {
     id: 'admin1-memo-20260603-work-memo-list-jenkins-deploy',
     content: `# 2026-06-03 업무 메모 리스트형 UI와 Jenkins 배포 옵션
 
-- [x] note1/note2 참고 이미지 기준으로 /notes 모바일 홈을 어두운 리스트형 업무 메모 화면으로 정리
-- [x] 기본 메모 seed를 문체부, 한국은행, 국립국악원, 현대미술관 등 업무 체크리스트 내용으로 교체
+- [x] note1/note2 참고 이미지 기준으로 /notes 모바일 홈을 리스트형 메모 화면으로 정리
+- [x] 기본 메모 seed를 업무 체크리스트 내용으로 교체
 - [x] 메모 상세는 기본 편집 포커스 없이 읽기 중심 체크리스트로 열리게 보정
 - [x] 하단 바로가기에서 폴더 탭을 제거하고 홈 / 메모 / 일정 / 더보기 4개로 정리
 - [x] Jenkins에 local-codex / git 배포 소스 선택 옵션과 GIT_BRANCH, GIT_REMOTE 파라미터 추가
@@ -5912,7 +5855,6 @@ function NotionNotesPage({ navigate }) {
   const [mobileView, setMobileView] = useState(routeTargetRef.current.noteId ? 'detail' : routeTargetRef.current.folderId ? 'list' : 'folders');
   const [statusText, setStatusText] = useState('');
   const [expandedMobileFolderIds, setExpandedMobileFolderIds] = useState(() => new Set());
-  const [expandedMobileSections, setExpandedMobileSections] = useState(() => new Set());
   const [notesSidebarCollapsed, setNotesSidebarCollapsed] = useState(false);
   const [mobileFolderMenu, setMobileFolderMenu] = useState(null);
 
@@ -6025,21 +5967,11 @@ function NotionNotesPage({ navigate }) {
   }, [notes]);
 
   const activeFolder = folders.find((folder) => folder.id === activeFolderId) || folders[0] || null;
-  const todayKey = toDateKey(new Date());
-  const todayScheduleItems = expandSchedulerItemsForDates(readCurrentSchedulerItems(session), [todayKey])
-    .filter((item) => item.date === todayKey)
-    .slice()
-    .sort((left, right) => left.time.localeCompare(right.time));
   const folderNotes = notes
     .filter((note) => memoFolderIdForNote(note) === activeFolderId && !note.parentId)
     .slice()
     .sort((left, right) => (memoNoteUpdatedAt(right) || '').localeCompare(memoNoteUpdatedAt(left) || ''));
   const activeNote = folderNotes.find((note) => note.id === activeId) || null;
-  const recentNotes = notes
-    .filter((note) => memoFolderIdForNote(note) !== 'project')
-    .slice()
-    .sort((left, right) => (memoNoteUpdatedAt(right) || '').localeCompare(memoNoteUpdatedAt(left) || ''))
-    .slice(0, 5);
   const noteCounts = notes.reduce((counts, note) => {
     const folderId = memoFolderIdForNote(note);
     counts[folderId] = (counts[folderId] || 0) + 1;
@@ -6049,12 +5981,7 @@ function NotionNotesPage({ navigate }) {
   const accountName = session?.username && session.username !== 'guestuser' ? session.username : 'Guest';
   const accountPath = session?.username && session.username !== 'guestuser' && !session?.isGuest ? '/mypage' : '/login?redirect=/notes';
   const primaryMemoFolderId = folders.find((folder) => folder.id === 'memo')?.id || activeFolderId || folders[0]?.id || 'memo';
-  const visibleRecentNotes = recentNotes.slice(0, 3);
-  const visibleTodayScheduleItems = todayScheduleItems.slice(0, 3);
   const topLevelFolders = memoFolderChildren(folders, null);
-  const folderPreviewItems = (topLevelFolders.length ? topLevelFolders : folders)
-    .filter((folder) => folder.id !== 'project')
-    .slice(0, 3);
 
   const replaceNotesRoute = (folderId = activeFolderId, noteId = '') => {
     const params = new URLSearchParams();
@@ -6193,33 +6120,6 @@ function NotionNotesPage({ navigate }) {
     replaceNotesRoute(targetNote ? memoFolderIdForNote(targetNote) : activeFolderId, noteId);
   };
 
-  const openAiAssist = () => {
-    if (visibleRecentNotes[0]) {
-      setActiveFolderId(memoFolderIdForNote(visibleRecentNotes[0]));
-      selectNote(visibleRecentNotes[0].id);
-      setStatusText('최근 메모를 열었습니다. 내용을 다듬고 일정 연결로 이어가세요.');
-      return;
-    }
-    createNote(primaryMemoFolderId);
-    setStatusText('새 메모에 정리할 내용을 적어보세요.');
-  };
-
-  const openMobileFolderSection = () => {
-    setMobileView('folders');
-    window.requestAnimationFrame(() => {
-      document.getElementById('notes-mobile-folder-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  };
-
-  const toggleMobileSection = (sectionId) => {
-    setExpandedMobileSections((current) => {
-      const next = new Set(current);
-      if (next.has(sectionId)) next.delete(sectionId);
-      else next.add(sectionId);
-      return next;
-    });
-  };
-
   const toggleMobileFolder = (folderId) => {
     setExpandedMobileFolderIds((current) => {
       const next = new Set(current);
@@ -6237,6 +6137,10 @@ function NotionNotesPage({ navigate }) {
 
   const renderMobileFolderRows = (parentId = null, depth = 0) => memoFolderChildren(folders, parentId).map((folder) => {
     const children = memoFolderChildren(folders, folder.id);
+    const files = notes
+      .filter((note) => memoFolderIdForNote(note) === folder.id && !note.parentId)
+      .slice()
+      .sort((left, right) => noteBlockTitle(left).localeCompare(noteBlockTitle(right), 'ko'));
     const expanded = expandedMobileFolderIds.has(folder.id);
     const active = activeFolderId === folder.id;
     return (
@@ -6246,7 +6150,7 @@ function NotionNotesPage({ navigate }) {
           type="button"
           className={`notesMobileFolderToggle ${expanded ? 'expanded' : ''}`}
           onClick={() => toggleMobileFolder(folder.id)}
-          disabled={!children.length}
+          disabled={!children.length && !files.length}
           aria-label={expanded ? '폴더 접기' : '폴더 펼치기'}
         >
           <MemoNavIcon type="chevronRight" />
@@ -6255,8 +6159,14 @@ function NotionNotesPage({ navigate }) {
           type="button"
           className="notesMobileFolderOpen"
           onClick={() => {
-            selectFolder(folder.id);
-            if (children.length) toggleMobileFolder(folder.id);
+            setActiveFolderId(folder.id);
+            setActiveId('');
+            replaceNotesRoute(folder.id);
+            if (children.length || files.length) {
+              toggleMobileFolder(folder.id);
+            } else {
+              setMobileView('list');
+            }
           }}
         >
           <MemoNavIcon type="folder" />
@@ -6301,6 +6211,28 @@ function NotionNotesPage({ navigate }) {
         {children.length && expanded ? (
           <div className="notesMobileFolderChildren">
             {renderMobileFolderRows(folder.id, depth + 1)}
+          </div>
+        ) : null}
+        {expanded && files.length ? (
+          <div className="notesMobileFolderChildren files">
+            {files.map((note) => (
+              <button
+                type="button"
+                className={`notesMobileFileOpen ${activeId === note.id ? 'active' : ''}`}
+                key={note.id}
+                onClick={() => {
+                  setActiveFolderId(folder.id);
+                  selectNote(note.id);
+                }}
+                style={{ '--mobile-folder-depth': depth + 1 }}
+              >
+                <MemoNavIcon type="file" />
+                <span>
+                  <strong>{noteBlockTitle(note)}</strong>
+                  <small>text/plain</small>
+                </span>
+              </button>
+            ))}
           </div>
         ) : null}
       </div>
@@ -6418,122 +6350,25 @@ function NotionNotesPage({ navigate }) {
                 </div>
                 <div className="notesMobileProfileRow">
                   <div className="notesMobileTitleBlock">
-                    <span>안녕하세요, {accountName}님</span>
-                    <strong>오늘도 빠르게 정리해보세요</strong>
+                    <span>{accountName}</span>
+                    <strong>텍스트 파일</strong>
                   </div>
                 </div>
-                <div className="notesMobileMainActions" aria-label="메모 주요 작업">
-                  <button type="button" className="notesMobilePrimaryMemoButton" onClick={() => createNote(primaryMemoFolderId)}>
-                    <MemoNavIcon type="plus" />
-                    <span>
-                      <strong>새 메모 작성</strong>
-                      <small>빠르게 생각을 기록하세요</small>
-                    </span>
-                  </button>
-                  <button type="button" className="notesMobileAiAssistButton" onClick={openAiAssist}>
-                    <MemoNavIcon type="spark" />
-                    <span>AI로 정리하기</span>
-                  </button>
-                </div>
               </section>
-              <section className="notesMobileContentSection" aria-label="최근 메모">
+              <section className="notesMobileContentSection notesMobileFileSection" id="notes-mobile-folder-section" aria-label="텍스트 파일">
                 <header className="notesMobileContentHeader">
-                  <strong>최근 메모</strong>
-                  <button type="button" onClick={() => setMobileView('list')}>
-                    전체보기
-                    <MemoNavIcon type="chevronRight" />
-                  </button>
+                  <strong>파일 목록</strong>
+                  <button type="button" onClick={() => createNote(primaryMemoFolderId)}><MemoNavIcon type="plus" />새 파일</button>
                 </header>
-                <div className="notesMobileContentList">
-                  {visibleRecentNotes.map((note) => {
-                    const notePath = memoFolderPath(folders, memoFolderIdForNote(note)).map(memoFolderName).join(' / ');
-                    return (
-                      <button
-                        type="button"
-                        className="notesMobileContentRow"
-                        key={note.id}
-                        onClick={() => {
-                          setActiveFolderId(memoFolderIdForNote(note));
-                          selectNote(note.id);
-                        }}
-                      >
-                        <MemoNavIcon type="file" />
-                        <span>
-                          <strong>{noteBlockTitle(note)}</strong>
-                          <small>{memoNoteUpdatedAt(note) || '최근 수정'} · {notePath || '메모'}</small>
-                        </span>
-                        <MemoNavIcon type="chevronRight" />
-                      </button>
-                    );
-                  })}
-                  {visibleRecentNotes.length ? null : (
-                    <article className="notesMobileEmptyState">
-                      <strong>아직 작성한 메모가 없습니다.</strong>
-                      <span>새 메모를 작성해보세요.</span>
-                      <button type="button" onClick={() => createNote(primaryMemoFolderId)}>새 메모 작성</button>
-                    </article>
-                  )}
-                </div>
-              </section>
-              <section className="notesMobileContentSection" aria-label="오늘 일정">
-                <header className="notesMobileContentHeader">
-                  <strong>오늘 일정</strong>
-                  <button type="button" onClick={() => navigate('/scheduler')}>
-                    전체보기
-                    <MemoNavIcon type="chevronRight" />
-                  </button>
-                </header>
-                <div className="notesMobileContentList">
-                  {visibleTodayScheduleItems.map((item) => (
-                    <button type="button" className="notesMobileScheduleRow" key={item.id} onClick={() => navigate('/scheduler')}>
-                      <time>{item.time}</time>
-                      <span>
-                        <strong>{item.title}</strong>
-                        <small>{item.type}{item.done ? ' · 완료' : ''}</small>
-                      </span>
-                      <MemoNavIcon type="chevronRight" />
-                    </button>
-                  ))}
-                  {visibleTodayScheduleItems.length ? null : (
-                    <article className="notesMobileEmptyState compact">
-                      <strong>오늘 등록된 일정이 없습니다.</strong>
-                      <span>메모에서 일정을 만들어보세요.</span>
-                    </article>
-                  )}
-                </div>
-              </section>
-              <section className="notesMobileContentSection" id="notes-mobile-folder-section" aria-label="폴더">
-                <header className="notesMobileContentHeader">
-                  <strong>폴더</strong>
-                  <button type="button" onClick={() => toggleMobileSection('folders')}>
-                    {expandedMobileSections.has('folders') ? '접기' : '전체보기'}
-                    <MemoNavIcon type="chevronRight" />
-                  </button>
-                </header>
-                <div className="notesMobileFolderPreviewList">
-                  {folderPreviewItems.map((folder) => (
-                    <button type="button" className="notesMobileFolderPreviewRow" key={folder.id} onClick={() => selectFolder(folder.id)}>
-                      <MemoNavIcon type="folder" />
-                      <span>
-                        <strong>{memoFolderName(folder)}</strong>
-                        <small>{noteCounts[folder.id] || 0}개 메모</small>
-                      </span>
-                      <MemoNavIcon type="chevronRight" />
-                    </button>
-                  ))}
-                  {folderPreviewItems.length ? null : (
+                <div className="notesMobileFolderList full">
+                  <button type="button" className="notesMobileInlineAction" onClick={() => addFolder(null)}><MemoNavIcon type="plus" />폴더 추가</button>
+                  {topLevelFolders.length ? renderMobileFolderRows() : (
                     <article className="notesMobileEmptyState compact">
                       <strong>폴더가 없습니다.</strong>
                       <span>필요한 주제별로 폴더를 만들어보세요.</span>
                       <button type="button" onClick={() => addFolder(null)}>폴더 추가</button>
                     </article>
                   )}
-                  {expandedMobileSections.has('folders') ? (
-                    <div className="notesMobileFolderList full">
-                      <button type="button" className="notesMobileInlineAction" onClick={() => addFolder(null)}><MemoNavIcon type="plus" />폴더 추가</button>
-                      {renderMobileFolderRows()}
-                    </div>
-                  ) : null}
                 </div>
               </section>
             </section>

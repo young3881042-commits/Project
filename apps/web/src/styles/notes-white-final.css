@@ -1,0 +1,226 @@
+/* Final /notes mobile override loaded after notes-notion.css. */
+@media (max-width: 680px) {
+  html:has(.notesShell),
+  body:has(.notesShell),
+  body:has(.notesShell) #root,
+  .notesShell.aiNoteShell,
+  .notesShell.aiNoteShell .notesWorkspace,
+  .notesShell.aiNoteShell .notesMobileWorkspace,
+  .notesShell.aiNoteShell .notesMobileWorkspace.view-folders,
+  .notesShell.aiNoteShell .notesMobileFolders,
+  .notesShell.aiNoteShell .notesMobileHomeTop {
+    background: #f7f8fb !important;
+    background-color: #f7f8fb !important;
+    background-image: none !important;
+    color: #102033 !important;
+  }
+
+  .notesMobileFolders {
+    gap: 12px !important;
+    padding: 14px 14px calc(104px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .notesMobileAppBar {
+    min-height: 44px !important;
+    grid-template-columns: 42px minmax(0, 1fr) auto !important;
+    gap: 10px !important;
+  }
+
+  .notesMobileAppBar > strong,
+  .notesMobileTitleBlock strong,
+  .notesMobileFileSection .notesMobileContentHeader strong,
+  .notesMobileFolderOpen span,
+  .notesMobileFileOpen strong,
+  .notesMobileList .notesListItemMain strong,
+  .notesMobileDetail .notesTitleHeaderInput,
+  .notesMobileDetail .notionBlockPreview,
+  .notesMobileDetail .notionChecklist {
+    color: #102033 !important;
+  }
+
+  .notesMobileAppBar > strong {
+    font-size: 1.28rem !important;
+  }
+
+  .notesMobileTitleBlock {
+    gap: 4px !important;
+  }
+
+  .notesMobileTitleBlock span,
+  .notesMobileFolderOpen small,
+  .notesMobileFileOpen small,
+  .notesMobileList .notesListItemMain span,
+  .notesMobileList .notesListItemMain small,
+  .notesMobileDetail .notesDetailCrumbs span {
+    color: #64748b !important;
+  }
+
+  .notesMobileTitleBlock span {
+    font-size: 0.8rem !important;
+    line-height: 1.25 !important;
+    font-weight: 850 !important;
+  }
+
+  .notesMobileTitleBlock strong {
+    font-size: 1.34rem !important;
+    line-height: 1.2 !important;
+    font-weight: 950 !important;
+  }
+
+  .notesMobileAppIconButton {
+    width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    border: 1px solid #dbe7ef !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #2563eb !important;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  .notesMobileFileSection {
+    gap: 10px !important;
+    padding: 14px !important;
+    border: 1px solid #dbe7ef !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .notesMobileFileSection .notesMobileContentHeader {
+    min-height: 38px !important;
+    padding: 0 0 10px !important;
+    border-bottom: 1px solid #e6edf5 !important;
+  }
+
+  .notesMobileFileSection .notesMobileContentHeader button {
+    min-height: 34px !important;
+    border: 1px solid #bfdbfe !important;
+    border-radius: 8px !important;
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+    padding: 0 10px !important;
+    font-size: 0.78rem !important;
+    font-weight: 900 !important;
+  }
+
+  .notesMobileFileSection .notesMobileFolderList.full {
+    gap: 6px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+
+  .notesMobileFolderRow {
+    grid-template-columns: 28px minmax(0, 1fr) 36px 36px !important;
+    gap: 5px !important;
+    padding-left: calc(var(--mobile-folder-depth, 0) * 14px) !important;
+  }
+
+  .notesMobileFolderOpen,
+  .notesMobileFolderAction,
+  .notesMobileFileOpen {
+    border: 1px solid #e6edf5 !important;
+    border-radius: 8px !important;
+    background: #fbfdff !important;
+    color: #334155 !important;
+    box-shadow: none !important;
+  }
+
+  .notesMobileFolderOpen {
+    min-height: 44px !important;
+  }
+
+  .notesMobileFolderToggle {
+    color: #64748b !important;
+  }
+
+  .notesMobileFolderChildren {
+    gap: 6px !important;
+    margin: 6px 0 0 18px !important;
+    padding-left: 8px !important;
+    border-left: 1px solid #e6edf5 !important;
+  }
+
+  .notesMobileFileOpen {
+    width: 100% !important;
+    min-height: 46px !important;
+    grid-template-columns: 24px minmax(0, 1fr) !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+  }
+
+  .notesMobileFileOpen.active,
+  .notesMobileFileOpen:hover,
+  .notesMobileFolderOpen:hover,
+  .notesMobileFolderOpen:focus-visible {
+    border-color: #bfdbfe !important;
+    background: #eff6ff !important;
+  }
+
+  .notesMobileFileOpen .memoNavIcon {
+    color: #2563eb !important;
+  }
+
+  .notesMobileInlineAction {
+    min-height: 36px !important;
+    border-color: #bbf7d0 !important;
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+  }
+
+  .notesShell .mobileWorkspaceTabs {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    border-color: #e2e8f0 !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    box-shadow: 0 -16px 36px rgba(15, 23, 42, 0.12) !important;
+  }
+
+  .notesShell .mobileWorkspaceTabButton {
+    color: #64748b !important;
+  }
+
+  .notesShell .mobileWorkspaceTabButton.active {
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+  }
+
+  .notesMobileHeader,
+  .notesMobileList .notesListPanel,
+  .notesMobileDetail .notesDetailPanel,
+  .notesMobileDetail .notesDetailCrumbs,
+  .notesMobileDetail .notesDetailTopbar {
+    border-color: #dbe7ef !important;
+    background: #ffffff !important;
+    color: #102033 !important;
+    box-shadow: none !important;
+  }
+
+  .notesMobileList .notesListItem,
+  .notesMobileDetail .notesMarkdownEditor {
+    border-color: #e6edf5 !important;
+    background: #fbfdff !important;
+    color: #102033 !important;
+  }
+
+  .notesMobileDetail .notesEditorModeTabs {
+    border-color: #dbe7ef !important;
+    background: #f8fcff !important;
+  }
+
+  .notesMobileDetail .notesEditorModeTabs button {
+    color: #64748b !important;
+  }
+
+  .notesMobileDetail .notesEditorModeTabs button.active {
+    background: #ffffff !important;
+    color: #1d4ed8 !important;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .notesMobileDetail .notesDocument {
+    background: #ffffff !important;
+    color: #102033 !important;
+    padding: 20px 14px 120px !important;
+  }
+}

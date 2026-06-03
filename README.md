@@ -63,6 +63,18 @@ Docker 기준으로 실행합니다.
 docker compose -f docker-compose.dev.yml up -d --build
 ```
 
+`docker-compose.dev.yml`의 웹은 두 컨테이너로 나뉩니다.
+
+- `web`: 80/443을 받는 nginx 게이트웨이
+- `web-source`: `./apps/web:/app`을 bind mount해서 실행하는 Vite 앱
+
+웹 소스만 수정한 경우에는 이미지를 다시 빌드하지 않아도 됩니다.
+
+```bash
+docker compose -f docker-compose.dev.yml up -d api web
+docker compose -f docker-compose.dev.yml restart web-source
+```
+
 상태 확인:
 
 ```bash

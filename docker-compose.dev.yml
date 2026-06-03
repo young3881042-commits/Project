@@ -56,9 +56,27 @@ services:
       dockerfile: ../../infra/web/docker/Dockerfile
     env_file:
       - infra/web/docker/web.env
+    environment:
+      VITE_API_PROXY: http://api:8080
+      VITE_WEB_PROXY: http://web-source:5173
     ports:
       - "${WEB_HTTP_PORT:-80}:80"
       - "${WEB_HTTPS_PORT:-443}:443"
+    depends_on:
+      - api
+      - web-source
+
+  web-source:
+    image: node:20-alpine
+    working_dir: /app
+    command: ["sh", "-c", "if [ ! -d node_modules/vite ]; then npm ci; fi; npm run dev -- --host 0.0.0.0 --port 5173"]
+    environment:
+      VITE_API_PROXY: http://api:8080
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ./apps/web:/app
+    expose:
+      - "5173"
     depends_on:
       - api
       

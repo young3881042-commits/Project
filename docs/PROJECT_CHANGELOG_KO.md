@@ -1,5 +1,37 @@
 # 프로젝트 변경 상세 문서
 
+## 51. 2026-06-03 메모 화이트 UX와 web 소스 마운트 정리
+
+`/notes` 모바일 첫 화면을 다시 흰색 작업 화면 톤으로 맞추고, 최신/최근 메모와 기본 더미 데이터를 보이지 않게 정리했습니다. Docker web은 nginx 게이트웨이와 bind mount 기반 Vite 소스 컨테이너로 분리했습니다.
+
+변경 내용:
+
+- `/notes` 모바일 홈을 홈/일정 화면과 같은 화이트 베이스로 되돌렸습니다.
+- 첫 화면에서 최근 메모, 오늘 일정, AI 정리 CTA를 제거했습니다.
+- `/app` 홈의 최근 메모 카드를 제거했습니다.
+- 폴더를 펼치면 하위 폴더와 `.txt` 메모 파일이 같은 트리 안에 보이도록 바꿨습니다.
+- 기본 메모 seed를 생성하지 않도록 바꾸고, 기존 저장소에 남아 있는 `seed-*`/샘플 보드 id도 읽기 단계에서 제거했습니다.
+- Docker `web`은 nginx 게이트웨이만 담당하고, `web-source`가 `./apps/web:/app` bind mount로 Vite dev 서버를 실행하게 바꿨습니다.
+- 웹 소스 수정은 컨테이너 이미지 재빌드 없이 `web-source`에서 바로 반영됩니다.
+- nginx 숨김 파일 차단 규칙이 Vite dependency 경로 `/node_modules/.vite/`를 막지 않도록 `/node_modules/` 프록시 예외를 추가했습니다.
+- `/notes` 최종 모바일 화이트 톤 보정을 별도 `notes-white-final.css`로 분리해 레거시 dark mobile 규칙 뒤에서 안정적으로 적용되게 했습니다.
+- 이번 작업 로그를 `admin1` 메모 보드 시드에 추가했습니다.
+
+검증:
+
+- `git diff --check`
+- `npm --prefix apps/web run build`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web`
+- `docker compose -f docker-compose.dev.yml ps`
+- `docker exec vibecoding-web-1 nginx -t`
+- `curl -I http://127.0.0.1/`
+- `curl -I http://127.0.0.1/app`
+- `curl -I http://127.0.0.1/notes`
+- `curl -I http://127.0.0.1/manifest.webmanifest`
+- `curl -I http://127.0.0.1/api/destinations?size=1`
+- Playwright 모바일 뷰포트 스크린샷 확인: `/app`, `/notes`
+- 스크린샷 저장 경로: `/tmp/codex-playwright/screenshots/app-mobile-final.png`, `/tmp/codex-playwright/screenshots/notes-mobile-final.png`
+
 ## 50. 2026-06-03 업무 메모 리스트형 UI와 Jenkins 배포 옵션
 
 `/notes`를 note1/note2 참고 이미지 기준의 업무 메모 리스트 화면으로 정리하고, Jenkins에서 로컬 Codex 작업본 또는 Git 기준으로 배포할 수 있게 옵션을 추가했습니다.
@@ -7,7 +39,7 @@
 변경 내용:
 
 - `/notes` 모바일 홈을 어두운 배경의 섹션형 리스트 UI로 정리했습니다.
-- 기본 메모 seed를 문체부, 한국은행, 국립국악원, 현대미술관 등 업무 체크리스트 내용으로 교체했습니다.
+- 기본 메모 seed를 업무 체크리스트 내용으로 교체했습니다.
 - 기본 폴더 seed를 `업무 정리`, `2024/2025/2026`, `202411`, `회사`, `NDAP 발명진흥회`, `Docker 게시판 참고자료`, `회사 개발서버`, `인천시청` 등 업무 분류로 바꿨습니다.
 - 메모 상세는 처음 열 때 편집 textarea가 바로 뜨지 않고 읽기 중심 체크리스트로 보이게 변경했습니다.
 - 모바일 상세에서 큰 일정 연결 카드를 숨겨 본문 체크리스트가 먼저 보이게 했습니다.

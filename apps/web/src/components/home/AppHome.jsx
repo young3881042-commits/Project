@@ -1,6 +1,5 @@
 import MobileWorkspaceTabs from '../MobileWorkspaceTabs.jsx';
 import MemoNavIcon from '../MemoNavIcon.jsx';
-import HomeRecentMemoCard from './HomeRecentMemoCard.jsx';
 import HomeScheduleCards from './HomeScheduleCards.jsx';
 import {
   HomeAccountStrip,
@@ -57,7 +56,6 @@ export default function AppHome({
         ) : null}
 
         <HomeScheduleCards appOverview={appOverview} navigate={navigate} onScheduleToggle={onScheduleToggle} />
-        <HomeRecentMemoCard appOverview={appOverview} navigate={navigate} planMode="personal" />
         <MobileWorkspaceTabs active="home" navigate={navigate} />
       </section>
     </main>

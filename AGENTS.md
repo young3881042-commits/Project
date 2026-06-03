@@ -11,6 +11,7 @@
 - The default app route is `/app`; `/` should not render a separate main screen.
 - Treat external web access for this deployment as port `80`. For Docker deploy/validation, use `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web` or the same command without `--build`; do not leave the web container mapped to `18000`.
 - Only use `WEB_HTTP_PORT=18000` as a temporary fallback when port `80` is genuinely unavailable, and switch back to `80` before handing work back to the user.
+- Docker `web` is an nginx gateway, and `web-source` runs Vite from the bind-mounted `./apps/web:/app` source. For normal web source edits, prefer `docker compose -f docker-compose.dev.yml up -d api web` or `docker compose -f docker-compose.dev.yml restart web-source`; rebuild the `web` image only when nginx or Dockerfile inputs change.
 - Keep `docs/NEXT_CHECKLIST_PLAN_KO.md` updated when a task changes UI behavior, routing, deployment steps, or follow-up work.
 - Check `docs/PROJECT_CHANGELOG_KO.md` for recent context before changing travel, notes, scheduler, login, or admin behavior.
 - For mobile UI/UX changes, include screenshot validation with a real browser when feasible. Prefer Playwright mobile viewport screenshots after Docker deploy, and record the checked routes in the changelog.
