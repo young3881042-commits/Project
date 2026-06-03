@@ -3016,6 +3016,16 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260602-travel-mobile-dashboard-ux',
+    content: `# 2026-06-02 여행 모바일 홈 UX 재정리
+
+- [x] /travel 첫 화면을 큰 검색 히어로 대신 D-Day와 빠른 실행 중심 대시보드로 변경
+- [x] 여행 만들기, 장소 찾기, 내 일정, 여행 메모 액션을 모바일 첫 화면에서 바로 누를 수 있게 정리
+- [x] /app 홈 일정/메모 카드를 컴포넌트로 분리하고 하단 탭을 첫 화면 하단에 고정
+- [x] 홈/여행 생성 이미지 자산을 적용하고 깨진 이미지 없이 렌더링되는지 확인
+- [x] Playwright 모바일 스크린샷으로 /app, /more, /travel 첫 화면 레이아웃을 검증`
+  },
+  {
     id: 'admin1-memo-20260601-unify-mobile-nav-travel-direct',
     content: `# 2026-06-01 메모·여행 상단 네비게이션 통일과 여행 직접 진입
 

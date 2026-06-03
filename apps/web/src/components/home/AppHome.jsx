@@ -1,10 +1,10 @@
 import MobileWorkspaceTabs from '../MobileWorkspaceTabs.jsx';
+import MemoNavIcon from '../MemoNavIcon.jsx';
+import HomeRecentMemoCard from './HomeRecentMemoCard.jsx';
+import HomeScheduleCards from './HomeScheduleCards.jsx';
 import {
   HomeAccountStrip,
-  HomeRobotHero,
-  QuickActionCard,
-  RecentMemoCard,
-  TodayFlowCard
+  HomeRobotHero
 } from './AppHomeSections.jsx';
 
 export default function AppHome({
@@ -27,7 +27,7 @@ export default function AppHome({
         <header className="appHomeHeader">
           <div className="appHomeTitleGroup">
             <h1>개인 워크스페이스</h1>
-            <p>AI 일정 · 여행 도우미</p>
+            <p>AI 일정 · 메모 도우미</p>
           </div>
           <div className="appHomeHeaderActions">
             <button
@@ -35,7 +35,8 @@ export default function AppHome({
               className="appHomeLoginButton"
               onClick={() => (isMemberSession ? navigate('/mypage') : inlineAuth?.onOpen?.())}
             >
-              {isMemberSession ? '내 정보' : '로그인'}
+              <MemoNavIcon type="user" />
+              <span>{isMemberSession ? '내 정보' : '로그인'}</span>
             </button>
           </div>
         </header>
@@ -55,9 +56,8 @@ export default function AppHome({
           />
         ) : null}
 
-        <TodayFlowCard appOverview={appOverview} navigate={navigate} onScheduleToggle={onScheduleToggle} />
-        <QuickActionCard navigate={navigate} planMode="personal" />
-        <RecentMemoCard appOverview={appOverview} navigate={navigate} planMode="personal" />
+        <HomeScheduleCards appOverview={appOverview} navigate={navigate} onScheduleToggle={onScheduleToggle} />
+        <HomeRecentMemoCard appOverview={appOverview} navigate={navigate} planMode="personal" />
         <MobileWorkspaceTabs active="home" navigate={navigate} />
       </section>
     </main>

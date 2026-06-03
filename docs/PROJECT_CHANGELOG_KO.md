@@ -1,5 +1,31 @@
 # 프로젝트 변경 상세 문서
 
+## 45. 2026-06-02 앱·여행 모바일 홈 UX 재정리
+
+`/app`과 `/travel` 첫 화면의 모바일 밀도, 하단 탭 위치, 여행 기능 진입점을 정리했습니다.
+
+변경 내용:
+
+- `/travel` 여행 메인 화면을 D-Day 카드, 여행 만들기, 장소 찾기, 빠른 실행, 검색 카드 중심의 대시보드로 재구성했습니다.
+- 여행 화면 상단의 동작 없는 알림 아이콘을 저장 코스 진입 버튼으로 바꿨습니다.
+- 추천 테마와 카테고리 카드가 모바일에서 과하게 길게 보이지 않도록 가로 스크롤 칩과 2열 카드 밀도로 보정했습니다.
+- `/app` 홈의 오늘 일정, 금주 일정, 최근 메모 카드를 컴포넌트로 분리하고 모바일 카드 정렬을 다듬었습니다.
+- `/app` 홈 하단 탭이 긴 홈 콘텐츠 아래로 밀리지 않고 첫 화면 하단에 고정되게 했습니다.
+- 홈/여행 생성 이미지 자산을 `/assets/home-assistant-hero.png`, `/assets/travel-home-hero.png`로 적용했습니다.
+- 이번 작업 로그를 `admin1` 메모 보드 시드에 추가했습니다.
+
+검증:
+
+- `git diff --check`
+- `npm --prefix apps/web run build`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web`
+- `curl -I http://127.0.0.1/app`
+- `curl -I http://127.0.0.1/travel`
+- `curl -I http://127.0.0.1/api/destinations?size=1`
+- `env PLAYWRIGHT_BROWSERS_PATH=/data/ms-playwright node /tmp/codex-playwright/capture.js`
+- Playwright 확인 경로: `/app`, `/more`, `/travel`, `/more -> /travel`
+- 스크린샷 저장 경로: `/tmp/codex-playwright/screenshots`
+
 ## 44. 2026-06-01 메모·여행 모바일 상단 네비게이션 통일
 
 일정 화면과 메모/여행 화면의 모바일 상단 진입감이 달라 보이던 문제를 정리했습니다.

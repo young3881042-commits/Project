@@ -387,6 +387,79 @@
   color: #0f766e;
 }
 
+.ltTravelStartPage {
+  display: grid;
+  gap: 14px;
+}
+
+.ltTravelSearchPanel {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.05);
+}
+
+.ltTravelSearchPanel h2 {
+  margin: 0;
+  color: #0f172a;
+  letter-spacing: 0;
+}
+
+.ltTravelSearchPanel {
+  grid-template-columns: minmax(180px, 0.32fr) minmax(0, 1fr);
+  align-items: center;
+}
+
+.ltTravelSearchPanel > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.ltTravelSearchPanel h2 {
+  font-size: 1.18rem;
+  line-height: 1.2;
+  font-weight: 950;
+}
+
+.ltTravelSearchPanel .ltHeroSearch {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ltTravelSearchPanel .ltHeroSearch label > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.ltTravelStartPage .ltPurposeRail {
+  margin: 0;
+}
+
+.ltTravelStartPage .ltServiceSection {
+  display: grid;
+  gap: 12px;
+}
+
+.ltTravelStartPage .ltServiceGrid {
+  gap: 10px;
+}
+
+.ltTravelStartPage .ltServiceCard {
+  min-height: 132px;
+  border-radius: 8px;
+}
+
 @media (max-width: 760px) {
   .ltShell {
     padding-bottom: calc(94px + env(safe-area-inset-bottom)) !important;
@@ -404,9 +477,45 @@
     z-index: 260 !important;
   }
 
+  .ltShell .travelWorkspaceNavigator {
+    min-height: 64px !important;
+    grid-template-columns: minmax(0, 1fr) minmax(106px, auto) !important;
+    gap: 10px !important;
+    padding: 8px 12px !important;
+  }
+
+  .ltShell .travelWorkspaceNavigator .workspaceNavigatorBrand {
+    min-height: 44px !important;
+    font-size: 0.94rem !important;
+  }
+
+  .ltShell .travelWorkspaceNavigator .workspaceNavigatorAccount {
+    min-width: 106px !important;
+    min-height: 44px !important;
+    grid-template-columns: 30px minmax(0, 1fr) !important;
+    padding: 6px 8px !important;
+  }
+
+  .ltShell .travelWorkspaceNavigator .workspaceNavigatorAccount > span {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
   .ltTravelHomePage {
     gap: 12px;
     padding-top: calc(24px + env(safe-area-inset-top)) !important;
+  }
+
+  .ltTravelStartPage {
+    width: min(100% - 20px, 520px) !important;
+    gap: 10px;
+    padding-top: 10px !important;
+  }
+
+  .ltTravelSearchPanel {
+    gap: 10px;
+    padding: 14px;
+    border-radius: 8px;
   }
 
   .ltTravelDdayCard {
@@ -461,6 +570,103 @@
     border-radius: 8px;
   }
 
+  .ltTravelSearchPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .ltTravelSearchPanel .ltHeroSearchInput {
+    min-height: 44px;
+    grid-template-columns: 22px minmax(0, 1fr) minmax(64px, auto);
+    padding: 8px 9px;
+  }
+
+  .ltTravelSearchPanel .ltHeroSearchInput button {
+    grid-column: auto;
+    width: auto;
+    min-height: 36px;
+    padding-inline: 13px;
+  }
+
+  .ltTravelSearchPanel .ltHeroFilters {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .ltTravelSearchPanel .ltHeroFilters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ltTravelSearchPanel .ltHeroFilters button {
+    flex: 0 0 auto;
+    min-height: 36px;
+    border-radius: 8px;
+  }
+
+  .ltTravelStartPage .ltPurposeRail {
+    gap: 10px;
+    padding: 14px;
+    border-radius: 8px;
+  }
+
+  .ltTravelStartPage .ltPurposeRail strong {
+    font-size: 1rem;
+  }
+
+  .ltTravelStartPage .ltPurposeChips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .ltTravelStartPage .ltPurposeChips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ltTravelStartPage .ltPurposeChips button {
+    flex: 0 0 auto;
+    min-height: 36px;
+    border-radius: 8px;
+  }
+
+  .ltTravelStartPage .ltSectionHeader.compact {
+    gap: 4px;
+    margin-bottom: 0;
+  }
+
+  .ltTravelStartPage .ltSectionHeader.compact p {
+    display: none;
+  }
+
+  .ltTravelStartPage .ltSectionHeader.compact h2 {
+    font-size: 1.18rem;
+    line-height: 1.2;
+  }
+
+  .ltTravelStartPage .ltServiceGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .ltTravelStartPage .ltServiceCard {
+    min-height: 106px;
+    gap: 6px;
+    padding: 12px;
+  }
+
+  .ltTravelStartPage .ltServiceCard strong {
+    font-size: 0.92rem;
+  }
+
+  .ltTravelStartPage .ltServiceCard span {
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
   .ltDestinationGrid {
     grid-template-columns: 1fr;
   }
@@ -476,5 +682,473 @@
   .ltMiniDestCard strong {
     max-width: 100%;
     white-space: normal;
+  }
+}
+
+/* Travel reference home */
+.ltShellTravelStart {
+  background: #ffffff !important;
+}
+
+.ltShellTravelStart .ltFooter {
+  display: none !important;
+}
+
+.ltShellTravelStart .ltTravelStartPage {
+  width: min(100% - 28px, 430px);
+  gap: 14px;
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-bottom: calc(108px + env(safe-area-inset-bottom)) !important;
+}
+
+.ltTravelStartHeader {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+.ltTravelStartHeader h1 {
+  margin: 0;
+  color: #10203b;
+  font-size: 2rem;
+  line-height: 1.1;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.ltTravelStartHeader p {
+  margin: 6px 0 0;
+  color: #526071;
+  font-size: 0.94rem;
+  line-height: 1.35;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.ltTravelStartHeader button {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #0f9f78;
+  cursor: pointer;
+}
+
+.ltTravelStartHeader button .ltTravelQuickIcon {
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  color: currentColor;
+}
+
+.ltShellTravelStart .ltTravelDdayCard,
+.ltTravelAiTripCard,
+.ltShellTravelStart .ltTravelQuickActions,
+.ltShellTravelStart .ltTravelSearchPanel,
+.ltShellTravelStart .ltPurposeRail,
+.ltShellTravelStart .ltServiceSection {
+  border-radius: 8px !important;
+}
+
+.ltShellTravelStart .ltTravelDdayCard {
+  min-height: 208px;
+  grid-template-columns: minmax(0, 1fr) minmax(132px, 0.45fr);
+  gap: 14px;
+  padding: 22px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 70% 20%, rgba(187, 247, 208, 0.34), transparent 28%),
+    linear-gradient(135deg, rgba(241, 255, 251, 0.98) 0%, rgba(240, 249, 255, 0.96) 100%),
+    #ffffff;
+}
+
+.ltShellTravelStart .ltTravelDdayCard.empty,
+.ltShellTravelStart .ltTravelDdayCard.loading {
+  grid-template-columns: minmax(0, 1fr) minmax(132px, 0.45fr);
+}
+
+.ltShellTravelStart .ltTravelDdayCard.loading {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ltShellTravelStart .ltTravelDdayCard h1 {
+  white-space: normal;
+  font-size: clamp(1.42rem, 5vw, 2rem);
+  line-height: 1.16;
+}
+
+.ltShellTravelStart .ltTravelDdayCard p {
+  font-size: 1rem;
+}
+
+.ltShellTravelStart .ltTravelDdayCard .ltPrimaryButton {
+  width: fit-content;
+  min-width: 154px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  border-radius: 8px;
+  font-size: 0.98rem;
+  font-weight: 950;
+}
+
+.ltShellTravelStart .ltTravelDdayCard .ltPrimaryButton .ltTravelQuickIcon {
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  color: currentColor;
+}
+
+.ltTravelHeroVisual {
+  position: relative;
+  min-width: 128px;
+  min-height: 150px;
+  aspect-ratio: 1;
+  align-self: center;
+}
+
+.ltTravelHeroVisual img {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 8px;
+}
+
+.ltTravelHeroVisual.compact {
+  min-height: 98px;
+}
+
+.ltTravelAiTripCard {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(108px, 0.34fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #dce6f1;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+}
+
+.ltTravelAiTripCard > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.ltTravelAiTripCard .ltEyebrow {
+  width: fit-content;
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #2563eb;
+  font-size: 0.74rem;
+  font-weight: 950;
+}
+
+.ltTravelAiTripCard h2 {
+  margin: 0;
+  color: #10203b;
+  font-size: 1.24rem;
+  line-height: 1.22;
+  font-weight: 950;
+}
+
+.ltTravelAiTripCard p {
+  margin: 0;
+  color: #526071;
+  font-size: 0.9rem;
+  line-height: 1.48;
+  font-weight: 780;
+}
+
+.ltTravelAiTripCard .ltSecondaryButton {
+  min-width: 96px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.ltShellTravelStart .ltTravelQuickActions {
+  gap: 0;
+  padding: 12px;
+  border: 1px solid #dce6f1;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+}
+
+.ltShellTravelStart .ltTravelQuickActions button {
+  min-height: 72px;
+  border: 0;
+  border-right: 1px solid #e2e8f0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.ltShellTravelStart .ltTravelQuickActions button:last-child {
+  border-right: 0;
+}
+
+.ltShellTravelStart .ltTravelSearchPanel {
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 14px;
+  border-color: #e2e8f0;
+}
+
+.ltShellTravelStart .ltTravelSearchPanel .ltSectionEyebrow {
+  color: #0f9f78;
+  font-size: 0.85rem;
+  font-weight: 950;
+}
+
+.ltShellTravelStart .ltHeroSearchInput {
+  grid-template-columns: 24px minmax(0, 1fr) minmax(68px, auto);
+}
+
+.ltShellTravelStart .ltHeroFilters {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.ltShellTravelStart .ltHeroFilters::-webkit-scrollbar,
+.ltShellTravelStart .ltPurposeChips::-webkit-scrollbar {
+  display: none;
+}
+
+.ltShellTravelStart .ltHeroFilters > span {
+  flex: 0 0 auto;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.ltShellTravelStart .ltHeroFilters button {
+  flex: 0 0 auto;
+  min-height: 34px;
+  border-radius: 999px;
+}
+
+.ltShellTravelStart .ltPurposeRail {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ltShellTravelStart .ltPurposeRail > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ltShellTravelStart .ltPurposeRail > div:first-child span {
+  color: #0f9f78;
+  font-size: 0.95rem;
+  font-weight: 950;
+}
+
+.ltShellTravelStart .ltPurposeRail > div:first-child button {
+  min-height: 30px;
+  border: 0;
+  background: transparent;
+  color: #475569;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.ltShellTravelStart .ltPurposeChips {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.ltShellTravelStart .ltPurposeChips button {
+  flex: 0 0 128px;
+  min-height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+.ltShellTravelStart .ltPurposeChips .ltTravelQuickIcon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+}
+
+.ltShellTravelStart .ltServiceSection {
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+}
+
+.ltShellTravelStart .ltSectionHeader.compact h2 {
+  color: #0f9f78;
+  font-size: 1rem;
+}
+
+.ltShellTravelStart .ltServiceGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ltShellTravelStart .ltServiceCard {
+  min-height: 104px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-areas:
+    "icon title"
+    "icon text";
+  align-items: center;
+  gap: 2px 10px;
+  padding: 12px;
+  text-align: left;
+}
+
+.ltShellTravelStart .ltServiceCard .ltServiceIcon {
+  grid-area: icon;
+}
+
+.ltShellTravelStart .ltServiceCard strong {
+  grid-area: title;
+}
+
+.ltShellTravelStart .ltServiceCard span:last-child {
+  grid-area: text;
+}
+
+@media (max-width: 760px) {
+  .ltShellTravelStart .ltTravelStartPage {
+    width: min(100% - 22px, 430px) !important;
+    gap: 12px;
+    padding-top: max(18px, env(safe-area-inset-top)) !important;
+  }
+
+  .ltTravelStartHeader h1 {
+    font-size: 1.78rem;
+  }
+
+  .ltShellTravelStart .ltTravelDdayCard,
+  .ltShellTravelStart .ltTravelDdayCard.empty,
+  .ltShellTravelStart .ltTravelDdayCard.loading {
+    grid-template-columns: minmax(0, 1fr) minmax(110px, 38%);
+    min-height: 178px;
+    padding: 16px;
+  }
+
+  .ltShellTravelStart .ltTravelDdayCard.loading {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ltShellTravelStart .ltTravelDdayCard h1 {
+    font-size: 1.42rem;
+  }
+
+  .ltShellTravelStart .ltTravelDdayCard p {
+    font-size: 0.9rem;
+  }
+
+  .ltShellTravelStart .ltTravelDdayCard .ltPrimaryButton {
+    min-width: 132px;
+    min-height: 44px;
+    font-size: 0.9rem;
+  }
+
+  .ltTravelHeroVisual {
+    min-width: 106px;
+    min-height: 132px;
+  }
+
+  .ltTravelAiTripCard {
+    grid-template-columns: minmax(0, 1fr) 84px;
+    grid-template-areas:
+      "copy visual"
+      "copy action";
+    padding: 14px;
+  }
+
+  .ltTravelAiTripCard > div:first-child {
+    grid-area: copy;
+  }
+
+  .ltTravelAiTripCard .ltTravelHeroVisual {
+    grid-area: visual;
+    min-height: 66px;
+  }
+
+  .ltTravelAiTripCard .ltSecondaryButton {
+    grid-area: action;
+    min-width: 84px;
+    min-height: 38px;
+    font-size: 0.82rem;
+  }
+
+  .ltTravelAiTripCard h2 {
+    font-size: 1.08rem;
+  }
+
+  .ltTravelAiTripCard p {
+    font-size: 0.82rem;
+  }
+
+  .ltShellTravelStart .ltTravelQuickActions {
+    padding: 10px 6px;
+  }
+
+  .ltShellTravelStart .ltTravelQuickActions button {
+    min-height: 66px;
+  }
+
+  .ltShellTravelStart .ltHeroSearchInput input {
+    font-size: 0.82rem;
+  }
+
+  .ltShellTravelStart .ltPurposeChips button {
+    flex-basis: 112px;
+    min-height: 50px;
+    font-size: 0.8rem;
+  }
+
+  .ltShellTravelStart .ltServiceCard {
+    min-height: 96px;
+    grid-template-columns: 38px minmax(0, 1fr);
+    padding: 10px;
   }
 }

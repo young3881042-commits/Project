@@ -1,0 +1,176 @@
+import MemoNavIcon from '../MemoNavIcon.jsx';
+
+function formatScheduleTime(value) {
+  return value || '시간 미정';
+}
+
+function scheduleSecondaryText(item) {
+  return item.memo || item.location || item.type || '';
+}
+
+function scheduleProgressText(doneCount, totalCount, fallbackLabel) {
+  return totalCount ? `${doneCount}/${totalCount} 완료` : fallbackLabel;
+}
+
+function scheduleItemKey(item, index, prefix) {
+  return item.id || `${prefix}-${item.date || 'date-none'}-${item.title || 'schedule'}-${index}`;
+}
+
+function ScheduleCheckRow({ item, onToggle, weekly = false }) {
+  const secondary = scheduleSecondaryText(item);
+  const timeLabel = weekly
+    ? [item.weekday, formatScheduleTime(item.time)].filter(Boolean).join(' · ')
+    : formatScheduleTime(item.time);
+
+  return (
+    <label className={`appHomeScheduleRow ${item.done ? 'done' : ''}`}>
+      <input
+        type="checkbox"
+        checked={Boolean(item.done)}
+        onChange={(event) => onToggle?.(item, event.target.checked)}
+      />
+      <span className="appHomeScheduleRowBody">
+        <span>
+          <time>{timeLabel}</time>
+          <strong>{item.title || '제목 없는 일정'}</strong>
+        </span>
+        {secondary ? <small>{secondary}</small> : null}
+      </span>
+    </label>
+  );
+}
+
+function EmptyScheduleState({ title, description, action, onAction }) {
+  return (
+    <div className="appHomeScheduleEmpty">
+      <span className="appHomeScheduleEmptyIcon" aria-hidden="true">
+        <MemoNavIcon type="calendar" />
+      </span>
+      <div>
+        <strong>{title}</strong>
+        <p>{description}</p>
+        <button type="button" onClick={onAction}>{action}</button>
+      </div>
+    </div>
+  );
+}
+
+function TodayScheduleCard({ appOverview, navigate, onScheduleToggle }) {
+  const todayItems = appOverview.personalTodayItems || [];
+  const todayDoneCount = todayItems.filter((item) => item.done).length;
+
+  return (
+    <section className="appHomeCard appHomeFlowCard" aria-label="오늘 일정">
+      <header className="appHomeCardHeader">
+        <span>
+          <MemoNavIcon type="calendar" />
+          <strong>오늘 일정</strong>
+        </span>
+        <button type="button" onClick={() => navigate('/scheduler')}>
+          일정 추가
+          <MemoNavIcon type="chevronRight" />
+        </button>
+      </header>
+      <div className="appHomeScheduleProgress">
+        <span>{scheduleProgressText(todayDoneCount, todayItems.length, '오늘 일정 없음')}</span>
+        <small>오늘 일정 달성률 {Number(appOverview.personalTodayProgress || 0)}%</small>
+      </div>
+      {todayItems.length ? (
+        <div className="appHomeScheduleList">
+          {todayItems.map((item, index) => (
+            <ScheduleCheckRow
+              key={scheduleItemKey(item, index, 'today')}
+              item={item}
+              onToggle={onScheduleToggle}
+            />
+          ))}
+        </div>
+      ) : (
+        <EmptyScheduleState
+          title="오늘 등록된 일정이 없어요."
+          description="일정을 추가해 하루를 계획해보세요."
+          action="오늘 일정 추가"
+          onAction={() => navigate('/scheduler')}
+        />
+      )}
+    </section>
+  );
+}
+
+function WeekScheduleCard({ appOverview, navigate, onScheduleToggle }) {
+  const weekItems = appOverview.personalWeekItems || [];
+  const weekDoneCount = weekItems.filter((item) => item.done).length;
+  const weekGroups = weekItems.reduce((groups, item) => {
+    const key = item.date || 'date-none';
+    const current = groups.get(key) || {
+      key,
+      label: [item.weekday, item.dateLabel].filter(Boolean).join(' · ') || '날짜 미정',
+      items: []
+    };
+    current.items.push(item);
+    groups.set(key, current);
+    return groups;
+  }, new Map());
+
+  return (
+    <section className="appHomeCard appHomeWeekCard" aria-label="금주 일정">
+      <header className="appHomeCardHeader">
+        <span>
+          <MemoNavIcon type="calendar" />
+          <strong>금주 일정</strong>
+        </span>
+        <button type="button" onClick={() => navigate('/scheduler')}>
+          일정 추가
+          <MemoNavIcon type="chevronRight" />
+        </button>
+      </header>
+      <div className="appHomeScheduleProgress">
+        <span>{scheduleProgressText(weekDoneCount, weekItems.length, '이번 주 일정 없음')}</span>
+        <small>금주 일정 달성률 {Number(appOverview.personalWeekProgress || 0)}%</small>
+      </div>
+      {weekItems.length ? (
+        <div className="appHomeWeekList">
+          {Array.from(weekGroups.values()).map((group) => (
+            <section key={group.key} className="appHomeWeekGroup">
+              <h3>{group.label}</h3>
+              <div className="appHomeScheduleList">
+                {group.items.map((item, index) => (
+                  <ScheduleCheckRow
+                    key={scheduleItemKey(item, index, group.key)}
+                    item={item}
+                    onToggle={onScheduleToggle}
+                    weekly
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      ) : (
+        <EmptyScheduleState
+          title="이번 주 등록된 일정이 없어요."
+          description="이번 주 해야 할 일을 가볍게 추가해보세요."
+          action="일정 추가"
+          onAction={() => navigate('/scheduler')}
+        />
+      )}
+    </section>
+  );
+}
+
+export default function HomeScheduleCards({ appOverview = {}, navigate, onScheduleToggle }) {
+  return (
+    <>
+      <TodayScheduleCard
+        appOverview={appOverview}
+        navigate={navigate}
+        onScheduleToggle={onScheduleToggle}
+      />
+      <WeekScheduleCard
+        appOverview={appOverview}
+        navigate={navigate}
+        onScheduleToggle={onScheduleToggle}
+      />
+    </>
+  );
+}

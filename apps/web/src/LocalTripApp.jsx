@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import MobileWorkspaceTabs from './components/MobileWorkspaceTabs.jsx';
+import TravelHome, {
+  TravelDdayCard,
+  TravelQuickActions,
+  selectDdayPlan
+} from './components/travel/TravelHome.jsx';
 
 const AUTH_KEY = 'codex-workspace-auth';
 const SCHEDULER_KEY = 'codex-personal-scheduler-items';
@@ -165,47 +170,6 @@ const FALLBACK_DESTINATIONS = [
 ];
 
 const INTERESTS = ['맛집', '자연', '역사', '카페', '가족', '커플', '사진'];
-
-const QUICK_PURPOSES = ['당일치기 코스', '가족 여행', '로컬 맛집', '사진 명소', '역사 투어', '차량 동선'];
-
-const SERVICE_CATEGORIES = [
-  {
-    title: '여행 코스 설계',
-    detail: '일정과 취향에 맞춘 하루 동선',
-    query: '코스',
-    icon: 'route'
-  },
-  {
-    title: '숨은 명소',
-    detail: '유명지와 근처 보석 같은 장소',
-    query: '숨은 명소',
-    icon: 'guide'
-  },
-  {
-    title: '맛집·카페 투어',
-    detail: '대기와 이동을 줄이는 방문 순서',
-    query: '맛집',
-    icon: 'food'
-  },
-  {
-    title: '가족 나들이',
-    detail: '아이 동반에 맞춘 휴식 많은 코스',
-    query: '가족',
-    icon: 'family'
-  },
-  {
-    title: '사진 명소',
-    detail: '시간대별 빛과 배경이 좋은 장소',
-    query: '사진',
-    icon: 'camera'
-  },
-  {
-    title: '교통·동선',
-    detail: '대중교통, 도보, 차량 이동 최적화',
-    query: '교통',
-    icon: 'map'
-  }
-];
 
 const GYEONGJU_FALLBACK_ITINERARY = [
   {
@@ -1507,70 +1471,6 @@ function formatDaysLabel(value) {
   return Number.isFinite(days) && days > 0 ? `${days}일` : '일정 미정';
 }
 
-function parseDateOnly(value) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(`${value || ''}`.slice(0, 10));
-  if (!match) return null;
-  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
-}
-
-function formatDateCompact(value) {
-  const raw = `${value || ''}`.slice(0, 10);
-  return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw.replace(/-/g, '.') : '날짜 미정';
-}
-
-function dateDiffInDays(fromDate, toDate) {
-  const from = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-  const to = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
-  return Math.round((to.getTime() - from.getTime()) / 86400000);
-}
-
-function travelDdayInfo(plan) {
-  const startDate = parseDateOnly(plan?.startDate);
-  if (!startDate) {
-    return {
-      label: 'D-Day',
-      status: '날짜를 정해주세요',
-      range: '날짜 미정',
-      duration: formatDaysLabel(plan?.days)
-    };
-  }
-
-  const today = new Date();
-  const daysUntil = dateDiffInDays(today, startDate);
-  const days = Number(plan?.days);
-  const duration = Number.isFinite(days) && days > 0
-    ? days === 1 ? '당일치기' : `${days - 1}박 ${days}일`
-    : '일정 미정';
-  const endDate = Number.isFinite(days) && days > 0
-    ? dateKeyWithOffset(plan.startDate, days - 1)
-    : '';
-
-  return {
-    label: daysUntil > 0 ? `D-${daysUntil}` : daysUntil === 0 ? 'D-Day' : `D+${Math.abs(daysUntil)}`,
-    status: daysUntil > 0 ? '다가오는 여행' : daysUntil === 0 ? '오늘 출발' : '완료된 여행',
-    range: [formatDateCompact(plan.startDate), endDate ? formatDateCompact(endDate) : ''].filter(Boolean).join(' - '),
-    duration
-  };
-}
-
-function selectDdayPlan(plans = []) {
-  const today = new Date();
-  const datedPlans = plans
-    .map((plan, index) => ({ plan, index, startDate: parseDateOnly(plan.startDate) }))
-    .filter((item) => item.startDate);
-  if (!datedPlans.length) return plans[0] || null;
-
-  return datedPlans.sort((left, right) => {
-    const leftDiff = dateDiffInDays(today, left.startDate);
-    const rightDiff = dateDiffInDays(today, right.startDate);
-    const leftPast = leftDiff < 0 ? 1 : 0;
-    const rightPast = rightDiff < 0 ? 1 : 0;
-    if (leftPast !== rightPast) return leftPast - rightPast;
-    if (leftPast) return rightDiff - leftDiff;
-    return leftDiff - rightDiff;
-  })[0].plan;
-}
-
 function formatPlanStatus(status) {
   const value = pickString(status);
   if (!value) return '준비 완료';
@@ -1880,61 +1780,6 @@ function TravelWorkspaceNavigator({ navigate }) {
   );
 }
 
-function ServiceIcon({ type }) {
-  const paths = {
-    route: (
-      <>
-        <circle cx="6" cy="18" r="2.4"></circle>
-        <circle cx="18" cy="6" r="2.4"></circle>
-        <path d="M8.4 18H12a4 4 0 0 0 0-8h-.4a4 4 0 0 1 0-8H15"></path>
-      </>
-    ),
-    guide: (
-      <>
-        <path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11Z"></path>
-        <circle cx="12" cy="10" r="2.6"></circle>
-      </>
-    ),
-    food: (
-      <>
-        <path d="M4 3v8"></path>
-        <path d="M8 3v8"></path>
-        <path d="M4 7h4"></path>
-        <path d="M6 11v10"></path>
-        <path d="M18 3v18"></path>
-        <path d="M15 3c0 4 1 6 3 7"></path>
-      </>
-    ),
-    family: (
-      <>
-        <circle cx="9" cy="7" r="3"></circle>
-        <circle cx="17" cy="8" r="2.4"></circle>
-        <path d="M3 21a6 6 0 0 1 12 0"></path>
-        <path d="M13.8 15.5A5 5 0 0 1 21 21"></path>
-      </>
-    ),
-    camera: (
-      <>
-        <path d="M4 8h4l2-3h4l2 3h4v11H4z"></path>
-        <circle cx="12" cy="14" r="3.4"></circle>
-      </>
-    ),
-    map: (
-      <>
-        <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"></path>
-        <path d="M9 3v15"></path>
-        <path d="M15 6v15"></path>
-      </>
-    )
-  };
-
-  return (
-    <span className="ltServiceIcon" aria-hidden="true">
-      <Icon size={22}>{paths[type] || paths.route}</Icon>
-    </span>
-  );
-}
-
 function PageHeader({ eyebrow, title, description, actions }) {
   return (
     <section className="ltPageTitle">
@@ -1961,102 +1806,6 @@ function EmptyState({ title, description, action }) {
       <strong>{title}</strong>
       {description ? <p>{description}</p> : null}
       {action || null}
-    </section>
-  );
-}
-
-function TravelQuickIcon({ type }) {
-  const paths = {
-    search: (
-      <>
-        <circle cx="11" cy="11" r="7"></circle>
-        <path d="m20 20-3.5-3.5"></path>
-      </>
-    ),
-    route: (
-      <>
-        <circle cx="6" cy="18" r="2.4"></circle>
-        <circle cx="18" cy="6" r="2.4"></circle>
-        <path d="M8.4 18H12a4 4 0 0 0 0-8h-.4a4 4 0 0 1 0-8H15"></path>
-      </>
-    ),
-    calendar: (
-      <>
-        <path d="M5 5h14v15H5z"></path>
-        <path d="M8 3v4M16 3v4M5 10h14"></path>
-      </>
-    ),
-    memo: (
-      <>
-        <path d="M5 4h14v16H5z"></path>
-        <path d="M9 8h6M9 12h6M9 16h4"></path>
-      </>
-    )
-  };
-
-  return (
-    <span className="ltTravelQuickIcon" aria-hidden="true">
-      <Icon size={20}>{paths[type] || paths.route}</Icon>
-    </span>
-  );
-}
-
-function TravelDdayCard({ loading, plan, navigate }) {
-  if (loading) {
-    return (
-      <section className="ltTravelDdayCard loading" aria-label="여행 D-Day">
-        <div>
-          <span>여행 코스</span>
-          <h1>여행 정보를 확인 중입니다</h1>
-          <p>저장한 여행 코스를 불러오고 있어요.</p>
-        </div>
-      </section>
-    );
-  }
-
-  if (!plan) {
-    return (
-      <section className="ltTravelDdayCard empty" aria-label="여행 D-Day">
-        <div>
-          <span>여행 코스</span>
-          <h1>다가오는 여행이 없어요.</h1>
-          <p>새 여행을 만들어보세요.</p>
-          <button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>여행 만들기</button>
-        </div>
-      </section>
-    );
-  }
-
-  const dday = travelDdayInfo(plan);
-  return (
-    <section className="ltTravelDdayCard" aria-label="여행 D-Day">
-      <div>
-        <span>{dday.status}</span>
-        <h1>{plan.title || plan.destinationName || '여행 코스'}</h1>
-        <p>{dday.range}</p>
-        <small>{dday.duration}</small>
-      </div>
-      <strong>{dday.label}</strong>
-    </section>
-  );
-}
-
-function TravelQuickActions({ navigate }) {
-  const actions = [
-    { title: '장소 찾기', icon: 'search', path: '/destinations?focus=places' },
-    { title: '코스 만들기', icon: 'route', path: '/planner' },
-    { title: '내 일정', icon: 'calendar', path: '/plans' },
-    { title: '여행 메모', icon: 'memo', path: '/notes' }
-  ];
-
-  return (
-    <section className="ltTravelQuickActions" aria-label="여행 빠른 실행">
-      {actions.map((action) => (
-        <button type="button" key={action.title} onClick={() => navigate(action.path)}>
-          <TravelQuickIcon type={action.icon} />
-          <span>{action.title}</span>
-        </button>
-      ))}
     </section>
   );
 }
@@ -2377,40 +2126,6 @@ function InlineNotice({ error, fallback }) {
   );
 }
 
-function HeroSearch({ query, setQuery, navigate }) {
-  const submit = (event) => {
-    event.preventDefault();
-    const keyword = query.trim();
-    navigate(keyword ? `/destinations?query=${encodeURIComponent(keyword)}` : '/destinations');
-  };
-
-  return (
-    <form className="ltHeroSearch" onSubmit={submit}>
-      <label>
-        <span>어떤 여행을 찾고 있나요?</span>
-        <div className="ltHeroSearchInput">
-          <Icon>
-            <circle cx="11" cy="11" r="7"></circle>
-            <path d="m20 20-3.5-3.5"></path>
-          </Icon>
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="예: 제주 가족 여행, 도쿄 맛집, 교토 산책"
-          />
-          <button type="submit">찾기</button>
-        </div>
-      </label>
-      <div className="ltHeroFilters" aria-label="빠른 필터">
-        <button type="button" onClick={() => navigate('/destinations?query=서울')}>서울</button>
-        <button type="button" onClick={() => navigate('/destinations?query=도쿄')}>도쿄</button>
-        <button type="button" onClick={() => navigate('/destinations?query=가족')}>가족 여행</button>
-        <button type="button" onClick={() => navigate('/planner')}>코스 만들기</button>
-      </div>
-    </form>
-  );
-}
-
 function RoleBand({ navigate }) {
   return (
     <section className="ltRoleBand" aria-label="사용자 역할">
@@ -2421,56 +2136,6 @@ function RoleBand({ navigate }) {
           <p>{role.description}</p>
         </button>
       ))}
-    </section>
-  );
-}
-
-function PurposeRail({ navigate }) {
-  return (
-    <section className="ltPurposeRail" aria-label="추천 목적">
-      <div>
-        <span>빠른 추천</span>
-          <strong>지금 고르기 좋은 테마</strong>
-      </div>
-      <div className="ltPurposeChips">
-        {QUICK_PURPOSES.map((purpose) => (
-          <button
-            key={purpose}
-            type="button"
-            onClick={() => navigate(`/destinations?query=${encodeURIComponent(purpose)}`)}
-          >
-            {purpose}
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function ServiceCategoryGrid({ navigate }) {
-  return (
-    <section className="ltServiceSection" aria-label="서비스 카테고리">
-      <div className="ltSectionHeader compact">
-        <div>
-          <span className="ltSectionEyebrow">추천 카테고리</span>
-          <h2>취향에 맞는 장소를 빠르게 좁히세요</h2>
-          <p>테마를 고르면 장소 목록과 코스 만들기로 바로 이어집니다.</p>
-        </div>
-      </div>
-      <div className="ltServiceGrid">
-        {SERVICE_CATEGORIES.map((service) => (
-          <button
-            key={service.title}
-            type="button"
-            className="ltServiceCard"
-            onClick={() => navigate(`/destinations?query=${encodeURIComponent(service.query)}`)}
-          >
-            <ServiceIcon type={service.icon} />
-            <strong>{service.title}</strong>
-            <span>{service.detail}</span>
-          </button>
-        ))}
-      </div>
     </section>
   );
 }
@@ -2533,61 +2198,10 @@ function PartnerCta({ navigate }) {
 }
 
 function HomePage({ navigate }) {
-  const [query, setQuery] = useState('');
+  const { plans, loading: plansLoading } = usePlans(3);
+  const ddayPlan = useMemo(() => selectDdayPlan(plans), [plans]);
 
-  return (
-    <main className="ltPage ltHomePage">
-      <section className="ltHero ltValueHero">
-        <div className="ltHeroCopy">
-          <span className="ltEyebrow">Local-first Travel</span>
-          <h1>취향을 말하면 코스가 됩니다</h1>
-          <p>갈 곳과 날짜를 고르면 일자별 출발지와 도착지 기준으로 움직이기 쉬운 코스를 만듭니다.</p>
-          <HeroSearch query={query} setQuery={setQuery} navigate={navigate} />
-          <div className="ltValuePoints" aria-label="서비스 차별점">
-            <article>
-              <strong>로컬 동선</strong>
-              <span>관광지와 식당, 카페를 자연스러운 이동 순서로 이어드려요.</span>
-            </article>
-            <article>
-              <strong>하루 동선</strong>
-              <span>일자별 출발지와 도착지만 넣어 가볍게 시작합니다.</span>
-            </article>
-            <article>
-              <strong>코스 저장</strong>
-              <span>완성한 코스를 일정과 메모로 이어갑니다.</span>
-            </article>
-          </div>
-        </div>
-        <div className="ltHeroVisual" aria-hidden="true">
-          <div className="ltHeroImage main" style={{ backgroundImage: `url("${DESTINATION_IMAGES['SEOUL-004']}")` }}>
-            <span>망원시장 로컬 맛집</span>
-          </div>
-          <div className="ltHeroImage" style={{ backgroundImage: `url("${DESTINATION_IMAGES.GYEONGUI_FOREST}")` }}>
-            <span>도보 산책 경로</span>
-          </div>
-          <div className="ltHeroImage" style={{ backgroundImage: `url("${DESTINATION_IMAGES.CHANGDEOKGUNG}")` }}>
-            <span>근처 명소 연결</span>
-          </div>
-          <div className="ltHeroPanel">
-            <div>
-              <span>추천</span>
-              <strong>로컬 코스</strong>
-            </div>
-            <div>
-              <span>기준</span>
-              <strong>현재 위치</strong>
-            </div>
-            <div>
-              <span>저장</span>
-              <strong>일정·메모</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-      <PurposeRail navigate={navigate} />
-      <ServiceCategoryGrid navigate={navigate} />
-    </main>
-  );
+  return <TravelHome navigate={navigate} plansLoading={plansLoading} ddayPlan={ddayPlan} />;
 }
 
 function DestinationsPage({ path, navigate }) {
@@ -3877,10 +3491,10 @@ function LoginPage({ navigate }) {
   );
 }
 
-function AppShell({ navigate, children }) {
+function AppShell({ navigate, children, travelHome = false }) {
   return (
-    <div className="ltShell">
-      <TravelWorkspaceNavigator navigate={navigate} />
+    <div className={`ltShell${travelHome ? ' ltShellTravelStart' : ''}`}>
+      {travelHome ? null : <TravelWorkspaceNavigator navigate={navigate} />}
       {children}
       <MobileWorkspaceTabs active="more" navigate={navigate} />
       <footer className="ltFooter">
@@ -3898,8 +3512,9 @@ export default function LocalTripApp({ path, navigate }) {
 
   const normalizedPath = path || '/';
   const cleanPath = normalizedPath.split('?')[0];
+  const isTravelHome = cleanPath === '/' || cleanPath === '/travel';
   let page;
-  if (cleanPath === '/' || cleanPath === '/travel') {
+  if (isTravelHome) {
     page = <HomePage navigate={navigate} />;
   } else if (cleanPath === '/destinations') {
     page = <DestinationsPage path={normalizedPath} navigate={navigate} />;
@@ -3919,5 +3534,5 @@ export default function LocalTripApp({ path, navigate }) {
     page = <NotFoundPage navigate={navigate} />;
   }
 
-  return <AppShell navigate={navigate}>{page}</AppShell>;
+  return <AppShell navigate={navigate} travelHome={isTravelHome}>{page}</AppShell>;
 }
