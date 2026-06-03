@@ -2978,6 +2978,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260603-notes-mobile-folder-navigation',
+    content: `# 2026-06-03 메모 모바일 폴더 이동형 탐색
+
+- [x] /notes 모바일 하위 폴더를 펼침/접힘 대신 현재 폴더로 이동하는 파일탐색기 방식으로 변경
+- [x] 상단에 현재 경로와 상위 이동 버튼만 표시
+- [x] 현재 폴더에서 새 폴더, 새 메모, 이름 변경, 삭제 액션을 바로 실행하게 정리
+- [x] 하위 폴더와 메모 파일을 같은 목록에 보여주되 파일은 열림 배지로 표시`
+  },
+  {
     id: 'admin1-memo-20260603-notes-folder-file-actions',
     content: `# 2026-06-03 메모 폴더/파일 액션 보강
 
@@ -5861,9 +5870,8 @@ function NotionNotesPage({ navigate }) {
   const [notes, setNotes] = useState(() => readNoteBlocks(session));
   const [activeFolderId, setActiveFolderId] = useState(routeTargetRef.current.folderId || 'memo');
   const [activeId, setActiveId] = useState(routeTargetRef.current.noteId || '');
-  const [mobileView, setMobileView] = useState(routeTargetRef.current.noteId ? 'detail' : routeTargetRef.current.folderId ? 'list' : 'folders');
+  const [mobileView, setMobileView] = useState(routeTargetRef.current.noteId ? 'detail' : 'folders');
   const [statusText, setStatusText] = useState('');
-  const [expandedMobileFolderIds, setExpandedMobileFolderIds] = useState(() => new Set());
   const [notesSidebarCollapsed, setNotesSidebarCollapsed] = useState(false);
 
   useEffect(() => {
@@ -5946,11 +5954,6 @@ function NotionNotesPage({ navigate }) {
   }, [folders, notes]);
 
   useEffect(() => {
-    const existingIds = new Set(folders.map((folder) => folder.id));
-    setExpandedMobileFolderIds((current) => new Set([...current].filter((folderId) => existingIds.has(folderId))));
-  }, [folders]);
-
-  useEffect(() => {
     if (!folders.some((folder) => folder.id === activeFolderId)) {
       setActiveFolderId(folders.find((folder) => folder.id === 'memo')?.id || folders[0]?.id || '');
     }
@@ -5989,7 +5992,16 @@ function NotionNotesPage({ navigate }) {
   const accountName = session?.username && session.username !== 'guestuser' ? session.username : 'Guest';
   const accountPath = session?.username && session.username !== 'guestuser' && !session?.isGuest ? '/mypage' : '/login?redirect=/notes';
   const primaryMemoFolderId = folders.find((folder) => folder.id === 'memo')?.id || activeFolderId || folders[0]?.id || 'memo';
-  const topLevelFolders = memoFolderChildren(folders, null);
+  const mobileFolder = activeFolder || folders.find((folder) => folder.id === primaryMemoFolderId) || folders[0] || null;
+  const mobileFolderId = mobileFolder?.id || '';
+  const mobileParentFolder = mobileFolder?.parentId ? folders.find((folder) => folder.id === mobileFolder.parentId) || null : null;
+  const mobileFolderPath = memoFolderPath(folders, mobileFolderId);
+  const mobilePathLabel = mobileFolderPath.length ? mobileFolderPath.map(memoFolderName).join(' / ') : '메모';
+  const mobileChildFolders = memoFolderChildren(folders, mobileFolderId || null);
+  const mobileFiles = notes
+    .filter((note) => memoFolderIdForNote(note) === mobileFolderId && !note.parentId)
+    .slice()
+    .sort((left, right) => noteBlockTitle(left).localeCompare(noteBlockTitle(right), 'ko'));
 
   const replaceNotesRoute = (folderId = activeFolderId, noteId = '') => {
     const params = new URLSearchParams();
@@ -6037,7 +6049,9 @@ function NotionNotesPage({ navigate }) {
     };
     setFolders((current) => [...current, nextFolder]);
     setActiveFolderId(nextFolder.id);
-    setMobileView('list');
+    setActiveId('');
+    setMobileView('folders');
+    replaceNotesRoute(nextFolder.id);
     setStatusText('새 폴더를 만들었습니다.');
   };
 
@@ -6053,13 +6067,16 @@ function NotionNotesPage({ navigate }) {
     }
     if (!window.confirm(`${memoFolderName(target)} 폴더와 안의 메모를 삭제할까요?`)) return;
     const deleteIds = memoFolderDescendantIds(folders, id);
+    const fallbackFolder = (target?.parentId && folders.find((folder) => folder.id === target.parentId))
+      || folders.find((folder) => folder.id === 'memo' && !deleteIds.has(folder.id))
+      || folders.find((folder) => !deleteIds.has(folder.id))
+      || null;
     setFolders((current) => current.filter((folder) => !deleteIds.has(folder.id)));
     setNotes((current) => current.filter((note) => !deleteIds.has(memoFolderIdForNote(note))));
-    const nextFolder = folders.find((folder) => !deleteIds.has(folder.id)) || null;
-    setActiveFolderId(nextFolder?.id || '');
+    setActiveFolderId(fallbackFolder?.id || '');
     setActiveId('');
     setMobileView('folders');
-    replaceNotesRoute(nextFolder?.id || '');
+    replaceNotesRoute(fallbackFolder?.id || '');
     setStatusText('폴더를 삭제했습니다.');
   };
 
@@ -6095,7 +6112,7 @@ function NotionNotesPage({ navigate }) {
     if (!window.confirm(`${noteBlockTitle(target)} 메모를 삭제할까요?`)) return;
     setNotes((current) => current.filter((note) => note.id !== id));
     setActiveId('');
-    setMobileView('list');
+    setMobileView('folders');
     replaceNotesRoute(activeFolderId);
     setStatusText('메모를 삭제했습니다.');
   };
@@ -6117,7 +6134,7 @@ function NotionNotesPage({ navigate }) {
   const selectFolder = (folderId) => {
     setActiveFolderId(folderId);
     setActiveId('');
-    setMobileView('list');
+    setMobileView('folders');
     replaceNotesRoute(folderId);
   };
 
@@ -6128,13 +6145,11 @@ function NotionNotesPage({ navigate }) {
     replaceNotesRoute(targetNote ? memoFolderIdForNote(targetNote) : activeFolderId, noteId);
   };
 
-  const toggleMobileFolder = (folderId) => {
-    setExpandedMobileFolderIds((current) => {
-      const next = new Set(current);
-      if (next.has(folderId)) next.delete(folderId);
-      else next.add(folderId);
-      return next;
-    });
+  const openMobileFolder = (folderId) => {
+    setActiveFolderId(folderId);
+    setActiveId('');
+    setMobileView('folders');
+    replaceNotesRoute(folderId);
   };
 
   const renameFolderFromMenu = (folder) => {
@@ -6164,98 +6179,55 @@ function NotionNotesPage({ navigate }) {
     setStatusText('메모를 삭제했습니다.');
   };
 
-  const renderMobileFolderRows = (parentId = null, depth = 0) => memoFolderChildren(folders, parentId).map((folder) => {
-    const children = memoFolderChildren(folders, folder.id);
-    const files = notes
-      .filter((note) => memoFolderIdForNote(note) === folder.id && !note.parentId)
-      .slice()
-      .sort((left, right) => noteBlockTitle(left).localeCompare(noteBlockTitle(right), 'ko'));
-    const expanded = expandedMobileFolderIds.has(folder.id);
-    const active = activeFolderId === folder.id;
-    return (
-      <div className={`notesMobileFolderNode ${active ? 'active' : ''}`} key={folder.id}>
-        <div className={`notesMobileFolderRow ${active ? 'active' : ''}`} style={{ '--mobile-folder-depth': depth }}>
-        <button
-          type="button"
-          className={`notesMobileFolderToggle ${expanded ? 'expanded' : ''}`}
-          onClick={() => toggleMobileFolder(folder.id)}
-          disabled={!children.length && !files.length}
-          aria-label={expanded ? '폴더 접기' : '폴더 펼치기'}
-        >
-          <MemoNavIcon type="chevronRight" />
-        </button>
-        <button
-          type="button"
-          className="notesMobileFolderOpen"
-          onClick={() => {
-            setActiveFolderId(folder.id);
-            setActiveId('');
-            replaceNotesRoute(folder.id);
-            if (children.length || files.length) {
-              toggleMobileFolder(folder.id);
-            } else {
-              setMobileView('list');
-            }
-          }}
-        >
-          <MemoNavIcon type="folder" />
-          <span>{memoFolderName(folder)}</span>
-          {active ? <b className="notesMobileSelectionBadge">선택됨</b> : null}
-          <small>{noteCounts[folder.id] || 0}</small>
-        </button>
-        </div>
-        {active ? (
-          <div className="notesMobileRowActions folder" style={{ '--mobile-folder-depth': depth }}>
-            <button type="button" onClick={() => addFolder(folder.id)}><MemoNavIcon type="folder" />하위 폴더</button>
-            <button type="button" onClick={() => createNote(folder.id)}><MemoNavIcon type="plus" />새 메모</button>
-            <button type="button" onClick={() => renameFolderFromMenu(folder)}><MemoNavIcon type="edit" />이름 변경</button>
-            {canDeleteMemoBoard(folder) ? (
-              <button type="button" className="danger" onClick={() => deleteFolder(folder.id)}><MemoNavIcon type="trash" />삭제</button>
-            ) : null}
-          </div>
-        ) : null}
-        {children.length && expanded ? (
-          <div className="notesMobileFolderChildren">
-            {renderMobileFolderRows(folder.id, depth + 1)}
-          </div>
-        ) : null}
-        {expanded && files.length ? (
-          <div className="notesMobileFolderChildren files">
-            {files.map((note) => (
-              <div className={`notesMobileFileRow ${activeId === note.id ? 'active' : ''}`} key={note.id} style={{ '--mobile-folder-depth': depth + 1 }}>
-                <button
-                  type="button"
-                  className={`notesMobileFileOpen ${activeId === note.id ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveFolderId(folder.id);
-                    selectNote(note.id);
-                  }}
-                >
-                  <MemoNavIcon type="file" />
-                  <span>
-                    <strong>{noteBlockTitle(note)}</strong>
-                    <small>text/plain</small>
-                  </span>
-                  {activeId === note.id ? <b className="notesMobileSelectionBadge file">열림</b> : null}
-                </button>
-                <div className="notesMobileFileActions" aria-label={`${noteBlockTitle(note)} 메모 작업`}>
-                  <button type="button" onClick={() => renameNoteFromTree(note)}><MemoNavIcon type="edit" />이름</button>
-                  <button type="button" className="danger" onClick={() => deleteNoteFromTree(note)}><MemoNavIcon type="trash" />삭제</button>
-                </div>
-              </div>
-            ))}
-          </div>
+  const renderMobileExplorerFolder = (folder) => (
+    <div className="notesMobileExplorerRow folder" key={folder.id}>
+      <button type="button" className="notesMobileExplorerOpen" onClick={() => openMobileFolder(folder.id)}>
+        <MemoNavIcon type="folder" />
+        <span>
+          <strong>{memoFolderName(folder)}</strong>
+          <small>{noteCounts[folder.id] || 0}개 메모</small>
+        </span>
+        <MemoNavIcon type="chevronRight" />
+      </button>
+      <div className="notesMobileExplorerActions" aria-label={`${memoFolderName(folder)} 폴더 작업`}>
+        <button type="button" onClick={() => renameFolderFromMenu(folder)}><MemoNavIcon type="edit" />이름</button>
+        {canDeleteMemoBoard(folder) ? (
+          <button type="button" className="danger" onClick={() => deleteFolder(folder.id)}><MemoNavIcon type="trash" />삭제</button>
         ) : null}
       </div>
-    );
-  });
+    </div>
+  );
+
+  const renderMobileExplorerFile = (note) => (
+    <div className={`notesMobileExplorerRow file ${activeId === note.id ? 'active' : ''}`} key={note.id}>
+      <button
+        type="button"
+        className={`notesMobileExplorerOpen file ${activeId === note.id ? 'active' : ''}`}
+        onClick={() => {
+          setActiveFolderId(memoFolderIdForNote(note));
+          selectNote(note.id);
+        }}
+      >
+        <MemoNavIcon type="file" />
+        <span>
+          <strong>{noteBlockTitle(note)}</strong>
+          <small>text/plain</small>
+        </span>
+        {activeId === note.id ? <b className="notesMobileSelectionBadge file">열림</b> : null}
+      </button>
+      <div className="notesMobileExplorerActions" aria-label={`${noteBlockTitle(note)} 메모 작업`}>
+        <button type="button" onClick={() => renameNoteFromTree(note)}><MemoNavIcon type="edit" />이름</button>
+        <button type="button" className="danger" onClick={() => deleteNoteFromTree(note)}><MemoNavIcon type="trash" />삭제</button>
+      </div>
+    </div>
+  );
 
   const renderMobileHeader = () => (
     <header className="notesMobileHeader">
       {mobileView === 'folders' ? (
         <button type="button" onClick={() => navigate('/app')}><MemoNavIcon type="chevronLeft" />홈</button>
       ) : (
-        <button type="button" onClick={() => setMobileView(mobileView === 'detail' ? 'list' : 'folders')}><MemoNavIcon type="chevronLeft" />뒤로</button>
+        <button type="button" onClick={() => setMobileView('folders')}><MemoNavIcon type="chevronLeft" />뒤로</button>
       )}
       <div>
         <span>{breadcrumb.map(memoFolderName).join(' / ') || '메모'}</span>
@@ -6369,17 +6341,36 @@ function NotionNotesPage({ navigate }) {
               <section className="notesMobileContentSection notesMobileFileSection" id="notes-mobile-folder-section" aria-label="텍스트 파일">
                 <header className="notesMobileContentHeader">
                   <strong>파일 목록</strong>
-                  <button type="button" onClick={() => createNote(primaryMemoFolderId)}><MemoNavIcon type="plus" />새 파일</button>
+                  <button type="button" onClick={() => createNote(mobileFolderId || primaryMemoFolderId)}><MemoNavIcon type="plus" />새 파일</button>
                 </header>
-                <div className="notesMobileFolderList full">
-                  <button type="button" className="notesMobileInlineAction" onClick={() => addFolder(null)}><MemoNavIcon type="plus" />폴더 추가</button>
-                  {topLevelFolders.length ? renderMobileFolderRows() : (
+                <div className="notesMobilePathBar" aria-label="현재 경로">
+                  {mobileParentFolder ? (
+                    <button type="button" className="notesMobilePathBack" onClick={() => openMobileFolder(mobileParentFolder.id)}>
+                      <MemoNavIcon type="chevronLeft" />상위
+                    </button>
+                  ) : null}
+                  <span className="notesMobilePathText">{mobilePathLabel}</span>
+                </div>
+                <div className="notesMobileCurrentActions" aria-label={`${mobilePathLabel} 폴더 작업`}>
+                  <button type="button" onClick={() => addFolder(mobileFolderId || null)}><MemoNavIcon type="folder" />새 폴더</button>
+                  <button type="button" onClick={() => createNote(mobileFolderId || primaryMemoFolderId)}><MemoNavIcon type="plus" />새 메모</button>
+                  {mobileFolder && canDeleteMemoBoard(mobileFolder) ? (
+                    <button type="button" onClick={() => renameFolderFromMenu(mobileFolder)}><MemoNavIcon type="edit" />이름 변경</button>
+                  ) : null}
+                  {mobileFolder && canDeleteMemoBoard(mobileFolder) ? (
+                    <button type="button" className="danger" onClick={() => deleteFolder(mobileFolder.id)}><MemoNavIcon type="trash" />삭제</button>
+                  ) : null}
+                </div>
+                <div className="notesMobileExplorerList">
+                  {mobileChildFolders.map(renderMobileExplorerFolder)}
+                  {mobileFiles.map(renderMobileExplorerFile)}
+                  {!mobileChildFolders.length && !mobileFiles.length ? (
                     <article className="notesMobileEmptyState compact">
-                      <strong>폴더가 없습니다.</strong>
-                      <span>필요한 주제별로 폴더를 만들어보세요.</span>
-                      <button type="button" onClick={() => addFolder(null)}>폴더 추가</button>
+                      <strong>폴더가 비어 있습니다.</strong>
+                      <span>하위 폴더나 메모를 추가하세요.</span>
+                      <button type="button" onClick={() => addFolder(mobileFolderId || null)}>폴더 추가</button>
                     </article>
-                  )}
+                  ) : null}
                 </div>
               </section>
             </section>
