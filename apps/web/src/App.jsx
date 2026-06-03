@@ -2978,6 +2978,14 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260603-notes-mobile-gear-menu',
+    content: `# 2026-06-03 메모 모바일 톱니바퀴 작업 메뉴
+
+- [x] /notes 모바일 폴더와 파일 행은 누르면 이동/열기만 하도록 단순화
+- [x] 오른쪽 톱니바퀴 버튼에서 이름 변경과 삭제 메뉴가 열리게 변경
+- [x] 현재 폴더 상단 작업은 새 폴더와 새 메모만 남겨 화면을 간결하게 정리`
+  },
+  {
     id: 'admin1-memo-20260603-notes-mobile-folder-navigation',
     content: `# 2026-06-03 메모 모바일 폴더 이동형 탐색
 
@@ -5872,6 +5880,7 @@ function NotionNotesPage({ navigate }) {
   const [activeId, setActiveId] = useState(routeTargetRef.current.noteId || '');
   const [mobileView, setMobileView] = useState(routeTargetRef.current.noteId ? 'detail' : 'folders');
   const [statusText, setStatusText] = useState('');
+  const [mobileExplorerMenuId, setMobileExplorerMenuId] = useState('');
   const [notesSidebarCollapsed, setNotesSidebarCollapsed] = useState(false);
 
   useEffect(() => {
@@ -6050,6 +6059,7 @@ function NotionNotesPage({ navigate }) {
     setFolders((current) => [...current, nextFolder]);
     setActiveFolderId(nextFolder.id);
     setActiveId('');
+    setMobileExplorerMenuId('');
     setMobileView('folders');
     replaceNotesRoute(nextFolder.id);
     setStatusText('새 폴더를 만들었습니다.');
@@ -6075,6 +6085,7 @@ function NotionNotesPage({ navigate }) {
     setNotes((current) => current.filter((note) => !deleteIds.has(memoFolderIdForNote(note))));
     setActiveFolderId(fallbackFolder?.id || '');
     setActiveId('');
+    setMobileExplorerMenuId('');
     setMobileView('folders');
     replaceNotesRoute(fallbackFolder?.id || '');
     setStatusText('폴더를 삭제했습니다.');
@@ -6101,6 +6112,7 @@ function NotionNotesPage({ navigate }) {
     setNotes((current) => [nextNote, ...current]);
     setActiveFolderId(folderId);
     setActiveId(nextNote.id);
+    setMobileExplorerMenuId('');
     setMobileView('detail');
     replaceNotesRoute(folderId, nextNote.id);
     setStatusText('새 메모를 만들었습니다.');
@@ -6112,6 +6124,7 @@ function NotionNotesPage({ navigate }) {
     if (!window.confirm(`${noteBlockTitle(target)} 메모를 삭제할까요?`)) return;
     setNotes((current) => current.filter((note) => note.id !== id));
     setActiveId('');
+    setMobileExplorerMenuId('');
     setMobileView('folders');
     replaceNotesRoute(activeFolderId);
     setStatusText('메모를 삭제했습니다.');
@@ -6134,12 +6147,14 @@ function NotionNotesPage({ navigate }) {
   const selectFolder = (folderId) => {
     setActiveFolderId(folderId);
     setActiveId('');
+    setMobileExplorerMenuId('');
     setMobileView('folders');
     replaceNotesRoute(folderId);
   };
 
   const selectNote = (noteId) => {
     setActiveId(noteId);
+    setMobileExplorerMenuId('');
     setMobileView('detail');
     const targetNote = notes.find((note) => note.id === noteId);
     replaceNotesRoute(targetNote ? memoFolderIdForNote(targetNote) : activeFolderId, noteId);
@@ -6148,6 +6163,7 @@ function NotionNotesPage({ navigate }) {
   const openMobileFolder = (folderId) => {
     setActiveFolderId(folderId);
     setActiveId('');
+    setMobileExplorerMenuId('');
     setMobileView('folders');
     replaceNotesRoute(folderId);
   };
@@ -6156,12 +6172,14 @@ function NotionNotesPage({ navigate }) {
     const nextName = window.prompt('폴더 이름', memoFolderName(folder));
     if (!nextName || !nextName.trim()) return;
     renameFolder(folder.id, nextName.trim());
+    setMobileExplorerMenuId('');
   };
 
   const renameNoteFromTree = (note) => {
     const nextTitle = window.prompt('메모 이름', noteBlockTitle(note));
     if (!nextTitle || !nextTitle.trim()) return;
     updateNote(note.id, { title: nextTitle.trim() });
+    setMobileExplorerMenuId('');
     setStatusText('메모 이름을 변경했습니다.');
   };
 
@@ -6175,52 +6193,105 @@ function NotionNotesPage({ navigate }) {
       setActiveFolderId(folderId);
       replaceNotesRoute(folderId);
     }
+    setMobileExplorerMenuId('');
     setMobileView('folders');
     setStatusText('메모를 삭제했습니다.');
   };
 
-  const renderMobileExplorerFolder = (folder) => (
-    <div className="notesMobileExplorerRow folder" key={folder.id}>
-      <button type="button" className="notesMobileExplorerOpen" onClick={() => openMobileFolder(folder.id)}>
-        <MemoNavIcon type="folder" />
-        <span>
-          <strong>{memoFolderName(folder)}</strong>
-          <small>{noteCounts[folder.id] || 0}개 메모</small>
-        </span>
-        <MemoNavIcon type="chevronRight" />
-      </button>
-      <div className="notesMobileExplorerActions" aria-label={`${memoFolderName(folder)} 폴더 작업`}>
-        <button type="button" onClick={() => renameFolderFromMenu(folder)}><MemoNavIcon type="edit" />이름</button>
-        {canDeleteMemoBoard(folder) ? (
-          <button type="button" className="danger" onClick={() => deleteFolder(folder.id)}><MemoNavIcon type="trash" />삭제</button>
+  const toggleMobileExplorerMenu = (menuId) => {
+    setMobileExplorerMenuId((current) => (current === menuId ? '' : menuId));
+  };
+
+  const renderMobileExplorerFolder = (folder) => {
+    const menuId = `folder:${folder.id}`;
+    const menuOpen = mobileExplorerMenuId === menuId;
+    return (
+      <div className={`notesMobileExplorerRow folder ${menuOpen ? 'menuOpen' : ''}`} key={folder.id}>
+        <button type="button" className="notesMobileExplorerOpen" onClick={() => openMobileFolder(folder.id)}>
+          <MemoNavIcon type="folder" />
+          <span>
+            <strong>{memoFolderName(folder)}</strong>
+            <small>{noteCounts[folder.id] || 0}개 메모</small>
+          </span>
+          <MemoNavIcon type="chevronRight" />
+        </button>
+        <button
+          type="button"
+          className="notesMobileExplorerGear"
+          onClick={() => toggleMobileExplorerMenu(menuId)}
+          aria-label={`${memoFolderName(folder)} 설정`}
+          aria-expanded={menuOpen}
+        >
+          <MemoNavIcon type="settings" />
+        </button>
+        {menuOpen ? (
+          <div className="notesMobileExplorerMenu" aria-label={`${memoFolderName(folder)} 폴더 작업`}>
+            <button type="button" onClick={() => renameFolderFromMenu(folder)}><MemoNavIcon type="edit" />이름 변경</button>
+            {canDeleteMemoBoard(folder) ? (
+              <button
+                type="button"
+                className="danger"
+                onClick={() => {
+                  setMobileExplorerMenuId('');
+                  deleteFolder(folder.id);
+                }}
+              >
+                <MemoNavIcon type="trash" />삭제
+              </button>
+            ) : null}
+          </div>
         ) : null}
       </div>
-    </div>
-  );
+    );
+  };
 
-  const renderMobileExplorerFile = (note) => (
-    <div className={`notesMobileExplorerRow file ${activeId === note.id ? 'active' : ''}`} key={note.id}>
-      <button
-        type="button"
-        className={`notesMobileExplorerOpen file ${activeId === note.id ? 'active' : ''}`}
-        onClick={() => {
-          setActiveFolderId(memoFolderIdForNote(note));
-          selectNote(note.id);
-        }}
-      >
-        <MemoNavIcon type="file" />
-        <span>
-          <strong>{noteBlockTitle(note)}</strong>
-          <small>text/plain</small>
-        </span>
-        {activeId === note.id ? <b className="notesMobileSelectionBadge file">열림</b> : null}
-      </button>
-      <div className="notesMobileExplorerActions" aria-label={`${noteBlockTitle(note)} 메모 작업`}>
-        <button type="button" onClick={() => renameNoteFromTree(note)}><MemoNavIcon type="edit" />이름</button>
-        <button type="button" className="danger" onClick={() => deleteNoteFromTree(note)}><MemoNavIcon type="trash" />삭제</button>
+  const renderMobileExplorerFile = (note) => {
+    const menuId = `note:${note.id}`;
+    const menuOpen = mobileExplorerMenuId === menuId;
+    return (
+      <div className={`notesMobileExplorerRow file ${activeId === note.id ? 'active' : ''} ${menuOpen ? 'menuOpen' : ''}`} key={note.id}>
+        <button
+          type="button"
+          className={`notesMobileExplorerOpen file ${activeId === note.id ? 'active' : ''}`}
+          onClick={() => {
+            setActiveFolderId(memoFolderIdForNote(note));
+            selectNote(note.id);
+          }}
+        >
+          <MemoNavIcon type="file" />
+          <span>
+            <strong>{noteBlockTitle(note)}</strong>
+            <small>text/plain</small>
+          </span>
+          {activeId === note.id ? <b className="notesMobileSelectionBadge file">열림</b> : null}
+        </button>
+        <button
+          type="button"
+          className="notesMobileExplorerGear"
+          onClick={() => toggleMobileExplorerMenu(menuId)}
+          aria-label={`${noteBlockTitle(note)} 설정`}
+          aria-expanded={menuOpen}
+        >
+          <MemoNavIcon type="settings" />
+        </button>
+        {menuOpen ? (
+          <div className="notesMobileExplorerMenu" aria-label={`${noteBlockTitle(note)} 메모 작업`}>
+            <button type="button" onClick={() => renameNoteFromTree(note)}><MemoNavIcon type="edit" />이름 변경</button>
+            <button
+              type="button"
+              className="danger"
+              onClick={() => {
+                setMobileExplorerMenuId('');
+                deleteNoteFromTree(note);
+              }}
+            >
+              <MemoNavIcon type="trash" />삭제
+            </button>
+          </div>
+        ) : null}
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderMobileHeader = () => (
     <header className="notesMobileHeader">
@@ -6354,12 +6425,6 @@ function NotionNotesPage({ navigate }) {
                 <div className="notesMobileCurrentActions" aria-label={`${mobilePathLabel} 폴더 작업`}>
                   <button type="button" onClick={() => addFolder(mobileFolderId || null)}><MemoNavIcon type="folder" />새 폴더</button>
                   <button type="button" onClick={() => createNote(mobileFolderId || primaryMemoFolderId)}><MemoNavIcon type="plus" />새 메모</button>
-                  {mobileFolder && canDeleteMemoBoard(mobileFolder) ? (
-                    <button type="button" onClick={() => renameFolderFromMenu(mobileFolder)}><MemoNavIcon type="edit" />이름 변경</button>
-                  ) : null}
-                  {mobileFolder && canDeleteMemoBoard(mobileFolder) ? (
-                    <button type="button" className="danger" onClick={() => deleteFolder(mobileFolder.id)}><MemoNavIcon type="trash" />삭제</button>
-                  ) : null}
                 </div>
                 <div className="notesMobileExplorerList">
                   {mobileChildFolders.map(renderMobileExplorerFolder)}
