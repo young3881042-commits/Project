@@ -112,8 +112,8 @@
   }
 
   .notesMobileFolderRow {
-    grid-template-columns: 28px minmax(0, 1fr) 36px 36px !important;
-    gap: 5px !important;
+    grid-template-columns: 28px minmax(0, 1fr) !important;
+    gap: 7px !important;
     padding-left: calc(var(--mobile-folder-depth, 0) * 14px) !important;
   }
 
@@ -129,6 +129,14 @@
 
   .notesMobileFolderOpen {
     min-height: 44px !important;
+    grid-template-columns: 24px minmax(0, 1fr) auto auto !important;
+    gap: 8px !important;
+  }
+
+  .notesMobileFolderRow.active .notesMobileFolderOpen {
+    border-color: #93c5fd !important;
+    background: #eff6ff !important;
+    box-shadow: inset 4px 0 0 #2563eb !important;
   }
 
   .notesMobileFolderToggle {
@@ -142,10 +150,106 @@
     border-left: 1px solid #e6edf5 !important;
   }
 
+  .notesMobileRowActions,
+  .notesMobileFileActions {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .notesMobileRowActions {
+    padding: 4px 0 8px calc(28px + 7px + (var(--mobile-folder-depth, 0) * 14px)) !important;
+  }
+
+  .notesMobileRowActions button,
+  .notesMobileFileActions button {
+    min-height: 34px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    border: 1px solid #dbe7ef !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #334155 !important;
+    padding: 0 9px !important;
+    font: inherit !important;
+    font-size: 0.75rem !important;
+    line-height: 1 !important;
+    font-weight: 900 !important;
+    white-space: nowrap !important;
+  }
+
+  .notesMobileRowActions button .memoNavIcon,
+  .notesMobileFileActions button .memoNavIcon {
+    width: 15px !important;
+    height: 15px !important;
+    min-width: 15px !important;
+    background: transparent !important;
+    color: currentColor !important;
+  }
+
+  .notesMobileRowActions button:hover,
+  .notesMobileFileActions button:hover,
+  .notesMobileRowActions button:focus-visible,
+  .notesMobileFileActions button:focus-visible {
+    border-color: #bfdbfe !important;
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+  }
+
+  .notesMobileRowActions button.danger,
+  .notesMobileFileActions button.danger {
+    border-color: #fecaca !important;
+    background: #fff1f2 !important;
+    color: #be123c !important;
+  }
+
+  .notesMobileSelectionBadge {
+    min-height: 22px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 999px !important;
+    background: #2563eb !important;
+    color: #ffffff !important;
+    padding: 0 8px !important;
+    font-size: 0.68rem !important;
+    line-height: 1 !important;
+    font-weight: 950 !important;
+    white-space: nowrap !important;
+  }
+
+  .notesMobileSelectionBadge.file {
+    background: #0f766e !important;
+  }
+
+  .notesMobileFileRow {
+    position: relative !important;
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+    padding-left: calc(var(--mobile-folder-depth, 0) * 6px) !important;
+  }
+
+  .notesMobileFileRow.active::before {
+    content: "" !important;
+    position: absolute !important;
+    top: 4px !important;
+    bottom: 4px !important;
+    left: calc((var(--mobile-folder-depth, 0) * 6px) - 2px) !important;
+    width: 4px !important;
+    border-radius: 999px !important;
+    background: #0f766e !important;
+  }
+
   .notesMobileFileOpen {
     width: 100% !important;
     min-height: 46px !important;
-    grid-template-columns: 24px minmax(0, 1fr) !important;
+    grid-template-columns: 24px minmax(0, 1fr) auto !important;
     gap: 8px !important;
     padding: 8px 10px !important;
   }
@@ -158,8 +262,28 @@
     background: #eff6ff !important;
   }
 
+  .notesMobileFileOpen.active {
+    border-color: #5eead4 !important;
+    background: #ecfdf5 !important;
+    box-shadow: inset 4px 0 0 #0f766e !important;
+  }
+
   .notesMobileFileOpen .memoNavIcon {
     color: #2563eb !important;
+  }
+
+  .notesMobileFileOpen.active .memoNavIcon {
+    color: #0f766e !important;
+  }
+
+  .notesMobileFileActions {
+    flex-wrap: nowrap !important;
+  }
+
+  .notesMobileFileActions button {
+    min-width: 50px !important;
+    min-height: 46px !important;
+    padding: 0 8px !important;
   }
 
   .notesMobileInlineAction {
