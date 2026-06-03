@@ -1,0 +1,16 @@
+.git
+.codex
+**/.codex
+**/.env
+**/.env.local
+**/.env.*.local
+**/node_modules
+**/dist
+**/.gradle
+**/__pycache__
+**/*.pyc
+**/auth.json
+**/secrets
+apps/api/build
+apps/web/build
+apps/mobile/android/build

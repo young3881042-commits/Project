@@ -22,7 +22,7 @@ export default function MobileWorkspaceTabs({ active = 'notes', navigate, onNote
         onClick={openNotes}
       >
         <MemoNavIcon type="board" />
-        <span>노트</span>
+        <span>메모</span>
       </button>
       <button
         type="button"

@@ -450,7 +450,7 @@ body:has(.aiNoteShell) {
     z-index: 240;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 6px;
+    gap: 4px;
     padding: 7px;
     padding-bottom: calc(7px + env(safe-area-inset-bottom));
     border: 1px solid rgba(203, 213, 225, 0.92);
@@ -462,7 +462,7 @@ body:has(.aiNoteShell) {
 
   .mobileWorkspaceTabButton {
     min-width: 0;
-    min-height: 52px;
+    min-height: 50px;
     display: grid;
     place-items: center;
     gap: 3px;
@@ -470,16 +470,16 @@ body:has(.aiNoteShell) {
     border-radius: 8px;
     background: transparent;
     color: #64748b;
-    padding: 5px 4px;
+    padding: 5px 2px;
     font: inherit;
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 850;
   }
 
   .mobileWorkspaceTabButton .memoNavIcon {
-    width: 22px;
-    height: 22px;
-    min-width: 22px;
+    width: 21px;
+    height: 21px;
+    min-width: 21px;
     background: transparent;
     color: currentColor;
   }

@@ -1,0 +1,39 @@
+name: ai-assitant-ci
+
+services:
+  jenkins:
+    image: ai-assitant-jenkins:local
+    build:
+      context: .
+      dockerfile: infra/jenkins/Dockerfile
+    container_name: ai-assitant-jenkins
+    restart: unless-stopped
+    env_file:
+      - ${JENKINS_ENV_FILE:-/home/lezzs5103/.ai-assitant-jenkins.env}
+    environment:
+      JAVA_OPTS: >-
+        -Xms256m
+        -Xmx768m
+        -Djenkins.install.runSetupWizard=false
+      JENKINS_OPTS: "--httpPort=8080"
+      APP_REPO: /workspace/vibeCoding
+      DOCKER_BUILDKIT: "1"
+      COMPOSE_PROJECT_NAME: vibecoding
+    ports:
+      - "${JENKINS_HTTP_PORT:-18081}:8080"
+      - "${JENKINS_AGENT_PORT:-50000}:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ./:/workspace/vibeCoding
+      - /home/lezzs5103/.ssh:/var/jenkins_home/.ssh:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - "${DOCKER_SOCK_GID:-1001}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    cpus: "1.0"
+    mem_limit: 1g
+    mem_reservation: 512m
+
+volumes:
+  jenkins_home:

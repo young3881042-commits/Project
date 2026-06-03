@@ -1,7 +1,9 @@
 *
 !/.gitignore
+!/.dockerignore
 !/AGENTS.md
 !/README.md
+!/docker-compose.jenkins.yml
 !/Jenkinsfile
 !/apps/
 !/apps/**

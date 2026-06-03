@@ -1,10 +1,4 @@
-import { useState } from 'react';
-import {
-  QUICK_ACTIONS,
-  QUICK_RECOMMENDATIONS,
-  QUICK_SEARCH_TERMS,
-  SERVICE_CATEGORIES
-} from './TravelHomeData.js';
+import { QUICK_ACTIONS } from './TravelHomeData.js';
 
 function Icon({ children, size = 18 }) {
   return (
@@ -101,77 +95,6 @@ export function selectDdayPlan(plans = []) {
   })[0].plan;
 }
 
-function ServiceIcon({ type }) {
-  const paths = {
-    route: (
-      <>
-        <circle cx="6" cy="18" r="2.4"></circle>
-        <circle cx="18" cy="6" r="2.4"></circle>
-        <path d="M8.4 18H12a4 4 0 0 0 0-8h-.4a4 4 0 0 1 0-8H15"></path>
-      </>
-    ),
-    guide: (
-      <>
-        <path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11Z"></path>
-        <circle cx="12" cy="10" r="2.6"></circle>
-      </>
-    ),
-    hidden: (
-      <>
-        <path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11Z"></path>
-        <circle cx="12" cy="10" r="2.6"></circle>
-      </>
-    ),
-    food: (
-      <>
-        <path d="M4 3v8"></path>
-        <path d="M8 3v8"></path>
-        <path d="M4 7h4"></path>
-        <path d="M6 11v10"></path>
-        <path d="M18 3v18"></path>
-        <path d="M15 3c0 4 1 6 3 7"></path>
-      </>
-    ),
-    family: (
-      <>
-        <circle cx="9" cy="7" r="3"></circle>
-        <circle cx="17" cy="8" r="2.4"></circle>
-        <path d="M3 21a6 6 0 0 1 12 0"></path>
-        <path d="M13.8 15.5A5 5 0 0 1 21 21"></path>
-      </>
-    ),
-    camera: (
-      <>
-        <path d="M4 8h4l2-3h4l2 3h4v11H4z"></path>
-        <circle cx="12" cy="14" r="3.4"></circle>
-      </>
-    ),
-    map: (
-      <>
-        <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"></path>
-        <path d="M9 3v15"></path>
-        <path d="M15 6v15"></path>
-      </>
-    ),
-    transit: (
-      <>
-        <path d="M6 4h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"></path>
-        <path d="M8 18l-2 3"></path>
-        <path d="M16 18l2 3"></path>
-        <path d="M4 10h16"></path>
-        <circle cx="8" cy="14" r="1"></circle>
-        <circle cx="16" cy="14" r="1"></circle>
-      </>
-    )
-  };
-
-  return (
-    <span className="ltServiceIcon" aria-hidden="true">
-      <Icon size={22}>{paths[type] || paths.route}</Icon>
-    </span>
-  );
-}
-
 function TravelQuickIcon({ type }) {
   const paths = {
     search: (
@@ -243,20 +166,6 @@ function TravelQuickIcon({ type }) {
   );
 }
 
-function TravelHomeHeader({ navigate }) {
-  return (
-    <header className="ltTravelStartHeader">
-      <div>
-        <h1>여행</h1>
-        <p>나만의 여행을 쉽고 즐겁게 계획해보세요.</p>
-      </div>
-      <button type="button" aria-label="저장 코스" onClick={() => navigate('/plans')}>
-        <TravelQuickIcon type="calendar" />
-      </button>
-    </header>
-  );
-}
-
 function TravelHeroVisual({ compact = false }) {
   return (
     <div className={`ltTravelHeroVisual${compact ? ' compact' : ''}`} aria-hidden="true">
@@ -309,94 +218,25 @@ export function TravelDdayCard({ loading, plan, navigate }) {
   );
 }
 
-function TravelAiTripCard({ navigate }) {
-  return (
-    <section className="ltTravelAiTripCard" aria-label="AI Trip">
-      <div>
-        <span className="ltEyebrow">AI Trip</span>
-        <h2>여행 준비를 한 화면에서</h2>
-        <p>다가오는 여행을 확인하고, 장소 찾기와 코스 만들기를 바로 시작하세요.</p>
-      </div>
-      <TravelHeroVisual compact />
-      <button type="button" className="ltSecondaryButton" onClick={() => navigate('/destinations')}>
-        장소 찾기
-        <Icon size={16}>
-          <path d="m9 6 6 6-6 6"></path>
-        </Icon>
-      </button>
-    </section>
-  );
-}
-
-export function TravelQuickActions({ navigate }) {
-  return (
-    <section className="ltTravelQuickActions" aria-label="여행 빠른 실행">
-      {QUICK_ACTIONS.map((action) => (
-        <button type="button" key={action.title} onClick={() => navigate(action.path)}>
-          <TravelQuickIcon type={action.icon} />
-          <span>{action.title}</span>
-        </button>
-      ))}
-    </section>
-  );
-}
-
-function HeroSearch({ query, setQuery, navigate }) {
-  const submit = (event) => {
-    event.preventDefault();
-    const keyword = query.trim();
-    navigate(keyword ? `/destinations?query=${encodeURIComponent(keyword)}` : '/destinations');
-  };
+export function TravelQuickActions({ navigate, title = '' }) {
+  const sectionId = title ? 'travelQuickMenuTitle' : undefined;
 
   return (
-    <form className="ltHeroSearch" onSubmit={submit}>
-      <label>
-        <span>어떤 여행을 찾고 있나요?</span>
-        <div className="ltHeroSearchInput">
-          <Icon>
-            <circle cx="11" cy="11" r="7"></circle>
-            <path d="m20 20-3.5-3.5"></path>
-          </Icon>
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="예: 제주 가족 여행, 도쿄 맛집, 교토 산책"
-          />
-          <button type="submit">찾기</button>
+    <section
+      className={`ltTravelQuickActions${title ? ' withTitle' : ''}`}
+      aria-label={title ? undefined : '여행 빠른 실행'}
+      aria-labelledby={sectionId}
+    >
+      {title ? (
+        <div className="ltTravelQuickHeader">
+          <h2 id={sectionId}>{title}</h2>
         </div>
-      </label>
-      <div className="ltHeroFilters" aria-label="인기 검색">
-        <span>인기 검색</span>
-        {QUICK_SEARCH_TERMS.map((term) => (
-          <button
-            type="button"
-            key={term}
-            onClick={() => navigate(`/destinations?query=${encodeURIComponent(term)}`)}
-          >
-            {term}
-          </button>
-        ))}
-      </div>
-    </form>
-  );
-}
-
-function PurposeRail({ navigate }) {
-  return (
-    <section className="ltPurposeRail" aria-label="추천 목적">
-      <div>
-        <span>빠른 추천</span>
-        <button type="button" onClick={() => navigate('/destinations')}>전체 보기</button>
-      </div>
-      <div className="ltPurposeChips">
-        {QUICK_RECOMMENDATIONS.map((purpose) => (
-          <button
-            key={purpose.title}
-            type="button"
-            onClick={() => navigate(`/destinations?query=${encodeURIComponent(purpose.query)}`)}
-          >
-            <TravelQuickIcon type={purpose.icon} />
-            <span>{purpose.title}</span>
+      ) : null}
+      <div className="ltTravelQuickGrid">
+        {QUICK_ACTIONS.map((action) => (
+          <button type="button" key={action.title} onClick={() => navigate(action.path)}>
+            <TravelQuickIcon type={action.icon} />
+            <span>{action.title}</span>
           </button>
         ))}
       </div>
@@ -404,53 +244,11 @@ function PurposeRail({ navigate }) {
   );
 }
 
-function ServiceCategoryGrid({ navigate }) {
-  return (
-    <section className="ltServiceSection" aria-label="서비스 카테고리">
-      <div className="ltSectionHeader compact">
-        <div>
-          <span className="ltSectionEyebrow">추천 카테고리</span>
-          <h2>취향에 맞는 장소를 빠르게 좁히세요</h2>
-          <p>테마를 고르면 장소 목록과 코스 만들기로 바로 이어집니다.</p>
-        </div>
-      </div>
-      <div className="ltServiceGrid">
-        {SERVICE_CATEGORIES.map((service) => (
-          <button
-            key={service.title}
-            type="button"
-            className="ltServiceCard"
-            onClick={() => navigate(`/destinations?query=${encodeURIComponent(service.query)}`)}
-          >
-            <ServiceIcon type={service.icon} />
-            <strong>{service.title}</strong>
-            <span>{service.detail}</span>
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-export default function TravelHome({ navigate, plansLoading, ddayPlan }) {
-  const [query, setQuery] = useState('');
-
+export default function TravelHome({ navigate }) {
   return (
     <main className="ltPage ltHomePage ltTravelStartPage">
-      <TravelHomeHeader navigate={navigate} />
-      <TravelDdayCard loading={plansLoading} plan={ddayPlan} navigate={navigate} />
-      <TravelAiTripCard navigate={navigate} />
-      <TravelQuickActions navigate={navigate} />
-
-      <section className="ltTravelSearchPanel" aria-label="여행 검색">
-        <div>
-          <span className="ltSectionEyebrow">빠른 검색</span>
-        </div>
-        <HeroSearch query={query} setQuery={setQuery} navigate={navigate} />
-      </section>
-
-      <PurposeRail navigate={navigate} />
-      <ServiceCategoryGrid navigate={navigate} />
+      <TravelDdayCard loading={false} plan={null} navigate={navigate} />
+      <TravelQuickActions navigate={navigate} title="빠른 메뉴" />
     </main>
   );
 }

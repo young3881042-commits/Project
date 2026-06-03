@@ -354,11 +354,32 @@
 
 .ltTravelQuickActions {
   display: grid;
+  gap: 10px;
+}
+
+.ltTravelQuickHeader {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ltTravelQuickHeader h2 {
+  margin: 0;
+  color: #10203b;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.ltTravelQuickGrid {
+  display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
-.ltTravelQuickActions button {
+.ltTravelQuickGrid button {
   min-width: 0;
   min-height: 78px;
   display: grid;
@@ -552,16 +573,16 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .ltTravelQuickActions {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .ltTravelQuickGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 7px;
   }
 
-  .ltTravelQuickActions button {
+  .ltTravelQuickGrid button {
     min-height: 72px;
-    padding: 8px 4px;
+    padding: 10px 8px;
     border-radius: 8px;
-    font-size: 0.72rem;
+    font-size: 0.82rem;
   }
 
   .ltTravelQuickIcon {
@@ -889,14 +910,22 @@
 }
 
 .ltShellTravelStart .ltTravelQuickActions {
-  gap: 0;
-  padding: 12px;
+  gap: 12px;
+  padding: 14px;
   border: 1px solid #dce6f1;
   background: #ffffff;
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
 }
 
-.ltShellTravelStart .ltTravelQuickActions button {
+.ltShellTravelStart .ltTravelQuickHeader h2 {
+  color: #0f9f78;
+}
+
+.ltShellTravelStart .ltTravelQuickGrid {
+  gap: 0;
+}
+
+.ltShellTravelStart .ltTravelQuickGrid button {
   min-height: 72px;
   border: 0;
   border-right: 1px solid #e2e8f0;
@@ -904,7 +933,7 @@
   box-shadow: none;
 }
 
-.ltShellTravelStart .ltTravelQuickActions button:last-child {
+.ltShellTravelStart .ltTravelQuickGrid button:last-child {
   border-right: 0;
 }
 
@@ -1129,11 +1158,18 @@
   }
 
   .ltShellTravelStart .ltTravelQuickActions {
-    padding: 10px 6px;
+    padding: 14px;
   }
 
-  .ltShellTravelStart .ltTravelQuickActions button {
-    min-height: 66px;
+  .ltShellTravelStart .ltTravelQuickGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .ltShellTravelStart .ltTravelQuickGrid button {
+    min-height: 68px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
   }
 
   .ltShellTravelStart .ltHeroSearchInput input {

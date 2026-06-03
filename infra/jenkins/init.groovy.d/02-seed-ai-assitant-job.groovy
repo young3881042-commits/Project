@@ -1,3 +1,12 @@
+import jenkins.model.Jenkins
+import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition
+import org.jenkinsci.plugins.workflow.job.WorkflowJob
+
+def instance = Jenkins.get()
+def jobName = 'ai-assitant-local-deploy'
+def job = instance.getItem(jobName) ?: instance.createProject(WorkflowJob, jobName)
+
+def pipelineScript = '''
 pipeline {
   agent any
 
@@ -38,3 +47,8 @@ pipeline {
     }
   }
 }
+'''
+
+job.setDescription('Builds and deploys the local ai-assitant Docker stack from /workspace/vibeCoding.')
+job.setDefinition(new CpsFlowDefinition(pipelineScript, true))
+job.save()

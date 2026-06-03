@@ -21,16 +21,18 @@ export function HomeRobotHero({ appOverview, navigate, planMode = 'personal' }) 
             <span>{travelPlan?.title || '여행 일정 준비중'}</span>
           </div>
         ) : null}
-        <div className="appHomeRobotHeroActions">
-          <button type="button" onClick={() => navigate(isTravel ? '/planner' : '/notes')}>
-            <MemoNavIcon type={isTravel ? 'trip' : 'edit'} />
-            {isTravel ? '코스 만들기' : '메모 작성'}
-          </button>
-          <button type="button" onClick={() => navigate(isTravel ? '/destinations' : '/scheduler')}>
-            <MemoNavIcon type={isTravel ? 'search' : 'calendar'} />
-            {isTravel ? '장소 찾기' : '일정 추가'}
-          </button>
-        </div>
+        {isTravel ? (
+          <div className="appHomeRobotHeroActions">
+            <button type="button" onClick={() => navigate('/planner')}>
+              <MemoNavIcon type="trip" />
+              코스 만들기
+            </button>
+            <button type="button" onClick={() => navigate('/destinations')}>
+              <MemoNavIcon type="search" />
+              장소 찾기
+            </button>
+          </div>
+        ) : null}
       </div>
       <figure className="appHomeRobotImage">
         <img src="/assets/home-assistant-hero.png" alt="" />

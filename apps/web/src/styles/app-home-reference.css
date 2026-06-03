@@ -380,7 +380,8 @@
   line-height: 1.25;
   font-weight: 900;
   letter-spacing: 0;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .appHomeScheduleProgress span {
@@ -401,7 +402,7 @@
 
 .appHomeScheduleRow {
   min-width: 0;
-  min-height: 54px;
+  min-height: 58px;
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr);
   align-items: center;
@@ -432,6 +433,7 @@
   grid-template-columns: auto minmax(0, 1fr);
   align-items: baseline;
   column-gap: 8px;
+  row-gap: 3px;
 }
 
 .appHomeScheduleRow time {
@@ -448,9 +450,8 @@
   font-size: 0.9rem;
   line-height: 1.25;
   font-weight: 920;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .appHomeScheduleRow small {
@@ -459,9 +460,8 @@
   font-size: 0.76rem;
   line-height: 1.25;
   font-weight: 760;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .appHomeScheduleRow.done {
@@ -486,26 +486,13 @@
   text-align: center;
 }
 
-.appHomeScheduleEmptyIcon {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
-  background: #dcfce7;
-  color: #0f766e;
-}
-
-.appHomeScheduleEmptyIcon .memoNavIcon {
-  width: 22px;
-  height: 22px;
-}
-
 .appHomeScheduleEmpty strong {
+  display: block;
   color: #111827;
   font-size: 0.94rem;
   line-height: 1.3;
   font-weight: 920;
+  word-break: keep-all;
 }
 
 .appHomeScheduleEmpty p {
@@ -514,19 +501,7 @@
   font-size: 0.82rem;
   line-height: 1.45;
   font-weight: 780;
-}
-
-.appHomeScheduleEmpty button {
-  min-height: 44px;
-  margin-top: 5px;
-  border: 1px solid rgba(16, 185, 129, 0.42);
-  border-radius: 8px;
-  background: #10b981;
-  color: #ffffff;
-  font: inherit;
-  font-size: 0.86rem;
-  font-weight: 920;
-  cursor: pointer;
+  word-break: keep-all;
 }
 
 .appHomeWeekGroup {
@@ -589,9 +564,8 @@
   line-height: 1.22;
   font-weight: 920;
   letter-spacing: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .appHomeMemoList span {
@@ -601,9 +575,8 @@
   line-height: 1.25;
   font-weight: 780;
   letter-spacing: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .morePageDashboard {
@@ -859,9 +832,9 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;
   width: min(calc(100% - 20px), 430px);
-  min-height: 82px;
+  min-height: 78px;
   margin: 0;
-  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  padding: 9px 8px calc(9px + env(safe-area-inset-bottom));
   border: 1px solid rgba(222, 232, 245, 0.9);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.96);
@@ -872,7 +845,7 @@
 
 .referenceHome .mobileWorkspaceTabButton {
   min-width: 0;
-  min-height: 58px;
+  min-height: 54px;
   display: grid;
   place-items: center;
   align-content: center;
@@ -883,7 +856,7 @@
   background: transparent;
   color: #64748b;
   font: inherit;
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   line-height: 1.1;
   font-weight: 850;
   letter-spacing: 0;
@@ -891,9 +864,9 @@
 }
 
 .referenceHome .mobileWorkspaceTabButton .memoNavIcon {
-  width: 23px;
-  height: 23px;
-  min-width: 23px;
+  width: 21px;
+  height: 21px;
+  min-width: 21px;
   color: currentColor;
   background: transparent;
 }
@@ -1040,17 +1013,18 @@
 
 .referenceHome .appHomeScheduleProgress span,
 .referenceHome .appHomeScheduleProgress small {
-  min-height: 42px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 0 10px;
+  padding: 7px 10px;
   border: 1px solid #dceee8;
   border-radius: 8px;
   background: #f3fffa;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .referenceHome .appHomeScheduleProgress span::before,
@@ -1073,30 +1047,14 @@
 }
 
 .referenceHome .appHomeScheduleEmpty {
-  grid-template-columns: minmax(82px, 0.32fr) minmax(0, 1fr);
-  align-items: center;
-  gap: 16px;
-  min-height: 142px;
-  padding: 16px;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  min-height: 122px;
+  padding: 18px;
   border-color: #a7f3d0;
   background: linear-gradient(135deg, rgba(248, 255, 252, 0.98) 0%, rgba(255, 255, 255, 0.98) 100%);
   text-align: left;
-}
-
-.referenceHome .appHomeScheduleEmptyIcon {
-  width: 78px;
-  height: 78px;
-  display: grid;
-  place-items: center;
-  justify-self: center;
-  border: 4px solid #d9e2ec;
-  border-radius: 14px;
-  color: #cbd5e1;
-}
-
-.referenceHome .appHomeScheduleEmptyIcon .memoNavIcon {
-  width: 54px;
-  height: 54px;
 }
 
 .referenceHome .appHomeScheduleEmpty div {
@@ -1107,15 +1065,7 @@
 
 .referenceHome .appHomeScheduleEmpty strong {
   font-size: 1rem;
-}
-
-.referenceHome .appHomeScheduleEmpty button {
-  width: min(100%, 190px);
-  min-height: 46px;
-  margin-top: 2px;
-  justify-self: start;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #10b981 0%, #0fbc82 100%);
+  overflow-wrap: anywhere;
 }
 
 .referenceHome .appHomeMemoList {
@@ -1127,9 +1077,9 @@
 
 .referenceHome .appHomeMemoList button {
   grid-template-columns: minmax(0, 1fr) 22px;
-  align-items: center;
+  align-items: start;
   gap: 10px;
-  min-height: 54px;
+  min-height: 58px;
 }
 
 .referenceHome .appHomeMemoList button > span {
@@ -1151,9 +1101,8 @@
   line-height: 1.25;
   font-weight: 780;
   letter-spacing: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 @media (min-width: 680px) {
