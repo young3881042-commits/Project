@@ -9,9 +9,11 @@ import AppHome from './components/home/AppHome.jsx';
 import MemoList from './components/notes/MemoList.jsx';
 import NotesScheduleBar from './components/notes/NotesScheduleBar.jsx';
 import SidebarFolderTree from './components/notes/SidebarFolderTree.jsx';
+import { loginUrlForCurrentLocation, loginUrlForRedirect, redirectToLogin } from './authRoutes.js';
 
 const AUTH_KEY = 'codex-workspace-auth';
 const LazyCodeEditor = lazy(() => import('./CodeEditor.jsx'));
+const LazyBlockNoteMemoEditor = lazy(() => import('./components/notes/BlockNoteMemoEditor.jsx'));
 const SCHEDULER_KEY = 'codex-personal-scheduler-items';
 const AI_NOTE_KEY = 'codex-ai-note-blocks';
 const AI_NOTE_BOARDS_KEY = 'codex-ai-note-boards';
@@ -844,6 +846,7 @@ function normalizeNoteBlock(block) {
     folderId: boardId,
     title: contentParts.title,
     blocks: contentParts.blocks,
+    blockNoteDocument: Array.isArray(block?.blockNoteDocument) ? block.blockNoteDocument : null,
     content: contentParts.content,
     sector,
     boardId,
@@ -1503,7 +1506,7 @@ function WorkspaceHeader({
               <span>Guest</span>
               <strong>{auth.username}</strong>
             </div>
-            <button type="button" className="ghostButton compact" onClick={() => { localStorage.removeItem(AUTH_KEY); navigate(loginPathForCurrentLocation('/analysisadmin')); }}>로그인</button>
+            <button type="button" className="ghostButton compact" onClick={() => { localStorage.removeItem(AUTH_KEY); redirectToLogin('/analysisadmin'); }}>로그인</button>
           </div>
         ) : (
           <div className="userMenuWrap">
@@ -2914,12 +2917,6 @@ function currentPath() {
   return `${path}${window.location.search || ''}`;
 }
 
-function loginPathForCurrentLocation(fallback = '/') {
-  const path = currentPath();
-  const redirect = path && !path.startsWith('/login') && !path.startsWith('/signup') ? path : fallback;
-  return `/login?redirect=${encodeURIComponent(redirect || fallback)}`;
-}
-
 const PROJECT_BOARD_TABS = ['회사 작업', '내 작업', '현재 스프린트', '타임라인'];
 const MEMO_BOARD_SECTORS = [
   { id: 'project', label: '프로젝트 보드' },
@@ -2977,6 +2974,14 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 ));
 
 const ADMIN1_MEMO_LOGS = [
+  {
+    id: 'admin1-memo-20260606-blocknote-login-image-assets',
+    content: `# 2026-06-06 BlockNote 메모와 로그인 URL 통일
+
+- [x] /notes 상세 편집기를 BlockNote 기반으로 교체하고 기존 메모 블록과 Markdown 원문 저장 흐름을 유지
+- [x] 모든 화면의 로그인 요청을 http://34.42.232.172/login 절대 URL로 통일
+- [x] 생성형 이미지는 목업이 아니라 실제 앱 자산으로 생성·적용·검증하도록 Codex 운영 규칙에 추가`
+  },
   {
     id: 'admin1-memo-20260606-travel-realistic-mobile-frame',
     content: `# 2026-06-06 여행 일정 현실화와 전체 모바일 프레임
@@ -3712,7 +3717,7 @@ function BoardIcon({ type }) {
 function WorkspaceNavigator({ navigate }) {
   const session = readStoredAuth();
   const isGuest = !session || session.isGuest || session.username === 'guestuser';
-  const accountPath = isGuest ? '/login' : '/mypage';
+  const accountPath = isGuest ? loginUrlForCurrentLocation('/app') : '/mypage';
   const displayName = isGuest ? 'Guest' : session.username;
 
   return (
@@ -3726,6 +3731,10 @@ function WorkspaceNavigator({ navigate }) {
         href={accountPath}
         onClick={(event) => {
           event.preventDefault();
+          if (isGuest) {
+            redirectToLogin('/app');
+            return;
+          }
           navigate(accountPath);
         }}
       >
@@ -5520,64 +5529,6 @@ function AiNotePage({ navigate }) {
   );
 }
 
-const NOTE_SLASH_COMMANDS = [
-  { command: '/h', label: '제목', type: 'heading', description: '큰 제목 블록' },
-  { command: '/check', label: '체크리스트', type: 'checklist', description: '완료 상태가 있는 항목' },
-  { command: '/bullet', label: '글머리 기호', type: 'bullet', description: '짧은 목록 항목' },
-  { command: '/code', label: '코드', type: 'code', description: '고정폭 코드 블록' },
-  { command: '/divider', label: '구분선', type: 'divider', description: '내용을 나누는 선' }
-];
-
-function memoEditorBlockToInput(block) {
-  const normalized = normalizeMemoEditorBlock(block);
-  const text = normalized.text || '';
-  if (normalized.type === 'heading') return `${'#'.repeat(normalized.level || 1)} ${text}`.trimEnd();
-  if (normalized.type === 'bullet') return `- ${text}`.trimEnd();
-  if (normalized.type === 'checklist') return `- [${normalized.checked ? 'x' : ' '}] ${text}`.trimEnd();
-  if (normalized.type === 'code') return ['```', text, '```'].join('\n');
-  if (normalized.type === 'divider') return '---';
-  return text;
-}
-
-function memoEditorBlockFromInput(input, current) {
-  const source = `${input || ''}`.replace(/\r\n/g, '\n');
-  const trimmed = source.trim();
-  if (current?.type === 'code') {
-    const fenced = source.match(/^```\n?([\s\S]*?)\n?```$/);
-    return { ...current, type: 'code', text: fenced ? fenced[1] : source };
-  }
-  if (trimmed.startsWith('/')) {
-    return { ...current, type: 'paragraph', text: trimmed };
-  }
-  const headingMatch = trimmed.match(/^(#{1,3})\s*(.*)$/);
-  if (headingMatch) {
-    return { ...current, type: 'heading', level: headingMatch[1].length, text: headingMatch[2] || '' };
-  }
-  if (/^(-{3,}|\*{3,})$/.test(trimmed)) {
-    return { ...current, type: 'divider', text: '' };
-  }
-  const checklistMatch = trimmed.match(/^(?:[-*]\s*)?\[([ xX]?)\]\s*(.*)$/);
-  if (checklistMatch) {
-    return {
-      ...current,
-      type: 'checklist',
-      checked: checklistMatch[1].toLowerCase() === 'x',
-      text: checklistMatch[2] || ''
-    };
-  }
-  const bulletMatch = trimmed.match(/^[-*]\s*(.*)$/);
-  if (bulletMatch) {
-    return { ...current, type: 'bullet', text: bulletMatch[1] || '' };
-  }
-  return { ...current, type: 'paragraph', text: source };
-}
-
-function memoEditorBlockIsEmpty(block) {
-  if (!block) return true;
-  if (block.type === 'divider') return true;
-  return !(block.text || '').trim();
-}
-
 function memoNoteExcerpt(note) {
   const text = (note?.blocks || [])
     .filter((block) => block.type !== 'divider')
@@ -5598,169 +5549,6 @@ function memoNoteTag(note, folder) {
   if (note?.status === 'done') return `${planLabel} 완료`;
   if (note?.status === 'progress') return `${planLabel} 진행`;
   return planLabel || memoFolderName(folder);
-}
-
-function NotionBlockEditor({ blocks, onChange }) {
-  const normalizedBlocks = Array.isArray(blocks) && blocks.length ? blocks.map(normalizeMemoEditorBlock) : [newMemoEditorBlock('paragraph')];
-  const [focusedId, setFocusedId] = useState('');
-  const [slashIndex, setSlashIndex] = useState(0);
-  const inputRefs = useRef({});
-  const focusedBlock = normalizedBlocks.find((block) => block.id === focusedId);
-  const focusedInput = focusedBlock ? memoEditorBlockToInput(focusedBlock) : '';
-  const slashQuery = focusedInput.trim().startsWith('/') ? focusedInput.trim().slice(1).toLowerCase() : '';
-  const slashCommands = focusedInput.trim().startsWith('/')
-    ? NOTE_SLASH_COMMANDS.filter((item) => `${item.command} ${item.label}`.toLowerCase().includes(slashQuery))
-    : [];
-
-  useEffect(() => {
-    if (!focusedId) return;
-    const target = inputRefs.current[focusedId];
-    if (!target) return;
-    target.focus();
-    const length = target.value.length;
-    target.setSelectionRange?.(length, length);
-  }, [focusedId, normalizedBlocks.length]);
-
-  useEffect(() => {
-    setSlashIndex(0);
-  }, [slashQuery]);
-
-  const replaceBlocks = (nextBlocks, nextFocusId = focusedId) => {
-    onChange(nextBlocks.map(normalizeMemoEditorBlock));
-    if (nextFocusId) setFocusedId(nextFocusId);
-  };
-
-  const updateOne = (id, updater) => {
-    replaceBlocks(normalizedBlocks.map((block) => (block.id === id ? normalizeMemoEditorBlock(updater(block)) : block)), id);
-  };
-
-  const insertAfter = (id, type = 'paragraph') => {
-    const nextBlock = newMemoEditorBlock(type);
-    const currentIndex = normalizedBlocks.findIndex((block) => block.id === id);
-    const nextBlocks = [...normalizedBlocks];
-    nextBlocks.splice(currentIndex + 1, 0, nextBlock);
-    replaceBlocks(nextBlocks, nextBlock.id);
-  };
-
-  const deleteOne = (id) => {
-    if (normalizedBlocks.length <= 1) {
-      replaceBlocks([newMemoEditorBlock('paragraph', { id, text: '' })], id);
-      return;
-    }
-    const index = normalizedBlocks.findIndex((block) => block.id === id);
-    const nextBlocks = normalizedBlocks.filter((block) => block.id !== id);
-    const nextFocus = nextBlocks[Math.max(0, index - 1)]?.id || nextBlocks[0]?.id;
-    replaceBlocks(nextBlocks, nextFocus);
-  };
-
-  const applyCommand = (command, id = focusedId) => {
-    if (!command || !id) return;
-    updateOne(id, (block) => ({
-      ...block,
-      type: command.type,
-      text: '',
-      checked: false,
-      level: command.type === 'heading' ? 1 : block.level
-    }));
-  };
-
-  const renderPreview = (block) => {
-    if (block.type === 'heading') return <h2>{block.text || '제목'}</h2>;
-    if (block.type === 'bullet') return <p className="notionBullet"><span />{block.text || '목록'}</p>;
-    if (block.type === 'checklist') {
-      return (
-        <label className="notionChecklist" onClick={(event) => event.stopPropagation()}>
-          <input
-            type="checkbox"
-            checked={Boolean(block.checked)}
-            onChange={(event) => updateOne(block.id, (current) => ({ ...current, checked: event.target.checked }))}
-          />
-          <span>{block.text || '체크리스트'}</span>
-        </label>
-      );
-    }
-    if (block.type === 'code') return <pre><code>{block.text || 'code'}</code></pre>;
-    if (block.type === 'divider') return <hr />;
-    return <p>{block.text || '빈 블록'}</p>;
-  };
-
-  return (
-    <div className="notionBlockEditor" aria-label="블록 메모 에디터">
-      {normalizedBlocks.map((block) => {
-        const focused = focusedId === block.id;
-        const inputValue = memoEditorBlockToInput(block);
-        return (
-          <div className={`notionEditorBlock ${focused ? 'focused' : ''} ${block.type}`} key={block.id}>
-            {focused ? (
-              <div className="notionBlockInputWrap">
-                <textarea
-                  ref={(element) => {
-                    if (element) inputRefs.current[block.id] = element;
-                  }}
-                  value={inputValue}
-                  rows={Math.max(1, Math.min(8, inputValue.split('\n').length))}
-                  onFocus={() => setFocusedId(block.id)}
-                  onChange={(event) => updateOne(block.id, (current) => memoEditorBlockFromInput(event.target.value, current))}
-                  onKeyDown={(event) => {
-                    if (event.key === 'ArrowDown' && slashCommands.length) {
-                      event.preventDefault();
-                      setSlashIndex((current) => (current + 1) % slashCommands.length);
-                      return;
-                    }
-                    if (event.key === 'ArrowUp' && slashCommands.length) {
-                      event.preventDefault();
-                      setSlashIndex((current) => (current - 1 + slashCommands.length) % slashCommands.length);
-                      return;
-                    }
-                    if (event.key === 'Enter' && !event.shiftKey) {
-                      event.preventDefault();
-                      if (slashCommands.length) {
-                        applyCommand(slashCommands[slashIndex] || slashCommands[0], block.id);
-                      } else {
-                        insertAfter(block.id);
-                      }
-                    }
-                    if (event.key === 'Backspace' && memoEditorBlockIsEmpty(block)) {
-                      event.preventDefault();
-                      deleteOne(block.id);
-                    }
-                    if (event.key === 'Escape') {
-                      event.currentTarget.blur();
-                    }
-                  }}
-                  placeholder="/ 로 블록 추가"
-                  aria-label="Markdown 원문 블록"
-                />
-                {slashCommands.length ? (
-                  <div className="slashCommandMenu">
-                    {slashCommands.map((command, index) => (
-                      <button
-                        type="button"
-                        key={command.command}
-                        className={index === slashIndex ? 'active' : ''}
-                        onMouseDown={(event) => {
-                          event.preventDefault();
-                          applyCommand(command, block.id);
-                        }}
-                      >
-                        <strong>{command.command}</strong>
-                        <span>{command.label}</span>
-                        <small>{command.description}</small>
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            ) : (
-              <button type="button" className="notionBlockPreview" onClick={() => setFocusedId(block.id)}>
-                {renderPreview(block)}
-              </button>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
 }
 
 function MemoDetail({
@@ -5835,7 +5623,7 @@ function MemoDetail({
 
   const updateMarkdownDraft = (value) => {
     setMarkdownDraft(value);
-    onBlocksChange(markdownToMemoEditorBlocks(value));
+    onBlocksChange(markdownToMemoEditorBlocks(value), null);
   };
 
   return (
@@ -5843,7 +5631,7 @@ function MemoDetail({
       <header className="notesDetailCrumbs">
         <span>{breadcrumb.map(memoFolderName).join(' / ') || memoFolderName(folder)}</span>
         <div className="notesEditorModeTabs" role="tablist" aria-label="편집 모드">
-          <button type="button" className={editMode === 'blocks' ? 'active' : ''} onClick={() => setEditMode('blocks')}>블록</button>
+          <button type="button" className={editMode === 'blocks' ? 'active' : ''} onClick={() => setEditMode('blocks')}>편집</button>
           <button
             type="button"
             className={editMode === 'markdown' ? 'active' : ''}
@@ -5865,7 +5653,7 @@ function MemoDetail({
         />
         <NotesScheduleBar schedule={normalizeNoteSchedule(note?.schedule, note)} onScheduleChange={onScheduleChange} onDelete={onDelete} onShare={onShare} />
       </div>
-      <article className="notesDocument">
+      <article className={`notesDocument ${editMode === 'blocks' ? 'blockNoteDocument' : ''}`}>
         {editMode === 'markdown' ? (
           <textarea
             className="notesMarkdownEditor"
@@ -5875,7 +5663,14 @@ function MemoDetail({
             aria-label="Markdown 원문 편집"
           />
         ) : (
-          <NotionBlockEditor blocks={note.blocks} onChange={onBlocksChange} />
+          <Suspense fallback={<div className="blockNoteLoading">에디터를 준비하고 있습니다.</div>}>
+            <LazyBlockNoteMemoEditor
+              key={note.id}
+              blocks={note.blocks}
+              blockNoteDocument={note.blockNoteDocument}
+              onChange={onBlocksChange}
+            />
+          </Suspense>
         )}
       </article>
     </section>
@@ -6016,7 +5811,7 @@ function NotionNotesPage({ navigate }) {
   }, {});
   const breadcrumb = memoFolderPath(folders, activeFolderId);
   const accountName = session?.username && session.username !== 'guestuser' ? session.username : 'Guest';
-  const accountPath = session?.username && session.username !== 'guestuser' && !session?.isGuest ? '/mypage' : '/login?redirect=/notes';
+  const accountPath = session?.username && session.username !== 'guestuser' && !session?.isGuest ? '/mypage' : loginUrlForRedirect('/notes');
   const primaryMemoFolderId = folders.find((folder) => folder.id === 'memo')?.id || activeFolderId || folders[0]?.id || 'memo';
   const mobileFolder = activeFolder || folders.find((folder) => folder.id === primaryMemoFolderId) || folders[0] || null;
   const mobileFolderId = mobileFolder?.id || '';
@@ -6386,7 +6181,7 @@ function NotionNotesPage({ navigate }) {
             childFolders={memoFolderChildren(folders, activeFolderId)}
             breadcrumb={breadcrumb}
             onTitleChange={(title) => activeNote && updateNote(activeNote.id, { title })}
-            onBlocksChange={(bodyBlocks) => activeNote && updateNote(activeNote.id, { blocks: bodyBlocks })}
+            onBlocksChange={(bodyBlocks, blockNoteDocument) => activeNote && updateNote(activeNote.id, { blocks: bodyBlocks, blockNoteDocument })}
             onScheduleChange={updateSchedule}
             onDelete={() => deleteNote(activeNote?.id)}
             onCreate={() => createNote(activeFolderId)}
@@ -6414,7 +6209,13 @@ function NotionNotesPage({ navigate }) {
                     <button type="button" className="notesMobileAppIconButton" onClick={() => setStatusText('알림은 곧 연결할게요.')} aria-label="알림">
                       <MemoNavIcon type="bell" />
                     </button>
-                    <button type="button" className="notesMobileAppIconButton" onClick={() => navigate(accountPath)} aria-label="메뉴">
+                    <button type="button" className="notesMobileAppIconButton" onClick={() => {
+                      if (accountPath.startsWith('http://') || accountPath.startsWith('https://')) {
+                        window.location.assign(accountPath);
+                        return;
+                      }
+                      navigate(accountPath);
+                    }} aria-label="메뉴">
                       <MemoNavIcon type="menu" />
                     </button>
                   </div>
@@ -6481,7 +6282,7 @@ function NotionNotesPage({ navigate }) {
                 folder={activeFolder}
                 breadcrumb={breadcrumb}
                 onTitleChange={(title) => activeNote && updateNote(activeNote.id, { title })}
-                onBlocksChange={(bodyBlocks) => activeNote && updateNote(activeNote.id, { blocks: bodyBlocks })}
+                onBlocksChange={(bodyBlocks, blockNoteDocument) => activeNote && updateNote(activeNote.id, { blocks: bodyBlocks, blockNoteDocument })}
                 onScheduleChange={updateSchedule}
                 onDelete={() => deleteNote(activeNote?.id)}
                 onCreate={() => createNote(activeFolderId)}

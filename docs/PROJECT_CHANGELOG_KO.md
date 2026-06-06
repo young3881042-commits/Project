@@ -1,5 +1,29 @@
 # 프로젝트 변경 상세 문서
 
+## 54. 2026-06-06 BlockNote 메모 에디터와 로그인 URL 통일
+
+`/notes` 상세 편집기를 BlockNote 기반으로 교체하고, guest 상태의 로그인 요청이 모든 화면에서 외부 절대 로그인 URL로 향하게 정리했습니다.
+
+변경 내용:
+
+- `/notes` 상세의 기존 수제 블록 에디터를 제거하고 `components/notes/BlockNoteMemoEditor.jsx`로 분리했습니다.
+- 기존 `blocks`와 `content` 저장 흐름을 유지하면서 BlockNote 문서 JSON도 `blockNoteDocument`로 함께 저장하게 했습니다.
+- BlockNote 번들은 lazy load로 분리해 메인 App.jsx에 에디터 구현을 다시 넣지 않게 했습니다.
+- guest 상태의 `/notes`, `/scheduler`, `/travel` 로그인 진입이 `http://34.42.232.172/login?redirect=...` 절대 URL을 쓰도록 공통 helper를 추가했습니다.
+- `/travel` 홈에서도 계정 네비게이션을 보여 로그인 진입점이 빠지지 않게 했습니다.
+- 생성형 이미지는 목업이 아니라 실제 서비스 이미지 자산으로 생성·적용·검증하도록 `AGENTS.md` 운영 규칙에 추가했습니다.
+- 이번 작업 로그를 `admin1` 메모 보드 시드에 추가했습니다.
+
+검증:
+
+- `git diff --check`
+- `npm --prefix apps/web run build`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d api web`
+- HTTP 확인: `/notes`, `/travel`, `/scheduler`
+- Playwright PC/모바일 뷰포트 스크린샷 확인: `/notes?board=memo&block=blocknote-smoke`, `/travel`
+- guest 로그인 href 확인: `/notes`, `/scheduler`, `/travel`
+- 스크린샷 저장 경로: `/tmp/ai-assitant-notes-blocknote-desktop.png`, `/tmp/ai-assitant-notes-blocknote-mobile.png`, `/tmp/ai-assitant-travel-mobile-login-nav.png`
+
 ## 53. 2026-06-06 여행 일정 현실화와 모바일 프레임 고정
 
 `/travel`과 여행 코스 생성 결과가 PC에서도 모바일 앱 기준으로 보이도록 고정하고, 여행 일정 생성 기준을 현실적인 식사/휴식 구조로 조정했습니다.

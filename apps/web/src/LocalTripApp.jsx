@@ -6,6 +6,7 @@ import TravelHome, {
   selectDdayPlan
 } from './components/travel/TravelHome.jsx';
 import { OSAKA_KYOTO_COUPLE_PRESET } from './components/travel/OsakaKyotoTripData.js';
+import { loginUrlForRedirect, redirectToLogin } from './authRoutes.js';
 
 const AUTH_KEY = 'codex-workspace-auth';
 const SCHEDULER_KEY = 'codex-personal-scheduler-items';
@@ -1779,6 +1780,10 @@ function routeClick(event, to, navigate) {
     return;
   }
   event.preventDefault();
+  if (/^https?:\/\//i.test(to)) {
+    window.location.assign(to);
+    return;
+  }
   navigate(to);
 }
 
@@ -1842,7 +1847,7 @@ function TravelWorkspaceIcon({ type }) {
 function TravelWorkspaceNavigator({ navigate }) {
   const session = readStoredAuth();
   const guest = isGuestSession(session);
-  const accountPath = guest ? '/login' : '/mypage';
+  const accountPath = guest ? loginUrlForRedirect('/travel') : '/mypage';
   const displayName = guest ? 'Guest' : session?.username || 'Guest';
 
   return (
@@ -1995,10 +2000,13 @@ function LocalTripNav({ path, navigate }) {
       )
     }
   ];
+  const session = readStoredAuth();
+  const guest = isGuestSession(session);
+  const accountPath = guest ? loginUrlForRedirect('/travel') : '/mypage';
   const accountItems = [
     {
-      label: '마이페이지',
-      to: '/mypage',
+      label: guest ? '로그인' : '마이페이지',
+      to: accountPath,
       icon: (
         <>
           <path d="M20 21a8 8 0 0 0-16 0"></path>
@@ -2007,9 +2015,6 @@ function LocalTripNav({ path, navigate }) {
       )
     }
   ];
-  const session = readStoredAuth();
-  const guest = isGuestSession(session);
-  const accountPath = guest ? '/login' : '/mypage';
 
   return (
     <aside className="ltNav">
@@ -3524,7 +3529,7 @@ function MyPage({ navigate }) {
         <div className="ltMyActions">
           <button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>새 코스 만들기</button>
           {guest ? (
-            <button type="button" className="ltGhostButton" onClick={() => navigate('/login')}>회원 로그인</button>
+            <button type="button" className="ltGhostButton" onClick={() => redirectToLogin('/mypage')}>회원 로그인</button>
           ) : (
             <button type="button" className="ltGhostButton" onClick={logout}>로그아웃</button>
           )}
@@ -3577,7 +3582,7 @@ function MyPage({ navigate }) {
             </div>
           </dl>
           {guest ? (
-            <button type="button" className="ltPrimaryButton" onClick={() => navigate('/login')}>로그인 페이지로 이동</button>
+            <button type="button" className="ltPrimaryButton" onClick={() => redirectToLogin('/mypage')}>로그인 페이지로 이동</button>
           ) : null}
           <div className="ltMyShortcutList">
             <button type="button" onClick={() => navigate('/destinations')}>장소 둘러보기</button>
@@ -3666,7 +3671,7 @@ function LoginPage({ navigate }) {
 function AppShell({ navigate, children, travelHome = false }) {
   return (
     <div className={`ltShell${travelHome ? ' ltShellTravelStart' : ''}`}>
-      {travelHome ? null : <TravelWorkspaceNavigator navigate={navigate} />}
+      <TravelWorkspaceNavigator navigate={navigate} />
       {children}
       <MobileWorkspaceTabs active="more" navigate={navigate} />
       <footer className="ltFooter">

@@ -41,6 +41,7 @@
 @import './styles/notes-white-final.css';
 @import './styles/localtrip-text-data.css';
 @import './styles/localtrip-osaka-kyoto.css';
+@import './styles/blocknote-memo.css';
 
 #root {
   width: min(100%, 430px);

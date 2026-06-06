@@ -15,6 +15,7 @@
 - Keep `docs/NEXT_CHECKLIST_PLAN_KO.md` updated when a task changes UI behavior, routing, deployment steps, or follow-up work.
 - Check `docs/PROJECT_CHANGELOG_KO.md` for recent context before changing travel, notes, scheduler, login, or admin behavior.
 - For mobile UI/UX changes, include screenshot validation with a real browser when feasible. Prefer Playwright mobile viewport screenshots after Docker deploy, and record the checked routes in the changelog.
+- When a UI needs visual assets, do not stop at mockups. Generate or source production-ready image assets, add them to the repo or durable public asset path, wire them into the actual screen, and verify the rendered result with screenshots. Use generated images as real app assets when they fit the product need, not only as references.
 - Every completed work item should also leave an `admin1` memo-board entry. Prefer adding/updating a seeded `ADMIN1_MEMO_LOGS` item in `apps/web/src/App.jsx` so the log appears in `/notes` for `admin1`.
 - Do not keep growing `apps/web/src/App.jsx` for UI work. When touching shared navigation, app home, notes, scheduler, or other sizeable UI surfaces, split reusable pieces into `apps/web/src/components/` or feature-scoped files and keep `App.jsx` focused on routing, state wiring, and legacy glue.
 - Prefer updating the existing checklist and changelog instead of creating duplicate planning documents.
