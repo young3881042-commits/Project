@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="860" height="930" viewBox="0 0 860 930" role="img" aria-labelledby="title desc">
-  <title id="title">ai-assitant 메모 일정 안내</title>
+  <title id="title">ai-assistant 메모 일정 안내</title>
   <desc id="desc">메모 작성, 일정 켜기, 내 일정 확인, 메모와 일정 관리 흐름을 보여주는 카드형 안내</desc>
   <defs>
     <filter id="softShadow" x="-12%" y="-12%" width="124%" height="132%">

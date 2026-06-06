@@ -23,30 +23,30 @@ spring:
 
 app:
   namespace: ${APP_NAMESPACE:jupiter}
-  registry: ${APP_REGISTRY:192.168.45.101:32050}
-  base-image: ${APP_BASE_IMAGE:192.168.45.101:32050/jupiter/base:latest}
-  jupyter-url: ${APP_JUPYTER_URL:http://192.168.45.101:30888}
-  frontend-url: ${APP_FRONTEND_URL:http://192.168.45.101:31088}
-  api-url: ${APP_API_URL:http://192.168.45.101:31090/api}
-  gateway-url: ${APP_GATEWAY_URL:http://192.168.45.101:31080}
-  launcher-url: ${APP_LAUNCHER_URL:https://rancher.192.168.45.101.sslip.io:30443}
-  adminer-url: ${APP_ADMINER_URL:http://192.168.45.101:31081}
-  nexus-url: ${APP_NEXUS_URL:http://192.168.45.101:30693}
-  nexus-username: ${APP_NEXUS_USERNAME:admin}
-  nexus-password: ${APP_NEXUS_PASSWORD:}
-  kafka-url: ${APP_KAFKA_URL:http://192.168.45.101:31082}
+  registry: ${APP_REGISTRY:registry.example.com}
+  base-image: ${APP_BASE_IMAGE:registry.example.com/jupiter/base:latest}
+  jupyter-url: ${APP_JUPYTER_URL:http://localhost:30888}
+  frontend-url: ${APP_FRONTEND_URL:http://localhost:5173}
+  api-url: ${APP_API_URL:http://localhost:8080/api}
+  gateway-url: ${APP_GATEWAY_URL:http://localhost:8080}
+  launcher-url: ${APP_LAUNCHER_URL:https://launcher.example.com}
+  adminer-url: ${APP_ADMINER_URL:http://localhost:31081}
+  artifact-registry-url: ${APP_ARTIFACT_REGISTRY_URL:}
+  artifact-registry-username: ${APP_ARTIFACT_REGISTRY_USERNAME:}
+  artifact-registry-password: ${APP_ARTIFACT_REGISTRY_PASSWORD:}
+  kafka-url: ${APP_KAFKA_URL:http://localhost:31082}
   elk-url: ${APP_ELK_URL:}
-  pypi-proxy-url: ${APP_PYPI_PROXY_URL:http://nexus-nexus-repository-manager.nexus.svc.cluster.local:8081/repository/pypi-proxy/simple}
-  pypi-proxy-host: ${APP_PYPI_PROXY_HOST:nexus-nexus-repository-manager.nexus.svc.cluster.local}
+  pypi-proxy-url: ${APP_PYPI_PROXY_URL:}
+  pypi-proxy-host: ${APP_PYPI_PROXY_HOST:}
   external-host: ${APP_EXTERNAL_HOST:jupiter.example.com}
   notebook-user: ${APP_NOTEBOOK_USER:jovyan}
   mariadb-url: ${APP_MARIADB_URL:mariadb:3306/jupiter_web}
   mariadb-username: ${APP_MARIADB_USERNAME:jupiter}
   mariadb-password: ${APP_MARIADB_PASSWORD:jupiter123}
   workspace-node: ${APP_WORKSPACE_NODE:node02}
-  assistant-data-root: ${APP_ASSISTANT_DATA_ROOT:/data/jupiter-assistant}
-  conversation-root: ${APP_CONVERSATION_ROOT:/data/jupiter-assistant/conversations}
-  workspace-root: ${APP_WORKSPACE_ROOT:/data/jupiter-assistant/workspace}
+  assistant-data-root: ${APP_ASSISTANT_DATA_ROOT:/data/ai-assistant}
+  conversation-root: ${APP_CONVERSATION_ROOT:/data/ai-assistant/conversations}
+  workspace-root: ${APP_WORKSPACE_ROOT:/data/ai-assistant/workspace}
   snapshot-root: ${APP_SNAPSHOT_ROOT:/snapshots}
   rag-root: ${APP_RAG_ROOT:/tmp/jupiter-rag}
   rag-source-root: ${APP_RAG_SOURCE_ROOT:/tmp/jupiter-rag/source}

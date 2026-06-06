@@ -4,6 +4,8 @@
 **/.env
 **/.env.local
 **/.env.*.local
+.jenkins.env
+.jenkins-ssh
 **/node_modules
 **/dist
 **/.gradle
@@ -13,4 +15,4 @@
 **/secrets
 apps/api/build
 apps/web/build
-apps/mobile/android/build
+apps/mobile

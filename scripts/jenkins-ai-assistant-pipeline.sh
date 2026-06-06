@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_REPO="${APP_REPO:-/workspace/vibeCoding}"
+APP_REPO="${APP_REPO:-/workspace/ai-assistant}"
 DEPLOY_SOURCE="${DEPLOY_SOURCE:-local-codex}"
 GIT_REMOTE="${GIT_REMOTE:-git@github.com:young3881042-commits/Project.git}"
 GIT_BRANCH="${GIT_BRANCH:-main}"
-GIT_WORKTREE="${GIT_WORKTREE:-/var/jenkins_home/git/ai-assitant}"
+GIT_WORKTREE="${GIT_WORKTREE:-/var/jenkins_home/git/ai-assistant}"
 
 if [ "${DEPLOY_SOURCE}" = "git" ]; then
   mkdir -p "$(dirname "${GIT_WORKTREE}")"
@@ -28,7 +28,7 @@ export API_PORT="${API_PORT:-18080}"
 export WEB_HTTP_PORT="${WEB_HTTP_PORT:-80}"
 export WEB_HTTPS_PORT="${WEB_HTTPS_PORT:-443}"
 export DOCKER_BUILDKIT="${DOCKER_BUILDKIT:-1}"
-export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-vibecoding}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-aiassistant}"
 
 cd "${APP_REPO}"
 
@@ -41,6 +41,6 @@ docker compose -f "${COMPOSE_FILE}" build web api
 docker compose -f "${COMPOSE_FILE}" up -d api web
 docker compose -f "${COMPOSE_FILE}" ps
 
-docker exec vibecoding-web-1 wget -qO- http://127.0.0.1/app >/dev/null
-docker exec vibecoding-web-1 wget -qO- http://127.0.0.1/notes >/dev/null
-docker exec vibecoding-web-1 wget -qO- http://127.0.0.1/manifest.webmanifest >/dev/null
+docker exec "${COMPOSE_PROJECT_NAME}-web-1" wget -qO- http://127.0.0.1/app >/dev/null
+docker exec "${COMPOSE_PROJECT_NAME}-web-1" wget -qO- http://127.0.0.1/notes >/dev/null
+docker exec "${COMPOSE_PROJECT_NAME}-web-1" wget -qO- http://127.0.0.1/manifest.webmanifest >/dev/null

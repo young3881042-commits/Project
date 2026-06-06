@@ -1,6 +1,6 @@
 {
-  "name": "ai-assitant",
-  "short_name": "ai-assitant",
+  "name": "ai-assistant",
+  "short_name": "ai-assistant",
   "description": "메모, 일정, 여행 코스를 한곳에서 이어 쓰는 개인 AI 워크스페이스",
   "start_url": "/app",
   "scope": "/",

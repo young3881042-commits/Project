@@ -11,7 +11,7 @@ RUN apk add --no-cache openssl \
     -keyout /etc/nginx/ssl/localtrip.key \
     -out /etc/nginx/ssl/localtrip.crt \
     -subj "/CN=localhost" \
-    -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:34.42.232.172"
+    -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
 
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 

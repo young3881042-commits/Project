@@ -276,7 +276,7 @@ export default function RagApp({
   const handleDrop = async (event) => {
     event.preventDefault();
     setDragging(false);
-    const workspacePayload = event.dataTransfer.getData('application/x-ai-assitant-workspace')
+    const workspacePayload = event.dataTransfer.getData('application/x-ai-assistant-workspace')
       || event.dataTransfer.getData('application/x-jupiter-workspace');
     if (workspacePayload) {
       try {

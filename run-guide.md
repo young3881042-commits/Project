@@ -1,34 +1,33 @@
-# ai-assitant 실행 방법
+# ai-assistant 실행 방법
 
-실행 순서: **DB → API → Web**
-
-# 0. Docker base 배포 후 테스트
-main 이미지는 `/home/lezzs5103/vibeCoding`의 `ai-assitant-*` 이미지와 `vibecoding-*` compose 컨테이너입니다.
+이 프로젝트는 Docker 기준으로 실행합니다.
 
 ```bash
-cd /home/lezzs5103/vibeCoding
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
 docker compose -f docker-compose.dev.yml up -d --build
-scripts/smoke_test_docker_base.sh
 ```
 
-배포 후에는 항상 스모크 테스트까지 실행합니다. 테스트는 실제 `http://127.0.0.1/mypage`와 배포된 JS 번들을 받아 UI 문구와 캐시 헤더를 확인합니다.
+포트 충돌을 피해야 하면 다음처럼 지정합니다.
 
-# 1. 서버 배포 순서
+```bash
+DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 \
+docker compose -f docker-compose.dev.yml up -d --build
+```
 
-## 1.1 DB 실행
-cd infra/db/docker
-docker compose up -d
+확인:
 
-## 1.2 API 실행
-cd /apps/api
-cp .env.example .env
-./run-local.sh
+```bash
+docker compose -f docker-compose.dev.yml ps
+curl -I http://127.0.0.1/app
+curl -I http://127.0.0.1/notes
+curl -I http://127.0.0.1/scheduler
+curl -I http://127.0.0.1/api/destinations?size=1
+```
 
-## 1.3.1 Web 실행 (Local)
-cd /apps/web
-cp .env.example .env
-./run-local.sh
+Jenkins 배포는 `Jenkinsfile`과 `scripts/jenkins-ai-assistant-pipeline.sh`를 사용합니다.
 
-## 1.3.2  Web 실행 (Docker)
-cd infra/web/docker
-docker compose up --build
+```bash
+cp .jenkins.env.example .jenkins.env
+docker compose -f docker-compose.jenkins.yml up -d --build
+```

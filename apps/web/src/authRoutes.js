@@ -1,4 +1,5 @@
-export const APP_LOGIN_URL = 'http://34.42.232.172/login';
+const configuredLoginUrl = import.meta.env?.VITE_LOGIN_URL?.trim();
+export const APP_LOGIN_URL = configuredLoginUrl || '/login';
 
 function safeRedirectPath(path, fallback = '/') {
   const candidate = `${path || fallback || '/'}`;
@@ -17,7 +18,8 @@ export function currentAppPath() {
 
 export function loginUrlForRedirect(redirect = '/') {
   const safeRedirect = safeRedirectPath(redirect, '/');
-  return `${APP_LOGIN_URL}?redirect=${encodeURIComponent(safeRedirect)}`;
+  const separator = APP_LOGIN_URL.includes('?') ? '&' : '?';
+  return `${APP_LOGIN_URL}${separator}redirect=${encodeURIComponent(safeRedirect)}`;
 }
 
 export function loginUrlForCurrentLocation(fallback = '/') {

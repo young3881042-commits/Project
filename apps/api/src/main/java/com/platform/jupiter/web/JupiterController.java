@@ -368,7 +368,7 @@ public class JupiterController {
                 <body>
                 <script>
                 if (window.opener) {
-                  window.opener.postMessage({ type: 'ai-assitant-gemini-oauth', status: 'success' }, window.location.origin);
+                  window.opener.postMessage({ type: 'ai-assistant-gemini-oauth', status: 'success' }, window.location.origin);
                   window.close();
                 }
                 </script>
@@ -414,11 +414,11 @@ public class JupiterController {
                         "jupiter",
                         "Shared base Jupyter workspace."),
                 new ServiceLink(
-                        "Nexus",
-                        appProperties.nexusUrl(),
-                        maskIfPresent(appProperties.nexusUsername()),
+                        "Private Registry",
+                        appProperties.artifactRegistryUrl(),
+                        maskIfPresent(appProperties.artifactRegistryUsername()),
                         "hidden",
-                        "Registry UI for pushed Jupiter images and package proxy."),
+                        "Optional package and image registry. Leave it empty for public local runs."),
                 new ServiceLink(
                         "Launcher",
                         appProperties.launcherUrl(),
@@ -450,10 +450,8 @@ public class JupiterController {
                 services,
                 List.of(
                         new DocLink("Food Shows API", appProperties.gatewayUrl() + "/api/food-shows/dashboard"),
-                        new DocLink("Travel Platform", appProperties.gatewayUrl() + "/docs/TRAVEL_PLATFORM.md"),
-                        new DocLink("Service Access", appProperties.gatewayUrl() + "/docs/SERVICE_ACCESS.md"),
-                        new DocLink("External Hosting", appProperties.gatewayUrl() + "/docs/EXTERNAL_HOSTING.md"),
-                        new DocLink("Debug Summary", appProperties.gatewayUrl() + "/docs/DEBUG_SUMMARY.md")));
+                        new DocLink("Travel Plans API", appProperties.gatewayUrl() + "/api/travel-plans"),
+                        new DocLink("Destinations API", appProperties.gatewayUrl() + "/api/destinations?size=1")));
     }
 
     @GetMapping("/food-shows/dashboard")

@@ -1,6 +1,7 @@
 *
 !/.gitignore
 !/.dockerignore
+!/.jenkins.env.example
 !/AGENTS.md
 !/README.md
 !/docker-compose.jenkins.yml
@@ -17,10 +18,12 @@
 /apps/*/node_modules/
 /apps/*/dist/
 /apps/*/build/
-/apps/mobile/android/build/
+/apps/mobile/
 /apps/*/.gradle/
 /apps/*/.env
 /infra/**/.env
+.jenkins.env
+.jenkins-ssh/
 **/.env.local
 **/.env.*.local
 **/auth.json

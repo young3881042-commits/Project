@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ai-assitant-v2';
+const CACHE_NAME = 'ai-assistant-v2';
 const APP_SHELL_URL = '/app';
 const APP_SHELL = [APP_SHELL_URL, '/manifest.webmanifest', '/icon.svg'];
 

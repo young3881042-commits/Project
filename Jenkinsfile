@@ -15,9 +15,9 @@ pipeline {
   }
 
   environment {
-    APP_REPO = '/workspace/vibeCoding'
+    APP_REPO = '/workspace/ai-assistant'
     DOCKER_BUILDKIT = '1'
-    COMPOSE_PROJECT_NAME = 'vibecoding'
+    COMPOSE_PROJECT_NAME = 'aiassistant'
     DB_PORT = '13306'
     API_PORT = '18080'
     WEB_HTTP_PORT = '80'
@@ -27,7 +27,7 @@ pipeline {
   stages {
     stage('Build and deploy') {
       steps {
-        sh 'DEPLOY_SOURCE="$DEPLOY_SOURCE" GIT_REMOTE="$GIT_REMOTE" GIT_BRANCH="$GIT_BRANCH" bash "$APP_REPO/scripts/jenkins-ai-assitant-pipeline.sh"'
+        sh 'DEPLOY_SOURCE="$DEPLOY_SOURCE" GIT_REMOTE="$GIT_REMOTE" GIT_BRANCH="$GIT_BRANCH" bash "$APP_REPO/scripts/jenkins-ai-assistant-pipeline.sh"'
       }
     }
   }

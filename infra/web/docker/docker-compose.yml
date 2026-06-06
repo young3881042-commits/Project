@@ -3,7 +3,7 @@ services:
     build:
       context: ../../../apps/web
       dockerfile: ../../infra/web/docker/Dockerfile
-    image: ai-assitant-web:local
+    image: ai-assistant-web:local
     env_file:
       - web.env
     ports:

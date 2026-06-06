@@ -1,23 +1,11 @@
-# Codex Instructions For ai-assitant
+# Codex Instructions For ai-assistant
 
-- At the start of a Codex session, inspect `/data/ai-assitant` first if it exists. Prioritize `/data/ai-assitant/conversations`, `/data/ai-assitant/context`, and `/data/ai-assitant/workspace` for durable user context before making repo changes.
-- If only `/data/jupiter-assistant` exists, treat it as legacy runtime context and inspect it before changing repo files.
-- Treat `/data/ai-assitant` and `/data/jupiter-assistant` as local runtime data, not source. Do not commit secrets or raw personal exports copied from those paths.
-- Before changing this repo, read `docs/NEXT_CHECKLIST_PLAN_KO.md` and align the work with its operating rules, task queue, and validation list.
-- Current product direction: this is not yet a finished AI assistant service. Treat it as a mobile-first personal workspace and AI schedule assistant by default. Travel planning is one selectable `Plan` type, not the default app identity.
-- Home UX rule: `/app` must default to `개인 워크스페이스 / AI 일정 · 여행 도우미`. Do not show a `개인 / 여행` switch at the top of the home screen; travel should open directly from `/more` to the travel main page at `/travel`. Work, study, fitness, and other plan categories should stay out of the home screen.
-- Long-term target: after mobile UI and server APIs are stable, expand toward a phone-based personal AI assistant that can use user-granted access to messages, mail, local files, weather, nearby travel spots, and nearby restaurants. Web/PWA alone cannot read phone-local SMS/mail/files; native Android/iOS permissions or a native wrapper will be needed.
-- Avoid generic platform-operations work unless the user specifically asks for it. Keep the main work queue focused on mobile workspace usability, AI-assisted schedule/memo flows, selectable plan types, routing/deployment stability, and real app API integrations.
-- The default app route is `/app`; `/` should not render a separate main screen.
-- Treat external web access for this deployment as port `80`. For Docker deploy/validation, use `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build api web` or the same command without `--build`; do not leave the web container mapped to `18000`.
-- Only use `WEB_HTTP_PORT=18000` as a temporary fallback when port `80` is genuinely unavailable, and switch back to `80` before handing work back to the user.
-- Docker `web` is an nginx gateway, and `web-source` runs Vite from the bind-mounted `./apps/web:/app` source. For normal web source edits, prefer `docker compose -f docker-compose.dev.yml up -d api web` or `docker compose -f docker-compose.dev.yml restart web-source`; rebuild the `web` image only when nginx or Dockerfile inputs change.
-- Keep `docs/NEXT_CHECKLIST_PLAN_KO.md` updated when a task changes UI behavior, routing, deployment steps, or follow-up work.
-- Check `docs/PROJECT_CHANGELOG_KO.md` for recent context before changing travel, notes, scheduler, login, or admin behavior.
-- For mobile UI/UX changes, include screenshot validation with a real browser when feasible. Prefer Playwright mobile viewport screenshots after Docker deploy, and record the checked routes in the changelog.
-- When a UI needs visual assets, do not stop at mockups. Generate or source production-ready image assets, add them to the repo or durable public asset path, wire them into the actual screen, and verify the rendered result with screenshots. Use generated images as real app assets when they fit the product need, not only as references.
-- Every completed work item should also leave an `admin1` memo-board entry. Prefer adding/updating a seeded `ADMIN1_MEMO_LOGS` item in `apps/web/src/App.jsx` so the log appears in `/notes` for `admin1`.
-- Do not keep growing `apps/web/src/App.jsx` for UI work. When touching shared navigation, app home, notes, scheduler, or other sizeable UI surfaces, split reusable pieces into `apps/web/src/components/` or feature-scoped files and keep `App.jsx` focused on routing, state wiring, and legacy glue.
-- Prefer updating the existing checklist and changelog instead of creating duplicate planning documents.
-- Keep the project documentation Docker-first. Do not add other deployment instructions or examples.
-- For normal implementation requests in this repo, finish with validation, an intentional commit, and a push unless the user explicitly says not to. Inspect `git status` first and stage only files that belong to the current task.
+- Default app route: `/app`. The root route `/` should redirect or hand off to `/app`.
+- Keep the public repository focused on Jenkins, Docker, `apps/api`, `apps/web`, and the top-level project documentation.
+- Android/APK sources and generated mobile binaries are intentionally not part of this repository.
+- Before changing this repo, read `docs/NEXT_CHECKLIST_PLAN_KO.md`.
+- If `/data/ai-assistant` exists, inspect it for durable runtime context before changing source. Treat `/data/ai-assistant` as local runtime data, not source.
+- Do not commit secrets, raw personal exports, private IPs, or internal service addresses.
+- Keep private endpoints in local `.env` files or placeholder examples only.
+- Keep documentation Docker-first.
+- Workspace execution features are for local development/admin use. Production deployments should keep them disabled unless explicitly reviewed.

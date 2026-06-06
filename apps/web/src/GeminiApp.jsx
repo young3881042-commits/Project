@@ -270,7 +270,7 @@ export default function LlmApp({
 
   useEffect(() => {
     const handler = (event) => {
-      if (event.origin !== window.location.origin || !['ai-assitant-gemini-oauth', 'jupiter-gemini-oauth'].includes(event.data?.type)) {
+      if (event.origin !== window.location.origin || !['ai-assistant-gemini-oauth', 'jupiter-gemini-oauth'].includes(event.data?.type)) {
         return;
       }
       refresh().catch((error) => setMessage(error.message));
@@ -384,7 +384,7 @@ export default function LlmApp({
           directoryPath,
           filePath,
           title: `llm-${titleForPath(filePath || directoryPath)}`,
-          systemPrompt: '너는 ai-assitant 분석 워크스페이스의 실무형 LLM 어시스턴트다. 답변은 한국어로 간결하게 작성하고, 필요한 경우 실행 가능한 단계로 정리한다.',
+          systemPrompt: '너는 ai-assistant 분석 워크스페이스의 실무형 LLM 어시스턴트다. 답변은 한국어로 간결하게 작성하고, 필요한 경우 실행 가능한 단계로 정리한다.',
           messages: nextMessages
         })
       });

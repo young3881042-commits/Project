@@ -17,9 +17,9 @@ const LazyBlockNoteMemoEditor = lazy(() => import('./components/notes/BlockNoteM
 const SCHEDULER_KEY = 'codex-personal-scheduler-items';
 const AI_NOTE_KEY = 'codex-ai-note-blocks';
 const AI_NOTE_BOARDS_KEY = 'codex-ai-note-boards';
-const CONNECTION_SETTINGS_KEY = 'ai-assitant-connection-settings';
+const CONNECTION_SETTINGS_KEY = 'ai-assistant-connection-settings';
 const LEGACY_CONNECTION_SETTINGS_KEY = 'jupiter-ai-connection-settings';
-const DATA_INBOX_KEY = 'ai-assitant-data-inbox';
+const DATA_INBOX_KEY = 'ai-assistant-data-inbox';
 const LEGACY_DATA_INBOX_KEY = 'jupiter-ai-data-inbox';
 const APP_SHORTCUTS = {
   mainHub: { label: '앱 홈', path: '/app' },
@@ -174,7 +174,7 @@ function readConnectionSettings() {
 
 function saveConnectionSettings(settings) {
   localStorage.setItem(CONNECTION_SETTINGS_KEY, JSON.stringify(settings));
-  window.dispatchEvent(new CustomEvent('ai-assitant:connection-settings-updated', { detail: settings }));
+  window.dispatchEvent(new CustomEvent('ai-assistant:connection-settings-updated', { detail: settings }));
 }
 
 function readDataInbox() {
@@ -192,7 +192,7 @@ function readDataInbox() {
 
 function saveDataInbox(items) {
   localStorage.setItem(DATA_INBOX_KEY, JSON.stringify(items));
-  window.dispatchEvent(new CustomEvent('ai-assitant:data-inbox-updated', { detail: items }));
+  window.dispatchEvent(new CustomEvent('ai-assistant:data-inbox-updated', { detail: items }));
 }
 
 function normalizeSchedulerType(type) {
@@ -1122,7 +1122,7 @@ function parentPathOf(path) {
 }
 
 function monitorUrls() {
-  const host = window.location.hostname || '192.168.45.101';
+  const host = window.location.hostname || 'localhost';
   return {
     grafana: `http://${host}:30300`,
     prometheus: `http://${host}:30090`
@@ -1635,7 +1635,7 @@ function FileList({
               draggable
               onDragStart={(event) => {
                 event.dataTransfer.effectAllowed = 'copy';
-                event.dataTransfer.setData('application/x-ai-assitant-workspace', JSON.stringify({
+                event.dataTransfer.setData('application/x-ai-assistant-workspace', JSON.stringify({
                   path: entry.path,
                   type: entry.type
                 }));
@@ -2975,6 +2975,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260606-public-portfolio-cleanup',
+    content: `# 2026-06-06 공개 포트폴리오 정리
+
+- [x] 앱 표기를 ai-assistant로 정리
+- [x] Android/APK 산출물과 관련 스크립트를 Git 대상에서 제거
+- [x] 내부 IP와 사설 저장소 기본값을 .env.example placeholder 또는 localhost 기준으로 교체
+- [x] README를 프로젝트 목적, 기능, 아키텍처, 실행/배포, 트러블슈팅 중심으로 재작성`
+  },
+  {
     id: 'admin1-memo-20260606-notes-home-account-blocknote-ko',
     content: `# 2026-06-06 메모 에디터와 계정 표시 정리
 
@@ -2988,7 +2997,7 @@ const ADMIN1_MEMO_LOGS = [
     content: `# 2026-06-06 BlockNote 메모와 로그인 URL 통일
 
 - [x] /notes 상세 편집기를 BlockNote 기반으로 교체하고 기존 메모 블록과 Markdown 원문 저장 흐름을 유지
-- [x] 모든 화면의 로그인 요청을 http://34.42.232.172/login 절대 URL로 통일
+- [x] 모든 화면의 로그인 요청을 /login 기준으로 통일
 - [x] 생성형 이미지는 목업이 아니라 실제 앱 자산으로 생성·적용·검증하도록 Codex 운영 규칙에 추가`
   },
   {
@@ -3552,26 +3561,7 @@ const ADMIN1_MEMO_LOGS = [
 
 - [x] \`npm --prefix apps/web run build\`
 - [x] \`docker compose -f docker-compose.dev.yml up -d --build api web\`
-- [x] \`http://34.42.232.172/apps\` 확인`
-  },
-  {
-    id: 'admin1-memo-20260524-home-memo-connect-apk',
-    content: `# 2026-05-24 홈 화면 메모 중심 개편과 APK 갱신
-
-- [x] \`/app\` 홈 빠른 액션을 내 일정, 메모, 여행 코스 3개로 축소
-- [x] 연결 액션을 메모 카드 내부 버튼으로 이동
-- [x] 메모 카드를 가장 큰 주 카드로 두고 일정/여행 카드는 보조 카드로 정리
-- [x] 복잡한 사진 배경과 출처 텍스트를 제거하고 그리드 그라데이션 배경으로 교체
-- [x] Android WebView 시작 경로를 \`/app\`으로 변경하고 APK 재생성
-
-## 검증
-
-- [x] \`npm --prefix apps/web run build\`
-- [x] \`docker compose -f docker-compose.dev.yml build web\`
-- [x] \`docker compose -f docker-compose.dev.yml up -d --build api web\`
-- [x] Docker web \`/app\`, \`/manifest.webmanifest\`, \`/downloads/ai-assitant-debug.apk\` 확인
-- [x] Docker web에서 API \`/api/destinations?size=1\` 응답 확인
-- [x] Docker Android SDK 이미지로 \`scripts/build_android_apk.sh\` 실행`
+- [x] \`/apps\` 확인`
   },
   {
     id: 'admin1-memo-20260524-web-copy-visual-refresh',
@@ -3586,21 +3576,6 @@ const ADMIN1_MEMO_LOGS = [
 
 - [ ] \`npm --prefix apps/web run build\`
 - [ ] Docker web/API 재배포 후 주요 URL 확인`
-  },
-  {
-    id: 'admin1-memo-20260524-memo-first-android-apk',
-    content: `# 2026-05-24 메모 우선 연결과 Android APK
-
-- [x] \`/connect\` 첫 연결 대상을 메모 보드로 변경
-- [x] Android WebView 앱 시작 경로를 \`/notes\`로 변경
-- [x] Docker Android SDK 이미지로 설치용 APK를 다시 생성
-- [x] 웹에서 받을 수 있도록 APK 다운로드 파일을 공개 경로에 배치
-
-## 검증
-
-- [x] \`npm --prefix apps/web run build\`
-- [x] \`scripts/build_android_apk.sh\`
-- [x] Docker web 재배포 후 \`/connect\`, \`/notes\`, APK 다운로드 경로 확인`
   },
   {
     id: 'admin1-memo-20260523-planner-generate-status',
@@ -3631,13 +3606,12 @@ const ADMIN1_MEMO_LOGS = [
 - [x] Docker web 재배포 후 \`/planner\`, \`/connect\` 확인`
   },
   {
-    id: 'admin1-memo-20260523-ai-assitant-app-apk',
-    content: `# 2026-05-23 ai-assitant 앱 라우트와 설치 파일
+    id: 'admin1-memo-20260523-ai-assistant-app-apk',
+    content: `# 2026-05-23 ai-assistant 앱 라우트와 PWA 정리
 
-- [x] 앱 이름, PWA manifest, Docker image를 \`ai-assitant\` 기준으로 정리
+- [x] 앱 이름, PWA manifest, Docker image를 \`ai-assistant\` 기준으로 정리
 - [x] 기본 앱 라우트를 \`/app\`으로 고정하고 \`/\`은 \`/app\`으로 이동
 - [x] 모바일 홈을 일정, 메모, 여행, 연결 진입 중심으로 통일
-- [x] Android WebView 설치 파일 \`apps/mobile/android/build/ai-assitant-debug.apk\` 생성
 - [x] Docker API/Web 재빌드 및 배포 확인
 
 ## 검증
@@ -4123,7 +4097,7 @@ const EMPTY_APP_OVERVIEW = {
 
 function PortfolioHomePage({ navigate }) {
   useEffect(() => {
-    document.title = 'ai-assitant Portfolio';
+    document.title = 'ai-assistant Portfolio';
   }, []);
 
   const portfolioLinks = [
@@ -4158,7 +4132,7 @@ function PortfolioHomePage({ navigate }) {
       <nav className="portfolioNav" aria-label="portfolio navigation">
         <button type="button" className="portfolioBrand" onClick={() => navigate('/portfolio')}>
           <span>A</span>
-          <strong>ai-assitant</strong>
+          <strong>ai-assistant</strong>
         </button>
         <div>
           <button type="button" onClick={() => navigate('/app')}>앱 홈</button>

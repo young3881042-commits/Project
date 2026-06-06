@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import './styles/connections.css';
 
-const CONNECTION_SETTINGS_KEY = 'ai-assitant-connection-settings';
+const CONNECTION_SETTINGS_KEY = 'ai-assistant-connection-settings';
 const LEGACY_CONNECTION_SETTINGS_KEY = 'jupiter-ai-connection-settings';
 
 const DEFAULT_SETTINGS = {
@@ -62,7 +62,7 @@ function readSettings() {
 
 function writeSettings(settings) {
   localStorage.setItem(CONNECTION_SETTINGS_KEY, JSON.stringify(settings));
-  window.dispatchEvent(new CustomEvent('ai-assitant:connection-settings-updated', { detail: settings }));
+  window.dispatchEvent(new CustomEvent('ai-assistant:connection-settings-updated', { detail: settings }));
 }
 
 function apiUrlFor(path, settings) {

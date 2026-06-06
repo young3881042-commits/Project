@@ -1,126 +1,104 @@
-# ai-assitant
+# MU
 
-`ai-assitant`는 모바일에서 먼저 써보며 다듬는 개인용 메모/일정 앱입니다.
+MU는 모바일에서 메모와 일정을 빠르게 기록하고,
+AI가 메모를 일정/할 일/여행 계획으로 정리해주는 개인 워크스페이스입니다.
 
-현재 방향은 “완성된 AI 비서 서비스”가 아니라, 예쁜 모바일 UI를 만들고 API를 하나씩 붙여 실제 개인 AI 비서 서비스로 발전시키는 것입니다. 우선 핸드폰에 설치해서 메모, 일정, 여행 코스 흐름을 직접 테스트하고 불편한 부분을 작은 단위로 고칩니다.
+## 프로젝트 목적
 
-최종 목표는 휴대폰의 문자, 메일, 로컬 파일처럼 사용자가 권한을 준 개인 데이터를 읽고 정리하는 모바일 AI 비서입니다. 웹/PWA만으로는 이런 로컬 권한을 직접 다룰 수 없으므로, 먼저 모바일 UI와 서버 API를 안정화한 뒤 Android/iOS 권한을 가진 앱 구조로 확장합니다.
+흩어진 메모, 오늘 할 일, 여행 준비 내용을 한 화면에서 기록하고 다시 일정으로 옮기는 과정을 줄이는 것이 목표입니다. 포트폴리오에서는 "많은 기능"보다 메모와 일정이 자연스럽게 이어지는 개인 워크스페이스, 그리고 이를 Docker/Jenkins로 배포 가능한 구조로 만든 점을 중심에 둡니다.
 
-## 현재 목표
+## 주요 기능
 
-- 모바일에서 바로 쓰기 쉬운 메모 앱 UX
-- 일정, 메모, 여행 코스를 한 앱 안에서 연결
-- API를 붙여 개인 데이터 기반 기능으로 확장
-- 날씨, 내 위치 주변 여행지, 주변 식당/카페 추천 API를 붙여 실제 생활 동선으로 확장
-- 장기적으로 Android/iOS 권한을 통해 문자, 메일, 로컬 파일을 개인 AI 비서 입력으로 연결
-- `/app`을 기본 앱 홈으로 사용
-- `/`은 별도 화면 없이 `/app`으로 이동
-- Docker 기준으로 빌드, 실행, 배포
+- 메모 관리: 폴더형 메모 보드, 블록 기반 편집, 체크리스트 작성
+- 일정 관리: 오늘/주간 일정, 할 일 상태, 카테고리별 스케줄 관리
+- 메모 기반 일정화: 메모의 날짜와 시간 정보를 일정으로 연결
+- 여행 계획 플러그인: 장소 탐색, 여행 코스 생성, 저장 코스 관리
+- AI/RAG 확장 구조: 사용자 API 키 기반 AI 연결, 문서 검색과 요약 확장 준비
+- Docker/Jenkins 배포: web/api/db compose와 Jenkins 배포 파이프라인
 
-## 지금 있는 기능
+터미널, 파일 실행, Python 실행, 관리자 워크스페이스 기능은 핵심 사용자 기능이 아니라 로컬 개발/관리 확장 기능입니다.
 
-- `/app`: 앱 홈
-- `/notes`: 메모 보드
-- `/scheduler`: 개인 일정
-- `/destinations`: 여행 장소 찾기
-- `/planner`: 여행 코스 만들기
-- `/plans`: 저장한 여행 코스
-- `/connect`: 개인 데이터 연결 준비 화면
-- `/portfolio`: 외부 공유용 포트폴리오 화면
-- `/analysisadmin`: 관리자용 워크스페이스
+Workspace 실행 기능은 로컬 개발/관리자 전용 기능이며,
+운영 배포 시 기본 비활성화하는 것을 권장합니다.
 
-## 아직 완성 서비스가 아닌 부분
+## 아키텍처
 
-- 실제 개인 AI 비서 대화 서비스는 아직 완성 전입니다.
-- Gmail, 네이버 메일, 로컬 메시지 연결은 설계/준비 단계입니다.
-- 문자, 메일 앱, 로컬 파일 같은 휴대폰 데이터 접근은 네이티브 권한이 필요합니다.
-- 사용자별 OpenAI/Gemini 키 정책은 준비되어 있지만, 제품 기능으로 더 다듬어야 합니다.
-- 여행 코스 생성은 API와 DB 데이터를 붙여가는 중이며, 실제 품질은 계속 테스트하면서 개선합니다.
+```text
+Browser/PWA
+  -> Nginx web gateway
+  -> React/Vite web-source
+  -> Spring Boot API
+  -> MariaDB
 
-## 기술 구성
+Jenkins
+  -> Docker build
+  -> docker compose up
+```
 
-- Web: React, Vite
-- API: Spring Boot
-- DB: MariaDB
-- 배포: Docker Compose
-- 모바일 설치: PWA 또는 Android WebView APK 흐름으로 테스트
+루트 경로 `/`은 별도 랜딩 화면을 렌더링하지 않고 `/app`으로 이동합니다. 공개 소개 화면은 `/portfolio`, 실제 앱 홈은 `/app`입니다.
 
-## 모바일 권한 방향
+## 기술 스택
 
-휴대폰의 문자, 메일, 로컬 파일을 읽는 기능은 일반 웹 화면만으로 구현하지 않습니다.
+- Frontend: React, Vite
+- Editor/UI: BlockNote, React Markdown, custom CSS
+- Backend: Spring Boot, Spring Data JPA
+- Database: MariaDB
+- AI 확장: OpenAI 호환 API, Gemini 연결 구조, RAG 서비스 구조
+- Deployment: Docker Compose, Nginx, Jenkins
 
-- Android: SMS, 파일, 알림, 공유 인텐트 같은 권한을 앱에서 요청해야 합니다.
-- iOS: 앱 샌드박스와 공유 확장, 파일 선택, 메일 연동 정책을 따라야 합니다.
-- 메일: Gmail 같은 서비스는 공식 OAuth API를 우선 사용합니다.
-- 로컬 파일: 사용자가 선택하거나 공유한 파일부터 안전하게 연결합니다.
-- 서버 API: 모바일 앱이 읽은 데이터를 요약, 검색, 일정/메모화하는 API로 연결합니다.
+## 실행 방법
 
-## 실행
-
-Docker 기준으로 실행합니다.
+환경 예시는 `apps/api/.env.example`, `apps/web/.env.example`을 참고합니다. 내부 IP나 사설 저장소 주소는 소스 기본값에 넣지 않고, 필요한 경우 로컬 `.env`에서만 설정합니다.
 
 ```bash
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
 docker compose -f docker-compose.dev.yml up -d --build
 ```
 
-`docker-compose.dev.yml`의 웹은 두 컨테이너로 나뉩니다.
-
-- `web`: 80/443을 받는 nginx 게이트웨이
-- `web-source`: `./apps/web:/app`을 bind mount해서 실행하는 Vite 앱
-
-웹 소스만 수정한 경우에는 이미지를 다시 빌드하지 않아도 됩니다.
-
-```bash
-docker compose -f docker-compose.dev.yml up -d api web
-docker compose -f docker-compose.dev.yml restart web-source
-```
-
-상태 확인:
-
-```bash
-docker compose -f docker-compose.dev.yml ps
-```
-
-주요 URL 확인:
+주요 확인 URL:
 
 ```bash
 curl -I http://127.0.0.1/app
 curl -I http://127.0.0.1/notes
-curl -I http://127.0.0.1/planner
+curl -I http://127.0.0.1/scheduler
 curl -I http://127.0.0.1/api/destinations?size=1
 ```
 
-운영 검증도 웹은 포트 `80` 기준으로 맞춥니다. DB/API 호스트 포트만 충돌을 피하려면 아래처럼 실행합니다.
+사설 Maven proxy가 필요한 환경에서는 `MAVEN_REPO_URL`만 로컬 환경에 설정합니다.
 
-```bash
-DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 \
-docker compose -f docker-compose.dev.yml up -d --build
+```env
+MAVEN_REPO_URL=http://your-maven-proxy.example.com/repository/maven-public
+VITE_API_BASE_URL=http://localhost:8080
 ```
 
-## API
+## 배포 구조
 
-여행 기능에서 현재 사용하는 주요 API:
+- `docker-compose.dev.yml`: MariaDB, API, nginx web, Vite web-source를 함께 실행
+- `infra/api/docker/Dockerfile`: Spring Boot API 이미지
+- `infra/web/docker/Dockerfile`: nginx gateway 이미지
+- `infra/jenkins/Dockerfile`: Jenkins 배포 서버 이미지
+- `Jenkinsfile`: Jenkins에서 Docker build와 compose 배포 수행
 
-- `GET /api/destinations`
-- `GET /api/destinations/{id}`
-- `POST /api/destinations/sync/mock`
-- `POST /api/travel-plans/generate`
-- `GET /api/travel-plans`
-- `GET /api/travel-plans/{id}`
-- `DELETE /api/travel-plans/{id}`
+Jenkins를 실행할 때는 먼저 로컬 전용 환경 파일을 만듭니다.
 
-## 작업 기준
+```bash
+cp .jenkins.env.example .jenkins.env
+```
 
-- 먼저 모바일에서 직접 쓰기 쉬운 UI를 만든다.
-- 화면 문구는 실제 구현된 기능만 설명한다.
-- AI 비서라고 과장하지 않고, 메모/일정 앱에서 API를 붙여가는 단계로 유지한다.
-- 배포와 검증은 Docker 기준으로 한다.
+외부 공개 포트는 web `80/443` 기준으로 맞추고, API와 DB 포트는 환경 변수로 충돌을 피합니다.
 
-## 다음 우선순위
+## 트러블슈팅 경험
 
-- 모바일 메모 UX를 계속 단순화
-- 핸드폰 설치 후 실제 터치, 스크롤, 입력 불편 수정
-- 메모와 일정 연결 강화
-- 여행 코스 입력을 일자별 출발지/도착지 중심으로 단순화
-- 날씨, 위치 기반 여행지, 주변 식당/카페 API를 단계적으로 연결
-- 개인 데이터 연결 API를 실제 사용 흐름에 맞춰 하나씩 추가
+- 내부 IP와 사설 Maven 저장소 주소가 build/config/docs에 남아 있던 문제를 `.env.example` placeholder와 localhost 기본값으로 정리했습니다.
+- `/`, `/apps`, `/connections`처럼 흔들리던 진입 경로를 `/app`, `/connect` 기준으로 정리했습니다.
+- 메모 편집기를 수제 Markdown 편집에서 BlockNote 기반으로 옮기면서 기존 저장 구조와 호환되게 보존했습니다.
+- web 컨테이너를 nginx gateway와 Vite source 컨테이너로 분리해 일반 웹 수정은 이미지 재빌드 없이 반영되게 했습니다.
+
+## 향후 개선 계획
+
+- 메모에서 일정 후보를 더 정확히 추출하는 AI 정리 흐름 강화
+- 여행 계획 플러그인을 코스 비교와 일정 충돌 확인까지 확장
+- RAG 문서 업로드와 검색 결과의 출처 표시 개선
+- 관리자 실행 기능의 운영 기본 비활성화와 권한 감사 로그 강화
+- Jenkins 배포 파이프라인에 빌드 테스트와 헬스체크를 더 촘촘하게 추가

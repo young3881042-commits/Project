@@ -297,7 +297,7 @@ public class ChatService {
         if (configured == null || configured.isBlank()) {
             String assistantRoot = appProperties.assistantDataRoot();
             if (assistantRoot == null || assistantRoot.isBlank()) {
-                configured = "/data/jupiter-assistant/conversations";
+                configured = "/data/ai-assistant/conversations";
             } else {
                 configured = Path.of(assistantRoot.trim()).resolve("conversations").toString();
             }

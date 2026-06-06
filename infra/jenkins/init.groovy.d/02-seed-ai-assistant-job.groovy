@@ -3,7 +3,7 @@ import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
 
 def instance = Jenkins.get()
-def jobName = 'ai-assitant-local-deploy'
+def jobName = 'ai-assistant-local-deploy'
 def job = instance.getItem(jobName) ?: instance.createProject(WorkflowJob, jobName)
 
 def pipelineScript = '''
@@ -24,9 +24,9 @@ pipeline {
   }
 
   environment {
-    APP_REPO = '/workspace/vibeCoding'
+    APP_REPO = '/workspace/ai-assistant'
     DOCKER_BUILDKIT = '1'
-    COMPOSE_PROJECT_NAME = 'vibecoding'
+    COMPOSE_PROJECT_NAME = 'aiassistant'
     DB_PORT = '13306'
     API_PORT = '18080'
     WEB_HTTP_PORT = '80'
@@ -36,7 +36,7 @@ pipeline {
   stages {
     stage('Build and deploy') {
       steps {
-        sh 'DEPLOY_SOURCE="$DEPLOY_SOURCE" GIT_REMOTE="$GIT_REMOTE" GIT_BRANCH="$GIT_BRANCH" bash "$APP_REPO/scripts/jenkins-ai-assitant-pipeline.sh"'
+        sh 'DEPLOY_SOURCE="$DEPLOY_SOURCE" GIT_REMOTE="$GIT_REMOTE" GIT_BRANCH="$GIT_BRANCH" bash "$APP_REPO/scripts/jenkins-ai-assistant-pipeline.sh"'
       }
     }
   }
@@ -49,6 +49,6 @@ pipeline {
 }
 '''
 
-job.setDescription('Builds and deploys the local ai-assitant Docker stack from /workspace/vibeCoding.')
+job.setDescription('Builds and deploys the local ai-assistant Docker stack from /workspace/ai-assistant.')
 job.setDefinition(new CpsFlowDefinition(pipelineScript, true))
 job.save()

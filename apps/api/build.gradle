@@ -1,9 +1,12 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven {
-            url = uri('http://10.109.106.31:8081/repository/maven-public')
-            allowInsecureProtocol = true
+        def privateRepoUrl = System.getenv('MAVEN_REPO_URL')
+        if (privateRepoUrl != null && !privateRepoUrl.isBlank()) {
+            maven {
+                url = uri(privateRepoUrl)
+                allowInsecureProtocol = privateRepoUrl.startsWith('http://')
+            }
         }
     }
     dependencies {
@@ -27,9 +30,12 @@ java {
 
 repositories {
     mavenCentral()
-    maven {
-        url = uri('http://10.109.106.31:8081/repository/maven-public')
-        allowInsecureProtocol = true
+    def privateRepoUrl = System.getenv('MAVEN_REPO_URL')
+    if (privateRepoUrl != null && !privateRepoUrl.isBlank()) {
+        maven {
+            url = uri(privateRepoUrl)
+            allowInsecureProtocol = privateRepoUrl.startsWith('http://')
+        }
     }
 }
 

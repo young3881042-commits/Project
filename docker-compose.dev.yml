@@ -13,7 +13,7 @@ services:
       - ./infra/db/docker/initdb:/docker-entrypoint-initdb.d:ro
 
   api:
-    image: ai-assitant-api:local
+    image: ai-assistant-api:local
     build:
       context: .
       dockerfile: infra/api/docker/Dockerfile
@@ -33,16 +33,16 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
       ENABLE_CODEX_CLI_MODE: ${ENABLE_CODEX_CLI_MODE:-false}
-      APP_ASSISTANT_DATA_ROOT: ${APP_ASSISTANT_DATA_ROOT:-/data/ai-assitant}
-      APP_CONVERSATION_ROOT: ${APP_CONVERSATION_ROOT:-/data/ai-assitant/conversations}
-      APP_WORKSPACE_ROOT: ${APP_WORKSPACE_ROOT:-/data/ai-assitant/workspace}
+      APP_ASSISTANT_DATA_ROOT: ${APP_ASSISTANT_DATA_ROOT:-/data/ai-assistant}
+      APP_CONVERSATION_ROOT: ${APP_CONVERSATION_ROOT:-/data/ai-assistant/conversations}
+      APP_WORKSPACE_ROOT: ${APP_WORKSPACE_ROOT:-/data/ai-assistant/workspace}
       APP_PYTHON_TIMEOUT_SECONDS: ${APP_PYTHON_TIMEOUT_SECONDS:-180}
       JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=75.0}
     ports:
       - "${API_PORT:-8080}:8080"
     volumes:
       - /data/codex:/root/.codex
-      - /data/ai-assitant:/data/ai-assitant
+      - /data/ai-assistant:/data/ai-assistant
     cpus: "2.0"
     mem_limit: 6g
     mem_reservation: 2g
@@ -50,7 +50,7 @@ services:
       - db
 
   web:
-    image: ai-assitant-web:local
+    image: ai-assistant-web:local
     build:
       context: apps/web
       dockerfile: ../../infra/web/docker/Dockerfile
