@@ -59,7 +59,8 @@
 
 .blockNoteMemoEditor .bn-side-menu,
 .blockNoteMemoEditor .bn-formatting-toolbar,
-.blockNoteMemoEditor .bn-slash-menu {
+.blockNoteMemoEditor .bn-slash-menu,
+.blockNoteMemoEditor .bn-suggestion-menu {
   border-radius: 8px;
 }
 
@@ -86,6 +87,20 @@
 .notesDetailPanel .notesEditorModeTabs button.active {
   background: #0f766e;
   color: #ffffff;
+}
+
+.notesDetailPanel .notesDetailCrumbs > strong {
+  flex: 0 0 auto;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #dbe7ef;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #0f766e;
+  padding: 0 10px;
+  font-size: 0.78rem;
+  font-weight: 950;
 }
 
 .notesDetailTopbar {

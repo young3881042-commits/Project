@@ -1,5 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { BlockNoteView } from '@blocknote/mantine';
+import { ko } from '@blocknote/core/locales';
 import '@blocknote/core/fonts/inter.css';
 import '@blocknote/mantine/style.css';
 import { useCreateBlockNote } from '@blocknote/react';
@@ -118,7 +119,7 @@ function blockNoteDocumentToLegacy(document) {
 export default function BlockNoteMemoEditor({ blocks, blockNoteDocument, onChange }) {
   const initialContent = useMemo(() => normalizeBlockNoteDocument(blockNoteDocument, blocks), [blockNoteDocument, blocks]);
   const lastSerializedRef = useRef(JSON.stringify(initialContent));
-  const editor = useCreateBlockNote({ initialContent });
+  const editor = useCreateBlockNote({ initialContent, dictionary: ko });
 
   const handleChange = (nextEditor) => {
     const document = nextEditor.document;

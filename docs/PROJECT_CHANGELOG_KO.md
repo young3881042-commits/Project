@@ -1,5 +1,26 @@
 # 프로젝트 변경 상세 문서
 
+## 55. 2026-06-06 메모 에디터와 계정 표시 정리
+
+`/notes` 상세 편집에서 Markdown 원문 탭을 제거하고, 홈/메모 상단의 로그인 표시를 일정 화면의 계정 카드 방식과 맞췄습니다.
+
+변경 내용:
+
+- `/notes` 상세의 `편집 / Markdown` 전환을 제거하고 BlockNote 편집 화면만 보이게 했습니다.
+- BlockNote `/` 메뉴가 한국어 사전 기준의 제목과 설명을 표시하도록 설정했습니다.
+- `/notes` 모바일 오른쪽 상단 검색/알림/메뉴 아이콘을 제거하고 `Guest / 로그인` 또는 `계정 / 내 정보` 카드로 교체했습니다.
+- `/app` 홈 로그인 버튼도 같은 계정 카드 형태와 로그인 이동 방식으로 통일했습니다.
+- 이번 작업 로그를 `admin1` 메모 보드 시드에 추가했습니다.
+
+검증:
+
+- `git diff --check`
+- `npm --prefix apps/web run build`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d api web`
+- HTTP 확인: `/app`, `/notes`, `/scheduler`
+- Playwright 모바일 확인: `/app`, `/notes`, `/notes` 새 메모 상세 BlockNote `/` 메뉴
+- 스크린샷 저장 경로: `/tmp/ai-assitant-app-account-mobile.png`, `/tmp/ai-assitant-notes-account-blocknote-mobile.png`
+
 ## 54. 2026-06-06 BlockNote 메모 에디터와 로그인 URL 통일
 
 `/notes` 상세 편집기를 BlockNote 기반으로 교체하고, guest 상태의 로그인 요청이 모든 화면에서 외부 절대 로그인 URL로 향하게 정리했습니다.

@@ -85,6 +85,61 @@
   height: 22px;
 }
 
+.appHomeHeaderActions .appHomeAccountButton {
+  min-width: 132px;
+  height: 50px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-areas:
+    "avatar name"
+    "avatar meta";
+  align-items: center;
+  justify-content: start;
+  column-gap: 10px;
+  padding: 7px 11px;
+  border-radius: 14px;
+  text-align: left;
+}
+
+.appHomeHeaderActions .appHomeAccountButton > span {
+  grid-area: avatar;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #0f766e;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 950;
+}
+
+.appHomeHeaderActions .appHomeAccountButton strong,
+.appHomeHeaderActions .appHomeAccountButton small {
+  min-width: 0;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.appHomeHeaderActions .appHomeAccountButton strong {
+  grid-area: name;
+  color: #111827;
+  font-size: 0.86rem;
+  line-height: 1.1;
+  font-weight: 950;
+}
+
+.appHomeHeaderActions .appHomeAccountButton small {
+  grid-area: meta;
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1.15;
+  font-weight: 850;
+}
+
 .appHomeRobotHero {
   min-width: 0;
   display: grid;
@@ -1132,6 +1187,12 @@
     min-width: 64px;
     height: 40px;
     padding: 0 12px;
+  }
+
+  .referenceHome .appHomeHeaderActions .appHomeAccountButton {
+    min-width: 118px;
+    height: 46px;
+    padding: 6px 8px;
   }
 
   .referenceHome .appHomeRobotHero {

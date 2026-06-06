@@ -2975,6 +2975,15 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260606-notes-home-account-blocknote-ko',
+    content: `# 2026-06-06 메모 에디터와 계정 표시 정리
+
+- [x] /notes 상세의 Markdown 원문 편집 탭을 제거하고 BlockNote 편집만 보이게 정리
+- [x] BlockNote / 메뉴 설명을 한국어 사전 기준으로 표시
+- [x] /notes 모바일 오른쪽 상단 검색/알림/메뉴 아이콘을 제거하고 일정 화면처럼 Guest/로그인 또는 계정/내 정보 카드 표시
+- [x] /app 홈 로그인 버튼도 같은 계정 카드와 로그인 이동 방식으로 통일`
+  },
+  {
     id: 'admin1-memo-20260606-blocknote-login-image-assets',
     content: `# 2026-06-06 BlockNote 메모와 로그인 URL 통일
 
@@ -5567,14 +5576,6 @@ function MemoDetail({
   onSelectNote,
   onShare
 }) {
-  const [editMode, setEditMode] = useState('blocks');
-  const [markdownDraft, setMarkdownDraft] = useState('');
-
-  useEffect(() => {
-    setEditMode('blocks');
-    setMarkdownDraft(memoEditorBlocksToMarkdown(note?.blocks || []));
-  }, [note?.id]);
-
   if (!note) {
     return (
       <section className="notesDetailPanel empty">
@@ -5604,7 +5605,7 @@ function MemoDetail({
                 <MemoNavIcon type="file" />
                 <span>
                   <strong>{noteBlockTitle(item)}</strong>
-                  <small>{memoNoteUpdatedAt(item) || '최근 수정'} · Markdown</small>
+                  <small>{memoNoteUpdatedAt(item) || '최근 수정'} · 메모</small>
                 </span>
               </button>
             ))}
@@ -5612,7 +5613,7 @@ function MemoDetail({
           {!childFolders.length && !folderNotes.length ? (
             <div className="notesEmptyState large">
               <strong>{memoFolderName(folder)} 폴더가 비어 있습니다</strong>
-              <span>하위 폴더를 만들거나 Markdown 파일을 새로 작성하세요.</span>
+              <span>하위 폴더를 만들거나 메모를 새로 작성하세요.</span>
               <button type="button" onClick={onCreate}><MemoNavIcon type="plus" />새 파일</button>
             </div>
           ) : null}
@@ -5621,28 +5622,11 @@ function MemoDetail({
     );
   }
 
-  const updateMarkdownDraft = (value) => {
-    setMarkdownDraft(value);
-    onBlocksChange(markdownToMemoEditorBlocks(value), null);
-  };
-
   return (
     <section className="notesDetailPanel" aria-label="메모 상세">
       <header className="notesDetailCrumbs">
         <span>{breadcrumb.map(memoFolderName).join(' / ') || memoFolderName(folder)}</span>
-        <div className="notesEditorModeTabs" role="tablist" aria-label="편집 모드">
-          <button type="button" className={editMode === 'blocks' ? 'active' : ''} onClick={() => setEditMode('blocks')}>편집</button>
-          <button
-            type="button"
-            className={editMode === 'markdown' ? 'active' : ''}
-            onClick={() => {
-              setMarkdownDraft(memoEditorBlocksToMarkdown(note.blocks || []));
-              setEditMode('markdown');
-            }}
-          >
-            Markdown
-          </button>
-        </div>
+        <strong>편집</strong>
       </header>
       <div className="notesDetailTopbar">
         <input
@@ -5653,25 +5637,15 @@ function MemoDetail({
         />
         <NotesScheduleBar schedule={normalizeNoteSchedule(note?.schedule, note)} onScheduleChange={onScheduleChange} onDelete={onDelete} onShare={onShare} />
       </div>
-      <article className={`notesDocument ${editMode === 'blocks' ? 'blockNoteDocument' : ''}`}>
-        {editMode === 'markdown' ? (
-          <textarea
-            className="notesMarkdownEditor"
-            value={markdownDraft}
-            onChange={(event) => updateMarkdownDraft(event.target.value)}
-            placeholder="# 제목&#10;&#10;- 할 일&#10;- [ ] 체크리스트"
-            aria-label="Markdown 원문 편집"
+      <article className="notesDocument blockNoteDocument">
+        <Suspense fallback={<div className="blockNoteLoading">에디터를 준비하고 있습니다.</div>}>
+          <LazyBlockNoteMemoEditor
+            key={note.id}
+            blocks={note.blocks}
+            blockNoteDocument={note.blockNoteDocument}
+            onChange={onBlocksChange}
           />
-        ) : (
-          <Suspense fallback={<div className="blockNoteLoading">에디터를 준비하고 있습니다.</div>}>
-            <LazyBlockNoteMemoEditor
-              key={note.id}
-              blocks={note.blocks}
-              blockNoteDocument={note.blockNoteDocument}
-              onChange={onBlocksChange}
-            />
-          </Suspense>
-        )}
+        </Suspense>
       </article>
     </section>
   );
@@ -5810,8 +5784,11 @@ function NotionNotesPage({ navigate }) {
     return counts;
   }, {});
   const breadcrumb = memoFolderPath(folders, activeFolderId);
-  const accountName = session?.username && session.username !== 'guestuser' ? session.username : 'Guest';
-  const accountPath = session?.username && session.username !== 'guestuser' && !session?.isGuest ? '/mypage' : loginUrlForRedirect('/notes');
+  const isGuestSession = !session || session.isGuest || session.username === 'guestuser';
+  const accountName = isGuestSession ? 'Guest' : session.username;
+  const accountPath = isGuestSession ? loginUrlForCurrentLocation('/notes') : '/mypage';
+  const accountLabel = isGuestSession ? '로그인' : '내 정보';
+  const accountInitial = accountName.slice(0, 1).toUpperCase();
   const primaryMemoFolderId = folders.find((folder) => folder.id === 'memo')?.id || activeFolderId || folders[0]?.id || 'memo';
   const mobileFolder = activeFolder || folders.find((folder) => folder.id === primaryMemoFolderId) || folders[0] || null;
   const mobileFolderId = mobileFolder?.id || '';
@@ -6202,23 +6179,22 @@ function NotionNotesPage({ navigate }) {
                     <MemoNavIcon type="home" />
                   </button>
                   <strong>메모</strong>
-                  <div className="notesMobileAppTools">
-                    <button type="button" className="notesMobileAppIconButton" onClick={() => setStatusText('검색은 곧 연결할게요.')} aria-label="검색">
-                      <MemoNavIcon type="search" />
-                    </button>
-                    <button type="button" className="notesMobileAppIconButton" onClick={() => setStatusText('알림은 곧 연결할게요.')} aria-label="알림">
-                      <MemoNavIcon type="bell" />
-                    </button>
-                    <button type="button" className="notesMobileAppIconButton" onClick={() => {
+                  <button
+                    type="button"
+                    className="notesMobileAccountButton"
+                    onClick={() => {
                       if (accountPath.startsWith('http://') || accountPath.startsWith('https://')) {
                         window.location.assign(accountPath);
                         return;
                       }
                       navigate(accountPath);
-                    }} aria-label="메뉴">
-                      <MemoNavIcon type="menu" />
-                    </button>
-                  </div>
+                    }}
+                    aria-label={accountLabel}
+                  >
+                    <span>{accountInitial}</span>
+                    <strong>{accountName}</strong>
+                    <small>{accountLabel}</small>
+                  </button>
                 </div>
                 <div className="notesMobileProfileRow">
                   <div className="notesMobileTitleBlock">

@@ -1,6 +1,6 @@
 import MobileWorkspaceTabs from '../MobileWorkspaceTabs.jsx';
-import MemoNavIcon from '../MemoNavIcon.jsx';
 import HomeScheduleCards from './HomeScheduleCards.jsx';
+import { loginUrlForRedirect } from '../../authRoutes.js';
 import {
   HomeAccountStrip,
   HomeRobotHero
@@ -19,6 +19,15 @@ export default function AppHome({
   session
 }) {
   const showAccountPanel = Boolean(accountError || inlineAuth?.open);
+  const accountName = isMemberSession ? session?.username || 'Member' : 'Guest';
+  const accountPath = isMemberSession ? '/mypage' : loginUrlForRedirect('/app');
+  const openAccount = () => {
+    if (accountPath.startsWith('http://') || accountPath.startsWith('https://')) {
+      window.location.assign(accountPath);
+      return;
+    }
+    navigate(accountPath);
+  };
 
   return (
     <main className={`spaceHome referenceHome${isMemberSession ? ' memberSession' : ''}`}>
@@ -31,11 +40,12 @@ export default function AppHome({
           <div className="appHomeHeaderActions">
             <button
               type="button"
-              className="appHomeLoginButton"
-              onClick={() => (isMemberSession ? navigate('/mypage') : inlineAuth?.onOpen?.())}
+              className="appHomeLoginButton appHomeAccountButton"
+              onClick={openAccount}
             >
-              <MemoNavIcon type="user" />
-              <span>{isMemberSession ? '내 정보' : '로그인'}</span>
+              <span>{accountName.slice(0, 1).toUpperCase()}</span>
+              <strong>{accountName}</strong>
+              <small>{isMemberSession ? '내 정보' : '로그인'}</small>
             </button>
           </div>
         </header>

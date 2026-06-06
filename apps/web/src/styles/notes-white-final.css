@@ -78,6 +78,67 @@
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05) !important;
   }
 
+  .notesMobileAccountButton {
+    min-width: 132px !important;
+    max-width: 150px !important;
+    min-height: 46px !important;
+    display: grid !important;
+    grid-template-columns: 34px minmax(0, 1fr) !important;
+    grid-template-areas:
+      "avatar name"
+      "avatar meta" !important;
+    align-items: center !important;
+    column-gap: 9px !important;
+    padding: 6px 9px !important;
+    border: 1px solid #dbe7ef !important;
+    border-radius: 14px !important;
+    background: #ffffff !important;
+    color: #102033 !important;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05) !important;
+    text-align: left !important;
+    font: inherit !important;
+  }
+
+  .notesMobileAccountButton > span {
+    grid-area: avatar !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: 10px !important;
+    background: #0f766e !important;
+    color: #ffffff !important;
+    font-size: 0.84rem !important;
+    line-height: 1 !important;
+    font-weight: 950 !important;
+  }
+
+  .notesMobileAccountButton strong,
+  .notesMobileAccountButton small {
+    min-width: 0 !important;
+    display: block !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .notesMobileAccountButton strong {
+    grid-area: name !important;
+    color: #102033 !important;
+    font-size: 0.84rem !important;
+    line-height: 1.1 !important;
+    font-weight: 950 !important;
+  }
+
+  .notesMobileAccountButton small {
+    grid-area: meta !important;
+    color: #64748b !important;
+    font-size: 0.72rem !important;
+    line-height: 1.15 !important;
+    font-weight: 850 !important;
+  }
+
   .notesMobileFileSection {
     gap: 10px !important;
     padding: 14px !important;
