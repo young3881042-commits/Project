@@ -55,12 +55,22 @@ final class LocalTripImageCatalog {
             Map.entry("KYOTO-006", image("Kinkaku-ji the Golden Pavilion in Kyoto overlooking the lake - high rez.JPG")),
             Map.entry("KYOTO-007", image("Philosopher's Walk Kyoto.jpg")),
             Map.entry("KYOTO-008", image("Kyoto Station 2018.jpg")),
+            Map.entry("KYOTO-009", image("Pedestrian road with pavements and paper umbrellas, Higashiyama-ku, Kyoto, Japan, early morning.jpg")),
+            Map.entry("KYOTO-010", image("Pontocho Alley, Kyoto - Flickr - Sergiy Galyonkin.jpg")),
+            Map.entry("KYOTO-011", image("Nijo Castle @ Kyoto (13405390895).jpg")),
+            Map.entry("KYOTO-012", image("Nishiromon Gate, Yasaka Shrine, Kyoto, West view 20190416 1.jpg")),
+            Map.entry("KYOTO-013", image("Kamo River in Kyoto, 20240820 1748 5192.jpg")),
             Map.entry("OSAKA-001", image("Dotonbori, Osaka, at night, November 2016.jpg")),
             Map.entry("OSAKA-002", image("Osaka Castle 02bs3200.jpg")),
             Map.entry("OSAKA-003", image("Shinsaibashi-suji Shopping Street 2014.jpg")),
             Map.entry("OSAKA-004", image("Umeda Sky Building Osaka Japan.jpg")),
             Map.entry("OSAKA-005", image("Tempozan Ferris Wheel Osaka Japan.jpg")),
             Map.entry("OSAKA-006", image("Kuromon Ichiba Market 2014.jpg")),
+            Map.entry("OSAKA-007", image("Universal Studios Japan 16.JPG")),
+            Map.entry("OSAKA-008", image("Osaka Aquarium Kaiyukan 2022-04-24.jpg")),
+            Map.entry("OSAKA-009", image("Tsutenkaku Tower @ Shinsekai @ Osaka (13382524693).jpg")),
+            Map.entry("OSAKA-010", image("Nakanoshima Skyscrapers in 201504 001.jpg")),
+            Map.entry("OSAKA-011", image("HEP FIVE Ferris Wheel. Osaka, Kansai region, Island of Honshu, Japan.jpg")),
             Map.entry("FUKUOKA-001", image("Ohori Park Fukuoka.jpg")),
             Map.entry("FUKUOKA-002", image("Nakasu yatai Fukuoka.jpg")),
             Map.entry("FUKUOKA-003", image("Dazaifu Tenmangu 2016.jpg")),
@@ -134,12 +144,22 @@ final class LocalTripImageCatalog {
             Map.entry("금각사", SOURCE_REF_IMAGES.get("KYOTO-006")),
             Map.entry("철학의길", SOURCE_REF_IMAGES.get("KYOTO-007")),
             Map.entry("교토역빌딩", SOURCE_REF_IMAGES.get("KYOTO-008")),
+            Map.entry("니넨자카·산넨자카", SOURCE_REF_IMAGES.get("KYOTO-009")),
+            Map.entry("폰토초", SOURCE_REF_IMAGES.get("KYOTO-010")),
+            Map.entry("니조성", SOURCE_REF_IMAGES.get("KYOTO-011")),
+            Map.entry("야사카신사·마루야마공원", SOURCE_REF_IMAGES.get("KYOTO-012")),
+            Map.entry("가모가와강변", SOURCE_REF_IMAGES.get("KYOTO-013")),
             Map.entry("도톤보리", SOURCE_REF_IMAGES.get("OSAKA-001")),
             Map.entry("오사카성공원", SOURCE_REF_IMAGES.get("OSAKA-002")),
             Map.entry("신사이바시스지", SOURCE_REF_IMAGES.get("OSAKA-003")),
             Map.entry("우메다스카이빌딩", SOURCE_REF_IMAGES.get("OSAKA-004")),
             Map.entry("덴포잔대관람차", SOURCE_REF_IMAGES.get("OSAKA-005")),
             Map.entry("구로몬시장", SOURCE_REF_IMAGES.get("OSAKA-006")),
+            Map.entry("유니버설스튜디오재팬", SOURCE_REF_IMAGES.get("OSAKA-007")),
+            Map.entry("가이유칸", SOURCE_REF_IMAGES.get("OSAKA-008")),
+            Map.entry("신세카이·쓰텐카쿠", SOURCE_REF_IMAGES.get("OSAKA-009")),
+            Map.entry("나카노시마·기타하마산책", SOURCE_REF_IMAGES.get("OSAKA-010")),
+            Map.entry("헵파이브관람차", SOURCE_REF_IMAGES.get("OSAKA-011")),
             Map.entry("오호리공원", SOURCE_REF_IMAGES.get("FUKUOKA-001")),
             Map.entry("나카스포장마차거리", SOURCE_REF_IMAGES.get("FUKUOKA-002")),
             Map.entry("다자이후텐만구", SOURCE_REF_IMAGES.get("FUKUOKA-003")),
@@ -167,6 +187,9 @@ final class LocalTripImageCatalog {
         if (verified != null) {
             return verified;
         }
+        if (isForeignTravelSeed(destination)) {
+            return destination.getImageUrl();
+        }
         if (isFoodOrCafe(destination)) {
             return COMMON_FOOD_CAFE_IMAGE;
         }
@@ -181,6 +204,12 @@ final class LocalTripImageCatalog {
                 + (destination.getCategory() == null ? "" : destination.getCategory()) + " "
                 + (destination.getStyleTags() == null ? "" : destination.getStyleTags()));
         return text.matches(".*(식당|음식|맛집|카페|커피|디저트|브런치).*");
+    }
+
+    private static boolean isForeignTravelSeed(Destination destination) {
+        String sourceRef = normalizeSourceRef(destination.getSourceRef());
+        return sourceRef.startsWith("TOKYO-") || sourceRef.startsWith("KYOTO-")
+                || sourceRef.startsWith("OSAKA-") || sourceRef.startsWith("FUKUOKA-");
     }
 
     private static String normalizeSourceRef(String value) {

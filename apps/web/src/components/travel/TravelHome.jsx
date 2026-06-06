@@ -1,4 +1,5 @@
 import { QUICK_ACTIONS } from './TravelHomeData.js';
+import { OSAKA_KYOTO_COUPLE_PRESET } from './OsakaKyotoTripData.js';
 
 function Icon({ children, size = 18 }) {
   return (
@@ -244,10 +245,36 @@ export function TravelQuickActions({ navigate, title = '' }) {
   );
 }
 
-export default function TravelHome({ navigate }) {
+function TravelPresetCard({ navigate }) {
+  const preset = OSAKA_KYOTO_COUPLE_PRESET;
+  return (
+    <section className="ltTravelPresetCard" aria-label="오사카 교토 여행 프리셋">
+      <div className="ltTravelPresetCopy">
+        <span>추천 프리셋</span>
+        <h2>{preset.title}</h2>
+        <p>{preset.subtitle}</p>
+      </div>
+      <div className="ltTravelPresetFacts">
+        {preset.highlights.map((item) => (
+          <div key={item.label}>
+            <span>{item.label}</span>
+            <strong>{item.value}</strong>
+          </div>
+        ))}
+      </div>
+      <button type="button" className="ltPrimaryButton" onClick={() => navigate(`/planner?preset=${preset.id}`)}>
+        <TravelQuickIcon type="route" />
+        바로 채우기
+      </button>
+    </section>
+  );
+}
+
+export default function TravelHome({ navigate, plansLoading = false, ddayPlan = null }) {
   return (
     <main className="ltPage ltHomePage ltTravelStartPage">
-      <TravelDdayCard loading={false} plan={null} navigate={navigate} />
+      <TravelDdayCard loading={plansLoading} plan={ddayPlan} navigate={navigate} />
+      <TravelPresetCard navigate={navigate} />
       <TravelQuickActions navigate={navigate} title="빠른 메뉴" />
     </main>
   );

@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import MobileWorkspaceTabs from './components/MobileWorkspaceTabs.jsx';
 import TravelHome, {
   TravelDdayCard,
   TravelQuickActions,
   selectDdayPlan
 } from './components/travel/TravelHome.jsx';
+import { OSAKA_KYOTO_COUPLE_PRESET } from './components/travel/OsakaKyotoTripData.js';
 
 const AUTH_KEY = 'codex-workspace-auth';
 const SCHEDULER_KEY = 'codex-personal-scheduler-items';
@@ -218,14 +219,13 @@ const GYEONGJU_FALLBACK_ITINERARY = [
 ];
 
 const GENERIC_DAY_SLOTS = [
-  { startTime: '09:30', endTime: '10:30', category: '브런치', title: '브런치 식당 추천', recommendedMenu: '브런치 플레이트, 커피', travelTimeFromPrevious: '' },
-  { startTime: '10:50', endTime: '12:00', category: '관광지', travelTimeFromPrevious: '이동 20분' },
-  { startTime: '12:10', endTime: '13:20', category: '식당', title: '점심 식당 추천', recommendedMenu: '지역 대표 메뉴', travelTimeFromPrevious: '이동 10분' },
-  { startTime: '14:00', endTime: '15:20', category: '관광지', travelTimeFromPrevious: '이동 30분' },
-  { startTime: '15:40', endTime: '16:30', category: '카페', title: '카페 추천', recommendedMenu: '시그니처 음료, 디저트', travelTimeFromPrevious: '이동 20분' },
-  { startTime: '17:00', endTime: '18:00', category: '관광지', travelTimeFromPrevious: '이동 20분' },
-  { startTime: '18:20', endTime: '19:30', category: '식당', title: '저녁 식당 추천', recommendedMenu: '저녁 추천 메뉴', travelTimeFromPrevious: '이동 20분' },
-  { startTime: '20:00', endTime: '20:50', category: '야경, 산책', title: '야경/산책 코스', travelTimeFromPrevious: '이동 20분' }
+  { startTime: '08:30', endTime: '09:20', category: '아침 식당', title: '아침 식당 추천', recommendedMenu: '아침 메뉴', travelTimeFromPrevious: '' },
+  { startTime: '09:50', endTime: '11:20', category: '관광지', travelTimeFromPrevious: '이동 20분' },
+  { startTime: '12:00', endTime: '13:10', category: '점심 식당', title: '점심 식당 추천', recommendedMenu: '지역 대표 메뉴', travelTimeFromPrevious: '이동 20분' },
+  { startTime: '13:50', endTime: '15:10', category: '관광지', travelTimeFromPrevious: '이동 30분' },
+  { startTime: '15:20', endTime: '15:50', category: '간식', title: '간식 거리 추천', recommendedMenu: '로컬 간식', travelTimeFromPrevious: '이동 10분' },
+  { startTime: '16:10', endTime: '16:55', category: '카페', title: '카페 추천', recommendedMenu: '시그니처 음료', travelTimeFromPrevious: '이동 20분' },
+  { startTime: '18:00', endTime: '19:10', category: '저녁 식당', title: '저녁 식당 추천', recommendedMenu: '저녁 추천 메뉴', travelTimeFromPrevious: '이동 20분' }
 ];
 
 const REQUEST_STEPS = [
@@ -644,6 +644,7 @@ function normalizeDestination(raw, index = 0) {
   const rawRating = pickNumber(row.rating, row.score, row.reviewScore, row.review_score);
   const rating = rawRating || (popularityScore ? Math.min(5, Math.max(3.8, popularityScore / 20)) : 0);
   const reviewCount = pickNumber(row.reviewCount, row.review_count, row.reviews, row.visitorCount, row.visitors, row.popularityScore, row.popularity_score, row.liveVisitors);
+  const sourceRef = pickString(row.sourceRef, row.source_ref, row.providerRef, row.provider_ref, row.externalId, row.external_id);
   return {
     id,
     name: pickString(row.name, row.title, row.destinationName, row.destination_name, row.placeName, row.place_name, row.districtName, row.district_name) || 'Untitled destination',
@@ -656,7 +657,9 @@ function normalizeDestination(raw, index = 0) {
     reviewCount,
     liveVisitors: reviewCount,
     occupancyRate: pickNumber(row.occupancyRate, row.congestionRate, row.busyRate),
-    imageUrl: pickString(row.imageUrl, row.image_url, row.photoUrl, row.thumbnailUrl)
+    imageUrl: pickString(row.imageUrl, row.image_url, row.photoUrl, row.thumbnailUrl),
+    source: pickString(row.source, row.provider),
+    sourceRef
   };
 }
 
@@ -846,6 +849,48 @@ function PlannerGenerateStatus({ generating, error }) {
   );
 }
 
+function PlannerPresetPanel({ preset, onApply }) {
+  return (
+    <section className="ltPlannerPresetPanel" aria-label={`${preset.title} 프리셋`}>
+      <div className="ltPlannerPresetTop">
+        <div>
+          <span>실전 프리셋</span>
+          <h2>{preset.title}</h2>
+          <p>{preset.subtitle}</p>
+        </div>
+        <button type="button" className="ltPrimaryButton" onClick={() => onApply(preset)}>
+          자동 채우기
+        </button>
+      </div>
+      <div className="ltPlannerPresetFacts">
+        {preset.highlights.map((item) => (
+          <div key={item.label}>
+            <span>{item.label}</span>
+            <strong>{item.value}</strong>
+          </div>
+        ))}
+      </div>
+      <div className="ltPlannerPresetDays">
+        {preset.dayRoutes.map((route) => (
+          <article key={route.day}>
+            <span>{route.day}일차</span>
+            <strong>{route.theme}</strong>
+            <small>{route.focus.join(' · ')}</small>
+          </article>
+        ))}
+      </div>
+      <div className="ltPlannerPresetSources">
+        <span>공식 자료 기반</span>
+        {preset.sourceLinks.slice(0, 3).map((source) => (
+          <a key={source.url} href={source.url} target="_blank" rel="noreferrer">
+            {source.label}
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function parseTimeRange(...values) {
   const text = pickString(...values);
   const match = text.match(/(\d{1,2}:\d{2})\s*(?:-|~|–|—|to)\s*(\d{1,2}:\d{2})/i);
@@ -857,8 +902,9 @@ function parseTimeRange(...values) {
 
 function inferScheduleCategory(title, explicitCategory, tags = []) {
   const text = `${title} ${explicitCategory} ${tags.join(' ')}`.toLowerCase();
+  if (/간식|시장|베이커리|snack/.test(text) && !/카페|커피|cafe|coffee/.test(text)) return explicitCategory || '간식';
   if (/카페|커피|디저트|빵|브런치|cafe|coffee|dessert|bakery/.test(text)) return explicitCategory || '카페';
-  if (/식당|맛집|점심|저녁|한식|분식|레스토랑|restaurant|lunch|dinner|meal/.test(text)) return explicitCategory || '식당';
+  if (/식당|식사|맛집|아침|점심|저녁|한식|분식|레스토랑|restaurant|breakfast|lunch|dinner|meal/.test(text)) return explicitCategory || '식당';
   if (/야경|산책|night|walk/.test(text)) return explicitCategory || '야경, 산책';
   if (/이동|마무리/.test(text)) return explicitCategory || '이동';
   return explicitCategory || '관광지';
@@ -867,8 +913,9 @@ function inferScheduleCategory(title, explicitCategory, tags = []) {
 function scheduleTagsFor(category, tags = []) {
   const next = new Set(tags.filter(Boolean));
   `${category || ''}`.split(',').map((item) => item.trim()).filter(Boolean).forEach((item) => next.add(item));
-  if (/식당|한식|분식|브런치/.test(category || '')) next.add('식당');
+  if (/식당|식사|아침|점심|저녁|한식|분식|브런치/.test(category || '')) next.add('식당');
   if (/카페|디저트|브런치/.test(category || '')) next.add('카페');
+  if (/간식|시장|베이커리/.test(category || '')) next.add('간식');
   return Array.from(next).slice(0, 5);
 }
 
@@ -902,7 +949,7 @@ function normalizeItineraryItem(raw, index = 0) {
   const startTime = pickString(item.startTime, item.start_time, parsedTime.startTime);
   const endTime = pickString(item.endTime, item.end_time, parsedTime.endTime);
   const baseTags = normalizeTags(item.tags, item.keywords, item.primaryStyle, item.primary_style);
-  const category = inferScheduleCategory(title, pickString(item.category, item.type, item.kind), baseTags);
+  const category = inferScheduleCategory(title, pickString(item.category, item.primaryStyle, item.primary_style, item.type, item.kind), baseTags);
   const description = pickString(item.description, item.summary, item.note, item.notes, item.reason);
   const recommendedMenu = pickString(item.recommendedMenu, item.recommended_menu, item.menu, item.signatureMenu)
     || extractRecommendedMenu(description);
@@ -1025,7 +1072,7 @@ function isGyeongjuPlan(context) {
 
 function hasFoodAndCafe(items) {
   const text = items.map((item) => `${item.category} ${item.title} ${item.tags?.join(' ') || ''}`).join(' ');
-  return /식당|점심|저녁|한식|분식/.test(text) && /카페|디저트|브런치/.test(text);
+  return /식당|식사|아침|점심|저녁|한식|분식/.test(text) && /카페|디저트|브런치/.test(text);
 }
 
 function applyScheduleFallback(itinerary, context = {}) {
@@ -1513,12 +1560,20 @@ function planRouteTime(item, index = 0, type = 'start') {
   return item.startTime || parsed.startTime || scheduleBlockLabel(item.time, index);
 }
 
-function foodStopCount(items = []) {
-  return items.filter((item) => /식당|점심|저녁|한식|분식|브런치/.test(`${item.category} ${item.title} ${item.tags?.join(' ') || ''}`)).length;
+function mealStopCount(items = []) {
+  return items.filter((item) => /식당|식사|아침|점심|저녁|한식|분식|브런치/.test(`${item.category} ${item.title} ${item.tags?.join(' ') || ''}`)).length;
 }
 
 function cafeStopCount(items = []) {
   return items.filter((item) => /카페|디저트/.test(`${item.category} ${item.title} ${item.tags?.join(' ') || ''}`)).length;
+}
+
+function snackStopCount(items = []) {
+  return items.filter((item) => /간식|베이커리/.test(`${item.category} ${item.tags?.join(' ') || ''}`)).length;
+}
+
+function sightStopCount(items = []) {
+  return items.filter((item) => !/식당|식사|아침|점심|저녁|카페|커피|디저트|브런치|간식|이동/.test(`${item.category} ${item.title} ${item.tags?.join(' ') || ''}`)).length;
 }
 
 function planTextFilename(plan) {
@@ -1624,6 +1679,31 @@ function destinationMatchesDraft(destination, draft) {
     .some((value) => (
       (region && `${value}`.includes(region)) || (name && `${value}`.includes(name))
     ));
+}
+
+function destinationMatchesPreset(destination, preset) {
+  const sourceRef = pickString(destination?.sourceRef);
+  if (sourceRef && preset.preferredSourceRefs?.includes(sourceRef)) {
+    return true;
+  }
+  const haystack = [
+    destination?.name,
+    destination?.region,
+    destination?.summary,
+    destination?.category,
+    destination?.address
+  ].filter(Boolean).join(' ');
+  return preset.destinationKeywords?.some((keyword) => haystack.includes(keyword));
+}
+
+function presetDayRoutes(preset) {
+  return (preset.dayRoutes || []).map((route) => ({
+    day: route.day,
+    startPlace: route.startPlace || '',
+    startAddress: route.startAddress || '',
+    endPlace: route.endPlace || '',
+    endAddress: route.endAddress || ''
+  }));
 }
 
 function cleanScheduleTitle(title) {
@@ -2298,32 +2378,34 @@ function PlannerPage({ path, navigate }) {
   const params = new URLSearchParams(path.split('?')[1] || '');
   const initialDestination = params.get('destination') || '';
   const plannerDraft = useMemo(() => readPlannerDraft(params.get('draft')), [path]);
-  const [country, setCountry] = useState(plannerDraft?.country || 'korea');
+  const selectedPreset = params.get('preset') === OSAKA_KYOTO_COUPLE_PRESET.id ? OSAKA_KYOTO_COUPLE_PRESET : null;
+  const presetAppliedRef = useRef(false);
+  const [country, setCountry] = useState(plannerDraft?.country || selectedPreset?.country || 'korea');
   const [selectedDestinationIds, setSelectedDestinationIds] = useState(initialDestination ? [initialDestination] : []);
-  const [destSearch, setDestSearch] = useState(plannerDraft?.destinationName || plannerDraft?.destinationRegion || '');
+  const [destSearch, setDestSearch] = useState(plannerDraft?.destinationName || plannerDraft?.destinationRegion || selectedPreset?.destinationSearch || '');
   const [showSuggestions, setShowDestSuggestions] = useState(false);
   const [startDate, setStartDate] = useState(plannerDraft?.startDate || '');
-  const [days, setDays] = useState(plannerDraft?.days || 3);
-  const [travelers, setTravelers] = useState(plannerDraft?.travelers || '커플');
-  const [travelerCount, setTravelerCount] = useState(plannerDraft?.travelerCount || 2);
-  const [transportType, setTransportType] = useState('대중교통');
-  const [pace, setPace] = useState(plannerDraft?.pace || '보통');
-  const [budget, setBudget] = useState('보통');
-  const [mealPreference, setMealPreference] = useState(plannerDraft?.mealPreference || '지역 맛집');
-  const [restPreference, setRestPreference] = useState(plannerDraft?.restPreference || '중간 휴식');
-  const [dayStartTime, setDayStartTime] = useState(plannerDraft?.dayStartTime || '09:30');
-  const [dayEndTime, setDayEndTime] = useState(plannerDraft?.dayEndTime || '21:00');
-  const [mustVisit, setMustVisit] = useState(plannerDraft?.mustVisit || '');
-  const [avoid, setAvoid] = useState(plannerDraft?.avoid || '');
+  const [days, setDays] = useState(plannerDraft?.days || selectedPreset?.days || 3);
+  const [travelers, setTravelers] = useState(plannerDraft?.travelers || selectedPreset?.travelers || '커플');
+  const [travelerCount, setTravelerCount] = useState(plannerDraft?.travelerCount || selectedPreset?.travelerCount || 2);
+  const [transportType, setTransportType] = useState(selectedPreset?.transportType || '대중교통');
+  const [pace, setPace] = useState(plannerDraft?.pace || selectedPreset?.pace || '보통');
+  const [budget, setBudget] = useState(selectedPreset?.budget || '보통');
+  const [mealPreference, setMealPreference] = useState(plannerDraft?.mealPreference || selectedPreset?.mealPreference || '지역 맛집');
+  const [restPreference, setRestPreference] = useState(plannerDraft?.restPreference || selectedPreset?.restPreference || '중간 휴식');
+  const [dayStartTime, setDayStartTime] = useState(plannerDraft?.dayStartTime || selectedPreset?.dayStartTime || '09:30');
+  const [dayEndTime, setDayEndTime] = useState(plannerDraft?.dayEndTime || selectedPreset?.dayEndTime || '21:00');
+  const [mustVisit, setMustVisit] = useState(plannerDraft?.mustVisit || selectedPreset?.mustVisit || '');
+  const [avoid, setAvoid] = useState(plannerDraft?.avoid || selectedPreset?.avoid || '');
   const [exportFormat, setExportFormat] = useState('텍스트');
-  const [selectedInterests, setSelectedInterests] = useState(plannerDraft?.interests?.length ? plannerDraft.interests : ['맛집', '역사']);
-  const [notes, setNotes] = useState(plannerDraft?.notes || '');
+  const [selectedInterests, setSelectedInterests] = useState(plannerDraft?.interests?.length ? plannerDraft.interests : selectedPreset?.interests || ['맛집', '역사']);
+  const [notes, setNotes] = useState(plannerDraft?.notes || selectedPreset?.notes || '');
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState('');
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const [activeStep, setActiveStep] = useState(1);
   const [activeRouteField, setActiveRouteField] = useState('dates');
-  const [dayRoutes, setDayRoutes] = useState(plannerDraft?.dayRoutes?.length ? plannerDraft.dayRoutes : [{ day: 1, startPlace: '', startAddress: '', endPlace: '', endAddress: '' }]);
+  const [dayRoutes, setDayRoutes] = useState(plannerDraft?.dayRoutes?.length ? plannerDraft.dayRoutes : selectedPreset ? presetDayRoutes(selectedPreset) : [{ day: 1, startPlace: '', startAddress: '', endPlace: '', endAddress: '' }]);
   const validDayCount = Number.isFinite(Number(days)) && Number(days) >= 1 && Number(days) <= 7;
   const routeInfoComplete = Boolean(startDate) && validDayCount;
   const dailyRouteCount = dayRoutes.filter((route) => (
@@ -2334,6 +2416,54 @@ function PlannerPage({ path, navigate }) {
     () => destinations.filter((destination) => countryForDestination(destination) === country),
     [country, destinations]
   );
+
+  const applyPlannerPreset = (preset, { moveStep = true } = {}) => {
+    const sourceOrder = new Map((preset.preferredSourceRefs || []).map((ref, index) => [ref, index]));
+    const presetDestinations = destinations
+      .filter((destination) => countryForDestination(destination) === preset.country)
+      .filter((destination) => destinationMatchesPreset(destination, preset))
+      .sort((left, right) => {
+        const leftOrder = sourceOrder.has(left.sourceRef) ? sourceOrder.get(left.sourceRef) : 999;
+        const rightOrder = sourceOrder.has(right.sourceRef) ? sourceOrder.get(right.sourceRef) : 999;
+        return leftOrder - rightOrder || left.name.localeCompare(right.name, 'ko');
+      })
+      .slice(0, 12);
+    setCountry(preset.country);
+    setDestSearch(preset.destinationSearch);
+    setShowDestSuggestions(false);
+    if (presetDestinations.length) {
+      setSelectedDestinationIds(presetDestinations.map((destination) => destination.id));
+    }
+    setDays(preset.days);
+    setTravelers(preset.travelers);
+    setTravelerCount(preset.travelerCount);
+    setTransportType(preset.transportType);
+    setPace(preset.pace);
+    setBudget(preset.budget);
+    setMealPreference(preset.mealPreference);
+    setRestPreference(preset.restPreference);
+    setDayStartTime(preset.dayStartTime);
+    setDayEndTime(preset.dayEndTime);
+    setSelectedInterests(preset.interests);
+    setMustVisit(preset.mustVisit);
+    setAvoid(preset.avoid);
+    setNotes(preset.notes);
+    setDayRoutes(presetDayRoutes(preset));
+    setActiveRouteField('dates');
+    if (moveStep) {
+      setActiveStep(2);
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedPreset || presetAppliedRef.current) return;
+    if (!destinations.length) {
+      setCountry(selectedPreset.country);
+      return;
+    }
+    applyPlannerPreset(selectedPreset, { moveStep: false });
+    presetAppliedRef.current = true;
+  }, [selectedPreset, destinations]);
 
   useEffect(() => {
     if (!initialDestination || !destinations.length) return;
@@ -2403,6 +2533,20 @@ function PlannerPage({ path, navigate }) {
     ).slice(0, 8);
   }, [countryDestinations, destSearch, selectedDestinationIds]);
 
+  const selectedDestinations = useMemo(
+    () => countryDestinations.filter((destination) => selectedDestinationIds.includes(destination.id)),
+    [countryDestinations, selectedDestinationIds]
+  );
+  const showOsakaKyotoPrep = useMemo(() => {
+    const text = [
+      destSearch,
+      mustVisit,
+      notes,
+      ...selectedDestinations.flatMap((destination) => [destination.name, destination.region])
+    ].join(' ');
+    return country === 'japan' && /오사카|osaka/i.test(text) && /교토|kyoto/i.test(text);
+  }, [country, destSearch, mustVisit, notes, selectedDestinations]);
+
   const toggleInterest = (interest) => {
     setSelectedInterests((current) => (
       current.includes(interest)
@@ -2427,9 +2571,8 @@ function PlannerPage({ path, navigate }) {
     setGenerateError('');
     setGeneratedPlan(null);
 
-    const selectedDestObjects = destinations.filter(d => selectedDestinationIds.includes(d.id));
-    const regions = [...new Set(selectedDestObjects.map(d => d.region))];
-    const destinationIds = selectedDestObjects
+    const regions = [...new Set(selectedDestinations.map(d => d.region))];
+    const destinationIds = selectedDestinations
       .map((destination) => Number(destination.id))
       .filter((id) => Number.isFinite(id));
     const routeMemoLines = [
@@ -2439,6 +2582,8 @@ function PlannerPage({ path, navigate }) {
         .filter((route) => route.startPlace || route.startAddress || route.endPlace || route.endAddress)
         .map((route) => `${route.day}일차 출발=${route.startPlace || '미정'}${route.startAddress ? ` (${route.startAddress})` : ''}, 도착=${route.endPlace || '미정'}${route.endAddress ? ` (${route.endAddress})` : ''}`)
     ].filter(Boolean);
+    const firstRoute = dayRoutes[0] || {};
+    const lastRoute = dayRoutes[dayRoutes.length - 1] || {};
 
     const payload = {
       regions,
@@ -2458,8 +2603,13 @@ function PlannerPage({ path, navigate }) {
       avoid,
       dayStartTime,
       dayEndTime,
+      startPlace: firstRoute.startPlace || '',
+      startAddress: firstRoute.startAddress || '',
+      endPlace: lastRoute.endPlace || '',
+      endAddress: lastRoute.endAddress || '',
+      departureTime: dayStartTime,
+      arrivalTime: dayEndTime,
       dailyRoutes: dayRoutes,
-      exportFormat,
       memo: routeMemoLines.join('\n')
     };
     try {
@@ -2500,6 +2650,7 @@ function PlannerPage({ path, navigate }) {
               <span>Step 1</span>
               <strong>어디로 떠나시나요?</strong>
             </div>
+            <PlannerPresetPanel preset={OSAKA_KYOTO_COUPLE_PRESET} onApply={applyPlannerPreset} />
             <div className="ltCountrySwitch" aria-label="여행 국가">
               {COUNTRY_OPTIONS.map((option) => (
                 <button
@@ -2708,7 +2859,7 @@ function PlannerPage({ path, navigate }) {
           <div className="ltSelectedSummary">
             <h3>선택한 장소 ({selectedDestinationIds.length})</h3>
             <div className="ltMiniDestList">
-              {countryDestinations.filter(d => selectedDestinationIds.includes(d.id)).map(d => (
+              {selectedDestinations.map(d => (
                 <div key={d.id} className="ltMiniDestCard">
                   <div>
                     <strong>{d.name}</strong>
@@ -2718,6 +2869,24 @@ function PlannerPage({ path, navigate }) {
               ))}
             </div>
           </div>
+          {showOsakaKyotoPrep ? (
+            <div className="ltPlannerTripPrep">
+              <div className="ltPlannerTripPrepTitle">
+                <span>여행 준비</span>
+                <strong>{OSAKA_KYOTO_COUPLE_PRESET.title}</strong>
+              </div>
+              <ul>
+                {OSAKA_KYOTO_COUPLE_PRESET.checklist.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+              <div className="ltPlannerTripSources">
+                {OSAKA_KYOTO_COUPLE_PRESET.sourceLinks.map((source) => (
+                  <a key={source.url} href={source.url} target="_blank" rel="noreferrer">
+                    {source.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null}
           {generatedPlan ? (
             <div className="ltGeneratedPreview">
               <h2>{generatedPlan.title}</h2>
@@ -2979,7 +3148,8 @@ function MarkdownPlanBlocks({ plan }) {
 }
 
 function categoryIcon(category = '') {
-  if (/식당|한식|분식|브런치/.test(category)) return '식';
+  if (/간식|시장|베이커리/.test(category)) return '간';
+  if (/식당|식사|아침|점심|저녁|한식|분식|브런치/.test(category)) return '식';
   if (/카페|디저트/.test(category)) return '카';
   if (/야경|산책/.test(category)) return '길';
   if (/이동/.test(category)) return '이';
@@ -3017,7 +3187,7 @@ function PlanDayCards({ plan }) {
           <PlanDayRouteCheck plan={plan} day={day} />
           <div className="ltDayTimeline">
             {day.items.map((item, index) => (
-              <article className={`ltDaySlot ${/식당|카페|디저트|브런치|한식|분식/.test(item.category) ? 'food' : ''}`} key={`${day.day}-${item.startTime || item.time}-${item.title}-${index}`}>
+              <article className={`ltDaySlot ${/식당|식사|아침|점심|저녁|카페|디저트|브런치|한식|분식|간식/.test(item.category) ? 'food' : ''}`} key={`${day.day}-${item.startTime || item.time}-${item.title}-${index}`}>
                 <div className="ltTimelineRail">
                   <time>
                     <span>{item.startTime && item.endTime ? `${item.startTime} - ${item.endTime}` : scheduleBlockLabel(item.time, index)}</span>
@@ -3098,8 +3268,10 @@ function PlanRouteFacts({ plan }) {
                 </div>
               </div>
               <div className="ltRoutePills">
-                <span>식사 {foodStopCount(items)}회</span>
+                <span>식사 {mealStopCount(items)}회</span>
                 <span>카페 {cafeStopCount(items)}회</span>
+                <span>간식 {snackStopCount(items)}회</span>
+                <span>관광 {sightStopCount(items)}곳</span>
                 {moveTips.length ? <span>{moveTips.join(' · ')}</span> : null}
               </div>
             </article>

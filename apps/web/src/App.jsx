@@ -2978,6 +2978,23 @@ const ADMIN1_BOARD_TASKS = PROJECT_BOARD_COLUMNS.flatMap((column) => (
 
 const ADMIN1_MEMO_LOGS = [
   {
+    id: 'admin1-memo-20260606-travel-realistic-mobile-frame',
+    content: `# 2026-06-06 여행 일정 현실화와 전체 모바일 프레임
+
+- [x] 여행 코스 생성 기준을 아침·점심·저녁 식사, 카페 1곳, 간식 1곳, 관광지 중심으로 보정
+- [x] 오사카·교토 3박4일 프리셋을 식사/카페/간식/관광 기준의 현실적인 시간표로 조정
+- [x] PC에서도 전체 웹이 모바일 폭 기준으로 보이도록 최상위 앱 프레임을 고정`
+  },
+  {
+    id: 'admin1-memo-20260604-osaka-kyoto-couple-trip',
+    content: `# 2026-06-04 오사카·교토 부부 3박4일 여행 프리셋
+
+- [x] /travel 첫 화면에 오사카·교토 부부 3박4일 프리셋 카드 추가
+- [x] /planner에서 프리셋 자동 채우기, 일자별 출발/도착, 준비 체크리스트, 공식 출처 링크 노출
+- [x] 오사카·교토 장소 seed와 식당/카페 후보 dataset 보강
+- [x] 프리셋 생성 요청은 OpenAI 키 없이도 3박4일 deterministic 일정으로 저장되게 보강`
+  },
+  {
     id: 'admin1-memo-20260603-notes-mobile-gear-menu',
     content: `# 2026-06-03 메모 모바일 톱니바퀴 작업 메뉴
 

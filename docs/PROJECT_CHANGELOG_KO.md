@@ -1,5 +1,26 @@
 # 프로젝트 변경 상세 문서
 
+## 53. 2026-06-06 여행 일정 현실화와 모바일 프레임 고정
+
+`/travel`과 여행 코스 생성 결과가 PC에서도 모바일 앱 기준으로 보이도록 고정하고, 여행 일정 생성 기준을 현실적인 식사/휴식 구조로 조정했습니다.
+
+변경 내용:
+
+- 전체 웹 루트와 주요 앱 셸을 PC에서도 430px 모바일 폭 기준으로 고정했습니다.
+- 여행 생성 프롬프트를 아침·점심·저녁 식사, 하루 카페 1곳, 간식 1곳, 2~3개 핵심 관광지 기준으로 보정했습니다.
+- fallback 일정과 오사카·교토 부부 3박4일 deterministic 프리셋을 같은 기준의 시간표로 조정했습니다.
+- 생성된 일정 상세에서 식사, 카페, 간식, 관광 개수를 바로 비교할 수 있게 요약 칩을 보강했습니다.
+- 이번 작업 로그를 `admin1` 메모 보드 시드에 추가했습니다.
+
+검증:
+
+- `git diff --check`
+- `npm --prefix apps/web run build`
+- `DB_PORT=13306 API_PORT=18080 WEB_HTTP_PORT=80 WEB_HTTPS_PORT=443 docker compose -f docker-compose.dev.yml up -d --build web`
+- HTTP 확인: `/app`, `/travel`, `/scheduler`
+- Playwright PC 뷰포트 스크린샷 확인: `/scheduler`, `/notes`, `/travel`, `/login`
+- 스크린샷 저장 경로: `/tmp/ai-assitant-scheduler-pc-part1.png`, `/tmp/ai-assitant-notes-pc-part1.png`, `/tmp/ai-assitant-travel-pc-part2.png`, `/tmp/ai-assitant-login-pc-part1.png`
+
 ## 52. 2026-06-03 메모 폴더/파일 액션 보강
 
 `/notes` 모바일 파일 탐색 화면에서 하위 폴더와 메모의 선택 상태, 이름 변경, 삭제 동작이 더 직접적으로 보이도록 정리했습니다.

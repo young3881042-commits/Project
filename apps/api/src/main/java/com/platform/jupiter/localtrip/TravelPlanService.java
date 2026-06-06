@@ -33,14 +33,47 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class TravelPlanService {
     private static final List<FallbackSlot> FALLBACK_SLOTS = List.of(
-            new FallbackSlot("09:30-10:40", "관광지", 70),
-            new FallbackSlot("11:00-12:00", "관광지", 60),
-            new FallbackSlot("12:10-13:20", "식당", 70),
-            new FallbackSlot("14:00-15:20", "관광지", 80),
-            new FallbackSlot("15:40-16:30", "카페", 50),
-            new FallbackSlot("17:00-18:00", "산책", 60),
-            new FallbackSlot("18:20-19:30", "식당", 70),
-            new FallbackSlot("20:00-20:50", "야경", 50));
+            new FallbackSlot("08:30-09:20", "아침 식당", 50),
+            new FallbackSlot("09:50-11:20", "관광지", 90),
+            new FallbackSlot("12:00-13:10", "점심 식당", 70),
+            new FallbackSlot("13:50-15:10", "관광지", 80),
+            new FallbackSlot("15:20-15:50", "간식", 30),
+            new FallbackSlot("16:10-16:55", "카페", 45),
+            new FallbackSlot("18:00-19:10", "저녁 식당", 70));
+    private static final List<FixedPlanSlot> OSAKA_KYOTO_COUPLE_SLOTS = List.of(
+            new FixedPlanSlot(1, "08:40-09:20", "간사이국제공항 아침", "오사카", "아침 식당", 40, "입국 후 공항에서 간단히 아침을 먹고 난바 이동권과 짐 동선을 정리합니다."),
+            new FixedPlanSlot(1, "09:30-11:10", "간사이국제공항에서 난바 이동", "오사카", "이동", 100, "라피트 또는 공항급행으로 난바까지 이동하고 숙소에 짐을 맡깁니다. 첫날은 이동 완충 시간을 크게 둡니다."),
+            new FixedPlanSlot(1, "12:10-13:10", "구로몬시장", "오사카", "점심 식당", 60, "난바 도착 후 해산물과 시장 먹거리로 점심을 해결합니다. 추천 메뉴: 참치, 해산물 구이, 타코야키."),
+            new FixedPlanSlot(1, "13:50-15:00", "신사이바시스지", "오사카", "관광지", 70, "도톤보리 전 쇼핑 아케이드에서 실내 산책과 기념품 후보를 봅니다. 비가 와도 동선 유지가 쉽습니다."),
+            new FixedPlanSlot(1, "15:10-15:40", "도톤보리 타코야키", "오사카", "간식", 30, "저녁 전 과하지 않게 오사카 대표 간식을 하나만 넣습니다. 추천 메뉴: 타코야키."),
+            new FixedPlanSlot(1, "16:00-16:50", "리쿠로오지상 난바 본점", "오사카", "카페", 50, "숙소 체크인 전후로 쉬어가기 좋은 난바 디저트 후보입니다. 추천 메뉴: 치즈케이크, 커피."),
+            new FixedPlanSlot(1, "18:00-19:20", "도톤보리", "오사카", "저녁 식당", 80, "간판 야경이 켜지는 시간에 저녁 식사와 사진을 함께 잡습니다. 추천 메뉴: 오코노미야키, 쿠시카츠."),
+            new FixedPlanSlot(2, "08:30-09:20", "난바 아침 식당", "오사카", "아침 식당", 50, "오사카성 이동 전 숙소 근처에서 무리 없는 아침을 잡습니다. 추천 메뉴: 일본식 정식, 토스트 세트."),
+            new FixedPlanSlot(2, "09:50-11:30", "오사카성 공원", "오사카", "관광지", 100, "혼잡 전 성곽과 공원 산책을 먼저 봅니다. 박물관 관람은 체력과 날씨에 맞춰 선택하세요."),
+            new FixedPlanSlot(2, "12:10-13:10", "미즈노", "오사카", "점심 식당", 70, "오사카식 점심 후보입니다. 추천 메뉴: 오코노미야키, 야키소바. 웨이팅이 길면 주변 식당으로 바꿉니다."),
+            new FixedPlanSlot(2, "13:50-14:50", "나카노시마·기타하마 산책", "오사카", "관광지", 60, "강변과 근대 건축을 보며 걷는 조용한 오후 코스입니다. 오사카성 뒤 피로를 낮추기 좋습니다."),
+            new FixedPlanSlot(2, "15:05-15:35", "고카니 기타하마 본관", "오사카", "간식", 30, "기타하마 동선에서 짧게 넣는 디저트 간식입니다. 추천 메뉴: 케이크, 구움과자."),
+            new FixedPlanSlot(2, "15:45-16:30", "SOT COFFEE Osaka Kitahama", "오사카", "카페", 45, "기타하마 산책 중 쉬어가는 하루 1곳 카페 후보입니다. 추천 메뉴: 스페셜티 커피, 라테."),
+            new FixedPlanSlot(2, "17:40-18:40", "우메다 스카이빌딩", "오사카", "관광지", 60, "해 질 무렵 공중정원 전망대로 이동합니다. 날씨가 흐리면 헵파이브나 쇼핑몰로 대체하세요."),
+            new FixedPlanSlot(2, "19:10-20:20", "우메다 식당가", "오사카", "저녁 식당", 70, "우메다에서 저녁을 먹고 난바 숙소로 복귀합니다. 추천 메뉴: 라멘, 이자카야 메뉴, 오사카식 정식."),
+            new FixedPlanSlot(3, "08:20-09:00", "난바 아침 식당", "오사카", "아침 식당", 40, "체크아웃 전 숙소 근처에서 빠르게 아침을 먹고 짐을 정리합니다."),
+            new FixedPlanSlot(3, "09:00-10:20", "오사카에서 교토 이동", "교토", "이동", 80, "난바 숙소 체크아웃 후 교토 숙소 또는 역에 짐을 맡깁니다. 60~90분 완충 시간을 둡니다."),
+            new FixedPlanSlot(3, "10:50-12:00", "후시미이나리 타이샤", "교토", "관광지", 70, "오전 비교적 이른 시간에 붉은 도리이 길을 걷습니다. 정상까지 무리하지 말고 체력에 맞춰 돌아옵니다."),
+            new FixedPlanSlot(3, "12:40-13:30", "니시키시장", "교토", "점심 식당", 50, "교토식 반찬과 두부 메뉴 등 가벼운 점심을 고릅니다. 붐비면 짧게 통과하세요."),
+            new FixedPlanSlot(3, "14:20-15:35", "기요미즈데라", "교토", "관광지", 75, "히가시야마 대표 사찰과 전망을 봅니다. 언덕길이 있어 물과 휴식 시간을 챙기세요."),
+            new FixedPlanSlot(3, "15:45-16:15", "니넨자카·산넨자카 말차 간식", "교토", "간식", 30, "기요미즈데라에서 내려오며 과하지 않은 말차 디저트나 기념 간식을 잡습니다."),
+            new FixedPlanSlot(3, "16:25-17:10", "아라비카 교토 히가시야마", "교토", "카페", 45, "히가시야마 동선에서 하루 1곳 카페 휴식으로 걷는 피로를 낮춥니다. 추천 메뉴: 커피, 라테."),
+            new FixedPlanSlot(3, "17:30-18:10", "기온", "교토", "관광지", 40, "해 질 무렵 전통 거리 분위기를 느끼며 짧게 걷습니다. 사유지 촬영과 통행 예절을 지킵니다."),
+            new FixedPlanSlot(3, "18:30-19:40", "폰토초 식당가", "교토", "저녁 식당", 70, "가모가와 근처 저녁 후보입니다. 추천 메뉴: 야키토리, 소바, 교토식 정식."),
+            new FixedPlanSlot(4, "08:30-09:10", "교토 아침 식당", "교토", "아침 식당", 40, "체크아웃 전 가볍게 아침을 먹고 짐 보관 시간을 확보합니다."),
+            new FixedPlanSlot(4, "09:40-10:50", "아라시야마 대나무숲", "교토", "관광지", 70, "오전 산책으로 대나무숲을 먼저 봅니다. 사람이 많으면 도게츠교와 강변 쪽으로 빠르게 이동합니다."),
+            new FixedPlanSlot(4, "11:00-11:40", "도게츠교", "교토", "관광지", 40, "강변과 다리 전망을 보며 사진을 남깁니다. 바람이 강하면 체류 시간을 줄입니다."),
+            new FixedPlanSlot(4, "12:00-13:00", "아라시야마 점심 식당 후보", "교토", "점심 식당", 60, "강변 또는 역 주변에서 점심을 해결합니다. 추천 메뉴: 우동, 소바, 두부 요리."),
+            new FixedPlanSlot(4, "13:20-13:50", "아라시야마 말차 간식", "교토", "간식", 30, "귀국 전 부담 없는 말차 아이스크림이나 지역 간식을 짧게 넣습니다."),
+            new FixedPlanSlot(4, "14:00-14:40", "아라비카 교토 아라시야마", "교토", "카페", 40, "귀국 전 하루 1곳 카페 휴식 후보입니다. 추천 메뉴: 커피, 라테."),
+            new FixedPlanSlot(4, "15:30-16:30", "교토역 빌딩", "교토", "관광지", 60, "기념품, 식사, 전망 공간을 한 번에 정리합니다. 공항 이동 전 마지막 완충 구간입니다."),
+            new FixedPlanSlot(4, "17:00-18:00", "교토역 이른 저녁", "교토", "저녁 식당", 60, "공항 이동 전 역 주변에서 이른 저녁을 해결합니다. 추천 메뉴: 라멘, 오므라이스, 도시락."),
+            new FixedPlanSlot(4, "18:10-19:40", "간사이공항 또는 다음 목적지 이동", "교토", "이동", 90, "항공편 시간에 맞춰 교토역에서 이동합니다. 국제선은 여유 있게 출발하세요."));
     private static final String PLAN_PROVIDER = "openai";
     private static final String ADMIN_PLAN_KEY_USERNAME = "admin1";
     private static final String CODEX_CLI_PATH = "/opt/jupiter-cli/bin/codex";
@@ -102,10 +135,11 @@ public class TravelPlanService {
         
         String regionLabel = regions.isEmpty() ? "전국" : String.join("·", regions);
         String stylesLabel = styles.isEmpty() ? "추천" : String.join(",", styles);
+        boolean osakaKyotoCouplePreset = isOsakaKyotoCouplePreset(regionLabel, days, travelerType, request);
 
         TravelPlan plan = new TravelPlan();
         plan.setUsername(username);
-        plan.setTitle(regionLabel + " " + days + "일 LocalTrip AI 일정");
+        plan.setTitle(osakaKyotoCouplePreset ? "오사카·교토 부부 3박4일 여행 코스" : regionLabel + " " + days + "일 LocalTrip AI 일정");
         plan.setRegion(regionLabel);
         plan.setStyles(stylesLabel);
         plan.setDays(days);
@@ -118,13 +152,17 @@ public class TravelPlanService {
         plan.setEndAddress(limitText(defaultText(request.endAddress(), ""), 255));
         plan.setDepartureTime(limitText(defaultText(request.departureTime(), request.dayStartTime()), 20));
         plan.setArrivalTime(limitText(defaultText(request.arrivalTime(), request.dayEndTime()), 20));
-        plan.setEstimatedBudget("");
-        plan.setSummary(regionLabel + "의 " + stylesLabel + " 취향을 반영한 " + travelerType + "용 "
-                + pace + " 속도 추천 일정입니다.");
+        plan.setEstimatedBudget(estimateBudget(days, travelerCount, request.budgetLevel(), request.transportType()));
+        plan.setSummary(osakaKyotoCouplePreset
+                ? "난바 먹거리, 오사카성·우메다 야경, 교토 히가시야마와 아라시야마를 부부 여행 속도에 맞춰 묶은 3박4일 일정입니다."
+                : regionLabel + "의 " + stylesLabel + " 취향을 반영한 " + travelerType + "용 "
+                        + pace + " 속도 추천 일정입니다.");
         TravelPlan savedPlan = travelPlanRepository.save(plan);
         List<Destination> destinations = destinationService.findCandidatesForPlan(request.destinationIds(), regions, styles);
 
-        List<TravelPlanItem> items = applyVerifiedFoodPlaces(savedPlan, generateItineraryWithLocalGpt(savedPlan, request, username, destinations));
+        List<TravelPlanItem> items = osakaKyotoCouplePreset
+                ? osakaKyotoCoupleItems(savedPlan, destinations)
+                : applyVerifiedFoodPlaces(savedPlan, generateItineraryWithLocalGpt(savedPlan, request, username, destinations));
         travelPlanItemRepository.saveAll(items);
 
         return TravelPlanResponse.from(savedPlan, travelPlanItemRepository.findByTravelPlanIdOrderByDayNumberAscSequenceNumberAsc(savedPlan.getId()), destinations);
@@ -290,15 +328,18 @@ public class TravelPlanService {
             "- 메모: %s\n" +
             "- 우선 사용할 장소 후보: %s\n\n" +
             "RAG 검색 문맥:\n%s\n\n" +
-            "각 날짜는 아침/오전 관광, 점심 식당, 오후 관광, 카페/휴식, 저녁 식당, 야경/산책 중 필요한 6~8개 블록으로 구성해.\n" +
+            "각 날짜는 현실적인 6~7개 핵심 블록으로 구성해. 장거리 이동이 있는 날만 이동 블록을 별도로 1개 추가할 수 있어.\n" +
+            "매일 아침 식당, 점심 식당, 저녁 식당을 각각 1개씩 넣고, 카페는 하루 1곳만 넣어. 간식/시장 먹거리는 카페와 별개로 짧은 1블록만 넣어.\n" +
+            "식사와 카페/간식을 제외한 나머지는 관광지, 산책, 전망, 쇼핑 같은 실제 방문지로 채워. 같은 날 주요 관광지는 2~3곳을 넘기지 마.\n" +
+            "장소 사이에는 대중교통/도보 이동과 대기 시간을 합쳐 최소 20~40분 완충을 둬. 서로 먼 구역을 같은 날 여러 번 왕복하지 마.\n" +
             "각 날짜의 첫 블록은 해당 날짜 출발지와 출발 시간 이후로 시작하고, 마지막 블록은 해당 날짜 도착지와 도착 시간 전에 끝나게 해.\n" +
             "RAG 문맥이 지역, 동행, 취향과 맞으면 우선 반영하고, 맞지 않는 문맥은 억지로 쓰지 마.\n" +
             "timeSlot은 09:30-10:50 같은 시간 범위로 쓰고, 같은 날 시간이 겹치면 안 돼.\n" +
-            "점심 식당과 카페/휴식은 매일 반드시 포함하고, 이름이 확인 가능한 실제 영업 장소명만 써. '로컬 식당', '카페 추천' 같은 일반명은 금지야.\n" +
-            "각 블록 note에는 이전 장소에서 출발하는 시간, 이번 장소 도착 시간, 이동 팁을 포함해. 식당/카페는 추천 메뉴도 함께 써.\n" +
+            "식당, 카페, 간식은 이름이 확인 가능한 실제 영업 장소명만 써. '로컬 식당', '카페 추천', '아침 식당 후보' 같은 일반명은 금지야.\n" +
+            "각 블록 note에는 이전 장소에서 출발하는 시간, 이번 장소 도착 시간, 이동 팁을 포함해. 식당/카페/간식은 추천 메뉴도 함께 써.\n" +
             "destinationName은 선택한 국가와 지역에 맞는 실제 장소명으로 쓰고 note는 추천 이유, 이동 팁, 체류 포인트 또는 추천 메뉴를 포함해 120자 이하로 구체적으로 써.\n" +
             "durationMinutes는 해당 블록의 권장 체류 시간을 분 단위 숫자로 써.\n" +
-            "primaryStyle은 관광지, 식당, 카페, 야경, 산책, 이동 중 가장 가까운 값을 써.\n" +
+            "primaryStyle은 아침 식당, 점심 식당, 저녁 식당, 카페, 간식, 관광지, 산책, 이동 중 가장 가까운 값을 써.\n" +
             "API 키, 토큰, 서버 주소, 내부 설정 같은 민감정보는 절대 포함하지 마.\n" +
             "형식: [{\"dayNumber\": 1, \"timeSlot\": \"09:30-10:50\", \"destinationName\": \"장소\", \"note\": \"설명\", \"primaryStyle\": \"관광지\", \"durationMinutes\": 80}, ...]",
             plan.getRegion(),
@@ -458,6 +499,43 @@ public class TravelPlanService {
         return items;
     }
 
+    private boolean isOsakaKyotoCouplePreset(String regionLabel, int days, String travelerType, TravelPlanGenerateRequest request) {
+        String joinedRegions = request.regions() == null ? "" : String.join(" ", request.regions());
+        String text = String.join(" ",
+                defaultText(regionLabel, ""),
+                joinedRegions,
+                defaultText(request.region(), ""),
+                defaultText(request.memo(), ""),
+                defaultText(request.mustVisit(), ""),
+                defaultText(travelerType, "")).toLowerCase();
+        boolean hasOsaka = text.contains("오사카") || text.contains("osaka");
+        boolean hasKyoto = text.contains("교토") || text.contains("kyoto");
+        boolean coupleTrip = text.contains("커플") || text.contains("부부") || text.contains("couple")
+                || text.contains("osaka-kyoto-couple-3n4d");
+        return days == 4 && hasOsaka && hasKyoto && coupleTrip;
+    }
+
+    private List<TravelPlanItem> osakaKyotoCoupleItems(TravelPlan plan, List<Destination> candidates) {
+        List<TravelPlanItem> items = new ArrayList<>();
+        int sequence = 1;
+        for (FixedPlanSlot slot : OSAKA_KYOTO_COUPLE_SLOTS) {
+            Destination destination = matchDestination(slot.destinationName(), candidates);
+            TravelPlanItem item = new TravelPlanItem();
+            item.setTravelPlanId(plan.getId());
+            item.setDayNumber(slot.dayNumber());
+            item.setSequenceNumber(sequence++);
+            item.setTimeSlot(slot.timeSlot());
+            item.setDestinationId(destination == null ? null : destination.getId());
+            item.setDestinationName(destination == null ? slot.destinationName() : destination.getName());
+            item.setRegion(destination == null ? slot.region() : destination.getRegion());
+            item.setNote(limitText(slot.note(), 240));
+            item.setPrimaryStyle(slot.primaryStyle());
+            item.setDurationMinutes(slot.durationMinutes());
+            items.add(item);
+        }
+        return items;
+    }
+
     private String placeNote(RealLocalPlaceResponse place) {
         List<String> parts = new ArrayList<>();
         parts.add(defaultText(place.roadAddress(), defaultText(place.address(), "주소 미정")));
@@ -476,16 +554,16 @@ public class TravelPlanService {
 
     private boolean isFoodOrCafe(TravelPlanItem item) {
         String style = LocalTripText.normalize(item.getPrimaryStyle()).toLowerCase();
-        if (style.matches(".*(식당|맛집|점심|저녁|한식|분식|레스토랑|restaurant|meal|카페|커피|디저트|브런치|cafe|coffee|bakery).*")) {
+        if (style.matches(".*(식당|식사|맛집|아침|점심|저녁|한식|분식|레스토랑|restaurant|meal|카페|커피|디저트|브런치|간식|베이커리|cafe|coffee|bakery|snack).*")) {
             return true;
         }
         String note = LocalTripText.normalize(item.getNote()).toLowerCase();
-        return note.matches(".*(추천 메뉴|점심|저녁|식사|커피|디저트|브런치|menu).*");
+        return note.matches(".*(추천 메뉴|아침|점심|저녁|식사|커피|디저트|브런치|간식|menu|snack).*");
     }
 
     private String normalizeFoodStyle(String primaryStyle) {
         String normalized = LocalTripText.normalize(primaryStyle);
-        return normalized.contains("카페") || normalized.contains("디저트") || normalized.contains("브런치") ? "카페" : "식당";
+        return normalized.matches(".*(카페|커피|디저트|브런치|간식|베이커리).*") ? "카페" : "식당";
     }
 
     private String extractJsonPayload(String content) {
@@ -684,7 +762,7 @@ public class TravelPlanService {
 
     private boolean isFallbackFoodOrCafe(String primaryStyle) {
         String normalized = LocalTripText.normalize(primaryStyle);
-        return normalized.contains("식당") || normalized.contains("맛집") || normalized.contains("카페");
+        return normalized.matches(".*(식당|식사|맛집|아침|점심|저녁|카페|간식).*");
     }
 
     private boolean isDestinationFoodOrCafe(Destination destination) {
@@ -692,7 +770,7 @@ public class TravelPlanService {
                 + defaultText(destination.getCategory(), "") + " "
                 + defaultText(destination.getStyleTags(), "") + " "
                 + defaultText(destination.getName(), "")).toLowerCase();
-        return text.matches(".*(식당|맛집|시장|카페|커피|디저트|브런치|먹자|food|cafe|coffee|market).*");
+        return text.matches(".*(식당|맛집|시장|카페|커피|디저트|브런치|간식|베이커리|먹자|food|cafe|coffee|market|snack).*");
     }
 
     private String normalizePlaceName(String value) {
@@ -824,47 +902,66 @@ public class TravelPlanService {
 
     private int defaultDurationMinutes(String timeSlot) {
         String normalized = LocalTripText.normalize(timeSlot);
-        if (normalized.contains("점심") || normalized.contains("휴식")) {
-            return 90;
+        if (normalized.matches(".*(아침|간식|카페).*")) {
+            return 50;
         }
-        if (normalized.contains("저녁")) {
-            return 120;
+        if (normalized.contains("점심") || normalized.contains("저녁") || normalized.contains("식사")) {
+            return 70;
         }
-        return 140;
+        return 90;
     }
 
     private String fallbackDestinationName(TravelPlan plan, Destination destination, FallbackSlot slot) {
-        if (destination != null && !slot.primaryStyle().matches("식당|카페")) {
+        String style = LocalTripText.normalize(slot.primaryStyle());
+        if (destination != null && !style.matches(".*(식당|식사|카페|간식).*")) {
             return destination.getName();
         }
-        if ("식당".equals(slot.primaryStyle())) {
-            return plan.getRegion() + " 로컬 식당";
+        if (style.contains("아침")) {
+            return plan.getRegion() + " 아침 식당";
         }
-        if ("카페".equals(slot.primaryStyle())) {
+        if (style.contains("점심")) {
+            return plan.getRegion() + " 점심 식당";
+        }
+        if (style.contains("저녁")) {
+            return plan.getRegion() + " 저녁 식당";
+        }
+        if (style.contains("간식")) {
+            return plan.getRegion() + " 간식 거리";
+        }
+        if (style.contains("카페")) {
             return plan.getRegion() + " 카페 휴식";
         }
         return destination == null ? plan.getRegion() + " 자유 여행" : destination.getName();
     }
 
     private String fallbackNote(int slotIndex, Destination destination, FallbackSlot slot) {
+        String style = LocalTripText.normalize(slot.primaryStyle());
         if (destination == null) {
-            if ("식당".equals(slot.primaryStyle())) {
-                return "방문 동선 근처에서 지역 대표 메뉴로 식사 시간을 확보하세요.";
+            if (style.contains("아침")) {
+                return "숙소 또는 출발지 근처에서 아침 식사 시간을 먼저 확보하세요.";
             }
-            if ("카페".equals(slot.primaryStyle())) {
-                return "오후 이동 전후로 쉬어갈 수 있는 카페를 배치하세요.";
+            if (style.contains("점심")) {
+                return "오전 관광지 근처에서 점심 식사 시간을 확보하세요.";
+            }
+            if (style.contains("저녁")) {
+                return "마지막 관광지 근처에서 저녁 식사를 하고 숙소 복귀 동선을 줄이세요.";
+            }
+            if (style.contains("간식")) {
+                return "카페와 별도로 시장, 베이커리, 로컬 디저트 같은 짧은 간식 블록을 넣으세요.";
+            }
+            if (style.contains("카페")) {
+                return "오후 이동 전후로 하루 1곳만 쉬어갈 수 있는 카페를 배치하세요.";
             }
             return "동선을 여유 있게 조정하며 주변 식사와 휴식 시간을 확보하세요.";
         }
         return switch (slotIndex) {
-            case 0 -> destination.getDistrict() + " 도착 후 혼잡 전 핵심 포인트부터 둘러보세요.";
-            case 1 -> destination.getHeadline();
+            case 0 -> "출발 전 아침 식사와 이동 준비 시간을 확보하세요.";
+            case 1 -> destination.getDistrict() + " 핵심 관광지를 오전에 여유 있게 둘러보세요.";
             case 2 -> destination.getName() + " 근처에서 점심 식사와 짧은 휴식을 잡으세요.";
             case 3 -> destination.getDescription();
-            case 4 -> destination.getName() + " 이동 동선의 카페에서 쉬어가세요.";
-            case 5 -> destination.getName() + " 주변을 가볍게 걸으며 다음 장소로 이동하세요.";
-            case 6 -> destination.getName() + " 근처 저녁 식사 후보를 잡고 대기 시간을 줄이세요.";
-            default -> destination.getName() + " 주변 야경이나 산책 동선으로 하루를 마무리하세요.";
+            case 4 -> "시장 또는 디저트 가게에서 짧은 간식 시간을 따로 잡으세요.";
+            case 5 -> destination.getName() + " 이동 동선의 카페에서 하루 1번만 쉬어가세요.";
+            default -> destination.getName() + " 근처에서 저녁 식사를 하고 숙소 복귀 시간을 남기세요.";
         };
     }
 
@@ -877,5 +974,15 @@ public class TravelPlanService {
     }
 
     private record FallbackSlot(String timeSlot, String primaryStyle, int durationMinutes) {
+    }
+
+    private record FixedPlanSlot(
+            int dayNumber,
+            String timeSlot,
+            String destinationName,
+            String region,
+            String primaryStyle,
+            int durationMinutes,
+            String note) {
     }
 }

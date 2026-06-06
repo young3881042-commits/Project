@@ -40,3 +40,272 @@
 @import './styles/notes-notion.css';
 @import './styles/notes-white-final.css';
 @import './styles/localtrip-text-data.css';
+@import './styles/localtrip-osaka-kyoto.css';
+
+#root {
+  width: min(100%, 430px);
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: #ffffff;
+}
+
+.ltShell,
+.schedulerShell,
+.notesShell.aiNoteShell,
+.spaceAppFrame,
+.appAuthShell {
+  width: 100% !important;
+  max-width: 430px !important;
+  margin-inline: auto !important;
+}
+
+.ltShell {
+  display: block !important;
+  grid-template-columns: 1fr !important;
+}
+
+.ltShell .ltPage,
+.ltShell .ltFooter {
+  grid-column: auto !important;
+  width: min(100% - 24px, 430px) !important;
+  max-width: 430px !important;
+}
+
+.ltDestinationGrid,
+.ltPlansGrid,
+.ltPlannerLayout,
+.ltSplitSection,
+.ltPartnerGrid,
+.ltMyGrid,
+.ltPlanFacts,
+.ltRouteSummaryGrid,
+.schedulerStats,
+.schedulerFormGrid {
+  grid-template-columns: 1fr !important;
+}
+
+.schedulerHero,
+.schedulerQuickAdd,
+.schedulerDatabase {
+  grid-template-columns: 1fr !important;
+}
+
+.schedulerShell > .schedulerPage {
+  width: calc(100% - 16px) !important;
+  padding: 12px 0 96px !important;
+}
+
+.schedulerTableHead {
+  display: none !important;
+}
+
+.schedulerItem {
+  min-width: 0 !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 8px !important;
+}
+
+.schedulerItem time,
+.schedulerItem small {
+  grid-column: 1 / -1 !important;
+  white-space: normal !important;
+}
+
+.workspaceNavigator {
+  min-height: auto !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 8px 10px !important;
+  padding: 10px 12px !important;
+}
+
+.workspaceNavigatorAccount {
+  width: min(148px, 42vw) !important;
+  min-width: 0 !important;
+  min-height: 46px !important;
+  grid-template-columns: 34px minmax(0, 1fr) !important;
+}
+
+.workspaceNavigatorAccount strong,
+.workspaceNavigatorAccount small {
+  display: block !important;
+}
+
+.ltPlannerPreview {
+  position: static !important;
+}
+
+.mobileWorkspaceTabs {
+  position: fixed !important;
+  right: auto !important;
+  bottom: 10px !important;
+  left: 50% !important;
+  z-index: 240 !important;
+  width: min(calc(100% - 20px), 410px) !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 4px !important;
+  padding: 7px !important;
+  padding-bottom: calc(7px + env(safe-area-inset-bottom)) !important;
+  border: 1px solid rgba(203, 213, 225, 0.92) !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.16) !important;
+  transform: translateX(-50%) !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+.mobileWorkspaceTabButton {
+  min-width: 0 !important;
+  min-height: 50px !important;
+  display: grid !important;
+  place-items: center !important;
+  gap: 3px !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: #64748b !important;
+  padding: 5px 2px !important;
+  font: inherit !important;
+  font-size: 0.68rem !important;
+  font-weight: 850 !important;
+}
+
+.mobileWorkspaceTabButton .memoNavIcon {
+  width: 21px !important;
+  height: 21px !important;
+  min-width: 21px !important;
+  background: transparent !important;
+  color: currentColor !important;
+}
+
+.mobileWorkspaceTabButton.active {
+  border-color: #bae6fd !important;
+  background: linear-gradient(180deg, #eff6ff 0%, #ecfdf5 100%) !important;
+  color: #0f766e !important;
+}
+
+.notesShell .notesWorkspace {
+  display: block !important;
+  width: 100% !important;
+}
+
+.notesShell .notesDesktopLayout {
+  display: none !important;
+}
+
+.notesShell .notesMobileWorkspace {
+  display: block !important;
+}
+
+.ltTravelPresetCard,
+.ltPlannerPresetTop {
+  grid-template-columns: 1fr !important;
+}
+
+.ltTravelPresetFacts,
+.ltPlannerPresetFacts,
+.ltPlannerPresetDays {
+  grid-template-columns: 1fr !important;
+}
+
+.ltTravelPresetCard .ltPrimaryButton,
+.ltPlannerPresetTop .ltPrimaryButton {
+  width: 100% !important;
+}
+
+.notesShell .workspaceNavigator {
+  display: none !important;
+}
+
+.notesMobileWorkspace {
+  min-height: 100dvh !important;
+  background: #f7f8fb !important;
+}
+
+.notesMobileFolders,
+.notesMobileHomeTop,
+.notesMobileExplorerList {
+  display: grid !important;
+}
+
+.notesMobileFolders {
+  gap: 12px !important;
+  padding: 14px 14px calc(104px + env(safe-area-inset-bottom)) !important;
+  color: #102033 !important;
+}
+
+.notesMobileAppBar {
+  min-height: 44px !important;
+  display: grid !important;
+  grid-template-columns: 42px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.notesMobileAppBar > strong {
+  color: #102033 !important;
+  font-size: 1.28rem !important;
+}
+
+.notesMobileFileSection {
+  display: grid !important;
+  gap: 10px !important;
+  padding: 14px !important;
+  border: 1px solid #dbe7ef !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+}
+
+.loginShell,
+.appAuthShell {
+  min-height: 100dvh !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  place-items: center !important;
+  padding: 18px !important;
+  background: #f7f8fa !important;
+}
+
+.loginCard,
+.appAuthCard {
+  width: min(100%, 380px) !important;
+  display: grid !important;
+  gap: 14px !important;
+  padding: 24px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08) !important;
+}
+
+.loginHeroPanel {
+  display: none !important;
+}
+
+.loginCard h1,
+.appAuthHeader h1 {
+  color: #111827 !important;
+  font-size: 1.5rem !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+}
+
+.loginField input,
+.appAuthForm input {
+  min-height: 44px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  font-size: 16px !important;
+}
+
+.loginButton,
+.appAuthSubmit {
+  min-height: 44px !important;
+  border-radius: 8px !important;
+  background: #111827 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
