@@ -4,7 +4,6 @@ public record RegionPerformance(
         String regionCode,
         String regionName,
         String regionGroup,
-        long liveVisitors,
         long liveSearches,
         long liveBookings,
         long dailyVisitors,

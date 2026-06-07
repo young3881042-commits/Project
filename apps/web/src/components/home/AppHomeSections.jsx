@@ -12,9 +12,7 @@ export function HomeRobotHero({ appOverview, navigate, planMode = 'personal' }) 
   return (
     <section className={`appHomeRobotHero ${isTravel ? 'travel' : 'personal'}`} aria-label="AI 로봇 홈">
       <div className="appHomeRobotHeroCopy">
-        <span>{isTravel ? 'Travel mode' : 'Today mode'}</span>
-        <strong>{isTravel ? '여행 준비, 같이 정리돼요' : '오늘 할 일, 같이 정리돼요'}</strong>
-        <p>{isTravel ? '코스 메모와 일정을 한 화면에서 이어서 봅니다.' : '메모와 일정을 가볍게 도와드려요.'}</p>
+        <p>{isTravel ? '코스 메모와 일정' : '일정 관리'}</p>
         {isTravel ? (
           <div className="appHomeTravelCountdown" aria-label="여행 D-day">
             <strong>{travelPlan?.dDayLabel || 'D-day'}</strong>
@@ -34,9 +32,6 @@ export function HomeRobotHero({ appOverview, navigate, planMode = 'personal' }) 
           </div>
         ) : null}
       </div>
-      <figure className="appHomeRobotImage">
-        <img src="/assets/home-assistant-hero.png" alt="" />
-      </figure>
     </section>
   );
 }

@@ -1,5 +1,4 @@
 import { QUICK_ACTIONS } from './TravelHomeData.js';
-import { OSAKA_KYOTO_COUPLE_PRESET } from './OsakaKyotoTripData.js';
 
 function Icon({ children, size = 18 }) {
   return (
@@ -180,9 +179,9 @@ export function TravelDdayCard({ loading, plan, navigate }) {
     return (
       <section className="ltTravelDdayCard loading" aria-label="여행 D-Day">
         <div>
-          <span>여행 코스</span>
-          <h1>여행 정보를 확인 중입니다</h1>
-          <p>저장한 여행 코스를 불러오고 있어요.</p>
+          <span>다음 여행</span>
+          <h1>저장한 여행을 확인 중입니다</h1>
+          <p>코스와 날짜 정보를 불러오고 있어요.</p>
         </div>
       </section>
     );
@@ -192,12 +191,12 @@ export function TravelDdayCard({ loading, plan, navigate }) {
     return (
       <section className="ltTravelDdayCard empty" aria-label="여행 D-Day">
         <div>
-          <span>여행 코스</span>
+          <span>다음 여행</span>
           <h1>다가오는 여행이 없어요.</h1>
-          <p>새 여행을 만들어보세요.</p>
+          <p>장소를 고르고 새 코스를 만들어보세요.</p>
           <button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>
             <TravelQuickIcon type="plus" />
-            여행 만들기
+            새 코스 만들기
           </button>
         </div>
         <TravelHeroVisual />
@@ -213,6 +212,10 @@ export function TravelDdayCard({ loading, plan, navigate }) {
         <h1>{plan.title || plan.destinationName || '여행 코스'}</h1>
         <p>{dday.range}</p>
         <small>{dday.duration}</small>
+        <button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>
+          <TravelQuickIcon type="route" />
+          새 코스 만들기
+        </button>
       </div>
       <strong>{dday.label}</strong>
     </section>
@@ -245,36 +248,11 @@ export function TravelQuickActions({ navigate, title = '' }) {
   );
 }
 
-function TravelPresetCard({ navigate }) {
-  const preset = OSAKA_KYOTO_COUPLE_PRESET;
-  return (
-    <section className="ltTravelPresetCard" aria-label="오사카 교토 여행 프리셋">
-      <div className="ltTravelPresetCopy">
-        <span>추천 프리셋</span>
-        <h2>{preset.title}</h2>
-        <p>{preset.subtitle}</p>
-      </div>
-      <div className="ltTravelPresetFacts">
-        {preset.highlights.map((item) => (
-          <div key={item.label}>
-            <span>{item.label}</span>
-            <strong>{item.value}</strong>
-          </div>
-        ))}
-      </div>
-      <button type="button" className="ltPrimaryButton" onClick={() => navigate(`/planner?preset=${preset.id}`)}>
-        <TravelQuickIcon type="route" />
-        바로 채우기
-      </button>
-    </section>
-  );
-}
-
-export default function TravelHome({ navigate, plansLoading = false, ddayPlan = null }) {
+export default function TravelHome({
+  navigate
+}) {
   return (
     <main className="ltPage ltHomePage ltTravelStartPage">
-      <TravelDdayCard loading={plansLoading} plan={ddayPlan} navigate={navigate} />
-      <TravelPresetCard navigate={navigate} />
       <TravelQuickActions navigate={navigate} title="빠른 메뉴" />
     </main>
   );

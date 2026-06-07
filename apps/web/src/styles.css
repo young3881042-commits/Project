@@ -40,8 +40,9 @@
 @import './styles/notes-notion.css';
 @import './styles/notes-white-final.css';
 @import './styles/localtrip-text-data.css';
-@import './styles/localtrip-osaka-kyoto.css';
+@import './styles/localtrip-travel-refresh.css';
 @import './styles/blocknote-memo.css';
+@import './styles/workspace-cleanup.css';
 
 #root {
   width: min(100%, 430px);
@@ -197,22 +198,6 @@
 
 .notesShell .notesMobileWorkspace {
   display: block !important;
-}
-
-.ltTravelPresetCard,
-.ltPlannerPresetTop {
-  grid-template-columns: 1fr !important;
-}
-
-.ltTravelPresetFacts,
-.ltPlannerPresetFacts,
-.ltPlannerPresetDays {
-  grid-template-columns: 1fr !important;
-}
-
-.ltTravelPresetCard .ltPrimaryButton,
-.ltPlannerPresetTop .ltPrimaryButton {
-  width: 100% !important;
 }
 
 .notesShell .workspaceNavigator {

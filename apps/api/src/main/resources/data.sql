@@ -28,28 +28,28 @@ INSERT IGNORE INTO travel_district (district_code, region_code, district_name, d
     ('JEONJU-INNOVATION', 'JEONJU', '혁신도시권', '비즈니스', 4);
 
 INSERT IGNORE INTO travel_place (
-    place_id, district_code, place_name, category, address, headline, tags_json, rating, review_count, source_ref
+    place_id, district_code, place_name, category, address, headline, tags_json, source_ref
 ) VALUES
-    ('PLC-SEOUL-001', 'SEOUL-GANGNAM', '코엑스 컨퍼런스 센터', '전시장', '서울 강남구 영동대로 513', '행사와 비즈니스 체류가 동시에 몰리는 대형 복합 공간', '["MICE","회의","전시"]', 4.70, 1832, 'spacecloud-demo'),
-    ('PLC-SEOUL-002', 'SEOUL-GANGNAM', '가로수길 스테이 라운지', '숙소', '서울 강남구 압구정로10길 22', '쇼핑 동선과 연결되는 프리미엄 체류형 스테이', '["쇼핑","숙박","도심"]', 4.63, 924, 'spacecloud-demo'),
-    ('PLC-SEOUL-003', 'SEOUL-MAPO', '홍대 라이브 스테이지', '공연장', '서울 마포구 와우산로 94', '야간 유입이 강한 공연/이벤트 중심 거점', '["야간","공연","로컬"]', 4.51, 1288, 'spacecloud-demo'),
-    ('PLC-SEOUL-004', 'SEOUL-SEONGDONG', '성수 팝업 팩토리', '팝업스토어', '서울 성동구 연무장길 33', '브랜드 팝업과 카페 체류가 이어지는 복합 공간', '["팝업","카페","쇼핑"]', 4.58, 1173, 'spacecloud-demo'),
-    ('PLC-BUSAN-001', 'BUSAN-HAEUNDAE', '벡스코 컨벤션홀', '전시장', '부산 해운대구 APEC로 55', '컨벤션과 숙박 수요를 함께 끌어오는 행사 거점', '["행사","숙박","MICE"]', 4.66, 1450, 'spacecloud-demo'),
-    ('PLC-BUSAN-002', 'BUSAN-SUYEONG', '광안리 오션 라운지', '카페', '부산 수영구 광안해변로 233', '야경과 식음 체류가 강한 해변 상권 대표 매장', '["야경","카페","데이트"]', 4.49, 2011, 'spacecloud-demo'),
-    ('PLC-BUSAN-003', 'BUSAN-BUSANJIN', '전포 디자인 스튜디오', '복합공간', '부산 부산진구 전포대로 208', '전포 상권 유입이 집중되는 로컬 복합 공간', '["전포","로컬","팝업"]', 4.41, 884, 'spacecloud-demo'),
-    ('PLC-BUSAN-004', 'BUSAN-JUNGGU', '국제시장 푸드 허브', '시장', '부산 중구 중구로 29', '관광객 회전율이 높은 전통시장 대표 거점', '["시장","식도락","투어"]', 4.35, 2541, 'spacecloud-demo'),
-    ('PLC-JEJU-001', 'JEJU-JEJUSI', '공항 앞 스마트 스테이', '숙소', '제주 제주시 연동 271-22', '공항 접근성이 높은 단기 체류 숙소', '["공항","숙박","렌터카"]', 4.52, 760, 'spacecloud-demo'),
-    ('PLC-JEJU-002', 'JEJU-AEWOL', '애월 선셋 카페', '카페', '제주 제주시 애월읍 애월해안로 211', '드라이브 수요와 연계된 감성 해안 카페', '["드라이브","바다","카페"]', 4.61, 3320, 'spacecloud-demo'),
-    ('PLC-JEJU-003', 'JEJU-SEOGWIPO', '중문 리조트 클럽', '리조트', '제주 서귀포시 중문관광로 72번길 29', '가족 체류와 액티비티 예약이 함께 발생하는 리조트', '["리조트","가족","체험"]', 4.69, 1904, 'spacecloud-demo'),
-    ('PLC-JEJU-004', 'JEJU-SEONGSAN', '성산 트레일 베이스', '투어', '제주 서귀포시 성산읍 일출로 288', '동부 자연 관광 수요가 모이는 투어 베이스', '["투어","자연","오름"]', 4.43, 1127, 'spacecloud-demo'),
-    ('PLC-GANGWON-001', 'GANGWON-GANGNEUNG', '안목 오션 워크', '카페', '강원 강릉시 창해로14번길 20', '해변 카페 체류와 포토 수요가 강한 대표 상권', '["해변","카페","주말"]', 4.46, 2711, 'spacecloud-demo'),
-    ('PLC-GANGWON-002', 'GANGWON-SOKCHO', '속초 마리나 스테이', '숙소', '강원 속초시 영랑해안길 133', '설악/해변 관광 동선을 흡수하는 체류형 숙소', '["숙박","관광","바다"]', 4.39, 991, 'spacecloud-demo'),
-    ('PLC-GANGWON-003', 'GANGWON-CHUNCHEON', '춘천 레이크홀', '공연장', '강원 춘천시 스포츠타운길 399', '근교 이벤트와 당일 체류 전환이 많은 공연 공간', '["행사","근교","체류"]', 4.31, 608, 'spacecloud-demo'),
-    ('PLC-GANGWON-004', 'GANGWON-PYEONGCHANG', '알펜 리조트 포럼', '리조트', '강원 평창군 대관령면 올림픽로 715', '시즌 체류와 단체 예약 비중이 높은 리조트 거점', '["리조트","계절","단체"]', 4.64, 1344, 'spacecloud-demo'),
-    ('PLC-JEONJU-001', 'JEONJU-WANSAN', '한옥마을 스테이 채움', '숙소', '전북 전주시 완산구 어진길 87', '전통 체험 관광 수요를 흡수하는 대표 스테이', '["한옥","숙박","관광"]', 4.55, 1438, 'spacecloud-demo'),
-    ('PLC-JEONJU-002', 'JEONJU-DEOKJIN', '덕진 비즈 허브', '복합공간', '전북 전주시 덕진구 만성중앙로 17', '업무와 장기 체류가 섞인 혁신도시형 공간', '["업무","회의","장기"]', 4.22, 514, 'spacecloud-demo'),
-    ('PLC-JEONJU-003', 'JEONJU-HANOK', '전주 체험 공방', '체험공간', '전북 전주시 완산구 은행로 65', '공예 체험과 투어가 결합된 로컬 체험 거점', '["체험","전통","포토"]', 4.57, 874, 'spacecloud-demo'),
-    ('PLC-JEONJU-004', 'JEONJU-INNOVATION', '혁신도시 미팅 라운지', '회의공간', '전북 전주시 덕진구 오공로 123', '평일 예약이 많은 비즈니스 회의 거점', '["회의","비즈니스","기관"]', 4.18, 362, 'spacecloud-demo');
+    ('PLC-SEOUL-001', 'SEOUL-GANGNAM', '코엑스 컨퍼런스 센터', '전시장', '서울 강남구 영동대로 513', '행사와 비즈니스 체류가 동시에 몰리는 대형 복합 공간', '["MICE","회의","전시"]', 'spacecloud-demo'),
+    ('PLC-SEOUL-002', 'SEOUL-GANGNAM', '가로수길 스테이 라운지', '숙소', '서울 강남구 압구정로10길 22', '쇼핑 동선과 연결되는 프리미엄 체류형 스테이', '["쇼핑","숙박","도심"]', 'spacecloud-demo'),
+    ('PLC-SEOUL-003', 'SEOUL-MAPO', '홍대 라이브 스테이지', '공연장', '서울 마포구 와우산로 94', '야간 유입이 강한 공연/이벤트 중심 거점', '["야간","공연","로컬"]', 'spacecloud-demo'),
+    ('PLC-SEOUL-004', 'SEOUL-SEONGDONG', '성수 팝업 팩토리', '팝업스토어', '서울 성동구 연무장길 33', '브랜드 팝업과 카페 체류가 이어지는 복합 공간', '["팝업","카페","쇼핑"]', 'spacecloud-demo'),
+    ('PLC-BUSAN-001', 'BUSAN-HAEUNDAE', '벡스코 컨벤션홀', '전시장', '부산 해운대구 APEC로 55', '컨벤션과 숙박 수요를 함께 끌어오는 행사 거점', '["행사","숙박","MICE"]', 'spacecloud-demo'),
+    ('PLC-BUSAN-002', 'BUSAN-SUYEONG', '광안리 오션 라운지', '카페', '부산 수영구 광안해변로 233', '야경과 식음 체류가 강한 해변 상권 대표 매장', '["야경","카페","데이트"]', 'spacecloud-demo'),
+    ('PLC-BUSAN-003', 'BUSAN-BUSANJIN', '전포 디자인 스튜디오', '복합공간', '부산 부산진구 전포대로 208', '전포 상권 유입이 집중되는 로컬 복합 공간', '["전포","로컬","팝업"]', 'spacecloud-demo'),
+    ('PLC-BUSAN-004', 'BUSAN-JUNGGU', '국제시장 푸드 허브', '시장', '부산 중구 중구로 29', '관광객 회전율이 높은 전통시장 대표 거점', '["시장","식도락","투어"]', 'spacecloud-demo'),
+    ('PLC-JEJU-001', 'JEJU-JEJUSI', '공항 앞 스마트 스테이', '숙소', '제주 제주시 연동 271-22', '공항 접근성이 높은 단기 체류 숙소', '["공항","숙박","렌터카"]', 'spacecloud-demo'),
+    ('PLC-JEJU-002', 'JEJU-AEWOL', '애월 선셋 카페', '카페', '제주 제주시 애월읍 애월해안로 211', '드라이브 수요와 연계된 감성 해안 카페', '["드라이브","바다","카페"]', 'spacecloud-demo'),
+    ('PLC-JEJU-003', 'JEJU-SEOGWIPO', '중문 리조트 클럽', '리조트', '제주 서귀포시 중문관광로 72번길 29', '가족 체류와 액티비티 예약이 함께 발생하는 리조트', '["리조트","가족","체험"]', 'spacecloud-demo'),
+    ('PLC-JEJU-004', 'JEJU-SEONGSAN', '성산 트레일 베이스', '투어', '제주 서귀포시 성산읍 일출로 288', '동부 자연 관광 수요가 모이는 투어 베이스', '["투어","자연","오름"]', 'spacecloud-demo'),
+    ('PLC-GANGWON-001', 'GANGWON-GANGNEUNG', '안목 오션 워크', '카페', '강원 강릉시 창해로14번길 20', '해변 카페 체류와 포토 수요가 강한 대표 상권', '["해변","카페","주말"]', 'spacecloud-demo'),
+    ('PLC-GANGWON-002', 'GANGWON-SOKCHO', '속초 마리나 스테이', '숙소', '강원 속초시 영랑해안길 133', '설악/해변 관광 동선을 흡수하는 체류형 숙소', '["숙박","관광","바다"]', 'spacecloud-demo'),
+    ('PLC-GANGWON-003', 'GANGWON-CHUNCHEON', '춘천 레이크홀', '공연장', '강원 춘천시 스포츠타운길 399', '근교 이벤트와 당일 체류 전환이 많은 공연 공간', '["행사","근교","체류"]', 'spacecloud-demo'),
+    ('PLC-GANGWON-004', 'GANGWON-PYEONGCHANG', '알펜 리조트 포럼', '리조트', '강원 평창군 대관령면 올림픽로 715', '시즌 체류와 단체 예약 비중이 높은 리조트 거점', '["리조트","계절","단체"]', 'spacecloud-demo'),
+    ('PLC-JEONJU-001', 'JEONJU-WANSAN', '한옥마을 스테이 채움', '숙소', '전북 전주시 완산구 어진길 87', '전통 체험 관광 수요를 흡수하는 대표 스테이', '["한옥","숙박","관광"]', 'spacecloud-demo'),
+    ('PLC-JEONJU-002', 'JEONJU-DEOKJIN', '덕진 비즈 허브', '복합공간', '전북 전주시 덕진구 만성중앙로 17', '업무와 장기 체류가 섞인 혁신도시형 공간', '["업무","회의","장기"]', 'spacecloud-demo'),
+    ('PLC-JEONJU-003', 'JEONJU-HANOK', '전주 체험 공방', '체험공간', '전북 전주시 완산구 은행로 65', '공예 체험과 투어가 결합된 로컬 체험 거점', '["체험","전통","포토"]', 'spacecloud-demo'),
+    ('PLC-JEONJU-004', 'JEONJU-INNOVATION', '혁신도시 미팅 라운지', '회의공간', '전북 전주시 덕진구 오공로 123', '평일 예약이 많은 비즈니스 회의 거점', '["회의","비즈니스","기관"]', 'spacecloud-demo');
 
 INSERT INTO batch_job_definition (
     job_key, job_name, schedule_type, cron_expression, notebook_path, python_entrypoint,

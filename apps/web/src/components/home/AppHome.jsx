@@ -34,8 +34,8 @@ export default function AppHome({
       <section className="spaceAppFrame appHomeDashboard" aria-label="앱 홈">
         <header className="appHomeHeader">
           <div className="appHomeTitleGroup">
-            <h1>개인 워크스페이스</h1>
-            <p>AI 일정 · 메모 도우미</p>
+            <h1>MU Editor</h1>
+            <p>일정 · 메모 도우미</p>
           </div>
           <div className="appHomeHeaderActions">
             <button

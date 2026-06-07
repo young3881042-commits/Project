@@ -9,7 +9,6 @@ public record DistrictPerformance(
         String districtCode,
         String districtName,
         String districtTier,
-        long liveVisitors,
         long liveSearches,
         long liveBookings,
         int placeCount,

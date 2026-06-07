@@ -64,13 +64,14 @@ CREATE TABLE IF NOT EXISTS travel_place (
     address VARCHAR(255) NOT NULL,
     headline VARCHAR(255) NOT NULL,
     tags_json TEXT NOT NULL,
-    rating DECIMAL(3, 2) NOT NULL,
-    review_count INT NOT NULL,
     source_ref VARCHAR(64) NOT NULL,
     created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     updated_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
     CONSTRAINT fk_travel_place_district FOREIGN KEY (district_code) REFERENCES travel_district(district_code)
 );
+
+ALTER TABLE travel_place DROP COLUMN IF EXISTS rating;
+ALTER TABLE travel_place DROP COLUMN IF EXISTS review_count;
 
 CREATE TABLE IF NOT EXISTS travel_place_source_snapshot (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,

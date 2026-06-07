@@ -3001,21 +3001,21 @@ const ADMIN1_MEMO_LOGS = [
 - [x] 생성형 이미지는 목업이 아니라 실제 앱 자산으로 생성·적용·검증하도록 Codex 운영 규칙에 추가`
   },
   {
-    id: 'admin1-memo-20260606-travel-realistic-mobile-frame',
-    content: `# 2026-06-06 여행 일정 현실화와 전체 모바일 프레임
+    id: 'admin1-memo-20260606-travel-runtime-data-cleanup',
+    content: `# 2026-06-06 여행 화면 데이터 정리
 
-- [x] 여행 코스 생성 기준을 아침·점심·저녁 식사, 카페 1곳, 간식 1곳, 관광지 중심으로 보정
-- [x] 오사카·교토 3박4일 프리셋을 식사/카페/간식/관광 기준의 현실적인 시간표로 조정
+- [x] 여행 홈의 고정 프리셋 카드를 제거하고 저장된 코스와 빠른 메뉴 중심으로 정리
+- [x] 장소 카드의 임의 평점, 후기 수, 실시간 방문자 표시를 제거
 - [x] PC에서도 전체 웹이 모바일 폭 기준으로 보이도록 최상위 앱 프레임을 고정`
   },
   {
-    id: 'admin1-memo-20260604-osaka-kyoto-couple-trip',
-    content: `# 2026-06-04 오사카·교토 부부 3박4일 여행 프리셋
+    id: 'admin1-memo-20260604-travel-planner-data-source',
+    content: `# 2026-06-04 여행 플래너 데이터 흐름 정리
 
-- [x] /travel 첫 화면에 오사카·교토 부부 3박4일 프리셋 카드 추가
-- [x] /planner에서 프리셋 자동 채우기, 일자별 출발/도착, 준비 체크리스트, 공식 출처 링크 노출
-- [x] 오사카·교토 장소 seed와 식당/카페 후보 dataset 보강
-- [x] 프리셋 생성 요청은 OpenAI 키 없이도 3박4일 deterministic 일정으로 저장되게 보강`
+- [x] /travel 첫 화면은 저장 코스와 사용자 액션을 기준으로 구성
+- [x] /planner 입력값은 사용자가 고른 지역, 일정, 취향을 우선 사용
+- [x] 장소 후보는 API 응답을 정규화해 중복을 줄이고 소스 우선순위를 반영
+- [x] API 오류 메시지는 HTML 응답을 그대로 노출하지 않도록 정리`
   },
   {
     id: 'admin1-memo-20260603-notes-mobile-gear-menu',
@@ -5642,6 +5642,7 @@ function NotionNotesPage({ navigate }) {
   const [statusText, setStatusText] = useState('');
   const [mobileExplorerMenuId, setMobileExplorerMenuId] = useState('');
   const [notesSidebarCollapsed, setNotesSidebarCollapsed] = useState(false);
+  const [notesDialog, setNotesDialog] = useState(null);
 
   useEffect(() => {
     document.title = '메모';
@@ -5832,13 +5833,12 @@ function NotionNotesPage({ navigate }) {
     setFolders((current) => current.map((folder) => (folder.id === id ? { ...folder, name, title: name, updatedAt: memoTimestamp() } : folder)));
   };
 
-  const deleteFolder = (id) => {
+  const performDeleteFolder = (id) => {
     const target = folders.find((folder) => folder.id === id);
     if (!canDeleteMemoBoard(target)) {
       setStatusText('기본 프로젝트 폴더는 삭제하지 않습니다.');
       return;
     }
-    if (!window.confirm(`${memoFolderName(target)} 폴더와 안의 메모를 삭제할까요?`)) return;
     const deleteIds = memoFolderDescendantIds(folders, id);
     const fallbackFolder = (target?.parentId && folders.find((folder) => folder.id === target.parentId))
       || folders.find((folder) => folder.id === 'memo' && !deleteIds.has(folder.id))
@@ -5852,6 +5852,20 @@ function NotionNotesPage({ navigate }) {
     setMobileView('folders');
     replaceNotesRoute(fallbackFolder?.id || '');
     setStatusText('폴더를 삭제했습니다.');
+  };
+
+  const deleteFolder = (id) => {
+    const target = folders.find((folder) => folder.id === id);
+    if (!canDeleteMemoBoard(target)) {
+      setStatusText('기본 프로젝트 폴더는 삭제하지 않습니다.');
+      return;
+    }
+    setNotesDialog({
+      type: 'delete-folder',
+      folderId: id,
+      title: '폴더 삭제',
+      message: `${memoFolderName(target)} 폴더와 안의 메모를 삭제할까요?`
+    });
   };
 
   const createNote = (folderId = activeFolderId) => {
@@ -5881,16 +5895,27 @@ function NotionNotesPage({ navigate }) {
     setStatusText('새 메모를 만들었습니다.');
   };
 
-  const deleteNote = (id = activeNote?.id) => {
+  const performDeleteNote = (id = activeNote?.id) => {
     if (!id) return;
     const target = notes.find((note) => note.id === id);
-    if (!window.confirm(`${noteBlockTitle(target)} 메모를 삭제할까요?`)) return;
+    const folderId = target ? memoFolderIdForNote(target) : activeFolderId;
     setNotes((current) => current.filter((note) => note.id !== id));
     setActiveId('');
     setMobileExplorerMenuId('');
     setMobileView('folders');
-    replaceNotesRoute(activeFolderId);
+    replaceNotesRoute(folderId);
     setStatusText('메모를 삭제했습니다.');
+  };
+
+  const deleteNote = (id = activeNote?.id) => {
+    if (!id) return;
+    const target = notes.find((note) => note.id === id);
+    setNotesDialog({
+      type: 'delete-note',
+      noteId: id,
+      title: '메모 삭제',
+      message: `${noteBlockTitle(target)} 메모를 삭제할까요?`
+    });
   };
 
   const updateSchedule = (patch) => {
@@ -5932,33 +5957,31 @@ function NotionNotesPage({ navigate }) {
   };
 
   const renameFolderFromMenu = (folder) => {
-    const nextName = window.prompt('폴더 이름', memoFolderName(folder));
-    if (!nextName || !nextName.trim()) return;
-    renameFolder(folder.id, nextName.trim());
     setMobileExplorerMenuId('');
+    setNotesDialog({
+      type: 'rename-folder',
+      folderId: folder.id,
+      title: '폴더 이름 변경',
+      label: '폴더 이름',
+      value: memoFolderName(folder)
+    });
   };
 
   const renameNoteFromTree = (note) => {
-    const nextTitle = window.prompt('메모 이름', noteBlockTitle(note));
-    if (!nextTitle || !nextTitle.trim()) return;
-    updateNote(note.id, { title: nextTitle.trim() });
     setMobileExplorerMenuId('');
-    setStatusText('메모 이름을 변경했습니다.');
+    setNotesDialog({
+      type: 'rename-note',
+      noteId: note.id,
+      title: '메모 이름 변경',
+      label: '메모 이름',
+      value: noteBlockTitle(note)
+    });
   };
 
   const deleteNoteFromTree = (note) => {
     if (!note) return;
-    if (!window.confirm(`${noteBlockTitle(note)} 메모를 삭제할까요?`)) return;
-    const folderId = memoFolderIdForNote(note);
-    setNotes((current) => current.filter((item) => item.id !== note.id));
-    if (activeId === note.id) {
-      setActiveId('');
-      setActiveFolderId(folderId);
-      replaceNotesRoute(folderId);
-    }
     setMobileExplorerMenuId('');
-    setMobileView('folders');
-    setStatusText('메모를 삭제했습니다.');
+    deleteNote(note.id);
   };
 
   const toggleMobileExplorerMenu = (menuId) => {
@@ -6079,6 +6102,27 @@ function NotionNotesPage({ navigate }) {
     }
     navigator.clipboard?.writeText(shareUrl);
     setStatusText('메모 링크를 복사했습니다.');
+  };
+
+  const submitNotesDialog = (event) => {
+    event.preventDefault();
+    if (!notesDialog) return;
+    if (notesDialog.type === 'rename-folder') {
+      const nextName = notesDialog.value.trim();
+      if (!nextName) return;
+      renameFolder(notesDialog.folderId, nextName);
+      setStatusText('폴더 이름을 변경했습니다.');
+    } else if (notesDialog.type === 'rename-note') {
+      const nextTitle = notesDialog.value.trim();
+      if (!nextTitle) return;
+      updateNote(notesDialog.noteId, { title: nextTitle });
+      setStatusText('메모 이름을 변경했습니다.');
+    } else if (notesDialog.type === 'delete-folder') {
+      performDeleteFolder(notesDialog.folderId);
+    } else if (notesDialog.type === 'delete-note') {
+      performDeleteNote(notesDialog.noteId);
+    }
+    setNotesDialog(null);
   };
 
   return (
@@ -6241,6 +6285,43 @@ function NotionNotesPage({ navigate }) {
             </section>
           ) : null}
         </div>
+        {notesDialog ? (
+          <div className="appDialogBackdrop" role="presentation" onMouseDown={() => setNotesDialog(null)}>
+            <form
+              className="appDialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="notes-action-dialog-title"
+              onSubmit={submitNotesDialog}
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <header>
+                <strong id="notes-action-dialog-title">{notesDialog.title}</strong>
+                <button type="button" onClick={() => setNotesDialog(null)} aria-label="닫기">
+                  <MemoNavIcon type="close" />
+                </button>
+              </header>
+              {notesDialog.type?.startsWith('rename') ? (
+                <label className="appDialogField">
+                  <span>{notesDialog.label}</span>
+                  <input
+                    value={notesDialog.value}
+                    onChange={(event) => setNotesDialog((current) => ({ ...current, value: event.target.value }))}
+                    autoFocus
+                  />
+                </label>
+              ) : (
+                <p>{notesDialog.message}</p>
+              )}
+              <div className="appDialogActions">
+                <button type="button" className="appDialogSecondary" onClick={() => setNotesDialog(null)}>취소</button>
+                <button type="submit" className={notesDialog.type?.startsWith('delete') ? 'appDialogDanger' : 'appDialogPrimary'}>
+                  {notesDialog.type?.startsWith('delete') ? '삭제' : '저장'}
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : null}
         {statusText ? <p className="notesStatusText">{statusText}</p> : null}
       </section>
       <MobileWorkspaceTabs active="notes" navigate={navigate} onNotes={() => setMobileView('folders')} />
@@ -6266,6 +6347,7 @@ function SchedulerPage({ navigate, embedded = false }) {
     recurrenceEnd: '',
     memo: ''
   });
+  const [schedulerDeleteTarget, setSchedulerDeleteTarget] = useState(null);
 
   useEffect(() => {
     if (!embedded) {
@@ -6362,7 +6444,7 @@ function SchedulerPage({ navigate, embedded = false }) {
   const selectedDateStatusLabel = selectedDateItems.length
     ? `${selectedDate} · ${selectedDateItems.length}개 일정 · 달성률 ${selectedDateCompletionRate}%`
     : selectedDate === today
-      ? '오늘 예정된 일정이 없어요. 가벼운 하루를 즐겨보세요! 🍀'
+      ? '오늘 예정된 일정이 없습니다.'
       : `${selectedDate}은 아직 비어 있어요. 천천히 채워보세요.`;
 
   const moveCalendarMonth = (offset) => {
@@ -6422,8 +6504,40 @@ function SchedulerPage({ navigate, embedded = false }) {
   };
 
   const deleteVisibleItem = (item) => {
-    deleteItem(item.sourceId || item.id);
+    setSchedulerDeleteTarget(item);
   };
+
+  const confirmDeleteVisibleItem = (event) => {
+    event.preventDefault();
+    if (!schedulerDeleteTarget) return;
+    deleteItem(schedulerDeleteTarget.sourceId || schedulerDeleteTarget.id);
+    setSchedulerDeleteTarget(null);
+  };
+
+  const schedulerDeleteDialog = schedulerDeleteTarget ? (
+    <div className="appDialogBackdrop" role="presentation" onMouseDown={() => setSchedulerDeleteTarget(null)}>
+      <form
+        className="appDialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="scheduler-delete-dialog-title"
+        onSubmit={confirmDeleteVisibleItem}
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <header>
+          <strong id="scheduler-delete-dialog-title">일정 삭제</strong>
+          <button type="button" onClick={() => setSchedulerDeleteTarget(null)} aria-label="닫기">
+            <MemoNavIcon type="close" />
+          </button>
+        </header>
+        <p>{schedulerDeleteTarget.recurring ? '반복 일정 전체를 삭제할까요?' : `${schedulerDeleteTarget.title} 일정을 삭제할까요?`}</p>
+        <div className="appDialogActions">
+          <button type="button" className="appDialogSecondary" onClick={() => setSchedulerDeleteTarget(null)}>취소</button>
+          <button type="submit" className="appDialogDanger">삭제</button>
+        </div>
+      </form>
+    </div>
+  ) : null;
 
   const todayPanel = (
     <aside className="schedulerTodayPanel top">
@@ -6472,7 +6586,7 @@ function SchedulerPage({ navigate, embedded = false }) {
             ))}
         </div>
       ) : (
-        <div className="schedulerNoToday">오늘 예정된 일정이 없어요. 가벼운 하루를 즐겨보세요! 🍀</div>
+        <div className="schedulerNoToday">오늘 예정된 일정이 없습니다.</div>
       )}
     </aside>
   );
@@ -6669,13 +6783,14 @@ function SchedulerPage({ navigate, embedded = false }) {
   );
 
   if (embedded) {
-    return <section className="schedulerEmbedded">{schedulerContent}</section>;
+    return <section className="schedulerEmbedded">{schedulerContent}{schedulerDeleteDialog}</section>;
   }
 
   return (
     <main className="schedulerShell">
       <WorkspaceNavigator active="schedule" navigate={navigate} />
       {schedulerContent}
+      {schedulerDeleteDialog}
       <MobileWorkspaceTabs active="schedule" navigate={navigate} />
     </main>
   );

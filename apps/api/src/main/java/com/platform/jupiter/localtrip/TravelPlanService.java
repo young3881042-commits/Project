@@ -40,40 +40,47 @@ public class TravelPlanService {
             new FallbackSlot("15:20-15:50", "간식", 30),
             new FallbackSlot("16:10-16:55", "카페", 45),
             new FallbackSlot("18:00-19:10", "저녁 식당", 70));
-    private static final List<FixedPlanSlot> OSAKA_KYOTO_COUPLE_SLOTS = List.of(
-            new FixedPlanSlot(1, "08:40-09:20", "간사이국제공항 아침", "오사카", "아침 식당", 40, "입국 후 공항에서 간단히 아침을 먹고 난바 이동권과 짐 동선을 정리합니다."),
-            new FixedPlanSlot(1, "09:30-11:10", "간사이국제공항에서 난바 이동", "오사카", "이동", 100, "라피트 또는 공항급행으로 난바까지 이동하고 숙소에 짐을 맡깁니다. 첫날은 이동 완충 시간을 크게 둡니다."),
-            new FixedPlanSlot(1, "12:10-13:10", "구로몬시장", "오사카", "점심 식당", 60, "난바 도착 후 해산물과 시장 먹거리로 점심을 해결합니다. 추천 메뉴: 참치, 해산물 구이, 타코야키."),
-            new FixedPlanSlot(1, "13:50-15:00", "신사이바시스지", "오사카", "관광지", 70, "도톤보리 전 쇼핑 아케이드에서 실내 산책과 기념품 후보를 봅니다. 비가 와도 동선 유지가 쉽습니다."),
-            new FixedPlanSlot(1, "15:10-15:40", "도톤보리 타코야키", "오사카", "간식", 30, "저녁 전 과하지 않게 오사카 대표 간식을 하나만 넣습니다. 추천 메뉴: 타코야키."),
-            new FixedPlanSlot(1, "16:00-16:50", "리쿠로오지상 난바 본점", "오사카", "카페", 50, "숙소 체크인 전후로 쉬어가기 좋은 난바 디저트 후보입니다. 추천 메뉴: 치즈케이크, 커피."),
-            new FixedPlanSlot(1, "18:00-19:20", "도톤보리", "오사카", "저녁 식당", 80, "간판 야경이 켜지는 시간에 저녁 식사와 사진을 함께 잡습니다. 추천 메뉴: 오코노미야키, 쿠시카츠."),
-            new FixedPlanSlot(2, "08:30-09:20", "난바 아침 식당", "오사카", "아침 식당", 50, "오사카성 이동 전 숙소 근처에서 무리 없는 아침을 잡습니다. 추천 메뉴: 일본식 정식, 토스트 세트."),
-            new FixedPlanSlot(2, "09:50-11:30", "오사카성 공원", "오사카", "관광지", 100, "혼잡 전 성곽과 공원 산책을 먼저 봅니다. 박물관 관람은 체력과 날씨에 맞춰 선택하세요."),
-            new FixedPlanSlot(2, "12:10-13:10", "미즈노", "오사카", "점심 식당", 70, "오사카식 점심 후보입니다. 추천 메뉴: 오코노미야키, 야키소바. 웨이팅이 길면 주변 식당으로 바꿉니다."),
-            new FixedPlanSlot(2, "13:50-14:50", "나카노시마·기타하마 산책", "오사카", "관광지", 60, "강변과 근대 건축을 보며 걷는 조용한 오후 코스입니다. 오사카성 뒤 피로를 낮추기 좋습니다."),
-            new FixedPlanSlot(2, "15:05-15:35", "고카니 기타하마 본관", "오사카", "간식", 30, "기타하마 동선에서 짧게 넣는 디저트 간식입니다. 추천 메뉴: 케이크, 구움과자."),
-            new FixedPlanSlot(2, "15:45-16:30", "SOT COFFEE Osaka Kitahama", "오사카", "카페", 45, "기타하마 산책 중 쉬어가는 하루 1곳 카페 후보입니다. 추천 메뉴: 스페셜티 커피, 라테."),
-            new FixedPlanSlot(2, "17:40-18:40", "우메다 스카이빌딩", "오사카", "관광지", 60, "해 질 무렵 공중정원 전망대로 이동합니다. 날씨가 흐리면 헵파이브나 쇼핑몰로 대체하세요."),
-            new FixedPlanSlot(2, "19:10-20:20", "우메다 식당가", "오사카", "저녁 식당", 70, "우메다에서 저녁을 먹고 난바 숙소로 복귀합니다. 추천 메뉴: 라멘, 이자카야 메뉴, 오사카식 정식."),
-            new FixedPlanSlot(3, "08:20-09:00", "난바 아침 식당", "오사카", "아침 식당", 40, "체크아웃 전 숙소 근처에서 빠르게 아침을 먹고 짐을 정리합니다."),
-            new FixedPlanSlot(3, "09:00-10:20", "오사카에서 교토 이동", "교토", "이동", 80, "난바 숙소 체크아웃 후 교토 숙소 또는 역에 짐을 맡깁니다. 60~90분 완충 시간을 둡니다."),
-            new FixedPlanSlot(3, "10:50-12:00", "후시미이나리 타이샤", "교토", "관광지", 70, "오전 비교적 이른 시간에 붉은 도리이 길을 걷습니다. 정상까지 무리하지 말고 체력에 맞춰 돌아옵니다."),
-            new FixedPlanSlot(3, "12:40-13:30", "니시키시장", "교토", "점심 식당", 50, "교토식 반찬과 두부 메뉴 등 가벼운 점심을 고릅니다. 붐비면 짧게 통과하세요."),
-            new FixedPlanSlot(3, "14:20-15:35", "기요미즈데라", "교토", "관광지", 75, "히가시야마 대표 사찰과 전망을 봅니다. 언덕길이 있어 물과 휴식 시간을 챙기세요."),
-            new FixedPlanSlot(3, "15:45-16:15", "니넨자카·산넨자카 말차 간식", "교토", "간식", 30, "기요미즈데라에서 내려오며 과하지 않은 말차 디저트나 기념 간식을 잡습니다."),
-            new FixedPlanSlot(3, "16:25-17:10", "아라비카 교토 히가시야마", "교토", "카페", 45, "히가시야마 동선에서 하루 1곳 카페 휴식으로 걷는 피로를 낮춥니다. 추천 메뉴: 커피, 라테."),
-            new FixedPlanSlot(3, "17:30-18:10", "기온", "교토", "관광지", 40, "해 질 무렵 전통 거리 분위기를 느끼며 짧게 걷습니다. 사유지 촬영과 통행 예절을 지킵니다."),
-            new FixedPlanSlot(3, "18:30-19:40", "폰토초 식당가", "교토", "저녁 식당", 70, "가모가와 근처 저녁 후보입니다. 추천 메뉴: 야키토리, 소바, 교토식 정식."),
-            new FixedPlanSlot(4, "08:30-09:10", "교토 아침 식당", "교토", "아침 식당", 40, "체크아웃 전 가볍게 아침을 먹고 짐 보관 시간을 확보합니다."),
-            new FixedPlanSlot(4, "09:40-10:50", "아라시야마 대나무숲", "교토", "관광지", 70, "오전 산책으로 대나무숲을 먼저 봅니다. 사람이 많으면 도게츠교와 강변 쪽으로 빠르게 이동합니다."),
-            new FixedPlanSlot(4, "11:00-11:40", "도게츠교", "교토", "관광지", 40, "강변과 다리 전망을 보며 사진을 남깁니다. 바람이 강하면 체류 시간을 줄입니다."),
-            new FixedPlanSlot(4, "12:00-13:00", "아라시야마 점심 식당 후보", "교토", "점심 식당", 60, "강변 또는 역 주변에서 점심을 해결합니다. 추천 메뉴: 우동, 소바, 두부 요리."),
-            new FixedPlanSlot(4, "13:20-13:50", "아라시야마 말차 간식", "교토", "간식", 30, "귀국 전 부담 없는 말차 아이스크림이나 지역 간식을 짧게 넣습니다."),
-            new FixedPlanSlot(4, "14:00-14:40", "아라비카 교토 아라시야마", "교토", "카페", 40, "귀국 전 하루 1곳 카페 휴식 후보입니다. 추천 메뉴: 커피, 라테."),
-            new FixedPlanSlot(4, "15:30-16:30", "교토역 빌딩", "교토", "관광지", 60, "기념품, 식사, 전망 공간을 한 번에 정리합니다. 공항 이동 전 마지막 완충 구간입니다."),
-            new FixedPlanSlot(4, "17:00-18:00", "교토역 이른 저녁", "교토", "저녁 식당", 60, "공항 이동 전 역 주변에서 이른 저녁을 해결합니다. 추천 메뉴: 라멘, 오므라이스, 도시락."),
-            new FixedPlanSlot(4, "18:10-19:40", "간사이공항 또는 다음 목적지 이동", "교토", "이동", 90, "항공편 시간에 맞춰 교토역에서 이동합니다. 국제선은 여유 있게 출발하세요."));
+    private static final List<FixedPlanSlot> OSAKA_KYOTO_USJ_GUIDE_SLOTS = List.of(
+            new FixedPlanSlot(1, "09:00-09:45", "코메다커피 난바센니치마에점", "오사카", "아침 식당", 45, "도톤보리 숙소에서 도보권 아침. 이동이 긴 날이 아니므로 커피와 토스트로 천천히 시작합니다. 추천 메뉴: 모닝 세트."),
+            new FixedPlanSlot(1, "10:00-10:35", "호젠지 요코초", "오사카", "산책", 35, "난바 골목 분위기를 짧게 보고 구로몬시장으로 걸어갑니다. 도톤보리에서 도보 5~10분권이라 첫날 적응에 좋습니다."),
+            new FixedPlanSlot(1, "10:50-12:00", "구로몬시장", "오사카", "관광지", 70, "해산물과 과일, 길거리 먹거리를 보며 점심 전 입맛을 돋웁니다. 도톤보리 숙소 기준 도보 이동이 편합니다."),
+            new FixedPlanSlot(1, "12:20-13:30", "미즈노", "오사카", "점심 식당", 70, "도톤보리 대표 오코노미야키 후보입니다. 웨이팅이 길면 쿠시카츠 다루마 도톤보리 권역으로 바꿉니다. 추천 메뉴: 야마이모야키, 야키소바."),
+            new FixedPlanSlot(1, "14:05-15:45", "오사카성 공원", "오사카", "관광지", 100, "난바에서 지하철로 이동해 성곽과 공원을 봅니다. 오후 햇빛이 강하면 천수각보다 공원 산책 중심으로 줄입니다."),
+            new FixedPlanSlot(1, "16:10-16:55", "SOT COFFEE Osaka Kitahama", "오사카", "카페", 45, "오사카성에서 기타하마로 이동해 쉬어갑니다. 추천 메뉴: 스페셜티 커피, 라테."),
+            new FixedPlanSlot(1, "17:30-18:40", "우메다 스카이빌딩", "오사카", "관광지", 70, "해 질 무렵 전망을 보기에 좋은 시간대입니다. 기타하마에서 우메다로 이동 후 야경을 봅니다."),
+            new FixedPlanSlot(1, "19:30-20:40", "쿠시카츠 다루마 도톤보리 권역", "오사카", "저녁 식당", 70, "우메다에서 난바로 돌아와 숙소 근처에서 저녁을 먹습니다. 추천 메뉴: 쿠시카츠, 도테야키."),
+            new FixedPlanSlot(1, "20:45-21:25", "도톤보리", "오사카", "산책", 40, "저녁 뒤 글리코 사인과 강변 야경을 보고 바로 숙소로 복귀합니다."),
+
+            new FixedPlanSlot(2, "07:10-07:45", "마츠야 난바센니치마에점", "오사카", "아침 식당", 35, "USJ 입장 전 빠르게 먹는 실전 아침입니다. 추천 메뉴: 규메시, 조식 정식."),
+            new FixedPlanSlot(2, "07:50-08:40", "난바에서 유니버설시티 이동", "오사카", "이동", 50, "한신 난바선으로 니시쿠조 이동 후 JR 유메사키선 환승을 잡습니다. 개장 대기까지 고려해 일찍 출발합니다."),
+            new FixedPlanSlot(2, "08:50-12:20", "유니버설 스튜디오 재팬", "오사카", "테마파크", 210, "입장 직후 앱에서 정리권을 확인하고 슈퍼 닌텐도 월드나 인기 어트랙션부터 봅니다. 공식 앱과 당일 운영시간 확인이 필수입니다."),
+            new FixedPlanSlot(2, "12:30-13:30", "키노피오 카페", "오사카", "점심 식당", 60, "슈퍼 닌텐도 월드 입장권이 잡혔을 때 가장 만족도 높은 점심 후보입니다. 추천 메뉴: 마리오 버거, 오므라이스 메뉴."),
+            new FixedPlanSlot(2, "13:45-16:40", "위저딩 월드 오브 해리 포터", "오사카", "테마파크", 175, "오후에는 해리 포터 구역, 미니언 파크, 쇼를 묶어 봅니다. 대기 시간이 길면 한 구역을 과감히 줄입니다."),
+            new FixedPlanSlot(2, "16:50-17:25", "비버리힐즈 블랑제리", "오사카", "카페", 35, "파크 안에서 앉아 쉬기 쉬운 카페 휴식입니다. 추천 메뉴: 케이크, 커피."),
+            new FixedPlanSlot(2, "17:40-19:40", "유니버설 스튜디오 재팬", "오사카", "테마파크", 120, "저녁 전 마지막 어트랙션과 기념품 시간을 잡습니다. 폐장 시간이 빠른 날은 이 블록을 앞당깁니다."),
+            new FixedPlanSlot(2, "19:55-20:55", "타코파 유니버설 시티워크 오사카", "오사카", "저녁 식당", 60, "퇴장 후 역 앞 시티워크에서 저녁을 해결합니다. 추천 메뉴: 타코야키 비교 세트."),
+            new FixedPlanSlot(2, "21:00-21:50", "유니버설시티에서 도톤보리 숙소 복귀", "오사카", "이동", 50, "JR 유메사키선과 한신 난바선으로 도톤보리 숙소에 돌아옵니다. 피곤한 날은 택시를 대안으로 둡니다."),
+
+            new FixedPlanSlot(3, "07:20-07:55", "코메다커피 난바센니치마에점", "오사카", "아침 식당", 35, "교토 당일치기 전 숙소 근처에서 가볍게 먹습니다. 추천 메뉴: 모닝 토스트, 커피."),
+            new FixedPlanSlot(3, "08:00-09:20", "도톤보리에서 후시미이나리 이동", "교토", "이동", 80, "난바에서 우메다/오사카 또는 교바시를 거쳐 교토 방면으로 이동합니다. 첫 방문지는 후시미이나리로 잡아 동선을 줄입니다."),
+            new FixedPlanSlot(3, "09:25-10:50", "후시미이나리 타이샤", "교토", "관광지", 85, "붉은 도리이 길을 중간 지점까지만 걷고 돌아옵니다. 정상까지 욕심내면 오후 히가시야마가 무거워집니다."),
+            new FixedPlanSlot(3, "11:35-12:45", "니시키시장", "교토", "점심 식당", 70, "교토식 반찬과 두부, 말차 디저트를 가볍게 먹는 점심입니다. 붐비면 사서 먹기보다 짧게 통과합니다."),
+            new FixedPlanSlot(3, "13:25-14:45", "기요미즈데라", "교토", "관광지", 80, "버스나 택시로 히가시야마에 들어가 대표 사찰과 전망을 봅니다. 언덕길이 있어 물과 휴식 시간을 남깁니다."),
+            new FixedPlanSlot(3, "14:55-15:35", "니넨자카·산넨자카", "교토", "간식", 40, "기요미즈데라에서 내려오며 말차 디저트나 기념 간식을 짧게 넣습니다. 사진은 골목 초입보다 사람이 적은 구간에서 찍습니다."),
+            new FixedPlanSlot(3, "15:45-16:25", "아라비카 교토 히가시야마", "교토", "카페", 40, "히가시야마 동선 중 하루 1곳 카페 휴식입니다. 추천 메뉴: 커피, 라테."),
+            new FixedPlanSlot(3, "16:40-17:35", "기온", "교토", "산책", 55, "야사카신사와 하나미코지 주변을 무리 없이 걷습니다. 사유지 촬영과 통행 예절을 지킵니다."),
+            new FixedPlanSlot(3, "18:00-19:10", "폰토초 로빈", "교토", "저녁 식당", 70, "가모가와 근처에서 교토다운 저녁을 먹습니다. 추천 메뉴: 교토식 반찬, 구이 메뉴, 계절 요리."),
+            new FixedPlanSlot(3, "19:30-21:00", "교토 가와라마치에서 도톤보리 숙소 복귀", "오사카", "이동", 90, "한큐 교토선 또는 게이한·지하철 조합으로 오사카 난바권에 복귀합니다. 숙소 이동 없이 도톤보리에서 마무리합니다."),
+
+            new FixedPlanSlot(4, "08:00-09:25", "도톤보리에서 아라시야마 이동", "교토", "이동", 85, "마지막 날도 짐은 도톤보리 숙소나 코인락커에 두고 교토 서쪽만 집중합니다. 아침은 역 편의식으로 가볍게 처리합니다."),
+            new FixedPlanSlot(4, "09:35-10:35", "아라시야마 대나무숲", "교토", "관광지", 60, "혼잡 전 대나무숲을 먼저 걷습니다. 사진보다 빠른 산책 중심으로 잡으면 피로가 덜합니다."),
+            new FixedPlanSlot(4, "10:45-11:25", "도게츠교", "교토", "산책", 40, "대나무숲에서 강변으로 내려와 다리 전망을 봅니다. 바람이 강하면 체류 시간을 줄입니다."),
+            new FixedPlanSlot(4, "11:45-12:55", "아라시야마 요시무라", "교토", "점심 식당", 70, "도게츠교 근처 소바 점심 후보입니다. 추천 메뉴: 소바 세트. 웨이팅이 길면 역 주변 우동집으로 바꿉니다."),
+            new FixedPlanSlot(4, "13:10-13:45", "아라비카 교토 아라시야마", "교토", "카페", 35, "강변을 보며 짧게 쉬는 카페 블록입니다. 추천 메뉴: 커피, 라테."),
+            new FixedPlanSlot(4, "14:00-15:25", "아라시야마에서 난바 복귀", "오사카", "이동", 85, "교토 서쪽에서 오사카로 바로 돌아와 마지막 쇼핑과 저녁을 도톤보리 근처로 모읍니다."),
+            new FixedPlanSlot(4, "15:45-17:00", "신사이바시스지", "오사카", "관광지", 75, "숙소 근처로 돌아와 쇼핑과 기념품을 정리합니다. 비가 와도 유지하기 쉬운 실내형 아케이드입니다."),
+            new FixedPlanSlot(4, "17:20-18:30", "도톤보리 이마이 본점", "오사카", "저녁 식당", 70, "마지막 식사는 숙소와 가까운 우동집으로 잡아 이동 부담을 낮춥니다. 추천 메뉴: 키츠네우동."),
+            new FixedPlanSlot(4, "18:40-19:20", "도톤보리", "오사카", "산책", 40, "마지막으로 강변 야경과 기념사진을 남기고 도톤보리 숙소로 돌아옵니다."));
     private static final String PLAN_PROVIDER = "openai";
     private static final String ADMIN_PLAN_KEY_USERNAME = "admin1";
     private static final String CODEX_CLI_PATH = "/opt/jupiter-cli/bin/codex";
@@ -135,11 +142,11 @@ public class TravelPlanService {
         
         String regionLabel = regions.isEmpty() ? "전국" : String.join("·", regions);
         String stylesLabel = styles.isEmpty() ? "추천" : String.join(",", styles);
-        boolean osakaKyotoCouplePreset = isOsakaKyotoCouplePreset(regionLabel, days, travelerType, request);
+        boolean osakaKyotoUsjGuidePlan = isOsakaKyotoUsjGuidePlan(regionLabel, days, request);
 
         TravelPlan plan = new TravelPlan();
         plan.setUsername(username);
-        plan.setTitle(osakaKyotoCouplePreset ? "오사카·교토 부부 3박4일 여행 코스" : regionLabel + " " + days + "일 LocalTrip AI 일정");
+        plan.setTitle(osakaKyotoUsjGuidePlan ? "오사카·교토·USJ 3박4일 여행 코스" : regionLabel + " " + days + "일 LocalTrip AI 일정");
         plan.setRegion(regionLabel);
         plan.setStyles(stylesLabel);
         plan.setDays(days);
@@ -153,15 +160,15 @@ public class TravelPlanService {
         plan.setDepartureTime(limitText(defaultText(request.departureTime(), request.dayStartTime()), 20));
         plan.setArrivalTime(limitText(defaultText(request.arrivalTime(), request.dayEndTime()), 20));
         plan.setEstimatedBudget(estimateBudget(days, travelerCount, request.budgetLevel(), request.transportType()));
-        plan.setSummary(osakaKyotoCouplePreset
-                ? "난바 먹거리, 오사카성·우메다 야경, 교토 히가시야마와 아라시야마를 부부 여행 속도에 맞춰 묶은 3박4일 일정입니다."
+        plan.setSummary(osakaKyotoUsjGuidePlan
+                ? "도톤보리 숙소를 고정하고 오사카 도심, USJ 하루, 교토 당일치기, 아라시야마 반나절을 실제 이동 흐름에 맞춰 묶은 3박4일 일정입니다."
                 : regionLabel + "의 " + stylesLabel + " 취향을 반영한 " + travelerType + "용 "
                         + pace + " 속도 추천 일정입니다.");
         TravelPlan savedPlan = travelPlanRepository.save(plan);
         List<Destination> destinations = destinationService.findCandidatesForPlan(request.destinationIds(), regions, styles);
 
-        List<TravelPlanItem> items = osakaKyotoCouplePreset
-                ? osakaKyotoCoupleItems(savedPlan, destinations)
+        List<TravelPlanItem> items = osakaKyotoUsjGuidePlan
+                ? osakaKyotoUsjGuideItems(savedPlan, destinations)
                 : applyVerifiedFoodPlaces(savedPlan, generateItineraryWithLocalGpt(savedPlan, request, username, destinations));
         travelPlanItemRepository.saveAll(items);
 
@@ -303,11 +310,8 @@ public class TravelPlanService {
     }
 
     private String buildPrompt(TravelPlan plan, TravelPlanGenerateRequest request, List<Destination> candidates) {
-        String candidateNames = candidates.stream()
-                .limit(16)
-                .map(destination -> destination.getName() + "(" + destination.getRegion() + " " + destination.getDistrict()
-                        + "/" + destination.getPrimaryStyle() + "/" + destination.getRecommendedMinutes() + "분)")
-                .collect(java.util.stream.Collectors.joining(", "));
+        String destinationContext = destinationCandidateContext(candidates);
+        String foodPlaceContext = foodPlaceCandidateContext(plan, request);
         String ragContext = localTripRagContext(plan, request);
         String dailyRouteContext = dailyRouteContext(request);
         return String.format(
@@ -326,11 +330,14 @@ public class TravelPlanService {
             "- 피하고 싶은 것: %s\n" +
             "- 일자별 출발/도착 조건:\n%s\n" +
             "- 메모: %s\n" +
-            "- 우선 사용할 장소 후보: %s\n\n" +
+            "- 우선 사용할 관광지/장소 후보:\n%s\n\n" +
+            "- 우선 사용할 식당/카페 후보:\n%s\n\n" +
             "RAG 검색 문맥:\n%s\n\n" +
             "각 날짜는 현실적인 6~7개 핵심 블록으로 구성해. 장거리 이동이 있는 날만 이동 블록을 별도로 1개 추가할 수 있어.\n" +
             "매일 아침 식당, 점심 식당, 저녁 식당을 각각 1개씩 넣고, 카페는 하루 1곳만 넣어. 간식/시장 먹거리는 카페와 별개로 짧은 1블록만 넣어.\n" +
             "식사와 카페/간식을 제외한 나머지는 관광지, 산책, 전망, 쇼핑 같은 실제 방문지로 채워. 같은 날 주요 관광지는 2~3곳을 넘기지 마.\n" +
+            "관광지와 산책 장소는 관광지/장소 후보를 우선 사용하고, 식당과 카페는 식당/카페 후보를 우선 사용해.\n" +
+            "후보에 주소나 출처가 있으면 note에 이동 기준으로 반영하고, 후보와 맞지 않는 장소는 쓰지 마.\n" +
             "장소 사이에는 대중교통/도보 이동과 대기 시간을 합쳐 최소 20~40분 완충을 둬. 서로 먼 구역을 같은 날 여러 번 왕복하지 마.\n" +
             "각 날짜의 첫 블록은 해당 날짜 출발지와 출발 시간 이후로 시작하고, 마지막 블록은 해당 날짜 도착지와 도착 시간 전에 끝나게 해.\n" +
             "RAG 문맥이 지역, 동행, 취향과 맞으면 우선 반영하고, 맞지 않는 문맥은 억지로 쓰지 마.\n" +
@@ -357,9 +364,60 @@ public class TravelPlanService {
             defaultText(request.avoid(), "없음"),
             dailyRouteContext,
             defaultText(request.memo(), "없음"),
-            candidateNames.isBlank() ? "지역 대표 명소" : candidateNames,
+            destinationContext.isBlank() ? "지역 대표 명소" : destinationContext,
+            foodPlaceContext.isBlank() ? "실제 지역 식당과 카페 후보 없음" : foodPlaceContext,
             ragContext.isBlank() ? "(관련 RAG 문맥 없음)" : ragContext
         );
+    }
+
+    private String destinationCandidateContext(List<Destination> candidates) {
+        return candidates.stream()
+                .filter(destination -> !isDestinationFoodOrCafe(destination))
+                .limit(40)
+                .map(destination -> String.format(
+                        "- %s | %s %s | %s/%s | 주소=%s | 체류=%d분 | 태그=%s | 출처=%s:%s",
+                        destination.getName(),
+                        destination.getRegion(),
+                        destination.getDistrict(),
+                        defaultText(destination.getCategory(), "관광지"),
+                        defaultText(destination.getPrimaryStyle(), "관광지"),
+                        defaultText(destination.getAddress(), "주소 미정"),
+                        destination.getRecommendedMinutes() == null ? 90 : destination.getRecommendedMinutes(),
+                        defaultText(destination.getStyleTags(), ""),
+                        defaultText(destination.getSource(), "db"),
+                        defaultText(destination.getSourceRef(), "")))
+                .collect(java.util.stream.Collectors.joining("\n"));
+    }
+
+    private String foodPlaceCandidateContext(TravelPlan plan, TravelPlanGenerateRequest request) {
+        String anchor = String.join(" ",
+                defaultText(request.startPlace(), ""),
+                defaultText(request.endPlace(), ""),
+                defaultText(request.mustVisit(), ""),
+                defaultText(request.memo(), ""));
+        List<RealLocalPlaceResponse> restaurants = realPlaceService.suggestFoodPlaces(plan.getRegion(), "식당", anchor, 12);
+        List<RealLocalPlaceResponse> cafes = realPlaceService.suggestFoodPlaces(plan.getRegion(), "카페", anchor, 8);
+        List<String> rows = new ArrayList<>();
+        restaurants.stream()
+                .limit(12)
+                .map(place -> foodPlaceCandidateLine("식당", place))
+                .forEach(rows::add);
+        cafes.stream()
+                .limit(8)
+                .map(place -> foodPlaceCandidateLine("카페", place))
+                .forEach(rows::add);
+        return String.join("\n", rows);
+    }
+
+    private String foodPlaceCandidateLine(String slotType, RealLocalPlaceResponse place) {
+        return String.format(
+                "- %s | %s | %s | 주소=%s | 메뉴=%s | 출처=%s",
+                slotType,
+                place.name(),
+                defaultText(place.region(), "지역 미정"),
+                defaultText(place.roadAddress(), defaultText(place.address(), "주소 미정")),
+                defaultText(place.recommendedMenu(), "대표 메뉴 확인 필요"),
+                defaultText(place.source(), "db"));
     }
 
     private String dailyRouteContext(TravelPlanGenerateRequest request) {
@@ -391,13 +449,22 @@ public class TravelPlanService {
                 defaultText(request.memo(), ""));
         try {
             return ragService.retrieve(new RagQueryRequest(question, 4)).candidates().stream()
-                    .filter(chunk -> chunk.documentId().contains("localtrip"))
+                    .filter(chunk -> isLocalTripRagDocument(chunk.documentId()))
                     .limit(4)
                     .map(chunk -> "- " + limitText(chunk.text(), 360))
                     .collect(java.util.stream.Collectors.joining("\n"));
         } catch (Exception ignored) {
             return "";
         }
+    }
+
+    private boolean isLocalTripRagDocument(String documentId) {
+        String normalized = defaultText(documentId, "").toLowerCase();
+        return normalized.contains("localtrip")
+                || normalized.contains("travel")
+                || normalized.contains("trip")
+                || normalized.contains("여행")
+                || normalized.contains("관광");
     }
 
     private String estimateBudget(int days, int travelerCount, String budgetLevel, String transportType) {
@@ -499,7 +566,7 @@ public class TravelPlanService {
         return items;
     }
 
-    private boolean isOsakaKyotoCouplePreset(String regionLabel, int days, String travelerType, TravelPlanGenerateRequest request) {
+    private boolean isOsakaKyotoUsjGuidePlan(String regionLabel, int days, TravelPlanGenerateRequest request) {
         String joinedRegions = request.regions() == null ? "" : String.join(" ", request.regions());
         String text = String.join(" ",
                 defaultText(regionLabel, ""),
@@ -507,18 +574,18 @@ public class TravelPlanService {
                 defaultText(request.region(), ""),
                 defaultText(request.memo(), ""),
                 defaultText(request.mustVisit(), ""),
-                defaultText(travelerType, "")).toLowerCase();
+                defaultText(request.startPlace(), ""),
+                defaultText(request.endPlace(), "")).toLowerCase();
         boolean hasOsaka = text.contains("오사카") || text.contains("osaka");
         boolean hasKyoto = text.contains("교토") || text.contains("kyoto");
-        boolean coupleTrip = text.contains("커플") || text.contains("부부") || text.contains("couple")
-                || text.contains("osaka-kyoto-couple-3n4d");
-        return days == 4 && hasOsaka && hasKyoto && coupleTrip;
+        boolean hasUsj = text.contains("유니버설") || text.contains("usj") || text.contains("universal studios japan");
+        return days == 4 && hasOsaka && hasKyoto && hasUsj;
     }
 
-    private List<TravelPlanItem> osakaKyotoCoupleItems(TravelPlan plan, List<Destination> candidates) {
+    private List<TravelPlanItem> osakaKyotoUsjGuideItems(TravelPlan plan, List<Destination> candidates) {
         List<TravelPlanItem> items = new ArrayList<>();
         int sequence = 1;
-        for (FixedPlanSlot slot : OSAKA_KYOTO_COUPLE_SLOTS) {
+        for (FixedPlanSlot slot : OSAKA_KYOTO_USJ_GUIDE_SLOTS) {
             Destination destination = matchDestination(slot.destinationName(), candidates);
             TravelPlanItem item = new TravelPlanItem();
             item.setTravelPlanId(plan.getId());
@@ -526,7 +593,7 @@ public class TravelPlanService {
             item.setSequenceNumber(sequence++);
             item.setTimeSlot(slot.timeSlot());
             item.setDestinationId(destination == null ? null : destination.getId());
-            item.setDestinationName(destination == null ? slot.destinationName() : destination.getName());
+            item.setDestinationName(slot.destinationName());
             item.setRegion(destination == null ? slot.region() : destination.getRegion());
             item.setNote(limitText(slot.note(), 240));
             item.setPrimaryStyle(slot.primaryStyle());

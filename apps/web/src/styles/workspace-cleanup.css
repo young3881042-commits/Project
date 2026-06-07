@@ -1,0 +1,295 @@
+/* Shared cleanup pass for app, notes, and scheduler screens. */
+.appDialogBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 320;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 23, 42, 0.28);
+  padding: 18px;
+}
+
+.appDialog {
+  width: min(100%, 360px);
+  display: grid;
+  gap: 14px;
+  border: 1px solid #dbe7ef;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 16px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.2);
+}
+
+.appDialog header {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.appDialog header strong {
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.appDialog header button {
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  padding: 0;
+}
+
+.appDialog p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  font-weight: 750;
+}
+
+.appDialogField {
+  display: grid;
+  gap: 7px;
+}
+
+.appDialogField span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.appDialogField input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #0f172a;
+  padding: 0 11px;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.appDialogActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.appDialogActions button {
+  min-height: 42px;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  font-weight: 950;
+}
+
+.appDialogSecondary {
+  border: 1px solid #dbe7ef;
+  background: #ffffff;
+  color: #334155;
+}
+
+.appDialogPrimary {
+  border: 1px solid #0f8f95;
+  background: #0f8f95;
+  color: #ffffff;
+}
+
+.appDialogDanger {
+  border: 1px solid #ef4444;
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.referenceHome .appHomeRobotHero {
+  min-height: 0 !important;
+  grid-template-columns: minmax(0, 1fr) 116px !important;
+  padding: 14px 16px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05) !important;
+}
+
+.referenceHome .appHomeRobotHeroCopy {
+  gap: 8px !important;
+}
+
+.referenceHome .appHomeRobotHeroCopy > span {
+  width: fit-content !important;
+  min-height: 24px !important;
+  padding: 0 10px !important;
+  border-radius: 8px !important;
+}
+
+.referenceHome .appHomeRobotHeroCopy strong {
+  font-size: 1.22rem !important;
+  line-height: 1.18 !important;
+}
+
+.referenceHome .appHomeRobotHeroCopy p {
+  max-width: 18ch !important;
+  font-size: 0.82rem !important;
+  line-height: 1.35 !important;
+}
+
+.referenceHome .appHomeRobotImage {
+  min-height: 100px !important;
+  border-radius: 8px !important;
+}
+
+.referenceHome .appHomeCard {
+  border-radius: 8px !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04) !important;
+}
+
+.referenceHome .appHomeScheduleEmpty {
+  min-height: 112px !important;
+  border-style: solid !important;
+  background: #ffffff !important;
+}
+
+.notesMobileProfileRow {
+  margin: 10px 0 8px !important;
+}
+
+.notesMobileTitleBlock span {
+  display: none !important;
+}
+
+.notesMobileContentSection,
+.notesDetailPanel,
+.notesListPanel,
+.notesFolderPanel {
+  border-radius: 8px !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04) !important;
+}
+
+.notesMobileEmptyState.compact {
+  border: 1px dashed #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+  padding: 18px !important;
+}
+
+.notesMobileEmptyState.compact strong {
+  color: #0f172a !important;
+}
+
+.notesMobileEmptyState.compact span {
+  color: #64748b !important;
+}
+
+.notesMobileExplorerMenu button {
+  border-radius: 8px !important;
+}
+
+.schedulerShell > .schedulerPage {
+  padding-top: 10px !important;
+}
+
+.schedulerHero {
+  gap: 10px !important;
+  padding: 14px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04) !important;
+}
+
+.schedulerPageIcon {
+  display: none !important;
+}
+
+.schedulerHero h1 {
+  font-size: 1.8rem !important;
+  line-height: 1.16 !important;
+}
+
+.schedulerHero p {
+  display: none !important;
+}
+
+.schedulerStats {
+  display: none !important;
+}
+
+.schedulerTodayPanel.top {
+  display: none !important;
+}
+
+.schedulerAddDock {
+  margin: 10px 0 !important;
+}
+
+.schedulerQuickAdd,
+.schedulerDatabase,
+.schedulerCalendarPanel {
+  border-radius: 8px !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04) !important;
+}
+
+.schedulerCalendarHeader p,
+.schedulerLinkedHeader p,
+.schedulerBoardHeader p {
+  color: #64748b !important;
+  font-size: 0.78rem !important;
+  line-height: 1.35 !important;
+}
+
+.schedulerEmpty,
+.schedulerEmptyInline {
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #64748b !important;
+}
+
+.ltTimePairGrid {
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+.ltFixedMealRule {
+  grid-column: 1 / -1;
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  border: 1px solid #c7e7e9;
+  border-radius: 8px;
+  background: #f2fbfa;
+  color: #0f172a;
+  padding: 12px;
+}
+
+.ltFixedMealRule span {
+  color: #0f766e;
+  font-size: 0.74rem;
+  font-weight: 950;
+}
+
+.ltFixedMealRule strong {
+  font-size: 0.95rem;
+  font-weight: 950;
+}
+
+.ltFixedMealRule small {
+  color: #64748b;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  font-weight: 750;
+}
+
+@media (max-width: 380px) {
+  .referenceHome .appHomeRobotHero {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .referenceHome .appHomeRobotImage {
+    display: none !important;
+  }
+}

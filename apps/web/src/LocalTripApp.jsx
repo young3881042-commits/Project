@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import MobileWorkspaceTabs from './components/MobileWorkspaceTabs.jsx';
 import TravelHome, {
   TravelDdayCard,
   TravelQuickActions,
   selectDdayPlan
 } from './components/travel/TravelHome.jsx';
-import { OSAKA_KYOTO_COUPLE_PRESET } from './components/travel/OsakaKyotoTripData.js';
 import { loginUrlForRedirect, redirectToLogin } from './authRoutes.js';
 
 const AUTH_KEY = 'codex-workspace-auth';
@@ -15,6 +14,10 @@ const AI_NOTE_BOARDS_KEY = 'codex-ai-note-boards';
 const LOCALTRIP_DAY_CHECK_KEY = 'localtrip-day-route-checks';
 const LOCALTRIP_DAY_ROUTE_KEY = 'localtrip-day-route-inputs';
 const LOCALTRIP_PLANNER_DRAFT_KEY = 'localtrip-planner-draft';
+const DEFAULT_TRANSPORT_TYPE = '대중교통';
+const DEFAULT_TRAVEL_PACE = '보통';
+const DEFAULT_BUDGET_LEVEL = '보통';
+const DEFAULT_REST_PREFERENCE = '중간 휴식';
 
 function commonsImage(fileName, width = 1200) {
   return `https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(fileName)}?width=${width}`;
@@ -140,9 +143,6 @@ const FALLBACK_DESTINATIONS = [
     summary: '로스터리, 편집숍, 갤러리를 짧은 도보 산책으로 즐기기 좋은 서울 동부 상권입니다.',
     tags: ['카페', '커플', '사진'],
     category: '카페',
-    rating: 4.8,
-    reviewCount: 91,
-    liveVisitors: 91,
     imageUrl: DESTINATION_IMAGES['SEOUL-003']
   },
   {
@@ -152,9 +152,6 @@ const FALLBACK_DESTINATIONS = [
     summary: '계단식 마을 풍경과 전망 포인트를 함께 보는 부산 대표 촬영 코스입니다.',
     tags: ['사진', '가족', '커플'],
     category: '마을',
-    rating: 4.7,
-    reviewCount: 89,
-    liveVisitors: 89,
     imageUrl: DESTINATION_IMAGES['BUSAN-001']
   },
   {
@@ -164,9 +161,6 @@ const FALLBACK_DESTINATIONS = [
     summary: '분화구 능선과 동부 해안 전망을 함께 보는 제주 핵심 자연 명소입니다.',
     tags: ['자연', '사진', '가족'],
     category: '오름',
-    rating: 4.9,
-    reviewCount: 97,
-    liveVisitors: 97,
     imageUrl: DESTINATION_IMAGES['JEJU-001']
   }
 ];
@@ -229,22 +223,6 @@ const GENERIC_DAY_SLOTS = [
   { startTime: '18:00', endTime: '19:10', category: '저녁 식당', title: '저녁 식당 추천', recommendedMenu: '저녁 추천 메뉴', travelTimeFromPrevious: '이동 20분' }
 ];
 
-const REQUEST_STEPS = [
-  {
-    title: '취향 입력',
-    description: '지역, 날짜, 인원, 원하는 여행 스타일을 간단히 고릅니다.'
-  },
-  {
-    title: 'AI 코스 확인',
-    description: '선택한 장소를 하루 동선과 큰 시간 블록으로 정리합니다.'
-  },
-  {
-    title: '여행 코스 저장',
-    description: '마음에 드는 코스를 저장하고 다시 확인합니다.'
-  }
-];
-
-const REGION_LINKS = ['서울', '부산', '제주', '경주', '도쿄', '오사카', '교토', '후쿠오카', '강릉', '전주', '여수', '속초', '인천', '대구', '광주', '대전'];
 const COUNTRY_OPTIONS = [
   { key: 'korea', label: '한국', hint: '국내 여행' },
   { key: 'japan', label: '일본', hint: '일본 여행' }
@@ -267,31 +245,10 @@ function countryForPlan(plan) {
   return JAPAN_REGION_KEYWORDS.some((keyword) => text.includes(keyword.toLowerCase())) ? 'japan' : 'korea';
 }
 
-const USER_ROLES = [
-  {
-    title: '취향 추천',
-    label: '추천탐색',
-    description: '지역과 관심사를 고르면 잘 맞는 관광지를 먼저 보여줍니다.',
-    to: '/destinations'
-  },
-  {
-    title: '코스 만들기',
-    label: '코스생성',
-    description: '선택한 관광지를 바탕으로 무리 없는 여행 코스를 만듭니다.',
-    to: '/planner'
-  },
-  {
-    title: '운영자',
-    label: '운영관리',
-    description: '데이터 동기화와 운영 화면으로 서비스 상태를 점검합니다.',
-    to: '/partners'
-  }
-];
-
 const PARTNER_TASKS = [
   { title: '사진 품질 점검', detail: '대표 이미지 없는 장소 2곳 확인', tone: 'warning' },
   { title: '예약 문의 응답', detail: '오늘 도착한 문의 4건', tone: 'primary' },
-  { title: '추천 태그 정리', detail: '계절 테마에 맞는 태그 업데이트', tone: 'neutral' }
+  { title: '태그 정리', detail: '계절 테마 태그 업데이트', tone: 'neutral' }
 ];
 
 function OptionGroup({ label, value, options, onChange }) {
@@ -331,10 +288,30 @@ async function localTripRequest(path, { method = 'GET', body } = {}) {
       localStorage.removeItem(AUTH_KEY);
       throw new Error('세션이 만료되었습니다. 다시 로그인해 주세요.');
     }
-    throw new Error((await response.text()) || `HTTP ${response.status}`);
+    throw new Error(localTripErrorMessage(response.status, await response.text()));
   }
   const text = await response.text();
   return text ? JSON.parse(text) : null;
+}
+
+function localTripErrorMessage(status, text = '') {
+  const fallback = `요청을 처리하지 못했습니다. (HTTP ${status})`;
+  const trimmed = `${text || ''}`.trim();
+  if (!trimmed) return fallback;
+  if (/^\s*</.test(trimmed) || /<html[\s>]/i.test(trimmed)) {
+    if ([502, 503, 504].includes(Number(status))) {
+      return '서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.';
+    }
+    return fallback;
+  }
+  try {
+    const payload = JSON.parse(trimmed);
+    const message = pickString(payload.message, payload.error, payload.detail);
+    if (message) return message;
+  } catch {
+    // Plain-text API errors are handled below.
+  }
+  return trimmed.length > 160 ? `${trimmed.slice(0, 160)}...` : trimmed;
 }
 
 async function ensureLocalTripSession() {
@@ -641,10 +618,6 @@ function normalizeDestination(raw, index = 0) {
   const row = raw || {};
   const tags = normalizeTags(row.styleTags, row.style_tags, row.primaryStyle, row.primary_style, row.tags, row.tagsJson, row.tags_json, row.keywords);
   const id = pickString(row.id, row.destinationId, row.destination_id, row.placeId, row.place_id, row.code) || `destination-${index}`;
-  const popularityScore = pickNumber(row.popularityScore, row.popularity_score, row.reviewCount, row.review_count, row.reviews);
-  const rawRating = pickNumber(row.rating, row.score, row.reviewScore, row.review_score);
-  const rating = rawRating || (popularityScore ? Math.min(5, Math.max(3.8, popularityScore / 20)) : 0);
-  const reviewCount = pickNumber(row.reviewCount, row.review_count, row.reviews, row.visitorCount, row.visitors, row.popularityScore, row.popularity_score, row.liveVisitors);
   const sourceRef = pickString(row.sourceRef, row.source_ref, row.providerRef, row.provider_ref, row.externalId, row.external_id);
   return {
     id,
@@ -654,9 +627,6 @@ function normalizeDestination(raw, index = 0) {
     category: pickString(row.category, row.primaryStyle, row.primary_style, row.theme, row.destinationType, row.type) || 'Local',
     address: pickString(row.address, row.roadAddress, row.road_address),
     tags: tags.length ? tags : ['local', 'recommended'],
-    rating,
-    reviewCount,
-    liveVisitors: reviewCount,
     occupancyRate: pickNumber(row.occupancyRate, row.congestionRate, row.busyRate),
     imageUrl: pickString(row.imageUrl, row.image_url, row.photoUrl, row.thumbnailUrl),
     source: pickString(row.source, row.provider),
@@ -666,7 +636,32 @@ function normalizeDestination(raw, index = 0) {
 
 function normalizeDestinations(payload) {
   const rows = readArray(payload, ['destinations', 'items', 'content', 'results', 'places']);
-  return rows.map(normalizeDestination);
+  const sourceRank = {
+    tourapi: 4,
+    'tour-api': 4,
+    admin1: 3,
+    'admin1-batch': 3,
+    osm: 2,
+    wikimedia: 2,
+    mock: 1
+  };
+  const unique = new Map();
+  rows.map(normalizeDestination).forEach((destination) => {
+    const key = [
+      destination.name,
+      destination.region,
+      destination.address || destination.category
+    ].join('|').replace(/\s+/g, '').toLowerCase();
+    const current = unique.get(key);
+    if (!current) {
+      unique.set(key, destination);
+      return;
+    }
+    const currentRank = sourceRank[`${current.source || ''}`.toLowerCase()] || 0;
+    const nextRank = sourceRank[`${destination.source || ''}`.toLowerCase()] || 0;
+    unique.set(key, nextRank >= currentRank ? { ...current, ...destination, tags: Array.from(new Set([...current.tags, ...destination.tags])).slice(0, 6) } : current);
+  });
+  return Array.from(unique.values());
 }
 
 function destinationAddressSuggestions(destinations, query) {
@@ -847,48 +842,6 @@ function PlannerGenerateStatus({ generating, error }) {
         <small>입력한 장소와 날짜는 유지됩니다. 내용을 줄이거나 잠시 후 다시 생성해 보세요.</small>
       </div>
     </div>
-  );
-}
-
-function PlannerPresetPanel({ preset, onApply }) {
-  return (
-    <section className="ltPlannerPresetPanel" aria-label={`${preset.title} 프리셋`}>
-      <div className="ltPlannerPresetTop">
-        <div>
-          <span>실전 프리셋</span>
-          <h2>{preset.title}</h2>
-          <p>{preset.subtitle}</p>
-        </div>
-        <button type="button" className="ltPrimaryButton" onClick={() => onApply(preset)}>
-          자동 채우기
-        </button>
-      </div>
-      <div className="ltPlannerPresetFacts">
-        {preset.highlights.map((item) => (
-          <div key={item.label}>
-            <span>{item.label}</span>
-            <strong>{item.value}</strong>
-          </div>
-        ))}
-      </div>
-      <div className="ltPlannerPresetDays">
-        {preset.dayRoutes.map((route) => (
-          <article key={route.day}>
-            <span>{route.day}일차</span>
-            <strong>{route.theme}</strong>
-            <small>{route.focus.join(' · ')}</small>
-          </article>
-        ))}
-      </div>
-      <div className="ltPlannerPresetSources">
-        <span>공식 자료 기반</span>
-        {preset.sourceLinks.slice(0, 3).map((source) => (
-          <a key={source.url} href={source.url} target="_blank" rel="noreferrer">
-            {source.label}
-          </a>
-        ))}
-      </div>
-    </section>
   );
 }
 
@@ -1498,10 +1451,6 @@ function savePlanToPersonalWorkspace(plan) {
   }
 }
 
-function formatNumber(value) {
-  return Number(value || 0).toLocaleString('en-US');
-}
-
 function formatDate(value) {
   if (!value) return '날짜 미정';
   const date = new Date(value);
@@ -1682,97 +1631,12 @@ function destinationMatchesDraft(destination, draft) {
     ));
 }
 
-function destinationMatchesPreset(destination, preset) {
-  const sourceRef = pickString(destination?.sourceRef);
-  if (sourceRef && preset.preferredSourceRefs?.includes(sourceRef)) {
-    return true;
-  }
-  const haystack = [
-    destination?.name,
-    destination?.region,
-    destination?.summary,
-    destination?.category,
-    destination?.address
-  ].filter(Boolean).join(' ');
-  return preset.destinationKeywords?.some((keyword) => haystack.includes(keyword));
-}
-
-function presetDayRoutes(preset) {
-  return (preset.dayRoutes || []).map((route) => ({
-    day: route.day,
-    startPlace: route.startPlace || '',
-    startAddress: route.startAddress || '',
-    endPlace: route.endPlace || '',
-    endAddress: route.endAddress || ''
-  }));
-}
-
 function cleanScheduleTitle(title) {
   return `${title || ''}`.replace(/^\s*\d{1,2}\s*[~:-]\s*\d{1,2}\s*·\s*/, '').trim() || title;
 }
 
 function visibleScheduleBullets(bullets) {
   return (bullets || []).filter((bullet) => !/^체류\s*:\s*\d+\s*분/i.test(`${bullet}`.trim()));
-}
-
-function buildRegionStats(destinations) {
-  const grouped = new Map();
-  destinations.forEach((destination) => {
-    const region = destination.region || 'Local area';
-    const current = grouped.get(region) || { ratingSum: 0, ratingCount: 0, reviewCount: 0, popularity: 0 };
-    const rating = Number(destination.rating || 0);
-    if (rating > 0) {
-      current.ratingSum += rating;
-      current.ratingCount += 1;
-    }
-    current.reviewCount += Number(destination.reviewCount || destination.liveVisitors || 0);
-    current.popularity += Number(destination.liveVisitors || destination.reviewCount || 0);
-    grouped.set(region, current);
-  });
-
-  return Array.from(grouped.entries()).reduce((acc, [region, value]) => {
-    acc[region] = {
-      rating: value.ratingCount ? value.ratingSum / value.ratingCount : 0,
-      reviewCount: value.reviewCount,
-      popularity: value.popularity
-    };
-    return acc;
-  }, {});
-}
-
-function statsForPlan(plan, regionStats) {
-  const tokens = [plan.destinationRegion, plan.destinationName]
-    .join(' ')
-    .split(/[·,/]/)
-    .map((value) => value.trim())
-    .filter(Boolean);
-  const matched = tokens.map((token) => regionStats[token]).filter(Boolean);
-  if (!matched.length) {
-    return { rating: 0, reviewCount: 0, popularity: 0 };
-  }
-  return {
-    rating: matched.reduce((sum, item) => sum + item.rating, 0) / matched.length,
-    reviewCount: matched.reduce((sum, item) => sum + item.reviewCount, 0),
-    popularity: matched.reduce((sum, item) => sum + item.popularity, 0)
-  };
-}
-
-function sortPlans(plans, regionStats, sortMode) {
-  return plans
-    .map((plan) => ({ plan, stats: statsForPlan(plan, regionStats) }))
-    .sort((left, right) => {
-      if (sortMode === 'rating') {
-        return right.stats.rating - left.stats.rating || right.stats.reviewCount - left.stats.reviewCount;
-      }
-      if (sortMode === 'reviews') {
-        return right.stats.reviewCount - left.stats.reviewCount || right.stats.rating - left.stats.rating;
-      }
-      if (sortMode === 'latest') {
-        return new Date(right.plan.createdAt || 0) - new Date(left.plan.createdAt || 0);
-      }
-      return (right.stats.rating * 1000 + right.stats.reviewCount)
-        - (left.stats.rating * 1000 + left.stats.reviewCount);
-    });
 }
 
 function routeClick(event, to, navigate) {
@@ -2103,15 +1967,6 @@ function DestinationCard({ destination, compact = false, navigate }) {
         <div className="ltCardTopline">
           <span>{destination.region}</span>
           <em>{destination.category}</em>
-          {destination.rating ? (
-            <strong className="ltRatingBadge">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#e11d48" stroke="#e11d48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-              </svg>
-              {destination.rating.toFixed(1)}
-              {destination.reviewCount ? <small>({formatNumber(destination.reviewCount)})</small> : null}
-            </strong>
-          ) : null}
         </div>
         <h3>{destination.name}</h3>
         <p>{destination.summary}</p>
@@ -2146,7 +2001,7 @@ function DestinationCard({ destination, compact = false, navigate }) {
   );
 }
 
-function PlanCard({ plan, navigate, stats }) {
+function PlanCard({ plan, navigate }) {
   const previewItems = plan.itinerary?.[0]?.items?.slice(0, 4) || [];
   const content = (
     <>
@@ -2160,8 +2015,6 @@ function PlanCard({ plan, navigate, stats }) {
         <span>{formatDaysLabel(plan.days)}</span>
         <span>{formatDate(plan.startDate)}</span>
         <span>{plan.pace}</span>
-        {stats?.rating ? <span>★ {stats.rating.toFixed(1)}</span> : null}
-        {stats?.reviewCount ? <span>후기 {formatNumber(stats.reviewCount)}</span> : null}
       </div>
       {previewItems.length ? (
         <div className="ltPlanTimelinePreview" aria-label="일정 미리보기">
@@ -2206,87 +2059,13 @@ function InlineNotice({ error, fallback }) {
   return (
     <div className="ltInlineNotice">
       <strong>{fallback ? '잠시만요' : '요청 실패'}</strong>
-      <span>{error || '추천 장소를 불러오고 있어요. 잠시 후 다시 확인해 주세요.'}</span>
+      <span>{error || '장소 데이터를 불러오고 있어요. 잠시 후 다시 확인해 주세요.'}</span>
     </div>
   );
 }
 
-function RoleBand({ navigate }) {
-  return (
-    <section className="ltRoleBand" aria-label="사용자 역할">
-      {USER_ROLES.map((role) => (
-        <button key={role.title} type="button" onClick={() => navigate(role.to)}>
-          <span>{role.label}</span>
-          <strong>{role.title}</strong>
-          <p>{role.description}</p>
-        </button>
-      ))}
-    </section>
-  );
-}
-
-function RequestFlowSection({ navigate }) {
-  return (
-      <section className="ltRequestFlow" aria-label="추천 진행 방식">
-      <div className="ltRequestFlowCopy">
-        <span className="ltSectionEyebrow">이용 흐름</span>
-        <h2>장소를 고르면 하루 흐름을 그려드릴게요</h2>
-        <p>지역, 취향, 이동수단, 여행 속도를 함께 보고 움직이기 쉬운 코스를 만듭니다.</p>
-        <button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>
-          코스 만들기
-        </button>
-      </div>
-      <div className="ltRequestSteps">
-        {REQUEST_STEPS.map((step, index) => (
-          <article key={step.title} className="ltRequestStep">
-            <span>{index + 1}</span>
-            <strong>{step.title}</strong>
-            <p>{step.description}</p>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function RegionLinks({ navigate }) {
-  return (
-    <section className="ltRegionLinks" aria-label="지역별 관광지 추천">
-      <div>
-        <span className="ltSectionEyebrow">전국 관광지</span>
-        <h2>지역별 추천을 한 번에</h2>
-      </div>
-      <div className="ltRegionGrid">
-        {REGION_LINKS.map((region) => (
-          <button key={region} type="button" onClick={() => navigate(`/destinations?query=${encodeURIComponent(region)}`)}>
-            {region}
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function PartnerCta({ navigate }) {
-  return (
-    <section className="ltPartnerCta" aria-label="운영 데이터 안내">
-      <div>
-        <span className="ltSectionEyebrow">운영자 도구</span>
-        <h2>추천 장소와 생성 일정을 운영 화면에서 점검하세요</h2>
-        <p>장소 노출, 태그 품질, 내 일정 테스트를 한 화면에서 확인해보세요.</p>
-      </div>
-      <button type="button" className="ltSecondaryButton" onClick={() => navigate('/partners')}>
-        운영 화면 보기
-      </button>
-    </section>
-  );
-}
-
 function HomePage({ navigate }) {
-  const { plans, loading: plansLoading } = usePlans(3);
-  const ddayPlan = useMemo(() => selectDdayPlan(plans), [plans]);
-
-  return <TravelHome navigate={navigate} plansLoading={plansLoading} ddayPlan={ddayPlan} />;
+  return <TravelHome navigate={navigate} />;
 }
 
 function DestinationsPage({ path, navigate }) {
@@ -2383,34 +2162,26 @@ function PlannerPage({ path, navigate }) {
   const params = new URLSearchParams(path.split('?')[1] || '');
   const initialDestination = params.get('destination') || '';
   const plannerDraft = useMemo(() => readPlannerDraft(params.get('draft')), [path]);
-  const selectedPreset = params.get('preset') === OSAKA_KYOTO_COUPLE_PRESET.id ? OSAKA_KYOTO_COUPLE_PRESET : null;
-  const presetAppliedRef = useRef(false);
-  const [country, setCountry] = useState(plannerDraft?.country || selectedPreset?.country || 'korea');
+  const [country, setCountry] = useState(plannerDraft?.country || 'korea');
   const [selectedDestinationIds, setSelectedDestinationIds] = useState(initialDestination ? [initialDestination] : []);
-  const [destSearch, setDestSearch] = useState(plannerDraft?.destinationName || plannerDraft?.destinationRegion || selectedPreset?.destinationSearch || '');
+  const [destSearch, setDestSearch] = useState(plannerDraft?.destinationName || plannerDraft?.destinationRegion || '');
   const [showSuggestions, setShowDestSuggestions] = useState(false);
   const [startDate, setStartDate] = useState(plannerDraft?.startDate || '');
-  const [days, setDays] = useState(plannerDraft?.days || selectedPreset?.days || 3);
-  const [travelers, setTravelers] = useState(plannerDraft?.travelers || selectedPreset?.travelers || '커플');
-  const [travelerCount, setTravelerCount] = useState(plannerDraft?.travelerCount || selectedPreset?.travelerCount || 2);
-  const [transportType, setTransportType] = useState(selectedPreset?.transportType || '대중교통');
-  const [pace, setPace] = useState(plannerDraft?.pace || selectedPreset?.pace || '보통');
-  const [budget, setBudget] = useState(selectedPreset?.budget || '보통');
-  const [mealPreference, setMealPreference] = useState(plannerDraft?.mealPreference || selectedPreset?.mealPreference || '지역 맛집');
-  const [restPreference, setRestPreference] = useState(plannerDraft?.restPreference || selectedPreset?.restPreference || '중간 휴식');
-  const [dayStartTime, setDayStartTime] = useState(plannerDraft?.dayStartTime || selectedPreset?.dayStartTime || '09:30');
-  const [dayEndTime, setDayEndTime] = useState(plannerDraft?.dayEndTime || selectedPreset?.dayEndTime || '21:00');
-  const [mustVisit, setMustVisit] = useState(plannerDraft?.mustVisit || selectedPreset?.mustVisit || '');
-  const [avoid, setAvoid] = useState(plannerDraft?.avoid || selectedPreset?.avoid || '');
-  const [exportFormat, setExportFormat] = useState('텍스트');
-  const [selectedInterests, setSelectedInterests] = useState(plannerDraft?.interests?.length ? plannerDraft.interests : selectedPreset?.interests || ['맛집', '역사']);
-  const [notes, setNotes] = useState(plannerDraft?.notes || selectedPreset?.notes || '');
+  const [days, setDays] = useState(plannerDraft?.days || 3);
+  const [travelerCount, setTravelerCount] = useState(plannerDraft?.travelerCount || 2);
+  const [mealPreference, setMealPreference] = useState(plannerDraft?.mealPreference || '지역 맛집');
+  const [dayStartTime, setDayStartTime] = useState(plannerDraft?.dayStartTime || '09:30');
+  const [dayEndTime, setDayEndTime] = useState(plannerDraft?.dayEndTime || '21:00');
+  const [mustVisit, setMustVisit] = useState(plannerDraft?.mustVisit || '');
+  const [avoid, setAvoid] = useState(plannerDraft?.avoid || '');
+  const [selectedInterests, setSelectedInterests] = useState(plannerDraft?.interests?.length ? plannerDraft.interests : ['맛집', '역사']);
+  const [notes, setNotes] = useState(plannerDraft?.notes || '');
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState('');
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const [activeStep, setActiveStep] = useState(1);
   const [activeRouteField, setActiveRouteField] = useState('dates');
-  const [dayRoutes, setDayRoutes] = useState(plannerDraft?.dayRoutes?.length ? plannerDraft.dayRoutes : selectedPreset ? presetDayRoutes(selectedPreset) : [{ day: 1, startPlace: '', startAddress: '', endPlace: '', endAddress: '' }]);
+  const [dayRoutes, setDayRoutes] = useState(plannerDraft?.dayRoutes?.length ? plannerDraft.dayRoutes : [{ day: 1, startPlace: '', startAddress: '', endPlace: '', endAddress: '' }]);
   const validDayCount = Number.isFinite(Number(days)) && Number(days) >= 1 && Number(days) <= 7;
   const routeInfoComplete = Boolean(startDate) && validDayCount;
   const dailyRouteCount = dayRoutes.filter((route) => (
@@ -2421,54 +2192,6 @@ function PlannerPage({ path, navigate }) {
     () => destinations.filter((destination) => countryForDestination(destination) === country),
     [country, destinations]
   );
-
-  const applyPlannerPreset = (preset, { moveStep = true } = {}) => {
-    const sourceOrder = new Map((preset.preferredSourceRefs || []).map((ref, index) => [ref, index]));
-    const presetDestinations = destinations
-      .filter((destination) => countryForDestination(destination) === preset.country)
-      .filter((destination) => destinationMatchesPreset(destination, preset))
-      .sort((left, right) => {
-        const leftOrder = sourceOrder.has(left.sourceRef) ? sourceOrder.get(left.sourceRef) : 999;
-        const rightOrder = sourceOrder.has(right.sourceRef) ? sourceOrder.get(right.sourceRef) : 999;
-        return leftOrder - rightOrder || left.name.localeCompare(right.name, 'ko');
-      })
-      .slice(0, 12);
-    setCountry(preset.country);
-    setDestSearch(preset.destinationSearch);
-    setShowDestSuggestions(false);
-    if (presetDestinations.length) {
-      setSelectedDestinationIds(presetDestinations.map((destination) => destination.id));
-    }
-    setDays(preset.days);
-    setTravelers(preset.travelers);
-    setTravelerCount(preset.travelerCount);
-    setTransportType(preset.transportType);
-    setPace(preset.pace);
-    setBudget(preset.budget);
-    setMealPreference(preset.mealPreference);
-    setRestPreference(preset.restPreference);
-    setDayStartTime(preset.dayStartTime);
-    setDayEndTime(preset.dayEndTime);
-    setSelectedInterests(preset.interests);
-    setMustVisit(preset.mustVisit);
-    setAvoid(preset.avoid);
-    setNotes(preset.notes);
-    setDayRoutes(presetDayRoutes(preset));
-    setActiveRouteField('dates');
-    if (moveStep) {
-      setActiveStep(2);
-    }
-  };
-
-  useEffect(() => {
-    if (!selectedPreset || presetAppliedRef.current) return;
-    if (!destinations.length) {
-      setCountry(selectedPreset.country);
-      return;
-    }
-    applyPlannerPreset(selectedPreset, { moveStep: false });
-    presetAppliedRef.current = true;
-  }, [selectedPreset, destinations]);
 
   useEffect(() => {
     if (!initialDestination || !destinations.length) return;
@@ -2515,11 +2238,13 @@ function PlannerPage({ path, navigate }) {
         day: index + 1,
         startPlace: existing.startPlace || '',
         startAddress: existing.startAddress || '',
+        departureTime: existing.departureTime || dayStartTime,
         endPlace: existing.endPlace || '',
-        endAddress: existing.endAddress || ''
+        endAddress: existing.endAddress || '',
+        arrivalTime: existing.arrivalTime || dayEndTime
       };
     }));
-  }, [days]);
+  }, [days, dayEndTime, dayStartTime]);
 
   const toggleDestination = (id) => {
     setSelectedDestinationIds((current) => (
@@ -2542,15 +2267,6 @@ function PlannerPage({ path, navigate }) {
     () => countryDestinations.filter((destination) => selectedDestinationIds.includes(destination.id)),
     [countryDestinations, selectedDestinationIds]
   );
-  const showOsakaKyotoPrep = useMemo(() => {
-    const text = [
-      destSearch,
-      mustVisit,
-      notes,
-      ...selectedDestinations.flatMap((destination) => [destination.name, destination.region])
-    ].join(' ');
-    return country === 'japan' && /오사카|osaka/i.test(text) && /교토|kyoto/i.test(text);
-  }, [country, destSearch, mustVisit, notes, selectedDestinations]);
 
   const toggleInterest = (interest) => {
     setSelectedInterests((current) => (
@@ -2568,7 +2284,10 @@ function PlannerPage({ path, navigate }) {
 
   const routeDateSummary = routeInfoComplete ? `${formatDate(startDate)} · ${formatDaysLabel(days)}` : '출발일과 여행 일수';
   const dailyRouteSummary = dailyRouteCount ? `${dailyRouteCount}일차 세부 동선 입력` : '일자별 동선은 선택 입력';
-  const travelOptionSummary = `${travelers} ${travelerCount}명 · ${pace} · ${transportType} · ${budget}`;
+  const travelerCountNumber = Math.max(1, Math.min(12, Number(travelerCount) || 1));
+  const travelerType = `${travelerCountNumber}명`;
+  const mealPlanRule = '하루 아침·점심·저녁 3끼, 카페 1곳, 관광지 중심으로 구성';
+  const travelOptionSummary = `${travelerCountNumber}명 · ${mealPreference} · 3끼+카페 1곳`;
 
   const submit = async (event) => {
     event.preventDefault();
@@ -2582,10 +2301,11 @@ function PlannerPage({ path, navigate }) {
       .filter((id) => Number.isFinite(id));
     const routeMemoLines = [
       notes,
+      mealPlanRule,
       dailyRouteCount ? '일자별 출발/도착:' : '',
       ...dayRoutes
         .filter((route) => route.startPlace || route.startAddress || route.endPlace || route.endAddress)
-        .map((route) => `${route.day}일차 출발=${route.startPlace || '미정'}${route.startAddress ? ` (${route.startAddress})` : ''}, 도착=${route.endPlace || '미정'}${route.endAddress ? ` (${route.endAddress})` : ''}`)
+        .map((route) => `${route.day}일차 출발=${route.startPlace || '미정'} ${route.departureTime || dayStartTime}${route.startAddress ? ` (${route.startAddress})` : ''}, 도착=${route.endPlace || '미정'} ${route.arrivalTime || dayEndTime}${route.endAddress ? ` (${route.endAddress})` : ''}`)
     ].filter(Boolean);
     const firstRoute = dayRoutes[0] || {};
     const lastRoute = dayRoutes[dayRoutes.length - 1] || {};
@@ -2597,13 +2317,13 @@ function PlannerPage({ path, navigate }) {
       styles: selectedInterests,
       startDate: startDate || null,
       days: Number(days),
-      transportType,
-      travelerCount: Number(travelerCount) || 1,
-      travelerType: travelers,
-      pace,
-      budgetLevel: budget,
+      transportType: DEFAULT_TRANSPORT_TYPE,
+      travelerCount: travelerCountNumber,
+      travelerType,
+      pace: DEFAULT_TRAVEL_PACE,
+      budgetLevel: DEFAULT_BUDGET_LEVEL,
       mealPreference,
-      restPreference,
+      restPreference: DEFAULT_REST_PREFERENCE,
       mustVisit,
       avoid,
       dayStartTime,
@@ -2612,8 +2332,8 @@ function PlannerPage({ path, navigate }) {
       startAddress: firstRoute.startAddress || '',
       endPlace: lastRoute.endPlace || '',
       endAddress: lastRoute.endAddress || '',
-      departureTime: dayStartTime,
-      arrivalTime: dayEndTime,
+      departureTime: firstRoute.departureTime || dayStartTime,
+      arrivalTime: lastRoute.arrivalTime || dayEndTime,
       dailyRoutes: dayRoutes,
       memo: routeMemoLines.join('\n')
     };
@@ -2655,7 +2375,6 @@ function PlannerPage({ path, navigate }) {
               <span>Step 1</span>
               <strong>어디로 떠나시나요?</strong>
             </div>
-            <PlannerPresetPanel preset={OSAKA_KYOTO_COUPLE_PRESET} onApply={applyPlannerPreset} />
             <div className="ltCountrySwitch" aria-label="여행 국가">
               {COUNTRY_OPTIONS.map((option) => (
                 <button
@@ -2758,6 +2477,16 @@ function PlannerPage({ path, navigate }) {
                   {dayRoutes.map((route, index) => (
                     <fieldset key={route.day}>
                       <legend>{route.day}일차</legend>
+                      <div className="ltInlinePlannerGrid ltTimePairGrid">
+                        <label>
+                          <span>출발 시간</span>
+                          <input type="time" value={route.departureTime || dayStartTime} onChange={(event) => updateDayRoute(index, 'departureTime', event.target.value)} />
+                        </label>
+                        <label>
+                          <span>도착 시간</span>
+                          <input type="time" value={route.arrivalTime || dayEndTime} onChange={(event) => updateDayRoute(index, 'arrivalTime', event.target.value)} />
+                        </label>
+                      </div>
                       <AddressSearchInput
                         label="출발지"
                         value={route.startPlace}
@@ -2783,32 +2512,23 @@ function PlannerPage({ path, navigate }) {
 
               <PlannerProgressiveCard
                 index={3}
-                title="여행 옵션"
+                title="인원과 식사"
                 summary={travelOptionSummary}
                 complete={true}
                 active={activeRouteField === 'options'}
                 onToggle={() => setActiveRouteField('options')}
               >
                 <div className="ltInlinePlannerGrid">
-                  <OptionGroup label="동행" value={travelers} options={['혼자', '커플', '친구', '가족']} onChange={setTravelers} />
                   <label>
                     <span>인원</span>
                     <input type="number" min="1" max="12" value={travelerCount} onChange={(event) => setTravelerCount(event.target.value)} />
                   </label>
-                  <OptionGroup label="여행 속도" value={pace} options={['여유', '보통', '촘촘']} onChange={setPace} />
-                  <OptionGroup label="이동수단" value={transportType} options={['대중교통', '자동차', '도보']} onChange={setTransportType} />
-                  <OptionGroup label="예산 성향" value={budget} options={['절약', '보통', '프리미엄']} onChange={setBudget} />
-                  <OptionGroup label="식사" value={mealPreference} options={['지역 맛집', '한식 위주', '카페·디저트', '아이 동반']} onChange={setMealPreference} />
-                  <OptionGroup label="휴식" value={restPreference} options={['중간 휴식', '많이 걷기', '짧은 이동', '야경 포함']} onChange={setRestPreference} />
-                  <label>
-                    <span>하루 시작</span>
-                    <input type="time" value={dayStartTime} onChange={(event) => setDayStartTime(event.target.value)} />
-                  </label>
-                  <label>
-                    <span>하루 종료</span>
-                    <input type="time" value={dayEndTime} onChange={(event) => setDayEndTime(event.target.value)} />
-                  </label>
-                  <OptionGroup label="내보내기" value={exportFormat} options={['텍스트', '엑셀', 'PDF']} onChange={setExportFormat} />
+                  <OptionGroup label="식사" value={mealPreference} options={['상관없음', '지역 맛집', '한식 위주']} onChange={setMealPreference} />
+                  <div className="ltFixedMealRule">
+                    <span>고정 구성</span>
+                    <strong>하루 3끼 + 카페 1곳 + 관광지</strong>
+                    <small>출발·도착 시간 안에 맞춰 서버가 실제 후보 장소로 일정을 생성합니다.</small>
+                  </div>
                 </div>
               </PlannerProgressiveCard>
             </div>
@@ -2874,24 +2594,6 @@ function PlannerPage({ path, navigate }) {
               ))}
             </div>
           </div>
-          {showOsakaKyotoPrep ? (
-            <div className="ltPlannerTripPrep">
-              <div className="ltPlannerTripPrepTitle">
-                <span>여행 준비</span>
-                <strong>{OSAKA_KYOTO_COUPLE_PRESET.title}</strong>
-              </div>
-              <ul>
-                {OSAKA_KYOTO_COUPLE_PRESET.checklist.map((item) => <li key={item}>{item}</li>)}
-              </ul>
-              <div className="ltPlannerTripSources">
-                {OSAKA_KYOTO_COUPLE_PRESET.sourceLinks.map((source) => (
-                  <a key={source.url} href={source.url} target="_blank" rel="noreferrer">
-                    {source.label}
-                  </a>
-                ))}
-              </div>
-            </div>
-          ) : null}
           {generatedPlan ? (
             <div className="ltGeneratedPreview">
               <h2>{generatedPlan.title}</h2>
@@ -2907,10 +2609,10 @@ function PlannerPage({ path, navigate }) {
 
 function PlansPage({ navigate }) {
   const { plans, loading, error, reload } = usePlans();
-  const { destinations } = useDestinations();
-  const [sortMode, setSortMode] = useState('recommended');
-  const regionStats = useMemo(() => buildRegionStats(destinations), [destinations]);
-  const sortedPlans = useMemo(() => sortPlans(plans, regionStats, sortMode), [plans, regionStats, sortMode]);
+  const sortedPlans = useMemo(
+    () => plans.slice().sort((left, right) => new Date(right.createdAt || 0) - new Date(left.createdAt || 0)),
+    [plans]
+  );
 
   return (
     <main className="ltPage">
@@ -2919,13 +2621,6 @@ function PlansPage({ navigate }) {
         title="저장한 여행 코스"
         description="만든 코스를 다시 열고 일자별 동선을 확인합니다."
         actions={(
-          <>
-          <div className="ltSegmented compact" aria-label="일정 정렬">
-            <button type="button" className={sortMode === 'recommended' ? 'active' : ''} onClick={() => setSortMode('recommended')}>맞춤순</button>
-            <button type="button" className={sortMode === 'rating' ? 'active' : ''} onClick={() => setSortMode('rating')}>평점순</button>
-            <button type="button" className={sortMode === 'reviews' ? 'active' : ''} onClick={() => setSortMode('reviews')}>후기순</button>
-            <button type="button" className={sortMode === 'latest' ? 'active' : ''} onClick={() => setSortMode('latest')}>최신순</button>
-          </div>
           <button type="button" className="ltIconButton" onClick={reload} aria-label="여행 코스 새로고침">
             <Icon size={18}>
               <path d="M21 12a9 9 0 0 1-15.3 6.4"></path>
@@ -2934,7 +2629,6 @@ function PlansPage({ navigate }) {
               <path d="M21 6v5h-5"></path>
             </Icon>
           </button>
-          </>
         )}
       />
 
@@ -2948,7 +2642,7 @@ function PlansPage({ navigate }) {
         />
       ) : null}
       <div className="ltPlansGrid">
-        {sortedPlans.map(({ plan, stats }) => <PlanCard key={plan.key} plan={plan} stats={stats} navigate={navigate} />)}
+        {sortedPlans.map((plan) => <PlanCard key={plan.key} plan={plan} navigate={navigate} />)}
       </div>
     </main>
   );
@@ -2958,10 +2652,7 @@ function PartnerPage({ navigate }) {
   const { destinations, loading } = useDestinations();
   const { plans } = usePlans();
   const promotedDestinations = destinations.slice(0, 4);
-  const totalReviews = destinations.reduce((sum, destination) => sum + Number(destination.reviewCount || 0), 0);
-  const averageRating = destinations.length
-    ? destinations.reduce((sum, destination) => sum + Number(destination.rating || 0), 0) / destinations.length
-    : 0;
+  const regionCount = new Set(destinations.map((destination) => destination.region).filter(Boolean)).size;
 
   return (
     <main className="ltPage">
@@ -2987,16 +2678,16 @@ function PartnerPage({ navigate }) {
           <strong>{loading ? '-' : `${destinations.length}곳`}</strong>
         </div>
         <div className="ltFactItem">
-          <span>평균 평점</span>
-          <strong>{averageRating ? averageRating.toFixed(1) : '-'}</strong>
+          <span>관리 지역</span>
+          <strong>{loading ? '-' : `${regionCount}곳`}</strong>
         </div>
         <div className="ltFactItem">
-          <span>누적 반응</span>
-          <strong>{formatNumber(totalReviews)}</strong>
-        </div>
-        <div className="ltFactItem">
-          <span>생성 일정</span>
+          <span>저장 코스</span>
           <strong>{plans.length}개</strong>
+        </div>
+        <div className="ltFactItem">
+          <span>관리 기능</span>
+          <strong>활성</strong>
         </div>
       </section>
 
