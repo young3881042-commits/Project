@@ -29,15 +29,6 @@ public class LocalTripRealPlaceService {
         String category = normalizeCategory(style);
         Map<String, RealLocalPlaceResponse> results = new LinkedHashMap<>();
 
-        for (Destination destination : destinationRepository.findAllByOrderByRegionAscPopularityScoreDescNameAsc()) {
-            if (results.size() >= normalizedLimit) {
-                break;
-            }
-            if (matchesDestination(destination, region, category)) {
-                add(results, RealLocalPlaceResponse.fromDestination(destination));
-            }
-        }
-
         if (results.size() < normalizedLimit) {
             for (MapPlaceResponse place : mapSearchService.searchKakaoFoodPlaces(region, category, anchor, normalizedLimit)) {
                 if (results.size() >= normalizedLimit) {
@@ -53,6 +44,15 @@ public class LocalTripRealPlaceService {
                 break;
             }
             add(results, RealLocalPlaceResponse.fromCatalog(place));
+        }
+
+        for (Destination destination : destinationRepository.findAllByOrderByRegionAscPopularityScoreDescNameAsc()) {
+            if (results.size() >= normalizedLimit) {
+                break;
+            }
+            if (matchesDestination(destination, region, category)) {
+                add(results, RealLocalPlaceResponse.fromDestination(destination));
+            }
         }
 
         return new ArrayList<>(results.values());
@@ -90,11 +90,16 @@ public class LocalTripRealPlaceService {
     }
 
     private boolean isFoodOrCafe(Destination destination) {
+        String broadPlaceText = (defaultText(destination.getName()) + " "
+                + defaultText(destination.getCategory())).toLowerCase();
+        if (broadPlaceText.matches(".*(시장|먹거리|먹자골목|카페거리|식당가|거리|권역|마을|market|street|village).*")) {
+            return false;
+        }
         String text = (defaultText(destination.getPrimaryStyle()) + " "
                 + defaultText(destination.getCategory()) + " "
                 + defaultText(destination.getStyleTags()) + " "
                 + defaultText(destination.getName())).toLowerCase();
-        return text.matches(".*(식당|맛집|시장|카페|커피|디저트|브런치|먹자|food|cafe|coffee|restaurant|market).*");
+        return text.matches(".*(식당|맛집|카페|커피|디저트|브런치|food|cafe|coffee|restaurant).*");
     }
 
     private void add(Map<String, RealLocalPlaceResponse> results, RealLocalPlaceResponse place) {
