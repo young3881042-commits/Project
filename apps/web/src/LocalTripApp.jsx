@@ -1960,14 +1960,23 @@ function LocalTripNav({ path, navigate }) {
   );
 }
 
+function destinationConceptLine(destination) {
+  const parts = [
+    destination.region,
+    destination.category,
+    ...(destination.tags || [])
+  ]
+    .map((part) => `${part || ''}`.trim())
+    .filter(Boolean);
+  return Array.from(new Set(parts)).slice(0, 4).join(' · ');
+}
+
 function DestinationCard({ destination, compact = false, navigate }) {
+  const concept = destinationConceptLine(destination);
   return (
     <article className={`ltDestinationCard ${compact ? 'compact' : ''}`}>
       <div className="ltDestinationBody">
-        <div className="ltCardTopline">
-          <span>{destination.region}</span>
-          <em>{destination.category}</em>
-        </div>
+        {concept ? <div className="ltDestinationConcept" title={concept}>{concept}</div> : null}
         <h3>{destination.name}</h3>
         <p>{destination.summary}</p>
         <dl className="ltDestinationFacts">
@@ -1975,12 +1984,6 @@ function DestinationCard({ destination, compact = false, navigate }) {
             <>
               <dt>주소</dt>
               <dd>{destination.address}</dd>
-            </>
-          ) : null}
-          {destination.source ? (
-            <>
-              <dt>출처</dt>
-              <dd>{destination.source}{destination.sourceRef ? ` · ${destination.sourceRef}` : ''}</dd>
             </>
           ) : null}
         </dl>

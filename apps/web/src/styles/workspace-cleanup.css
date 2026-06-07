@@ -284,6 +284,65 @@
   font-weight: 750;
 }
 
+.ltDestinationConcept {
+  min-width: 0;
+  max-width: 100%;
+  display: block;
+  overflow: hidden;
+  color: #0f766e;
+  font-size: 0.82rem;
+  font-weight: 950;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ltDestinationFacts {
+  display: block !important;
+  min-width: 0;
+}
+
+.ltDestinationFacts dt {
+  display: inline;
+  margin-right: 6px;
+}
+
+.ltDestinationFacts dd {
+  display: inline;
+  min-width: 0;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ltDestinationFacts dd::after {
+  content: "";
+  display: block;
+}
+
+.ltDestinationBody .ltTagRow {
+  min-width: 0;
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.ltDestinationBody .ltTagRow::-webkit-scrollbar {
+  display: none;
+}
+
+.ltDestinationBody .ltTagRow span {
+  flex: 0 0 auto;
+  overflow-wrap: normal !important;
+  white-space: nowrap;
+}
+
+.ltFilterFold .ltFilterBar {
+  padding-bottom: 18px !important;
+}
+
 @media (max-width: 380px) {
   .referenceHome .appHomeRobotHero {
     grid-template-columns: minmax(0, 1fr) !important;

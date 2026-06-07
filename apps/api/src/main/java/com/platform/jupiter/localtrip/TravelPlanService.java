@@ -177,7 +177,12 @@ public class TravelPlanService {
 
     private List<TravelPlanItem> generateItineraryWithLocalGpt(TravelPlan plan, TravelPlanGenerateRequest request, String username, List<Destination> candidates) {
         String prompt = buildPrompt(plan, request, candidates);
-        String apiKey = resolveTravelPlanOpenAiApiKey(username);
+        String apiKey;
+        try {
+            apiKey = resolveTravelPlanOpenAiApiKey(username);
+        } catch (ResponseStatusException missingApiKey) {
+            return fallbackItems(plan, candidates);
+        }
         if (Boolean.TRUE.equals(appProperties.enableCodexCliMode())) {
             List<TravelPlanItem> codexItems = generateItineraryWithCodexCli(plan, prompt, candidates, apiKey);
             if (!codexItems.isEmpty()) {
@@ -337,7 +342,7 @@ public class TravelPlanService {
             "매일 아침 식당, 점심 식당, 저녁 식당을 각각 1개씩 넣고, 카페는 하루 1곳만 넣어. 간식/시장 먹거리는 카페와 별개로 짧은 1블록만 넣어.\n" +
             "식사와 카페/간식을 제외한 나머지는 관광지, 산책, 전망, 쇼핑 같은 실제 방문지로 채워. 같은 날 주요 관광지는 2~3곳을 넘기지 마.\n" +
             "관광지와 산책 장소는 관광지/장소 후보를 우선 사용하고, 식당과 카페는 식당/카페 후보를 우선 사용해.\n" +
-            "후보에 주소나 출처가 있으면 note에 이동 기준으로 반영하고, 후보와 맞지 않는 장소는 쓰지 마.\n" +
+            "후보에 주소가 있으면 note에 이동 기준으로 반영하고, 후보와 맞지 않는 장소는 쓰지 마. note에는 출처 문구를 쓰지 마.\n" +
             "장소 사이에는 대중교통/도보 이동과 대기 시간을 합쳐 최소 20~40분 완충을 둬. 서로 먼 구역을 같은 날 여러 번 왕복하지 마.\n" +
             "각 날짜의 첫 블록은 해당 날짜 출발지와 출발 시간 이후로 시작하고, 마지막 블록은 해당 날짜 도착지와 도착 시간 전에 끝나게 해.\n" +
             "RAG 문맥이 지역, 동행, 취향과 맞으면 우선 반영하고, 맞지 않는 문맥은 억지로 쓰지 마.\n" +
@@ -375,7 +380,7 @@ public class TravelPlanService {
                 .filter(destination -> !isDestinationFoodOrCafe(destination))
                 .limit(40)
                 .map(destination -> String.format(
-                        "- %s | %s %s | %s/%s | 주소=%s | 체류=%d분 | 태그=%s | 출처=%s:%s",
+                        "- %s | %s %s | %s/%s | 주소=%s | 체류=%d분 | 태그=%s",
                         destination.getName(),
                         destination.getRegion(),
                         destination.getDistrict(),
@@ -383,9 +388,7 @@ public class TravelPlanService {
                         defaultText(destination.getPrimaryStyle(), "관광지"),
                         defaultText(destination.getAddress(), "주소 미정"),
                         destination.getRecommendedMinutes() == null ? 90 : destination.getRecommendedMinutes(),
-                        defaultText(destination.getStyleTags(), ""),
-                        defaultText(destination.getSource(), "db"),
-                        defaultText(destination.getSourceRef(), "")))
+                        defaultText(destination.getStyleTags(), "")))
                 .collect(java.util.stream.Collectors.joining("\n"));
     }
 
@@ -411,13 +414,12 @@ public class TravelPlanService {
 
     private String foodPlaceCandidateLine(String slotType, RealLocalPlaceResponse place) {
         return String.format(
-                "- %s | %s | %s | 주소=%s | 메뉴=%s | 출처=%s",
+                "- %s | %s | %s | 주소=%s | 메뉴=%s",
                 slotType,
                 place.name(),
                 defaultText(place.region(), "지역 미정"),
                 defaultText(place.roadAddress(), defaultText(place.address(), "주소 미정")),
-                defaultText(place.recommendedMenu(), "대표 메뉴 확인 필요"),
-                defaultText(place.source(), "db"));
+                defaultText(place.recommendedMenu(), "대표 메뉴 확인 필요"));
     }
 
     private String dailyRouteContext(TravelPlanGenerateRequest request) {
@@ -615,7 +617,6 @@ public class TravelPlanService {
         if (!LocalTripText.normalize(place.verificationNote()).isBlank()) {
             parts.add(place.verificationNote());
         }
-        parts.add("출처: " + place.source());
         return String.join(" · ", parts);
     }
 
