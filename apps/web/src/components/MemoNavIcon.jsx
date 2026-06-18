@@ -103,6 +103,12 @@ export default function MemoNavIcon({ type }) {
         <path d="M4 13h7v6H4z" />
       </>
     ),
+    book: (
+      <>
+        <path d="M5 4h5a4 4 0 0 1 4 4v12H9a4 4 0 0 0-4-4z" />
+        <path d="M19 4h-5a4 4 0 0 0-4 4v12h5a4 4 0 0 1 4-4z" />
+      </>
+    ),
     link: (
       <>
         <path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" />

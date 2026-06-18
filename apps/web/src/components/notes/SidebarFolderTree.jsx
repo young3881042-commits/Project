@@ -44,6 +44,7 @@ export default function SidebarFolderTree({
     const children = getFolderChildren(folders, folder.id);
     const expanded = expandedFolderIds.has(folder.id);
     const active = activeFolderId === folder.id;
+    const canManageFolder = canDeleteFolder(folder);
     return (
       <div className="notesFolderNode" key={folder.id}>
         <div className={`notesFolderRow ${active ? 'active' : ''}`} style={{ '--folder-depth': depth }}>
@@ -78,8 +79,10 @@ export default function SidebarFolderTree({
                 if (children.length) toggleFolder(folder.id);
               }}
               onDoubleClick={() => {
-                setEditingId(folder.id);
-                setDraft(getFolderName(folder));
+                if (canManageFolder) {
+                  setEditingId(folder.id);
+                  setDraft(getFolderName(folder));
+                }
               }}
             >
               <MemoNavIcon type="folder" />
@@ -117,37 +120,37 @@ export default function SidebarFolderTree({
               </div>
             ) : null}
           </div>
-          <div className="notesFolderMenuWrap">
-            <button
-              type="button"
-              className="notesFolderIconButton"
-              onClick={(event) => {
-                event.stopPropagation();
-                setOpenMenu(openMenu === `more-${folder.id}` ? null : `more-${folder.id}`);
-              }}
-              aria-label="폴더 더보기"
-              title="폴더 더보기"
-            >
-              ...
-            </button>
-            {openMenu === `more-${folder.id}` ? (
-              <div className="notesFolderActionMenu">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingId(folder.id);
-                    setDraft(getFolderName(folder));
-                    setOpenMenu(null);
-                  }}
-                >
-                  이름 변경
-                </button>
-                {canDeleteFolder(folder) ? (
+          {canManageFolder ? (
+            <div className="notesFolderMenuWrap">
+              <button
+                type="button"
+                className="notesFolderIconButton"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setOpenMenu(openMenu === `more-${folder.id}` ? null : `more-${folder.id}`);
+                }}
+                aria-label="폴더 더보기"
+                title="폴더 더보기"
+              >
+                ...
+              </button>
+              {openMenu === `more-${folder.id}` ? (
+                <div className="notesFolderActionMenu">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingId(folder.id);
+                      setDraft(getFolderName(folder));
+                      setOpenMenu(null);
+                    }}
+                  >
+                    이름 변경
+                  </button>
                   <button type="button" className="danger" onClick={() => { onDeleteFolder(folder.id); setOpenMenu(null); }}>삭제</button>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         {children.length && expanded ? (
           <div className="notesFolderChildren">
@@ -162,7 +165,7 @@ export default function SidebarFolderTree({
     <aside className="notesFolderPanel" aria-label="폴더 트리">
       <header>
         <strong>내 워크스페이스</strong>
-        <button type="button" onClick={() => onAddFolder(null)}><MemoNavIcon type="plus" />새 폴더</button>
+        <button type="button" onClick={() => onAddFolder(activeFolderId || null)}><MemoNavIcon type="plus" />새 폴더</button>
       </header>
       <div className="notesFolderTree">
         {getFolderChildren(folders, null).map((folder) => renderFolder(folder))}

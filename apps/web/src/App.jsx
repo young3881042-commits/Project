@@ -4,11 +4,34 @@ import remarkGfm from 'remark-gfm';
 import LocalTripApp from './LocalTripApp.jsx';
 import ConnectionsApp from './ConnectionsApp.jsx';
 import MemoNavIcon from './components/MemoNavIcon.jsx';
+import MobilePageShell from './components/MobilePageShell.jsx';
 import MobileWorkspaceTabs from './components/MobileWorkspaceTabs.jsx';
 import AppHome from './components/home/AppHome.jsx';
 import MemoList from './components/notes/MemoList.jsx';
 import NotesScheduleBar from './components/notes/NotesScheduleBar.jsx';
 import SidebarFolderTree from './components/notes/SidebarFolderTree.jsx';
+import ReadingPage from './components/reading/ReadingPage.jsx';
+import {
+  DEFAULT_WORKOUT_PROFILE,
+  WORKOUT_CARDIO_ACTIVITIES,
+  WORKOUT_TEMPLATES,
+  calculateWorkoutBmr,
+  cardioActivityForId,
+  cardioActivityForName,
+  cardioActivityIdForExercise,
+  createCardioExercise,
+  estimateWorkoutCalories,
+  normalizeWorkoutProfile,
+  parseWorkoutNumber,
+  workoutDurationMinutes,
+  workoutExerciseCalories
+} from './components/workout/workoutMetrics.js';
+import {
+  DEFAULT_NOTE_DIRECTORIES,
+  DEFAULT_NOTE_DIRECTORY_ID_SET,
+  createDefaultNoteDirectories,
+  normalizeNoteDirectoryId
+} from './components/notes/notesDirectoryRules.js';
 import { loginUrlForCurrentLocation, loginUrlForRedirect, redirectToLogin } from './authRoutes.js';
 
 const AUTH_KEY = 'codex-workspace-auth';
@@ -21,6 +44,14 @@ const CONNECTION_SETTINGS_KEY = 'ai-assistant-connection-settings';
 const LEGACY_CONNECTION_SETTINGS_KEY = 'jupiter-ai-connection-settings';
 const DATA_INBOX_KEY = 'ai-assistant-data-inbox';
 const LEGACY_DATA_INBOX_KEY = 'jupiter-ai-data-inbox';
+const BUDGET_ENTRIES_KEY = 'ai-assistant-budget-entries';
+const WORKOUT_LOGS_KEY = 'ai-assistant-workout-logs';
+const WORKOUT_PROFILE_KEY = 'ai-assistant-workout-profile';
+const SCHEDULER_WORKSPACE_PATH = 'app-data/scheduler.json';
+const WORKOUT_SCHEDULER_TYPE = 'workout';
+const WORKOUT_SCHEDULER_SOURCE = 'workout';
+const KRW_FORMATTER = new Intl.NumberFormat('ko-KR');
+const KCAL_FORMATTER = new Intl.NumberFormat('ko-KR');
 const APP_SHORTCUTS = {
   mainHub: { label: '앱 홈', path: '/app' },
   portfolio: { label: '포트폴리오', path: '/portfolio' },
@@ -44,7 +75,7 @@ const RECURRENCE_LABELS = {
   monthly: '매월'
 };
 const SCHEDULER_CATEGORY_OPTIONS = ['개인', '업무'];
-const SCHEDULER_FILTER_OPTIONS = ['전체', ...SCHEDULER_CATEGORY_OPTIONS, '메모', '완료'];
+const SCHEDULER_FILTER_OPTIONS = ['전체', ...SCHEDULER_CATEGORY_OPTIONS, '메모', '운동', '완료'];
 const SCHEDULER_LEGACY_TYPE_MAP = {
   personal: '개인',
   PERSONAL: '개인',
@@ -53,6 +84,9 @@ const SCHEDULER_LEGACY_TYPE_MAP = {
   개인: '개인',
   study: '개인',
   STUDY: '개인',
+  reading: '개인',
+  READING: '개인',
+  독서: '개인',
   fitness: '개인',
   FITNESS: '개인',
   travel: '개인',
@@ -69,7 +103,7 @@ const SCHEDULER_LEGACY_TYPE_MAP = {
   검토: '업무',
   'AI Note': '메모'
 };
-const NOTE_SCHEDULE_SOURCES = ['AI Note', '메모', '프로젝트'];
+const NOTE_SCHEDULE_SOURCES = ['AI Note', '메모', '프로젝트', '여행'];
 const DEFAULT_SCHEDULER_ITEMS = [
 ];
 const HOME_PLAN_MODES = ['personal', 'travel'];
@@ -81,6 +115,9 @@ const HOME_WORKSPACE_ALIASES = {
   개인: 'personal',
   study: 'personal',
   STUDY: 'personal',
+  reading: 'personal',
+  READING: 'personal',
+  독서: 'personal',
   fitness: 'personal',
   FITNESS: 'personal',
   work: 'personal',
@@ -200,6 +237,40 @@ function normalizeSchedulerType(type) {
   return SCHEDULER_LEGACY_TYPE_MAP[raw] || raw || '업무';
 }
 
+function isWorkoutSchedulerItem(item) {
+  return item?.type === WORKOUT_SCHEDULER_TYPE
+    || item?.source === WORKOUT_SCHEDULER_SOURCE
+    || item?.origin?.kind === 'workout';
+}
+
+function schedulerDisplayType(item) {
+  return isWorkoutSchedulerItem(item) ? '운동' : normalizeSchedulerType(item?.type);
+}
+
+function schedulerTimeValue(item) {
+  return isTimeKey(item?.time) ? item.time : '';
+}
+
+function schedulerTimeLabel(item) {
+  return schedulerTimeValue(item) || '종일';
+}
+
+function schedulerSortTime(item) {
+  return schedulerTimeValue(item) || '99:99';
+}
+
+function schedulerSortKey(item, includeDate = false) {
+  return [
+    includeDate ? item?.date || '' : '',
+    schedulerSortTime(item),
+    item?.title || ''
+  ].filter((part) => part !== '').join(' ');
+}
+
+function schedulerSourceRecordId(item) {
+  return item?.recurring ? item.sourceId || item.id : item?.id;
+}
+
 function apiUrlFor(path) {
   if (!path || /^https?:\/\//i.test(path)) return path;
   const baseUrl = readConnectionSettings().apiBaseUrl.trim().replace(/\/+$/, '');
@@ -265,6 +336,53 @@ async function requestText(path, token) {
   return response.text();
 }
 
+function normalizeSchedulerItems(items) {
+  return Array.isArray(items)
+    ? items.map(normalizeSchedulerItem).filter((item) => item?.id && !item.id?.startsWith?.('schedule-demo-'))
+    : [];
+}
+
+function mergeSchedulerItems(current, incoming) {
+  return dedupeSchedulerItems(mergeStorageArrays(incoming, current).map(normalizeSchedulerItem));
+}
+
+async function loadWorkspaceSchedulerItems(token) {
+  if (!token) return [];
+  try {
+    const text = await requestText(`/api/workspace/file?path=${encodeURIComponent(SCHEDULER_WORKSPACE_PATH)}`, token);
+    const parsed = JSON.parse(text || '[]');
+    return normalizeSchedulerItems(Array.isArray(parsed) ? parsed : parsed.items);
+  } catch {
+    return [];
+  }
+}
+
+async function saveWorkspaceSchedulerItems(token, items) {
+  if (!token) return;
+  await requestJson('/api/workspace/folder?path=app-data', {
+    method: 'POST',
+    headers: authHeaders(token)
+  }).catch(() => null);
+  await requestJson('/api/workspace/file', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+    body: JSON.stringify({
+      path: SCHEDULER_WORKSPACE_PATH,
+      content: `${JSON.stringify(normalizeSchedulerItems(items), null, 2)}\n`
+    })
+  });
+}
+
+function saveSchedulerItems(storageKey, items) {
+  const nextItems = dedupeSchedulerItems(normalizeSchedulerItems(items));
+  localStorage.setItem(storageKey, JSON.stringify(nextItems));
+  if (storageKey !== SCHEDULER_KEY && localStorage.getItem(SCHEDULER_KEY)) {
+    localStorage.removeItem(SCHEDULER_KEY);
+  }
+  window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { items: nextItems, storageKey } }));
+  return nextItems;
+}
+
 function joinPath(base, name) {
   return base ? `${base}/${name}` : name;
 }
@@ -313,19 +431,79 @@ function userStorageKey(baseKey, input = readStoredAuth()) {
   return `${baseKey}:${storageUsername(input)}`;
 }
 
-function migrateLegacyArrayStorage(legacyKey, scopedKey) {
-  if (legacyKey === scopedKey || localStorage.getItem(scopedKey) !== null) return;
-  const legacyRaw = localStorage.getItem(legacyKey);
-  if (legacyRaw === null) return;
+function readArrayStorage(storageKey) {
   try {
-    const parsed = JSON.parse(legacyRaw);
-    if (Array.isArray(parsed)) {
-      localStorage.setItem(scopedKey, JSON.stringify(parsed));
-      localStorage.removeItem(legacyKey);
-    }
+    const raw = localStorage.getItem(storageKey);
+    if (raw === null) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
   } catch {
-    localStorage.removeItem(legacyKey);
+    return null;
   }
+}
+
+function storageRecordIdentity(item, index = 0) {
+  if (item?.id) return `id:${item.id}`;
+  if (item?.filePath) return `file:${item.filePath}`;
+  if (item?.path) return `path:${item.path}`;
+  return `value:${JSON.stringify([
+    item?.date || '',
+    item?.time || '',
+    item?.title || item?.name || '',
+    item?.content || ''
+  ]) || index}`;
+}
+
+function mergeStorageArrays(...arrays) {
+  const seen = new Set();
+  const merged = [];
+  arrays.flat().filter(Boolean).forEach((item, index) => {
+    const key = storageRecordIdentity(item, index);
+    if (seen.has(key)) return;
+    seen.add(key);
+    merged.push(item);
+  });
+  return merged;
+}
+
+function storageUsernameFromKey(baseKey, storageKey) {
+  if (typeof storageKey !== 'string') return '';
+  const prefix = `${baseKey}:`;
+  return storageKey.startsWith(prefix) ? storageKey.slice(prefix.length) : '';
+}
+
+function isStorageKeyInput(baseKey, input) {
+  return typeof input === 'string' && (input === baseKey || input.startsWith(`${baseKey}:`));
+}
+
+function scopedStorageKey(baseKey, input = readStoredAuth()) {
+  return isStorageKeyInput(baseKey, input) ? input : userStorageKey(baseKey, input);
+}
+
+function readUserArrayStorage(baseKey, input = readStoredAuth()) {
+  const storageKey = scopedStorageKey(baseKey, input);
+  const current = readArrayStorage(storageKey);
+  const username = storageUsernameFromKey(baseKey, storageKey) || storageUsername(input);
+  const fallbackKeys = [];
+
+  if (storageKey !== baseKey && username === 'guestuser') {
+    fallbackKeys.push(baseKey);
+  }
+
+  if (current && current.length) {
+    return { storageKey, items: current };
+  }
+
+  const fallbackItems = fallbackKeys
+    .filter((key, index, keys) => key !== storageKey && keys.indexOf(key) === index)
+    .flatMap((key) => readArrayStorage(key) || []);
+  const merged = mergeStorageArrays(current || [], fallbackItems);
+
+  if (merged.length && storageKey !== baseKey) {
+    localStorage.setItem(storageKey, JSON.stringify(merged));
+  }
+
+  return { storageKey, items: merged.length ? merged : current };
 }
 
 function schedulerStorageKey(input = readStoredAuth()) {
@@ -340,16 +518,25 @@ function noteBoardsStorageKey(input = readStoredAuth()) {
   return userStorageKey(AI_NOTE_BOARDS_KEY, input);
 }
 
+function budgetStorageKey(input = readStoredAuth()) {
+  return userStorageKey(BUDGET_ENTRIES_KEY, input);
+}
+
+function workoutStorageKey(input = readStoredAuth()) {
+  return userStorageKey(WORKOUT_LOGS_KEY, input);
+}
+
+function workoutProfileStorageKey(input = readStoredAuth()) {
+  return userStorageKey(WORKOUT_PROFILE_KEY, input);
+}
+
 function readSchedulerItems(input) {
   try {
-    const storageKey = input?.startsWith?.(SCHEDULER_KEY) ? input : schedulerStorageKey(input);
-    migrateLegacyArrayStorage(SCHEDULER_KEY, storageKey);
-    const raw = localStorage.getItem(storageKey);
-    if (raw === null) {
+    const { items } = readUserArrayStorage(SCHEDULER_KEY, input);
+    if (items === null) {
       return DEFAULT_SCHEDULER_ITEMS;
     }
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.map(normalizeSchedulerItem).filter((item) => !item.id?.startsWith?.('schedule-demo-')) : DEFAULT_SCHEDULER_ITEMS;
+    return Array.isArray(items) ? items.map(normalizeSchedulerItem).filter((item) => !item.id?.startsWith?.('schedule-demo-')) : DEFAULT_SCHEDULER_ITEMS;
   } catch {
     return DEFAULT_SCHEDULER_ITEMS;
   }
@@ -373,6 +560,7 @@ function normalizeSchedulerItem(item) {
   return {
     ...item,
     type: normalizeSchedulerType(item?.type),
+    time: isTimeKey(item?.time) ? item.time : '',
     recurrence: Object.keys(RECURRENCE_LABELS).includes(item?.recurrence) ? item.recurrence : 'none',
     recurrenceEnd: item?.recurrenceEnd || '',
     doneOverrides: item?.doneOverrides && typeof item.doneOverrides === 'object' ? item.doneOverrides : {},
@@ -398,6 +586,229 @@ function toDateKey(date) {
   return `${year}-${month}-${day}`;
 }
 
+function compareDatedRecords(left, right) {
+  const leftKey = `${left?.date || ''} ${left?.createdAt || ''}`;
+  const rightKey = `${right?.date || ''} ${right?.createdAt || ''}`;
+  return rightKey.localeCompare(leftKey);
+}
+
+function formatKoreanMoney(value) {
+  const amount = Number(value) || 0;
+  const sign = amount < 0 ? '-' : '';
+  return `${sign}${KRW_FORMATTER.format(Math.abs(amount))}원`;
+}
+
+function formatKcal(value) {
+  const amount = Math.max(0, Math.round(Number(value) || 0));
+  return `${KCAL_FORMATTER.format(amount)}kcal`;
+}
+
+function summarizeBudgetEntries(entries) {
+  return entries.reduce((summary, entry) => {
+    if (entry.type === 'deposit') {
+      return { ...summary, income: summary.income + entry.amount };
+    }
+    return { ...summary, expense: summary.expense + entry.amount };
+  }, { income: 0, expense: 0 });
+}
+
+function normalizeBudgetEntry(entry, index = 0) {
+  const amount = Math.round(Math.abs(Number(entry?.amount) || 0));
+  if (!amount) return null;
+  const date = isDateKey(entry?.date) ? entry.date : toDateKey(new Date());
+  const type = entry?.type === 'deposit' ? 'deposit' : 'withdraw';
+  const category = String(entry?.category || '').trim() || (type === 'deposit' ? '입금' : '생활비');
+  const memo = String(entry?.memo || '').trim();
+  const createdAt = typeof entry?.createdAt === 'string' && entry.createdAt ? entry.createdAt : new Date().toISOString();
+  return {
+    id: String(entry?.id || `budget-${date}-${type}-${amount}-${index}`),
+    type,
+    amount,
+    date,
+    category,
+    memo,
+    createdAt
+  };
+}
+
+function readBudgetEntries(input = readStoredAuth()) {
+  try {
+    const raw = localStorage.getItem(budgetStorageKey(input)) || '[]';
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(normalizeBudgetEntry).filter(Boolean).sort(compareDatedRecords).slice(0, 200);
+  } catch {
+    return [];
+  }
+}
+
+function saveBudgetEntries(storageKey, entries) {
+  const nextEntries = entries.map(normalizeBudgetEntry).filter(Boolean).sort(compareDatedRecords).slice(0, 200);
+  localStorage.setItem(storageKey, JSON.stringify(nextEntries));
+  return nextEntries;
+}
+
+function readWorkoutProfile(input = readStoredAuth()) {
+  try {
+    const raw = localStorage.getItem(workoutProfileStorageKey(input));
+    return normalizeWorkoutProfile(raw ? JSON.parse(raw) : DEFAULT_WORKOUT_PROFILE);
+  } catch {
+    return normalizeWorkoutProfile(DEFAULT_WORKOUT_PROFILE);
+  }
+}
+
+function saveWorkoutProfile(storageKey, profile) {
+  const nextProfile = normalizeWorkoutProfile(profile);
+  localStorage.setItem(storageKey, JSON.stringify(nextProfile));
+  return nextProfile;
+}
+
+function normalizeWorkoutExercise(exercise, index = 0) {
+  const name = String(exercise?.name || '').trim();
+  if (!name) return null;
+  const cardioActivity = cardioActivityForName(name);
+  const isCardio = exercise?.mode === 'cardio' || Boolean(cardioActivity) || Boolean(exercise?.met) || Boolean(exercise?.durationMinutes);
+  return {
+    id: String(exercise?.id || `exercise-${index}-${name}`),
+    mode: isCardio ? 'cardio' : '',
+    name,
+    sets: String(exercise?.sets || '').trim(),
+    reps: String(exercise?.reps || '').trim(),
+    weight: isCardio ? '' : String(exercise?.weight || '').trim(),
+    durationMinutes: isCardio ? String(exercise?.durationMinutes || cardioActivity?.durationMinutes || '').trim() : '',
+    met: isCardio ? String(exercise?.met || cardioActivity?.met || '').trim() : ''
+  };
+}
+
+function workoutExercisesForTemplate(template) {
+  return (template?.exercises || template?.items?.map((name) => ({ name })) || [])
+    .map(normalizeWorkoutExercise)
+    .filter(Boolean);
+}
+
+function normalizeWorkoutLog(log, index = 0) {
+  const template = WORKOUT_TEMPLATES.find((item) => item.id === log?.templateId)
+    || WORKOUT_TEMPLATES.find((item) => item.title === log?.title)
+    || WORKOUT_TEMPLATES[0];
+  const date = isDateKey(log?.date) ? log.date : toDateKey(new Date());
+  const createdAt = typeof log?.createdAt === 'string' && log.createdAt ? log.createdAt : new Date().toISOString();
+  const exercises = Array.isArray(log?.exercises) && log.exercises.length
+    ? log.exercises.map(normalizeWorkoutExercise).filter(Boolean)
+    : workoutExercisesForTemplate(template);
+  const durationMinutes = Math.max(0, Math.round(Number(log?.durationMinutes) || 0))
+    || workoutDurationMinutes({ templateId: template.id, durationMinutes: log?.durationMinutes, exercises });
+  return {
+    id: String(log?.id || `workout-${date}-${template.id}-${index}`),
+    templateId: template.id,
+    title: template.title,
+    date,
+    startTime: isTimeKey(log?.startTime) ? log.startTime : '',
+    durationMinutes,
+    caloriesBurned: Math.max(0, Math.round(Number(log?.caloriesBurned) || 0)),
+    bodyWeightKg: Math.max(0, Number(log?.bodyWeightKg) || 0),
+    bodyHeightCm: Math.max(0, Number(log?.bodyHeightCm) || 0),
+    memo: String(log?.memo || '').trim(),
+    exercises,
+    createdAt
+  };
+}
+
+function readWorkoutLogs(input = readStoredAuth()) {
+  try {
+    const raw = localStorage.getItem(workoutStorageKey(input)) || '[]';
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(normalizeWorkoutLog).filter(Boolean).sort(compareDatedRecords).slice(0, 120);
+  } catch {
+    return [];
+  }
+}
+
+function saveWorkoutLogs(storageKey, logs) {
+  const nextLogs = logs.map(normalizeWorkoutLog).filter(Boolean).sort(compareDatedRecords).slice(0, 120);
+  localStorage.setItem(storageKey, JSON.stringify(nextLogs));
+  return nextLogs;
+}
+
+function workoutExerciseSummary(exercise) {
+  const isCardio = exercise?.mode === 'cardio' || exercise?.durationMinutes || exercise?.met;
+  if (isCardio) {
+    const parts = [
+      exercise.durationMinutes ? `${exercise.durationMinutes}분` : '',
+      exercise.met ? `${exercise.met}MET` : ''
+    ].filter(Boolean);
+    return [exercise.name, parts.join(' ')].filter(Boolean).join(' ');
+  }
+  const parts = [
+    exercise.sets ? `${exercise.sets}세트` : '',
+    exercise.reps ? `${exercise.reps}회` : '',
+    exercise.weight ? `${exercise.weight}kg` : ''
+  ].filter(Boolean);
+  return [exercise.name, parts.join(' ')].filter(Boolean).join(' ');
+}
+
+function workoutLogSummary(log) {
+  const exercises = Array.isArray(log?.exercises) ? log.exercises : [];
+  return exercises.map(workoutExerciseSummary).filter(Boolean).join(' · ') || '운동 항목 없음';
+}
+
+function workoutScheduleTitle(log) {
+  return `[운동] ${log?.title || '운동'}`;
+}
+
+function workoutScheduleDescription(log) {
+  return [
+    workoutLogSummary(log),
+    log?.caloriesBurned ? `예상 소모: ${formatKcal(log.caloriesBurned)}` : '',
+    log?.memo ? `메모: ${log.memo}` : ''
+  ].filter(Boolean).join('\n');
+}
+
+function buildWorkoutScheduleItem(log, startTime = '') {
+  const time = isTimeKey(startTime) ? startTime : '';
+  const durationMinutes = Math.max(0, Math.round(Number(log?.durationMinutes) || 0));
+  const description = workoutScheduleDescription(log);
+  return {
+    id: `workout-schedule-${log.id}`,
+    title: workoutScheduleTitle(log),
+    date: log.date,
+    time,
+    type: WORKOUT_SCHEDULER_TYPE,
+    memo: description,
+    description,
+    duration: durationMinutes,
+    durationMinutes,
+    recurrence: 'none',
+    recurrenceEnd: '',
+    doneOverrides: {},
+    source: WORKOUT_SCHEDULER_SOURCE,
+    sourceId: log.id,
+    origin: {
+      kind: 'workout',
+      workoutId: log.id,
+      path: '/workout'
+    },
+    done: false
+  };
+}
+
+function upsertWorkoutScheduleItem(storageKey, scheduleItem) {
+  const current = readSchedulerItems(storageKey);
+  const nextItems = [
+    ...current.filter((item) => !(isWorkoutSchedulerItem(item) && `${item.sourceId || ''}` === `${scheduleItem.sourceId || ''}`)),
+    scheduleItem
+  ];
+  return saveSchedulerItems(storageKey, nextItems);
+}
+
+function deleteWorkoutScheduleForLog(storageKey, workoutLogId) {
+  const current = readSchedulerItems(storageKey);
+  const nextItems = current.filter((item) => !(isWorkoutSchedulerItem(item) && `${item.sourceId || ''}` === `${workoutLogId || ''}`));
+  if (nextItems.length === current.length) return false;
+  saveSchedulerItems(storageKey, nextItems);
+  return true;
+}
+
 function buildMonthDays(monthKey) {
   const [year, month] = monthKey.split('-').map(Number);
   const firstDay = new Date(year, month - 1, 1);
@@ -412,6 +823,12 @@ function buildMonthDays(monthKey) {
       currentMonth: day.getMonth() === month - 1
     };
   });
+}
+
+function moveMonthKey(monthKey, offset) {
+  const [year, month] = monthKey.split('-').map(Number);
+  const next = new Date(year, month - 1 + offset, 1);
+  return toDateKey(next).slice(0, 7);
 }
 
 function parseDateKey(dateKey) {
@@ -509,64 +926,56 @@ const LEGACY_SAMPLE_BOARD_IDS = new Set([
   'company-incheon'
 ]);
 
+const DEFAULT_MEMO_BOARD_ID_SET = DEFAULT_NOTE_DIRECTORY_ID_SET;
+
 function isLegacySampleNote(block) {
   const id = `${block?.id || ''}`;
   return id.startsWith('seed-') || /^memo-(todo|progress|review|done)-\d+$/.test(id);
 }
 
 function defaultMemoBoards() {
-  const createdAt = memoTimestamp();
-  return [
-    { id: 'memo', parentId: null, name: '내 메모', title: '내 메모', sortOrder: 0, createdAt, updatedAt: createdAt }
-  ];
+  return createDefaultNoteDirectories(memoTimestamp());
 }
 
 function readMemoBoards(input = readStoredAuth()) {
   try {
-    const storageKey = noteBoardsStorageKey(input);
-    migrateLegacyArrayStorage(AI_NOTE_BOARDS_KEY, storageKey);
-    const raw = localStorage.getItem(storageKey);
-    if (raw === null) {
-      return defaultMemoBoards();
-    }
-    const parsed = JSON.parse(raw);
-    const boards = Array.isArray(parsed)
-      ? parsed.map(normalizeMemoBoard).filter((board) => board && !LEGACY_SAMPLE_BOARD_IDS.has(board.id))
-      : defaultMemoBoards();
-    if (!boards.length) return defaultMemoBoards();
     const defaults = defaultMemoBoards();
-    const defaultById = new Map(defaults.map((board) => [board.id, board]));
-    const refreshedBoards = boards.map((board) => {
-      const nextDefault = defaultById.get(board.id);
-      if (!nextDefault) return board;
-      return {
-        ...board,
-        parentId: nextDefault.parentId,
-        name: nextDefault.name,
-        title: nextDefault.title,
-        sortOrder: nextDefault.sortOrder,
-        updatedAt: board.updatedAt || nextDefault.updatedAt
-      };
-    });
-    const existingIds = new Set(refreshedBoards.map((board) => board.id));
-    const missingDefaults = defaults.filter((board) => !existingIds.has(board.id));
-    return sortedMemoFolders([...refreshedBoards, ...missingDefaults]);
+    const { items: parsed } = readUserArrayStorage(AI_NOTE_BOARDS_KEY, input);
+    if (parsed === null) return defaults;
+    if (!Array.isArray(parsed)) return defaults;
+    const boards = parsed
+      .filter((board) => !LEGACY_SAMPLE_BOARD_IDS.has(`${board?.id || ''}`))
+      .map(normalizeMemoBoard)
+      .filter(Boolean);
+    const boardById = boards.reduce((map, board) => (map.has(board.id) ? map : map.set(board.id, board)), new Map());
+    const refreshedDefaults = defaults.map((board) => ({
+      ...board,
+      updatedAt: boardById.get(board.id)?.updatedAt || board.updatedAt
+    }));
+    const customBoards = boards.filter((board) => !DEFAULT_MEMO_BOARD_ID_SET.has(board.id));
+    return sortedMemoFolders([...refreshedDefaults, ...customBoards]);
   } catch {
     return defaultMemoBoards();
   }
 }
 
+function normalizeMemoFolderId(value, planType = '') {
+  return normalizeNoteDirectoryId(value, planType);
+}
+
 function normalizeMemoBoard(board) {
   const name = (typeof board?.name === 'string' ? board.name : board?.title || '').trim();
-  if (!name) return null;
-  const parentId = typeof board?.parentId === 'string' && board.parentId ? board.parentId : null;
+  const id = normalizeMemoFolderId(board?.id || name || `folder-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+  const fallback = DEFAULT_NOTE_DIRECTORIES.find((item) => item.id === id);
+  const rawParentId = typeof board?.parentId === 'string' && board.parentId ? board.parentId : null;
+  const parentId = DEFAULT_MEMO_BOARD_ID_SET.has(id) ? null : (rawParentId ? normalizeMemoFolderId(rawParentId) : 'personal');
   const createdAt = typeof board?.createdAt === 'string' && board.createdAt ? board.createdAt : memoTimestamp();
   return {
-    id: board?.id || `board-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    id,
     parentId,
-    name,
-    title: name,
-    sortOrder: Number.isFinite(Number(board?.sortOrder)) ? Number(board.sortOrder) : 0,
+    name: fallback?.name || name || id,
+    title: fallback?.title || name || id,
+    sortOrder: fallback?.sortOrder ?? 0,
     createdAt,
     updatedAt: typeof board?.updatedAt === 'string' && board.updatedAt ? board.updatedAt : createdAt
   };
@@ -617,7 +1026,7 @@ function memoFolderDescendantIds(folders, folderId) {
 }
 
 function memoFolderIdForNote(note) {
-  return note?.folderId || note?.boardId || note?.sector || 'memo';
+  return normalizeMemoFolderId(note?.folderId || note?.boardId || note?.sector, note?.planType);
 }
 
 function legacyScheduleFromContent(content) {
@@ -798,13 +1207,10 @@ function noteContentParts(block) {
 
 function readNoteBlocks(input = readStoredAuth()) {
   try {
-    const storageKey = noteBlocksStorageKey(input);
-    migrateLegacyArrayStorage(AI_NOTE_KEY, storageKey);
-    const raw = localStorage.getItem(storageKey);
-    if (raw === null) {
+    const { items: parsed } = readUserArrayStorage(AI_NOTE_KEY, input);
+    if (parsed === null) {
       return defaultNoteBlocks();
     }
-    const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return defaultNoteBlocks();
     const notes = parsed.map(normalizeNoteBlock).filter((note) => !isLegacySampleNote(note));
     const defaults = defaultNoteBlocks();
@@ -825,10 +1231,7 @@ function normalizeNoteBlock(block) {
       ? block.folderId
       : typeof block?.sector === 'string' && block.sector
         ? block.sector
-        : 'memo';
-  const sector = rawBoardId;
-  const boardId = rawBoardId;
-  const projectBlock = boardId === 'project';
+        : 'personal';
   const blockType = ['text', 'file', 'checklist'].includes(block?.type) ? block.type : 'text';
   const fallbackX = 24 + (Math.abs(String(block?.id || '').split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % 180);
   const fallbackY = 24 + (Math.abs(String(block?.id || '').split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % 220);
@@ -836,7 +1239,10 @@ function normalizeNoteBlock(block) {
   const createdAt = typeof block?.createdAt === 'string' && block.createdAt ? block.createdAt : memoTimestamp();
   const updatedAt = typeof block?.updatedAt === 'string' && block.updatedAt ? block.updatedAt : createdAt;
   const schedule = normalizeNoteSchedule(block?.schedule, block);
-  const planType = inferNotePlanType({ block, boardId, title: contentParts.title, content: contentParts.content });
+  const inferredPlanType = inferNotePlanType({ block, boardId: rawBoardId, title: contentParts.title, content: contentParts.content });
+  const boardId = normalizeMemoFolderId(rawBoardId, inferredPlanType);
+  const sector = boardId;
+  const planType = boardId === 'travel' ? 'travel' : 'personal';
   const labels = [...new Set([...normalizeNoteLabels(block?.labels || block?.tags), ...labelsForPlanType(planType)])];
   return {
     id: block?.id || `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -853,10 +1259,10 @@ function normalizeNoteBlock(block) {
     status: ['todo', 'progress', 'review', 'done'].includes(block?.status) ? block.status : 'todo',
     parentId: typeof block?.parentId === 'string' ? block.parentId : '',
     filePath: typeof block?.filePath === 'string' ? block.filePath : '',
-    width: projectBlock ? Math.max(160, Math.min(520, Number(block?.width) || 220)) : Math.max(260, Math.min(920, Number(block?.width) || 760)),
-    height: projectBlock ? Math.max(96, Math.min(360, Number(block?.height) || 120)) : Math.max(48, Math.min(180, Number(block?.height) || 58)),
-    x: projectBlock ? 0 : Math.max(0, Math.min(1600, Number(block?.x) || fallbackX)),
-    y: projectBlock ? 0 : Math.max(0, Math.min(1600, Number(block?.y) || fallbackY)),
+    width: Math.max(260, Math.min(920, Number(block?.width) || 760)),
+    height: Math.max(48, Math.min(180, Number(block?.height) || 58)),
+    x: Math.max(0, Math.min(1600, Number(block?.x) || fallbackX)),
+    y: Math.max(0, Math.min(1600, Number(block?.y) || fallbackY)),
     schedule,
     scheduleEnabled: schedule.enabled,
     scheduleDate: schedule.date,
@@ -955,7 +1361,7 @@ function checklistContentWithItems(block, items) {
 }
 
 function noteScheduleSource(block) {
-  return (block?.boardId || block?.sector) === 'project' ? '프로젝트' : '메모';
+  return memoFolderIdForNote(block) === 'travel' ? '여행' : '메모';
 }
 
 function blockHasScheduleMarker(block) {
@@ -972,13 +1378,13 @@ function parseNoteScheduleBlock(block) {
     .replace(/^일정\s*[:：-]?/i, '')
     .trim();
   if (!title) return null;
-  const boardId = block.boardId || block.sector || 'memo';
+  const boardId = memoFolderIdForNote(block);
   return {
     id: `${source === '프로젝트' ? 'project-note' : 'ai-note'}-${block.id}`,
     title,
     date: schedule.date,
     time: schedule.time,
-    type: source === '프로젝트' ? '업무' : '메모',
+    type: source === '여행' ? '여행' : '메모',
     memo: noteBlockBody(block).trim() || block.content.trim(),
     recurrence: 'none',
     recurrenceEnd: '',
@@ -995,11 +1401,16 @@ function parseNoteScheduleBlock(block) {
 
 function schedulerItemSourcePath(item) {
   if (item?.origin?.path) return item.origin.path;
+  if (item?.origin?.kind === 'workout' || isWorkoutSchedulerItem(item)) return '/workout';
   if (item?.origin?.kind === 'note' && item.origin.blockId) {
-    const boardId = item.origin.boardId || 'memo';
+    const boardId = normalizeMemoFolderId(item.origin.boardId || 'personal');
     return `/notes?board=${encodeURIComponent(boardId)}&block=${encodeURIComponent(item.origin.blockId)}`;
   }
   return '';
+}
+
+function schedulerItemSourceLabel(item) {
+  return isWorkoutSchedulerItem(item) ? '운동' : '메모';
 }
 
 function syncNoteSchedules(blocks) {
@@ -3135,7 +3546,7 @@ const ADMIN1_MEMO_LOGS = [
 
 - [x] /app 홈의 여행 탭이 바로 여행 화면으로 이동하지 않고 전체 오버레이를 열게 변경
 - [x] 여행 오버레이에서 여행지 찾기, 여행 만들기, 저장 코스, 여행 메모를 분리해 선택하게 정리
-- [x] /more에 가계부, 운동, 스터디 준비 중 카드를 기존 여행 카드와 같은 인터페이스로 추가`
+- [x] /more에 가계부, 운동, 독서 카드를 기존 여행 카드와 같은 인터페이스로 추가`
   },
   {
     id: 'admin1-memo-20260601-mobile-home-more-travel-nav',
@@ -3658,7 +4069,7 @@ const ADMIN1_MEMO_LOGS = [
 ];
 
 function canDeleteMemoBoard(board) {
-  return Boolean(board && board.id !== 'project' && board.id !== 'memo');
+  return Boolean(board && !DEFAULT_MEMO_BOARD_ID_SET.has(board.id));
 }
 
 function BoardIcon({ type }) {
@@ -3729,6 +4140,24 @@ function WorkspaceNavigator({ navigate }) {
   );
 }
 
+function mobileProfileForRoute(navigate, fallbackPath = '/app') {
+  const session = readStoredAuth();
+  const isGuest = !session || session.isGuest || session.username === 'guestuser';
+  const displayName = isGuest ? 'Guest' : session.username || 'Member';
+
+  return {
+    name: displayName,
+    label: isGuest ? '로그인' : '내 정보',
+    onClick: () => {
+      if (isGuest) {
+        redirectToLogin(fallbackPath);
+        return;
+      }
+      navigate('/mypage');
+    }
+  };
+}
+
 function noteBlockFilePath(block) {
   if (block.filePath) return block.filePath;
   return `memo-files/${block.id}.md`;
@@ -3740,6 +4169,70 @@ function noteBlockFileContent(block) {
     return `# ${title}\n\n`;
   }
   return memoContentFromTitleAndBlocks(title, block?.blocks || markdownToMemoEditorBlocks(noteBlockBody(block)));
+}
+
+function workspaceMemoId(path) {
+  return `workspace-${String(path || 'memo').toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '')}`;
+}
+
+function workspaceMemoFolderId(path) {
+  const relative = String(path || '').replace(/^memo-files\/?/, '');
+  const [firstSegment] = relative.split('/');
+  if (!firstSegment || /\.[a-z0-9]+$/i.test(firstSegment)) return 'personal';
+  return normalizeMemoFolderId(firstSegment);
+}
+
+function workspaceMemoBlockFromFile(path, content, index = 0) {
+  const timestamp = memoTimestamp();
+  return normalizeNoteBlock({
+    id: workspaceMemoId(path),
+    type: path.toLowerCase().endsWith('.txt') ? 'file' : 'text',
+    content: content || '# 새 메모\n',
+    sector: workspaceMemoFolderId(path),
+    boardId: workspaceMemoFolderId(path),
+    status: 'todo',
+    parentId: '',
+    filePath: path,
+    sortOrder: index,
+    createdAt: timestamp,
+    updatedAt: timestamp
+  });
+}
+
+async function loadWorkspaceMemoBlocks(token, path = 'memo-files', depth = 0) {
+  if (!token || depth > 4) return [];
+  let tree = null;
+  try {
+    tree = await requestJson(`/api/workspace/tree?path=${encodeURIComponent(path)}`, {
+      headers: authHeaders(token)
+    });
+  } catch {
+    return [];
+  }
+
+  const entries = Array.isArray(tree?.entries) ? tree.entries : [];
+  const loaded = await Promise.all(entries.map(async (entry, index) => {
+    if (entry?.type === 'dir') {
+      return loadWorkspaceMemoBlocks(token, entry.path, depth + 1);
+    }
+    if (entry?.type !== 'file' || !/\.(md|txt)$/i.test(entry.name || entry.path || '')) {
+      return [];
+    }
+    try {
+      const content = await requestText(`/api/workspace/file?path=${encodeURIComponent(entry.path)}`, token);
+      return [workspaceMemoBlockFromFile(entry.path, content, index)];
+    } catch {
+      return [];
+    }
+  }));
+
+  return loaded.flat().slice(0, 200);
+}
+
+function mergeNoteBlocks(current, incoming) {
+  const currentNotes = Array.isArray(current) ? current : [];
+  const incomingNotes = Array.isArray(incoming) ? incoming : [];
+  return mergeStorageArrays(currentNotes, incomingNotes).map(normalizeNoteBlock);
 }
 
 function checklistStatsForBlocks(blocks) {
@@ -3850,14 +4343,14 @@ function schedulerPreviewItemsForMode(items, mode) {
   return items
     .filter((item) => schedulerItemMatchesPlanMode(item, mode))
     .slice()
-    .sort((left, right) => `${left.date || ''} ${left.time || '99:99'} ${left.title || ''}`.localeCompare(`${right.date || ''} ${right.time || '99:99'} ${right.title || ''}`))
+    .sort((left, right) => schedulerSortKey(left, true).localeCompare(schedulerSortKey(right, true)))
     .slice(0, 3)
     .map((item) => ({
       id: item.id,
       title: item.title || '제목 없는 일정',
-      time: item.time || '',
+      time: schedulerTimeValue(item),
       date: item.date || '',
-      type: normalizeSchedulerType(item.type),
+      type: schedulerDisplayType(item),
       done: Boolean(item.done)
     }));
 }
@@ -3865,11 +4358,12 @@ function schedulerPreviewItemsForMode(items, mode) {
 function homeScheduleItemFromExpanded(item, extras = {}) {
   return {
     id: item.id,
+    scheduleId: schedulerSourceRecordId(item),
     sourceId: item.sourceId || item.id,
     title: item.title || '제목 없는 일정',
-    time: item.time || '',
+    time: schedulerTimeValue(item),
     date: item.date || '',
-    type: normalizeSchedulerType(item.type),
+    type: schedulerDisplayType(item),
     memo: item.memo || '',
     done: Boolean(item.done),
     recurring: Boolean(item.recurring),
@@ -3937,13 +4431,13 @@ function summarizeAppActivity() {
   const todayItems = expandedWeekItems.filter((item) => item.date === today);
   const todayPreviewItems = todayItems
     .slice()
-    .sort((left, right) => `${left.time || '99:99'} ${left.title || ''}`.localeCompare(`${right.time || '99:99'} ${right.title || ''}`))
+    .sort((left, right) => schedulerSortKey(left).localeCompare(schedulerSortKey(right)))
     .slice(0, 3)
     .map((item) => ({
       id: item.id,
       title: item.title || '제목 없는 일정',
-      time: item.time || '',
-      type: normalizeSchedulerType(item.type),
+      time: schedulerTimeValue(item),
+      type: schedulerDisplayType(item),
       done: Boolean(item.done)
     }));
   const todayDoneItems = todayItems.filter((item) => item.done);
@@ -3951,18 +4445,18 @@ function summarizeAppActivity() {
   const personalTodayDoneItems = personalTodayItems.filter((item) => item.done);
   const personalTodayPreviewItems = personalTodayItems
     .slice()
-    .sort((left, right) => `${left.time || '99:99'} ${left.title || ''}`.localeCompare(`${right.time || '99:99'} ${right.title || ''}`))
+    .sort((left, right) => schedulerSortKey(left).localeCompare(schedulerSortKey(right)))
     .slice(0, 3)
     .map((item) => ({
       id: item.id,
       title: item.title || '제목 없는 일정',
-      time: item.time || '',
-      type: normalizeSchedulerType(item.type),
+      time: schedulerTimeValue(item),
+      type: schedulerDisplayType(item),
       done: Boolean(item.done)
     }));
   const personalTodayScheduleItems = personalTodayItems
     .slice()
-    .sort((left, right) => `${left.time || '99:99'} ${left.title || ''}`.localeCompare(`${right.time || '99:99'} ${right.title || ''}`))
+    .sort((left, right) => schedulerSortKey(left).localeCompare(schedulerSortKey(right)))
     .map((item) => homeScheduleItemFromExpanded(item, {
       weekday: weekDayLabelByDate[item.date] || '',
       dateLabel: formatDateLabel(item.date)
@@ -3972,7 +4466,7 @@ function summarizeAppActivity() {
   const personalWeekItems = expandedWeekItems
     .filter((item) => schedulerItemMatchesPlanMode(item, 'personal'))
     .slice()
-    .sort((left, right) => `${left.date || ''} ${left.time || '99:99'} ${left.title || ''}`.localeCompare(`${right.date || ''} ${right.time || '99:99'} ${right.title || ''}`))
+    .sort((left, right) => schedulerSortKey(left, true).localeCompare(schedulerSortKey(right, true)))
     .map((item) => homeScheduleItemFromExpanded(item, {
       weekday: weekDayLabelByDate[item.date] || '',
       dateLabel: formatDateLabel(item.date)
@@ -3980,7 +4474,7 @@ function summarizeAppActivity() {
   const personalWeekDoneItems = personalWeekItems.filter((item) => item.done);
   const nextSchedule = pendingWeekItems
     .slice()
-    .sort((left, right) => `${left.date} ${left.time}`.localeCompare(`${right.date} ${right.time}`))[0];
+    .sort((left, right) => schedulerSortKey(left, true).localeCompare(schedulerSortKey(right, true)))[0];
   const travelScheduleItems = schedulerItems.filter((item) => item.source === 'travel-plan' || `${item.id || ''}`.startsWith('travel-plan-'));
 
   const boards = readMemoBoards();
@@ -4227,6 +4721,44 @@ function SpaceHomePage({ navigate }) {
   }, []);
 
   useEffect(() => {
+    if (!isMemberSession || !session?.token) return undefined;
+    let cancelled = false;
+
+    const refreshFromWorkspace = async () => {
+      const [workspaceSchedules, workspaceNotes] = await Promise.all([
+        loadWorkspaceSchedulerItems(session.token),
+        loadWorkspaceMemoBlocks(session.token)
+      ]);
+      if (cancelled) return;
+
+      if (workspaceSchedules.length) {
+        const schedulerKey = schedulerStorageKey(session);
+        const mergedSchedules = mergeSchedulerItems(readCurrentSchedulerItems(session), workspaceSchedules);
+        localStorage.setItem(schedulerKey, JSON.stringify(mergedSchedules));
+        window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', {
+          detail: { items: mergedSchedules, storageKey: schedulerKey }
+        }));
+      }
+
+      if (workspaceNotes.length) {
+        const noteBlocksKey = noteBlocksStorageKey(session);
+        const mergedNotes = mergeNoteBlocks(readNoteBlocks(session), workspaceNotes);
+        localStorage.setItem(noteBlocksKey, JSON.stringify(mergedNotes));
+        window.dispatchEvent(new CustomEvent('codex:notes-updated', {
+          detail: { storageKey: noteBlocksKey }
+        }));
+      }
+
+      setAppOverview(summarizeAppActivity() || EMPTY_APP_OVERVIEW);
+    };
+
+    refreshFromWorkspace().catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isMemberSession, session?.token, session?.username]);
+
+  useEffect(() => {
     const refresh = () => setAppOverview(summarizeAppActivity() || EMPTY_APP_OVERVIEW);
     const handleStorage = (event) => {
       const currentAuth = readStoredAuth();
@@ -4327,7 +4859,7 @@ function SpaceHomePage({ navigate }) {
   const toggleHomeSchedule = (item, done) => {
     if (!item?.sourceId && !item?.id) return;
     const schedulerKey = schedulerStorageKey(session);
-    const sourceId = item.sourceId || item.id;
+    const sourceId = item.recurring ? item.sourceId || item.scheduleId || item.id : item.scheduleId || item.id;
     const nextItems = readCurrentSchedulerItems(session).map((source) => {
       if (source.id !== sourceId) return source;
       if (item.recurring) {
@@ -4391,7 +4923,7 @@ function MorePage({ navigate }) {
     {
       key: 'travel',
       title: '여행',
-      description: '여행 코스와 D-Day를 관리해요.',
+      description: '다가오는 여행 일정과 코스를 관리해요.',
       icon: 'trip',
       path: '/travel',
       status: '열기'
@@ -4399,23 +4931,26 @@ function MorePage({ navigate }) {
     {
       key: 'budget',
       title: '가계부',
-      description: '지출 기록과 월 예산 관리는 준비 중이에요.',
+      description: '입금과 출금을 빠르게 기록해요.',
       icon: 'chart',
-      status: '준비 중'
+      path: '/budget',
+      status: '열기'
     },
     {
-      key: 'fitness',
+      key: 'workout',
       title: '운동',
-      description: '운동 루틴과 기록 관리는 준비 중이에요.',
+      description: '오늘 운동 템플릿을 기록해요.',
       icon: 'trophy',
-      status: '준비 중'
+      path: '/workout',
+      status: '열기'
     },
     {
-      key: 'study',
-      title: '스터디',
-      description: '학습 계획과 복습 관리는 준비 중이에요.',
-      icon: 'board',
-      status: '준비 중'
+      key: 'reading',
+      title: '독서',
+      description: '관심있는 책과 읽고있는 책을 관리해요.',
+      icon: 'book',
+      path: '/reading',
+      status: '열기'
     }
   ];
 
@@ -4424,23 +4959,23 @@ function MorePage({ navigate }) {
   }, []);
 
   return (
-    <main className="spaceHome referenceHome">
+    <MobilePageShell
+      activeTab="more"
+      className="spaceHome referenceHome"
+      icon="menu"
+      navigate={navigate}
+      profile={mobileProfileForRoute(navigate, '/more')}
+      title="더보기"
+    >
       <section className="spaceAppFrame appHomeDashboard morePageDashboard" aria-label="더보기">
-        <header className="appHomeHeader">
-          <div className="appHomeTitleGroup">
-            <h1>더보기</h1>
-            <p>필요한 기능을 선택하세요.</p>
-          </div>
-        </header>
-
         <section className="appHomeCard moreFeatureCard" aria-label="확장 기능">
           <div className="moreFeatureList">
             {extraFeatures.map((feature) => (
               <button
                 type="button"
                 key={feature.key}
-                className={feature.key === 'travel' ? '' : 'pending'}
-                aria-disabled={feature.key !== 'travel'}
+                className={feature.path ? '' : 'pending'}
+                aria-disabled={!feature.path}
                 onClick={() => (feature.path ? navigate(feature.path) : undefined)}
               >
                 <span>
@@ -4453,10 +4988,698 @@ function MorePage({ navigate }) {
             ))}
           </div>
         </section>
-
-        <MobileWorkspaceTabs active="more" navigate={navigate} />
       </section>
-    </main>
+    </MobilePageShell>
+  );
+}
+
+function AccountPage({ navigate }) {
+  const [session, setSession] = useState(() => readStoredAuth());
+  const isGuest = !session || session.isGuest || session.username === 'guestuser';
+  const displayName = isGuest ? 'Guest' : session.username || 'Member';
+
+  useEffect(() => {
+    document.title = '내 정보';
+  }, []);
+
+  const logout = () => {
+    localStorage.removeItem(AUTH_KEY);
+    setSession(null);
+    navigate('/app');
+  };
+
+  return (
+    <MobilePageShell
+      activeTab="home"
+      className="spaceHome referenceHome utilityPageShell accountPageShell"
+      icon="user"
+      navigate={navigate}
+      onBack={() => navigate('/app')}
+      profile={mobileProfileForRoute(navigate, '/mypage')}
+      subtitle={isGuest ? '로그인 필요' : '회원 계정'}
+      title="내 정보"
+    >
+      <section className="spaceAppFrame appHomeDashboard utilityPageDashboard" aria-label="내 정보">
+        <section className="utilityPageCard accountSummaryCard">
+          <div className="accountAvatar">{displayName.slice(0, 1).toUpperCase()}</div>
+          <div className="accountSummaryCopy">
+            <strong>{displayName}</strong>
+            <small>{isGuest ? '로그인하면 계정별 데이터가 분리됩니다.' : '회원 세션이 활성화되어 있습니다.'}</small>
+          </div>
+          <dl className="accountDetailList">
+            <div>
+              <dt>상태</dt>
+              <dd>{isGuest ? 'Guest' : 'Member'}</dd>
+            </div>
+            <div>
+              <dt>저장소</dt>
+              <dd>{storageUsername(session)}</dd>
+            </div>
+          </dl>
+          <div className="utilityActionRow">
+            {isGuest ? (
+              <button type="button" className="utilityPrimaryButton" onClick={() => redirectToLogin('/mypage')}>로그인</button>
+            ) : (
+              <button type="button" className="utilitySecondaryButton" onClick={logout}>로그아웃</button>
+            )}
+            <button type="button" className="utilitySecondaryButton" onClick={() => navigate('/app')}>앱 홈</button>
+          </div>
+        </section>
+      </section>
+    </MobilePageShell>
+  );
+}
+
+function BudgetPage({ navigate }) {
+  const session = readStoredAuth();
+  const storageKey = budgetStorageKey(session);
+  const [entries, setEntries] = useState(() => readBudgetEntries(session));
+  const [statusText, setStatusText] = useState('');
+  const today = toDateKey(new Date());
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [calendarMonth, setCalendarMonth] = useState(today.slice(0, 7));
+  const [draft, setDraft] = useState({
+    type: 'withdraw',
+    amount: '',
+    date: today,
+    category: '식비',
+    memo: ''
+  });
+
+  useEffect(() => {
+    document.title = '가계부';
+  }, []);
+
+  const monthDays = useMemo(() => buildMonthDays(calendarMonth), [calendarMonth]);
+  const monthEntries = useMemo(() => entries.filter((entry) => entry.date.startsWith(calendarMonth)), [entries, calendarMonth]);
+  const monthTotals = useMemo(() => summarizeBudgetEntries(monthEntries), [monthEntries]);
+  const monthBalance = monthTotals.income - monthTotals.expense;
+  const selectedDateEntries = useMemo(() => entries
+    .filter((entry) => entry.date === selectedDate)
+    .sort(compareDatedRecords), [entries, selectedDate]);
+  const entriesByDate = useMemo(() => monthEntries.reduce((groups, entry) => {
+    const current = groups[entry.date] || { income: 0, expense: 0, count: 0 };
+    if (entry.type === 'deposit') {
+      current.income += entry.amount;
+    } else {
+      current.expense += entry.amount;
+    }
+    current.count += 1;
+    groups[entry.date] = current;
+    return groups;
+  }, {}), [monthEntries]);
+
+  const setDraftValue = (field, value) => {
+    setDraft((current) => ({ ...current, [field]: value }));
+    if (field === 'date' && isDateKey(value)) {
+      setSelectedDate(value);
+      setCalendarMonth(value.slice(0, 7));
+    }
+  };
+
+  const submitEntry = (event) => {
+    event.preventDefault();
+    const amount = Math.round(Math.abs(Number(draft.amount) || 0));
+    if (!amount) {
+      setStatusText('금액을 입력하세요.');
+      return;
+    }
+    const type = draft.type === 'deposit' ? 'deposit' : 'withdraw';
+    const nextEntry = normalizeBudgetEntry({
+      id: `budget-${Date.now()}`,
+      type,
+      amount,
+      date: isDateKey(draft.date) ? draft.date : toDateKey(new Date()),
+      category: draft.category,
+      memo: draft.memo,
+      createdAt: new Date().toISOString()
+    });
+    if (!nextEntry) return;
+    setEntries((current) => saveBudgetEntries(storageKey, [nextEntry, ...current]));
+    setSelectedDate(nextEntry.date);
+    setCalendarMonth(nextEntry.date.slice(0, 7));
+    setDraft((current) => ({ ...current, amount: '', memo: '' }));
+    setStatusText(`${type === 'deposit' ? '입금' : '출금'}을 기록했습니다.`);
+  };
+
+  const deleteEntry = (entryId) => {
+    setEntries((current) => saveBudgetEntries(storageKey, current.filter((entry) => entry.id !== entryId)));
+  };
+
+  return (
+    <MobilePageShell
+      activeTab="more"
+      className="spaceHome referenceHome utilityPageShell budgetPageShell"
+      icon="chart"
+      navigate={navigate}
+      onBack={() => navigate('/more')}
+      profile={mobileProfileForRoute(navigate, '/budget')}
+      subtitle="입금 · 출금 · 잔액"
+      title="가계부"
+    >
+      <section className="spaceAppFrame appHomeDashboard utilityPageDashboard" aria-label="가계부">
+        <section className="utilityStatsGrid" aria-label="가계부 요약">
+          <article className="utilityStat income">
+            <span>{calendarMonth} 입금</span>
+            <strong>{formatKoreanMoney(monthTotals.income)}</strong>
+          </article>
+          <article className="utilityStat expense">
+            <span>{calendarMonth} 출금</span>
+            <strong>{formatKoreanMoney(monthTotals.expense)}</strong>
+          </article>
+          <article className="utilityStat balance">
+            <span>월 잔액</span>
+            <strong>{formatKoreanMoney(monthBalance)}</strong>
+          </article>
+        </section>
+
+        <section className="utilityPageCard budgetCalendarCard" aria-label="월간 가계부 달력">
+          <header className="utilitySectionHeader budgetCalendarHeader">
+            <button type="button" className="utilityIconButton" onClick={() => setCalendarMonth((current) => moveMonthKey(current, -1))} aria-label="이전 달">
+              <MemoNavIcon type="chevronLeft" />
+            </button>
+            <div>
+              <strong>{calendarMonth}</strong>
+              <small>한 달 입금/출금</small>
+            </div>
+            <button type="button" className="utilityIconButton" onClick={() => setCalendarMonth((current) => moveMonthKey(current, 1))} aria-label="다음 달">
+              <MemoNavIcon type="chevronRight" />
+            </button>
+          </header>
+          <div className="budgetCalendarWeekdays" aria-hidden="true">
+            {['일', '월', '화', '수', '목', '금', '토'].map((day) => <span key={day}>{day}</span>)}
+          </div>
+          <div className="budgetCalendarGrid">
+            {monthDays.map((day) => {
+              const summary = entriesByDate[day.key] || { income: 0, expense: 0, count: 0 };
+              const selected = selectedDate === day.key;
+              return (
+                <button
+                  type="button"
+                  key={day.key}
+                  className={[
+                    'budgetCalendarDay',
+                    day.currentMonth ? '' : 'muted',
+                    selected ? 'selected' : '',
+                    summary.count ? 'hasEntry' : ''
+                  ].filter(Boolean).join(' ')}
+                  onClick={() => {
+                    setSelectedDate(day.key);
+                    setDraft((current) => ({ ...current, date: day.key }));
+                  }}
+                >
+                  <span>{day.dayNumber}</span>
+                  <strong>{summary.income ? `+${KRW_FORMATTER.format(summary.income)}` : ''}</strong>
+                  <em>{summary.expense ? `-${KRW_FORMATTER.format(summary.expense)}` : ''}</em>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <form className="utilityPageCard utilityForm" onSubmit={submitEntry}>
+          <div className="utilitySegment" aria-label="거래 유형">
+            <button
+              type="button"
+              className={draft.type === 'deposit' ? 'active' : ''}
+              onClick={() => setDraft((current) => ({ ...current, type: 'deposit', category: current.category || '급여' }))}
+            >
+              입금
+            </button>
+            <button
+              type="button"
+              className={draft.type === 'withdraw' ? 'active' : ''}
+              onClick={() => setDraft((current) => ({ ...current, type: 'withdraw', category: current.category || '생활비' }))}
+            >
+              출금
+            </button>
+          </div>
+          <div className="utilityFormGrid">
+            <label className="utilityField">
+              <span>금액</span>
+              <input
+                type="number"
+                min="0"
+                inputMode="numeric"
+                placeholder="0"
+                value={draft.amount}
+                onChange={(event) => setDraftValue('amount', event.target.value)}
+              />
+            </label>
+            <label className="utilityField">
+              <span>날짜</span>
+              <input
+                type="date"
+                value={draft.date}
+                onChange={(event) => setDraftValue('date', event.target.value)}
+              />
+            </label>
+            <label className="utilityField">
+              <span>카테고리</span>
+              <input
+                value={draft.category}
+                onChange={(event) => setDraftValue('category', event.target.value)}
+                placeholder="식비"
+              />
+            </label>
+            <label className="utilityField full">
+              <span>메모</span>
+              <input
+                value={draft.memo}
+                onChange={(event) => setDraftValue('memo', event.target.value)}
+                placeholder="간단한 메모"
+              />
+            </label>
+          </div>
+          <button type="submit" className="utilityPrimaryButton">기록하기</button>
+          {statusText ? <p className="utilityStatusText">{statusText}</p> : null}
+        </form>
+
+        <section className="utilityPageCard utilityRecentCard" aria-label="선택한 날짜 가계부 내역">
+          <header className="utilitySectionHeader">
+            <strong>{selectedDate} 내역</strong>
+            <small>{selectedDateEntries.length}개</small>
+          </header>
+          <div className="utilityRecentList">
+            {selectedDateEntries.map((entry) => (
+              <article className="utilityLogRow budgetLogRow" key={entry.id}>
+                <span className={`utilityLogBadge ${entry.type}`}>{entry.type === 'deposit' ? '입금' : '출금'}</span>
+                <div>
+                  <strong>{entry.category}</strong>
+                  <small>{[entry.date, entry.memo].filter(Boolean).join(' · ')}</small>
+                </div>
+                <em className={entry.type}>{formatKoreanMoney(entry.amount)}</em>
+                <button type="button" className="utilityIconButton" onClick={() => deleteEntry(entry.id)} aria-label="내역 삭제">
+                  <MemoNavIcon type="trash" />
+                </button>
+              </article>
+            ))}
+            {selectedDateEntries.length ? null : <p className="utilityEmptyText">선택한 날짜의 기록이 없습니다.</p>}
+          </div>
+        </section>
+      </section>
+    </MobilePageShell>
+  );
+}
+
+function WorkoutPage({ navigate }) {
+  const session = readStoredAuth();
+  const storageKey = workoutStorageKey(session);
+  const profileKey = workoutProfileStorageKey(session);
+  const schedulerKey = schedulerStorageKey(session);
+  const today = toDateKey(new Date());
+  const [logs, setLogs] = useState(() => readWorkoutLogs(session));
+  const [profile, setProfile] = useState(() => readWorkoutProfile(session));
+  const [statusText, setStatusText] = useState('');
+  const [draft, setDraft] = useState(() => ({
+    templateId: WORKOUT_TEMPLATES[0].id,
+    date: today,
+    startTime: '',
+    durationMinutes: '',
+    caloriesBurned: '',
+    addToSchedule: true,
+    memo: '',
+    exercises: workoutExercisesForTemplate(WORKOUT_TEMPLATES[0])
+  }));
+  const activeTemplate = useMemo(
+    () => WORKOUT_TEMPLATES.find((template) => template.id === draft.templateId) || WORKOUT_TEMPLATES[0],
+    [draft.templateId]
+  );
+  const isCardioTemplate = activeTemplate.id === 'cardio';
+  const normalizedDraftExercises = useMemo(
+    () => draft.exercises.map(normalizeWorkoutExercise).filter(Boolean),
+    [draft.exercises]
+  );
+  const draftDurationMinutes = useMemo(() => workoutDurationMinutes({
+    templateId: draft.templateId,
+    durationMinutes: draft.durationMinutes,
+    exercises: normalizedDraftExercises
+  }), [draft.durationMinutes, draft.templateId, normalizedDraftExercises]);
+  const draftEstimatedCalories = useMemo(() => estimateWorkoutCalories({
+    templateId: draft.templateId,
+    durationMinutes: draft.durationMinutes,
+    exercises: normalizedDraftExercises,
+    profile
+  }), [draft.durationMinutes, draft.templateId, normalizedDraftExercises, profile]);
+  const draftManualCalories = parseWorkoutNumber(draft.caloriesBurned);
+  const draftCaloriesBurned = draftManualCalories || draftEstimatedCalories;
+  const basalMetabolicRate = useMemo(() => calculateWorkoutBmr(profile), [profile]);
+  const recentLogs = useMemo(() => [...logs].sort(compareDatedRecords).slice(0, 10), [logs]);
+  const monthKey = draft.date.slice(0, 7);
+  const monthLogs = useMemo(() => logs.filter((log) => log.date.startsWith(monthKey)), [logs, monthKey]);
+  const monthDuration = monthLogs.reduce((total, log) => total + (Number(log.durationMinutes) || 0), 0);
+  const monthExerciseCount = monthLogs.reduce((total, log) => total + (log.exercises?.length || 0), 0);
+  const monthCalories = monthLogs.reduce((total, log) => total + (
+    Number(log.caloriesBurned)
+    || estimateWorkoutCalories({
+      templateId: log.templateId,
+      durationMinutes: log.durationMinutes,
+      exercises: log.exercises,
+      profile
+    })
+    || 0
+  ), 0);
+
+  useEffect(() => {
+    document.title = '운동';
+  }, []);
+
+  useEffect(() => {
+    saveWorkoutProfile(profileKey, profile);
+  }, [profile, profileKey]);
+
+  const selectTemplate = (template) => {
+    setDraft((current) => ({
+      ...current,
+      templateId: template.id,
+      durationMinutes: template.id === 'cardio' ? '' : current.durationMinutes,
+      exercises: workoutExercisesForTemplate(template)
+    }));
+  };
+
+  const updateWorkoutDraft = (field, value) => {
+    setDraft((current) => ({ ...current, [field]: value }));
+  };
+
+  const updateWorkoutProfile = (field, value) => {
+    setProfile((current) => normalizeWorkoutProfile({ ...current, [field]: value }));
+  };
+
+  const updateWorkoutExercise = (index, field, value) => {
+    setDraft((current) => ({
+      ...current,
+      exercises: current.exercises.map((exercise, exerciseIndex) => (
+        exerciseIndex === index ? { ...exercise, [field]: value } : exercise
+      ))
+    }));
+  };
+
+  const updateCardioExerciseActivity = (index, activityId) => {
+    const activity = cardioActivityForId(activityId) || WORKOUT_CARDIO_ACTIVITIES[0];
+    setDraft((current) => ({
+      ...current,
+      exercises: current.exercises.map((exercise, exerciseIndex) => (
+        exerciseIndex === index
+          ? {
+            ...exercise,
+            mode: 'cardio',
+            name: activity.name,
+            weight: '',
+            durationMinutes: String(activity.durationMinutes),
+            met: String(activity.met)
+          }
+          : exercise
+      ))
+    }));
+  };
+
+  const addWorkoutExercise = () => {
+    setDraft((current) => ({
+      ...current,
+      exercises: [
+        ...current.exercises,
+        current.templateId === 'cardio'
+          ? createCardioExercise(WORKOUT_CARDIO_ACTIVITIES[current.exercises.length % WORKOUT_CARDIO_ACTIVITIES.length])
+          : { id: `exercise-${Date.now()}`, name: '', sets: '', reps: '', weight: '' }
+      ]
+    }));
+  };
+
+  const removeWorkoutExercise = (index) => {
+    setDraft((current) => ({
+      ...current,
+      exercises: current.exercises.filter((_, exerciseIndex) => exerciseIndex !== index)
+    }));
+  };
+
+  const submitWorkout = (event) => {
+    event.preventDefault();
+    const template = WORKOUT_TEMPLATES.find((item) => item.id === draft.templateId) || WORKOUT_TEMPLATES[0];
+    const exercises = draft.exercises.map(normalizeWorkoutExercise).filter(Boolean);
+    if (!exercises.length) {
+      setStatusText('운동 항목을 하나 이상 입력하세요.');
+      return;
+    }
+    const durationMinutes = workoutDurationMinutes({
+      templateId: template.id,
+      durationMinutes: draft.durationMinutes,
+      exercises
+    });
+    const caloriesBurned = parseWorkoutNumber(draft.caloriesBurned) || estimateWorkoutCalories({
+      templateId: template.id,
+      durationMinutes,
+      exercises,
+      profile
+    });
+    const nextLog = normalizeWorkoutLog({
+      id: `workout-${Date.now()}`,
+      templateId: template.id,
+      title: template.title,
+      date: isDateKey(draft.date) ? draft.date : today,
+      startTime: draft.startTime,
+      durationMinutes,
+      caloriesBurned: caloriesBurned || 0,
+      bodyWeightKg: parseWorkoutNumber(profile.weightKg),
+      bodyHeightCm: parseWorkoutNumber(profile.heightCm),
+      memo: draft.memo,
+      exercises,
+      createdAt: new Date().toISOString()
+    });
+    setLogs((current) => saveWorkoutLogs(storageKey, [nextLog, ...current]));
+    if (draft.addToSchedule) {
+      upsertWorkoutScheduleItem(schedulerKey, buildWorkoutScheduleItem(nextLog, draft.startTime));
+    }
+    setDraft((current) => ({ ...current, startTime: '', durationMinutes: '', caloriesBurned: '', memo: '', addToSchedule: true }));
+    setStatusText(draft.addToSchedule
+      ? `${nextLog.date} ${nextLog.title} 운동과 일정을 기록했습니다.${nextLog.caloriesBurned ? ` 예상 소모 ${formatKcal(nextLog.caloriesBurned)}.` : ''}`
+      : `${nextLog.date} ${nextLog.title} 운동을 기록했습니다.${nextLog.caloriesBurned ? ` 예상 소모 ${formatKcal(nextLog.caloriesBurned)}.` : ''}`);
+  };
+
+  const deleteLog = (logId) => {
+    setLogs((current) => saveWorkoutLogs(storageKey, current.filter((log) => log.id !== logId)));
+    const removedSchedule = deleteWorkoutScheduleForLog(schedulerKey, logId);
+    setStatusText(removedSchedule ? '운동 기록과 연결된 일정도 삭제했습니다.' : '운동 기록을 삭제했습니다.');
+  };
+
+  return (
+    <MobilePageShell
+      activeTab="more"
+      className="spaceHome referenceHome utilityPageShell workoutPageShell"
+      icon="trophy"
+      navigate={navigate}
+      onBack={() => navigate('/more')}
+      profile={mobileProfileForRoute(navigate, '/workout')}
+      subtitle="상체 · 하체 · 유산소"
+      title="운동"
+    >
+      <section className="spaceAppFrame appHomeDashboard utilityPageDashboard" aria-label="운동">
+        <section className="utilityStatsGrid workoutStatsGrid" aria-label="운동 요약">
+          <article className="utilityStat">
+            <span>{monthKey} 운동일</span>
+            <strong>{monthLogs.length}일</strong>
+          </article>
+          <article className="utilityStat">
+            <span>운동 시간</span>
+            <strong>{monthDuration}분</strong>
+          </article>
+          <article className="utilityStat">
+            <span>기록 종목</span>
+            <strong>{monthExerciseCount}개</strong>
+          </article>
+          <article className="utilityStat">
+            <span>소모 칼로리</span>
+            <strong>{formatKcal(monthCalories)}</strong>
+          </article>
+        </section>
+
+        <section className="utilityPageCard workoutProfileCard" aria-label="몸 정보와 칼로리 계산">
+          <header className="utilitySectionHeader">
+            <strong>내 몸 정보</strong>
+            <small>BMR · kcal</small>
+          </header>
+          <div className="utilityFormGrid workoutProfileGrid">
+            <label className="utilityField">
+              <span>몸무게(kg)</span>
+              <input type="number" min="0" step="0.1" inputMode="decimal" placeholder="kg" value={profile.weightKg} onChange={(event) => updateWorkoutProfile('weightKg', event.target.value)} />
+            </label>
+            <label className="utilityField">
+              <span>키(cm)</span>
+              <input type="number" min="0" step="0.1" inputMode="decimal" placeholder="cm" value={profile.heightCm} onChange={(event) => updateWorkoutProfile('heightCm', event.target.value)} />
+            </label>
+            <label className="utilityField">
+              <span>나이</span>
+              <input type="number" min="1" inputMode="numeric" value={profile.age} onChange={(event) => updateWorkoutProfile('age', event.target.value)} />
+            </label>
+            <label className="utilityField">
+              <span>성별</span>
+              <select value={profile.sex} onChange={(event) => updateWorkoutProfile('sex', event.target.value)}>
+                <option value="male">남성</option>
+                <option value="female">여성</option>
+              </select>
+            </label>
+          </div>
+          <div className="workoutMetricGrid" aria-label="운동 계산 결과">
+            <article>
+              <span>기초대사량</span>
+              <strong>{basalMetabolicRate ? formatKcal(basalMetabolicRate) : '-'}</strong>
+              <small>하루 기준</small>
+            </article>
+            <article>
+              <span>이번 운동</span>
+              <strong>{draftCaloriesBurned ? formatKcal(draftCaloriesBurned) : '-'}</strong>
+              <small>{draftDurationMinutes ? `${draftDurationMinutes}분` : '시간 필요'}</small>
+            </article>
+            <article>
+              <span>{monthKey} 소모</span>
+              <strong>{formatKcal(monthCalories)}</strong>
+              <small>기록 기준</small>
+            </article>
+          </div>
+        </section>
+
+        <form className="utilityPageCard workoutRecordCard" aria-label="운동 기록" onSubmit={submitWorkout}>
+          <header className="utilitySectionHeader">
+            <strong>운동 기록</strong>
+            <small>{isCardioTemplate ? '분 · MET · 칼로리' : '세트 · 횟수 · 무게'}</small>
+          </header>
+          <div className="workoutTemplateTabs" aria-label="운동 종류">
+            {WORKOUT_TEMPLATES.map((template) => (
+              <button
+                type="button"
+                key={template.id}
+                className={draft.templateId === template.id ? 'active' : ''}
+                onClick={() => selectTemplate(template)}
+              >
+                {template.title}
+              </button>
+            ))}
+          </div>
+          <div className="utilityFormGrid workoutMetaGrid">
+            <label className="utilityField">
+              <span>날짜</span>
+              <input type="date" value={draft.date} onChange={(event) => updateWorkoutDraft('date', event.target.value)} />
+            </label>
+            <label className="utilityField">
+              <span>시작 시간</span>
+              <input type="time" value={draft.startTime} onChange={(event) => updateWorkoutDraft('startTime', event.target.value)} />
+            </label>
+            <label className="utilityField">
+              <span>{isCardioTemplate ? '총 유산소(분)' : '운동 시간(분)'}</span>
+              <input
+                type="number"
+                min="0"
+                inputMode="numeric"
+                placeholder="분"
+                readOnly={isCardioTemplate}
+                value={isCardioTemplate ? draftDurationMinutes || '' : draft.durationMinutes}
+                onChange={(event) => updateWorkoutDraft('durationMinutes', event.target.value)}
+              />
+            </label>
+            <label className="utilityField">
+              <span>소모 칼로리(kcal)</span>
+              <input
+                type="number"
+                min="0"
+                inputMode="numeric"
+                placeholder={draftEstimatedCalories ? `${draftEstimatedCalories}` : '자동 계산 또는 직접 입력'}
+                value={draft.caloriesBurned}
+                onChange={(event) => updateWorkoutDraft('caloriesBurned', event.target.value)}
+              />
+            </label>
+          </div>
+          <label className={`workoutScheduleToggle ${draft.addToSchedule ? 'enabled' : ''}`}>
+            <input
+              type="checkbox"
+              checked={draft.addToSchedule}
+              aria-label="스케줄러 등록"
+              onChange={(event) => updateWorkoutDraft('addToSchedule', event.target.checked)}
+            />
+            <span className="workoutScheduleSwitch" aria-hidden="true">
+              <i />
+            </span>
+            <span className="workoutScheduleCopy">
+              <strong>스케줄러 등록</strong>
+              <small>{draft.startTime ? '시작 시간과 운동 시간(분)을 일정에 함께 저장합니다.' : '시작 시간이 비어 있으면 날짜 기준 일정으로 저장합니다.'}</small>
+            </span>
+            <em>{draft.addToSchedule ? 'ON' : 'OFF'}</em>
+          </label>
+          <div className={`workoutExerciseTable ${isCardioTemplate ? 'cardio' : ''}`} aria-label="운동 항목">
+            <div className="workoutExerciseHeader">
+              <span>{isCardioTemplate ? '유산소' : '운동명'}</span>
+              <span>{isCardioTemplate ? '분' : '세트'}</span>
+              <span>{isCardioTemplate ? 'MET' : '횟수'}</span>
+              <span>{isCardioTemplate ? '소모' : '무게'}</span>
+              <span />
+            </div>
+            {draft.exercises.map((exercise, index) => {
+              const exerciseCalories = workoutExerciseCalories(exercise, profile);
+              return isCardioTemplate ? (
+                <div className="workoutExerciseRow workoutCardioRow" key={exercise.id || index}>
+                  <select value={cardioActivityIdForExercise(exercise)} onChange={(event) => updateCardioExerciseActivity(index, event.target.value)}>
+                    {WORKOUT_CARDIO_ACTIVITIES.map((activity) => (
+                      <option value={activity.id} key={activity.id}>{activity.name}</option>
+                    ))}
+                  </select>
+                  <input type="number" min="0" inputMode="numeric" value={exercise.durationMinutes || ''} onChange={(event) => updateWorkoutExercise(index, 'durationMinutes', event.target.value)} placeholder="분" />
+                  <input type="number" min="0" step="0.1" inputMode="decimal" value={exercise.met || ''} onChange={(event) => updateWorkoutExercise(index, 'met', event.target.value)} placeholder="MET" />
+                  <span className="workoutExerciseCalories">{exerciseCalories ? formatKcal(exerciseCalories) : '-'}</span>
+                  <button type="button" className="utilityIconButton" onClick={() => removeWorkoutExercise(index)} aria-label="운동 항목 삭제">
+                    <MemoNavIcon type="trash" />
+                  </button>
+                </div>
+              ) : (
+                <div className="workoutExerciseRow" key={exercise.id || index}>
+                  <input value={exercise.name} onChange={(event) => updateWorkoutExercise(index, 'name', event.target.value)} placeholder="운동명" />
+                  <input value={exercise.sets} onChange={(event) => updateWorkoutExercise(index, 'sets', event.target.value)} placeholder="3" />
+                  <input value={exercise.reps} onChange={(event) => updateWorkoutExercise(index, 'reps', event.target.value)} placeholder="10" />
+                  <input value={exercise.weight} onChange={(event) => updateWorkoutExercise(index, 'weight', event.target.value)} placeholder="kg" />
+                  <button type="button" className="utilityIconButton" onClick={() => removeWorkoutExercise(index)} aria-label="운동 항목 삭제">
+                    <MemoNavIcon type="trash" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+          <button type="button" className="utilitySecondaryButton" onClick={addWorkoutExercise}>운동 추가</button>
+          <label className="utilityField full">
+            <span>메모</span>
+            <input value={draft.memo} onChange={(event) => updateWorkoutDraft('memo', event.target.value)} placeholder="컨디션, 통증, 다음 목표" />
+          </label>
+          <button type="submit" className="utilityPrimaryButton">운동 기록 저장</button>
+          {statusText ? <p className="utilityStatusText">{statusText}</p> : null}
+        </form>
+
+        <section className="utilityPageCard utilityRecentCard" aria-label="최근 운동 기록">
+          <header className="utilitySectionHeader">
+            <strong>최근 운동 로그</strong>
+            <small>{logs.length}개</small>
+          </header>
+          <div className="utilityRecentList">
+            {recentLogs.map((log) => {
+              const logCalories = Number(log.caloriesBurned) || estimateWorkoutCalories({
+                templateId: log.templateId,
+                durationMinutes: log.durationMinutes,
+                exercises: log.exercises,
+                profile
+              });
+              return (
+                <article className="utilityLogRow workoutLogRow" key={log.id}>
+                  <span className="utilityLogBadge workout">{log.title.slice(0, 1)}</span>
+                  <div>
+                    <strong>{log.date}{log.startTime ? ` · ${log.startTime}` : ''} · {log.title}{log.durationMinutes ? ` · ${log.durationMinutes}분` : ''}{logCalories ? ` · ${formatKcal(logCalories)}` : ''}</strong>
+                    <small>{workoutLogSummary(log)}{log.memo ? ` · ${log.memo}` : ''}</small>
+                  </div>
+                  <button type="button" className="utilityIconButton" onClick={() => deleteLog(log.id)} aria-label="운동 로그 삭제">
+                    <MemoNavIcon type="trash" />
+                  </button>
+                </article>
+              );
+            })}
+            {recentLogs.length ? null : <p className="utilityEmptyText">오늘 운동을 기록해보세요.</p>}
+          </div>
+        </section>
+      </section>
+    </MobilePageShell>
   );
 }
 
@@ -4630,7 +5853,7 @@ function AiNotePage({ navigate }) {
     const nextBlock = {
       id: nextId,
       type: blockType,
-      content: blockType === 'file' ? '새 텍스트 파일' : blockType === 'checklist' ? '# 새 체크리스트\n\n- [ ] 첫 번째 항목' : '새 메모',
+      content: blockType === 'file' ? '새 메모' : blockType === 'checklist' ? '# 새 체크리스트\n\n- [ ] 첫 번째 항목' : '새 메모',
       sector: boardId,
       boardId,
       status,
@@ -5561,7 +6784,6 @@ function MemoDetail({
             </div>
             <div>
               <button type="button" onClick={onAddFolder}><MemoNavIcon type="folder" />하위 폴더</button>
-              <button type="button" onClick={onCreate}><MemoNavIcon type="plus" />새 파일</button>
             </div>
           </header>
           <div className="notesFolderExplorerGrid">
@@ -5588,7 +6810,6 @@ function MemoDetail({
             <div className="notesEmptyState large">
               <strong>{memoFolderName(folder)} 폴더가 비어 있습니다</strong>
               <span>하위 폴더를 만들거나 메모를 새로 작성하세요.</span>
-              <button type="button" onClick={onCreate}><MemoNavIcon type="plus" />새 파일</button>
             </div>
           ) : null}
         </div>
@@ -5636,7 +6857,7 @@ function NotionNotesPage({ navigate }) {
   });
   const [folders, setFolders] = useState(() => readMemoBoards(session));
   const [notes, setNotes] = useState(() => readNoteBlocks(session));
-  const [activeFolderId, setActiveFolderId] = useState(routeTargetRef.current.folderId || 'memo');
+  const [activeFolderId, setActiveFolderId] = useState(normalizeMemoFolderId(routeTargetRef.current.folderId || 'personal'));
   const [activeId, setActiveId] = useState(routeTargetRef.current.noteId || '');
   const [mobileView, setMobileView] = useState(routeTargetRef.current.noteId ? 'detail' : 'folders');
   const [statusText, setStatusText] = useState('');
@@ -5647,6 +6868,23 @@ function NotionNotesPage({ navigate }) {
   useEffect(() => {
     document.title = '메모';
   }, []);
+
+  useEffect(() => {
+    if (!session?.token || session.isGuest || session.username === 'guestuser') return undefined;
+    let cancelled = false;
+    loadWorkspaceMemoBlocks(session.token).then((workspaceNotes) => {
+      if (cancelled || !workspaceNotes.length) return;
+      setNotes((current) => {
+        const merged = mergeNoteBlocks(current, workspaceNotes);
+        if (merged.length === current.length) return current;
+        setStatusText(`서버 workspace에서 메모 ${merged.length - current.length}개를 복구했습니다.`);
+        return merged;
+      });
+    }).catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.token, session?.username]);
 
   useEffect(() => {
     localStorage.setItem(noteBlocksKey, JSON.stringify(notes));
@@ -5663,11 +6901,7 @@ function NotionNotesPage({ navigate }) {
 
   useEffect(() => {
     if (session?.username !== 'admin1') return;
-    setFolders((current) => (
-      current.some((folder) => folder.id === 'memo')
-        ? current
-        : [...current, { id: 'memo', parentId: null, name: '메모', title: '메모', sortOrder: 1 }]
-    ));
+    setFolders(defaultMemoBoards());
     setNotes((current) => {
       const existingIds = new Set(current.map((note) => note.id));
       const missingTasks = ADMIN1_BOARD_TASKS.filter((task) => !existingIds.has(task.id));
@@ -5679,8 +6913,8 @@ function NotionNotesPage({ navigate }) {
           type: 'text',
           title: task.title,
           content: `# ${task.title}\n\n- [ ] 진행 상태 확인\n- [ ] 운영 화면 확인`,
-          sector: 'project',
-          boardId: 'project',
+          sector: 'personal',
+          boardId: 'personal',
           status: task.status,
           parentId: '',
           filePath: `memo-files/admin1/${task.id}.md`,
@@ -5690,8 +6924,8 @@ function NotionNotesPage({ navigate }) {
           id: memo.id,
           type: 'text',
           content: memo.content,
-          sector: 'memo',
-          boardId: 'memo',
+          sector: 'personal',
+          boardId: 'personal',
           status: 'done',
           parentId: '',
           filePath: `memo-files/admin1/${memo.id}.md`,
@@ -5713,9 +6947,9 @@ function NotionNotesPage({ navigate }) {
       ...current,
       ...missingFolderIds.map((folderId, index) => ({
         id: folderId,
-        parentId: null,
-        name: folderId === 'project' ? '프로젝트' : folderId === 'memo' ? '메모' : folderId,
-        title: folderId === 'project' ? '프로젝트' : folderId === 'memo' ? '메모' : folderId,
+        parentId: DEFAULT_MEMO_BOARD_ID_SET.has(folderId) ? null : 'personal',
+        name: folderId === 'travel' ? '여행' : folderId === 'personal' ? '개인' : folderId,
+        title: folderId === 'travel' ? '여행' : folderId === 'personal' ? '개인' : folderId,
         sortOrder: current.length + index,
         createdAt,
         updatedAt: createdAt
@@ -5725,7 +6959,7 @@ function NotionNotesPage({ navigate }) {
 
   useEffect(() => {
     if (!folders.some((folder) => folder.id === activeFolderId)) {
-      setActiveFolderId(folders.find((folder) => folder.id === 'memo')?.id || folders[0]?.id || '');
+      setActiveFolderId(folders.find((folder) => folder.id === 'personal')?.id || folders[0]?.id || '');
     }
   }, [activeFolderId, folders]);
 
@@ -5742,7 +6976,7 @@ function NotionNotesPage({ navigate }) {
     const targetNote = notes.find((note) => note.id === target.noteId);
     if (!targetNote) return;
     target.applied = true;
-    setActiveFolderId(target.folderId || memoFolderIdForNote(targetNote));
+    setActiveFolderId(normalizeMemoFolderId(target.folderId || memoFolderIdForNote(targetNote), targetNote.planType));
     setActiveId(targetNote.id);
     setMobileView('detail');
   }, [notes]);
@@ -5764,7 +6998,7 @@ function NotionNotesPage({ navigate }) {
   const accountPath = isGuestSession ? loginUrlForCurrentLocation('/notes') : '/mypage';
   const accountLabel = isGuestSession ? '로그인' : '내 정보';
   const accountInitial = accountName.slice(0, 1).toUpperCase();
-  const primaryMemoFolderId = folders.find((folder) => folder.id === 'memo')?.id || activeFolderId || folders[0]?.id || 'memo';
+  const primaryMemoFolderId = folders.find((folder) => folder.id === 'personal')?.id || activeFolderId || folders[0]?.id || 'personal';
   const mobileFolder = activeFolder || folders.find((folder) => folder.id === primaryMemoFolderId) || folders[0] || null;
   const mobileFolderId = mobileFolder?.id || '';
   const mobileParentFolder = mobileFolder?.parentId ? folders.find((folder) => folder.id === mobileFolder.parentId) || null : null;
@@ -5775,10 +7009,12 @@ function NotionNotesPage({ navigate }) {
     .filter((note) => memoFolderIdForNote(note) === mobileFolderId && !note.parentId)
     .slice()
     .sort((left, right) => noteBlockTitle(left).localeCompare(noteBlockTitle(right), 'ko'));
+  const mobileRootFolders = folders.filter((folder) => DEFAULT_MEMO_BOARD_ID_SET.has(folder.id));
 
   const replaceNotesRoute = (folderId = activeFolderId, noteId = '') => {
     const params = new URLSearchParams();
-    if (folderId) params.set('board', folderId);
+    const normalizedFolderId = normalizeMemoFolderId(folderId || 'personal');
+    if (normalizedFolderId) params.set('board', normalizedFolderId);
     if (noteId) params.set('block', noteId);
     window.history.replaceState({}, '', params.toString() ? `/notes?${params.toString()}` : '/notes');
   };
@@ -5791,7 +7027,7 @@ function NotionNotesPage({ navigate }) {
       const title = typeof next.title === 'string' && next.title.trim() ? next.title.trim() : noteBlockTitle(next);
       const bodyBlocks = Array.isArray(next.blocks) && next.blocks.length ? next.blocks.map(normalizeMemoEditorBlock) : [newMemoEditorBlock('paragraph')];
       const schedule = normalizeNoteSchedule(next.schedule, next);
-      const folderId = next.folderId || next.boardId || next.sector || 'memo';
+      const folderId = normalizeMemoFolderId(next.folderId || next.boardId || next.sector || 'personal', next.planType);
       return {
         ...next,
         title,
@@ -5809,11 +7045,12 @@ function NotionNotesPage({ navigate }) {
   };
 
   const addFolder = (parentId = null) => {
-    const siblings = memoFolderChildren(folders, parentId);
+    const targetParentId = normalizeMemoFolderId(parentId || activeFolderId || 'personal');
+    const siblings = memoFolderChildren(folders, targetParentId);
     const createdAt = memoTimestamp();
     const nextFolder = {
       id: `folder-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      parentId: parentId || null,
+      parentId: targetParentId,
       name: '새 폴더',
       title: '새 폴더',
       sortOrder: siblings.length,
@@ -5836,12 +7073,12 @@ function NotionNotesPage({ navigate }) {
   const performDeleteFolder = (id) => {
     const target = folders.find((folder) => folder.id === id);
     if (!canDeleteMemoBoard(target)) {
-      setStatusText('기본 프로젝트 폴더는 삭제하지 않습니다.');
+      setStatusText('기본 폴더는 삭제하지 않습니다.');
       return;
     }
     const deleteIds = memoFolderDescendantIds(folders, id);
     const fallbackFolder = (target?.parentId && folders.find((folder) => folder.id === target.parentId))
-      || folders.find((folder) => folder.id === 'memo' && !deleteIds.has(folder.id))
+      || folders.find((folder) => folder.id === 'personal' && !deleteIds.has(folder.id))
       || folders.find((folder) => !deleteIds.has(folder.id))
       || null;
     setFolders((current) => current.filter((folder) => !deleteIds.has(folder.id)));
@@ -5857,7 +7094,7 @@ function NotionNotesPage({ navigate }) {
   const deleteFolder = (id) => {
     const target = folders.find((folder) => folder.id === id);
     if (!canDeleteMemoBoard(target)) {
-      setStatusText('기본 프로젝트 폴더는 삭제하지 않습니다.');
+      setStatusText('기본 폴더는 삭제하지 않습니다.');
       return;
     }
     setNotesDialog({
@@ -5869,6 +7106,7 @@ function NotionNotesPage({ navigate }) {
   };
 
   const createNote = (folderId = activeFolderId) => {
+    folderId = normalizeMemoFolderId(folderId || 'personal');
     const title = '새 메모';
     const bodyBlocks = [newMemoEditorBlock('paragraph')];
     const nextNote = normalizeNoteBlock({
@@ -5933,6 +7171,7 @@ function NotionNotesPage({ navigate }) {
   };
 
   const selectFolder = (folderId) => {
+    folderId = normalizeMemoFolderId(folderId || 'personal');
     setActiveFolderId(folderId);
     setActiveId('');
     setMobileExplorerMenuId('');
@@ -5949,6 +7188,7 @@ function NotionNotesPage({ navigate }) {
   };
 
   const openMobileFolder = (folderId) => {
+    folderId = normalizeMemoFolderId(folderId || 'personal');
     setActiveFolderId(folderId);
     setActiveId('');
     setMobileExplorerMenuId('');
@@ -6001,15 +7241,17 @@ function NotionNotesPage({ navigate }) {
           </span>
           <MemoNavIcon type="chevronRight" />
         </button>
-        <button
-          type="button"
-          className="notesMobileExplorerGear"
-          onClick={() => toggleMobileExplorerMenu(menuId)}
-          aria-label={`${memoFolderName(folder)} 설정`}
-          aria-expanded={menuOpen}
-        >
-          <MemoNavIcon type="settings" />
-        </button>
+        {canDeleteMemoBoard(folder) ? (
+          <button
+            type="button"
+            className="notesMobileExplorerGear"
+            onClick={() => toggleMobileExplorerMenu(menuId)}
+            aria-label={`${memoFolderName(folder)} 설정`}
+            aria-expanded={menuOpen}
+          >
+            <MemoNavIcon type="settings" />
+          </button>
+        ) : null}
         {menuOpen ? (
           <div className="notesMobileExplorerMenu" aria-label={`${memoFolderName(folder)} 폴더 작업`}>
             <button type="button" onClick={() => renameFolderFromMenu(folder)}><MemoNavIcon type="edit" />이름 변경</button>
@@ -6047,7 +7289,7 @@ function NotionNotesPage({ navigate }) {
           <MemoNavIcon type="file" />
           <span>
             <strong>{noteBlockTitle(note)}</strong>
-            <small>text/plain</small>
+            <small>{memoNoteUpdatedAt(note) || '최근 수정'}</small>
           </span>
           {activeId === note.id ? <b className="notesMobileSelectionBadge file">열림</b> : null}
         </button>
@@ -6126,8 +7368,30 @@ function NotionNotesPage({ navigate }) {
   };
 
   return (
-    <main className="aiNoteShell notesShell">
-      <WorkspaceNavigator active="notes" navigate={navigate} />
+    <MobilePageShell
+      activeTab="notes"
+      className="aiNoteShell notesShell"
+      hideBottomNav={mobileView === 'detail'}
+      icon="board"
+      navigate={navigate}
+      onBack={mobileView === 'detail' ? () => {
+        setMobileView('folders');
+        setMobileExplorerMenuId('');
+      } : undefined}
+      profile={{
+        name: accountName,
+        label: accountLabel,
+        onClick: () => {
+          if (accountPath.startsWith('http://') || accountPath.startsWith('https://')) {
+            window.location.assign(accountPath);
+            return;
+          }
+          navigate(accountPath);
+        }
+      }}
+      subtitle={mobileView === 'detail' && activeNote ? noteBlockTitle(activeNote) : memoFolderName(mobileFolder)}
+      title="메모"
+    >
       <section className="notesWorkspace" aria-label="메모 작업 화면">
         <div className={`notesDesktopLayout ${notesSidebarCollapsed ? 'sidebarCollapsed' : ''}`}>
           <aside className="notesSidebarRail" aria-label="메모 사이드바">
@@ -6188,44 +7452,26 @@ function NotionNotesPage({ navigate }) {
         </div>
 
         <div className={`notesMobileWorkspace view-${mobileView}`}>
-          {mobileView === 'folders' ? null : renderMobileHeader()}
           {mobileView === 'folders' ? (
             <section className="notesMobileFolders">
-              <section className="notesMobileHomeTop" aria-label="메모 홈">
-                <div className="notesMobileAppBar">
-                  <button type="button" className="notesMobileAppIconButton" onClick={() => navigate('/app')} aria-label="홈">
-                    <MemoNavIcon type="home" />
-                  </button>
-                  <strong>메모</strong>
-                  <button
-                    type="button"
-                    className="notesMobileAccountButton"
-                    onClick={() => {
-                      if (accountPath.startsWith('http://') || accountPath.startsWith('https://')) {
-                        window.location.assign(accountPath);
-                        return;
-                      }
-                      navigate(accountPath);
-                    }}
-                    aria-label={accountLabel}
-                  >
-                    <span>{accountInitial}</span>
-                    <strong>{accountName}</strong>
-                    <small>{accountLabel}</small>
-                  </button>
+              <section className="notesMobileContentSection notesMobileFileSection" id="notes-mobile-folder-section" aria-label="메모">
+                <div className="notesMobileDirectorySwitch" aria-label="메모 탭">
+                  {mobileRootFolders.map((folder) => (
+                    <button
+                      type="button"
+                      key={folder.id}
+                      className={mobileFolderId === folder.id ? 'active' : ''}
+                      onClick={() => openMobileFolder(folder.id)}
+                    >
+                      <MemoNavIcon type="folder" />
+                      {memoFolderName(folder)}
+                    </button>
+                  ))}
                 </div>
-                <div className="notesMobileProfileRow">
-                  <div className="notesMobileTitleBlock">
-                    <span>{accountName}</span>
-                    <strong>텍스트 파일</strong>
-                  </div>
+                <div className="notesMobileCurrentActions" aria-label={`${mobilePathLabel} 폴더 작업`}>
+                  <button type="button" className="primary" onClick={() => createNote(mobileFolderId || primaryMemoFolderId)}><MemoNavIcon type="plus" />새 메모</button>
+                  <button type="button" onClick={() => addFolder(mobileFolderId || primaryMemoFolderId)}><MemoNavIcon type="folder" />새 폴더</button>
                 </div>
-              </section>
-              <section className="notesMobileContentSection notesMobileFileSection" id="notes-mobile-folder-section" aria-label="텍스트 파일">
-                <header className="notesMobileContentHeader">
-                  <strong>파일 목록</strong>
-                  <button type="button" onClick={() => createNote(mobileFolderId || primaryMemoFolderId)}><MemoNavIcon type="plus" />새 파일</button>
-                </header>
                 <div className="notesMobilePathBar" aria-label="현재 경로">
                   {mobileParentFolder ? (
                     <button type="button" className="notesMobilePathBack" onClick={() => openMobileFolder(mobileParentFolder.id)}>
@@ -6234,18 +7480,29 @@ function NotionNotesPage({ navigate }) {
                   ) : null}
                   <span className="notesMobilePathText">{mobilePathLabel}</span>
                 </div>
-                <div className="notesMobileCurrentActions" aria-label={`${mobilePathLabel} 폴더 작업`}>
-                  <button type="button" onClick={() => addFolder(mobileFolderId || null)}><MemoNavIcon type="folder" />새 폴더</button>
-                  <button type="button" onClick={() => createNote(mobileFolderId || primaryMemoFolderId)}><MemoNavIcon type="plus" />새 메모</button>
+                <div className="notesMobileSectionLabel">
+                  <strong>폴더 목록</strong>
+                  <small>{mobileChildFolders.length}개</small>
                 </div>
                 <div className="notesMobileExplorerList">
                   {mobileChildFolders.map(renderMobileExplorerFolder)}
-                  {mobileFiles.map(renderMobileExplorerFile)}
-                  {!mobileChildFolders.length && !mobileFiles.length ? (
+                  {!mobileChildFolders.length ? (
                     <article className="notesMobileEmptyState compact">
-                      <strong>폴더가 비어 있습니다.</strong>
-                      <span>하위 폴더나 메모를 추가하세요.</span>
-                      <button type="button" onClick={() => addFolder(mobileFolderId || null)}>폴더 추가</button>
+                      <strong>하위 폴더가 없습니다.</strong>
+                      <span>새 폴더를 만들어 메모를 나눠보세요.</span>
+                    </article>
+                  ) : null}
+                </div>
+                <div className="notesMobileSectionLabel">
+                  <strong>메모 목록</strong>
+                  <small>{mobileFiles.length}개</small>
+                </div>
+                <div className="notesMobileExplorerList">
+                  {mobileFiles.map(renderMobileExplorerFile)}
+                  {!mobileFiles.length ? (
+                    <article className="notesMobileEmptyState compact">
+                      <strong>메모가 없습니다.</strong>
+                      <span>+ 새 메모로 바로 작성하세요.</span>
                     </article>
                   ) : null}
                 </div>
@@ -6324,8 +7581,7 @@ function NotionNotesPage({ navigate }) {
         ) : null}
         {statusText ? <p className="notesStatusText">{statusText}</p> : null}
       </section>
-      <MobileWorkspaceTabs active="notes" navigate={navigate} onNotes={() => setMobileView('folders')} />
-    </main>
+    </MobilePageShell>
   );
 }
 
@@ -6334,6 +7590,8 @@ function SchedulerPage({ navigate, embedded = false }) {
   const schedulerTitle = session?.username && session.username !== 'guestuser' ? `${session.username}님의 일정` : '내 일정';
   const schedulerKey = schedulerStorageKey(session);
   const [items, setItems] = useState(() => readCurrentSchedulerItems(session));
+  const memberSchedulerSession = Boolean(session?.token && !session.isGuest && session.username !== 'guestuser');
+  const [workspaceSchedulerLoaded, setWorkspaceSchedulerLoaded] = useState(!memberSchedulerSession);
   const [filter, setFilter] = useState('전체');
   const [selectedDate, setSelectedDate] = useState(toDateKey(new Date()));
   const [calendarMonth, setCalendarMonth] = useState(toDateKey(new Date()).slice(0, 7));
@@ -6356,11 +7614,34 @@ function SchedulerPage({ navigate, embedded = false }) {
   }, [embedded]);
 
   useEffect(() => {
+    setWorkspaceSchedulerLoaded(!memberSchedulerSession);
+    if (!memberSchedulerSession) return undefined;
+    let cancelled = false;
+    loadWorkspaceSchedulerItems(session.token).then((workspaceItems) => {
+      if (cancelled) return;
+      if (workspaceItems.length) {
+        setItems((current) => mergeSchedulerItems(current, workspaceItems));
+      }
+      setWorkspaceSchedulerLoaded(true);
+    }).catch(() => {
+      if (!cancelled) setWorkspaceSchedulerLoaded(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [memberSchedulerSession, session?.token, session?.username]);
+
+  useEffect(() => {
     localStorage.setItem(schedulerKey, JSON.stringify(items));
     if (localStorage.getItem(SCHEDULER_KEY)) {
       localStorage.removeItem(SCHEDULER_KEY);
     }
-  }, [items, schedulerKey]);
+    if (!memberSchedulerSession || !workspaceSchedulerLoaded) return undefined;
+    const saveTimer = window.setTimeout(() => {
+      saveWorkspaceSchedulerItems(session.token, items).catch(() => {});
+    }, 500);
+    return () => window.clearTimeout(saveTimer);
+  }, [items, schedulerKey, memberSchedulerSession, workspaceSchedulerLoaded, session?.token]);
 
   useEffect(() => {
     const syncItems = () => setItems(readCurrentSchedulerItems(session));
@@ -6410,7 +7691,7 @@ function SchedulerPage({ navigate, embedded = false }) {
   const todayItems = expandedItems
     .filter((item) => item.date === today)
     .slice()
-    .sort((left, right) => left.time.localeCompare(right.time));
+    .sort((left, right) => schedulerSortKey(left).localeCompare(schedulerSortKey(right)));
   const pendingItems = expandedItems.filter((item) => !item.done);
   const doneItems = expandedItems.filter((item) => item.done);
   const completionRate = expandedItems.length ? Math.round((doneItems.length / expandedItems.length) * 100) : 0;
@@ -6425,16 +7706,17 @@ function SchedulerPage({ navigate, embedded = false }) {
     return groups;
   }, {}), [expandedItems]);
   const todayTimeline = useMemo(() => [
-    { key: 'morning', label: '오전', range: '06:00 - 11:59', items: todayItems.filter((item) => Number(item.time.slice(0, 2)) >= 6 && Number(item.time.slice(0, 2)) < 12) },
-    { key: 'afternoon', label: '오후', range: '12:00 - 17:59', items: todayItems.filter((item) => Number(item.time.slice(0, 2)) >= 12 && Number(item.time.slice(0, 2)) < 18) },
-    { key: 'evening', label: '저녁', range: '18:00 - 23:59', items: todayItems.filter((item) => Number(item.time.slice(0, 2)) >= 18) },
-    { key: 'early', label: '새벽', range: '00:00 - 05:59', items: todayItems.filter((item) => Number(item.time.slice(0, 2)) < 6) }
+    { key: 'all-day', label: '종일', range: '날짜 기준', items: todayItems.filter((item) => !schedulerTimeValue(item)) },
+    { key: 'morning', label: '오전', range: '06:00 - 11:59', items: todayItems.filter((item) => Number(schedulerTimeValue(item).slice(0, 2)) >= 6 && Number(schedulerTimeValue(item).slice(0, 2)) < 12) },
+    { key: 'afternoon', label: '오후', range: '12:00 - 17:59', items: todayItems.filter((item) => Number(schedulerTimeValue(item).slice(0, 2)) >= 12 && Number(schedulerTimeValue(item).slice(0, 2)) < 18) },
+    { key: 'evening', label: '저녁', range: '18:00 - 23:59', items: todayItems.filter((item) => Number(schedulerTimeValue(item).slice(0, 2)) >= 18) },
+    { key: 'early', label: '새벽', range: '00:00 - 05:59', items: todayItems.filter((item) => schedulerTimeValue(item) && Number(schedulerTimeValue(item).slice(0, 2)) < 6) }
   ], [todayItems]);
   const visibleItems = expandedItems
     .filter((item) => item.date === selectedDate)
-    .filter((item) => filter === '전체' || item.type === filter || (filter === '완료' && item.done))
+    .filter((item) => filter === '전체' || schedulerDisplayType(item) === filter || (filter === '완료' && item.done))
     .slice()
-    .sort((left, right) => `${left.date} ${left.time}`.localeCompare(`${right.date} ${right.time}`));
+    .sort((left, right) => schedulerSortKey(left, true).localeCompare(schedulerSortKey(right, true)));
   const weekItems = weekDays.flatMap((day) => itemsByDate[day.key] || []);
   const weekDoneCount = weekItems.filter((item) => item.done).length;
   const weekCompletionRate = weekItems.length ? Math.round((weekDoneCount / weekItems.length) * 100) : 0;
@@ -6488,8 +7770,9 @@ function SchedulerPage({ navigate, embedded = false }) {
 
   const updateVisibleItem = (item, patch) => {
     if (item.recurring && Object.prototype.hasOwnProperty.call(patch, 'done')) {
+      const sourceId = item.sourceId || item.id;
       setItems((current) => current.map((source) => {
-        if (source.id !== item.sourceId) return source;
+        if (source.id !== sourceId) return source;
         return {
           ...source,
           doneOverrides: {
@@ -6500,7 +7783,7 @@ function SchedulerPage({ navigate, embedded = false }) {
       }));
       return;
     }
-    updateItem(item.sourceId || item.id, patch);
+    updateItem(schedulerSourceRecordId(item), patch);
   };
 
   const deleteVisibleItem = (item) => {
@@ -6510,7 +7793,7 @@ function SchedulerPage({ navigate, embedded = false }) {
   const confirmDeleteVisibleItem = (event) => {
     event.preventDefault();
     if (!schedulerDeleteTarget) return;
-    deleteItem(schedulerDeleteTarget.sourceId || schedulerDeleteTarget.id);
+    deleteItem(schedulerSourceRecordId(schedulerDeleteTarget));
     setSchedulerDeleteTarget(null);
   };
 
@@ -6573,12 +7856,12 @@ function SchedulerPage({ navigate, embedded = false }) {
                     <button
                       key={item.id}
                       type="button"
-                      className={item.done ? 'done' : ''}
+                      className={[item.done ? 'done' : '', isWorkoutSchedulerItem(item) ? 'workoutScheduleItem' : ''].filter(Boolean).join(' ')}
                       onClick={() => updateVisibleItem(item, { done: !item.done })}
                     >
-                      <time>{item.time}</time>
+                      <time>{schedulerTimeLabel(item)}</time>
                       <strong>{item.title}</strong>
-                      <span>{item.type}{item.recurring ? ` · ${item.recurrenceLabel}` : ''}</span>
+                      <span>{schedulerDisplayType(item)}{item.recurring ? ` · ${item.recurrenceLabel}` : ''}</span>
                     </button>
                   ))}
                 </div>
@@ -6591,19 +7874,53 @@ function SchedulerPage({ navigate, embedded = false }) {
     </aside>
   );
 
+  const weekPanel = (
+    <section className="schedulerLinkedSchedule schedulerWeekPanel">
+      <div className="schedulerLinkedHeader">
+        <div>
+          <h2>이번 주 일정</h2>
+          <p>{today} 기준 · {weekRangeLabel}</p>
+        </div>
+      </div>
+      <div className="schedulerWeekSlots">
+        {weekDays.filter((day) => (itemsByDate[day.key] || []).length).map((day) => {
+          const dayItems = (itemsByDate[day.key] || []).slice().sort((left, right) => schedulerSortKey(left).localeCompare(schedulerSortKey(right)));
+          return (
+            <button
+              key={day.key}
+              type="button"
+              className={[
+                day.key === selectedDate ? 'selected' : '',
+                day.key === today ? 'today' : '',
+                dayItems.some(isWorkoutSchedulerItem) ? 'workoutScheduleDay' : ''
+              ].filter(Boolean).join(' ')}
+              onClick={() => {
+                setSelectedDate(day.key);
+                setCalendarMonth(day.key.slice(0, 7));
+                setDraft((current) => ({ ...current, date: day.key }));
+              }}
+            >
+              <strong>{day.weekday}</strong>
+              <span>{formatDateLabel(day.key)}</span>
+              <small>{dayItems.length}개</small>
+              <div>
+                {dayItems.slice(0, 3).map((item) => <em key={item.id}>{schedulerTimeLabel(item)} {item.title}{item.recurring ? ' · 반복' : ''}</em>)}
+                {dayItems.length > 3 ? <em>+{dayItems.length - 3}개 더</em> : null}
+              </div>
+            </button>
+          );
+        })}
+        {weekItems.length ? null : <p className="schedulerEmptyInline">이번 주는 아직 여유가 있어요. 천천히 채워보세요.</p>}
+      </div>
+    </section>
+  );
+
   const schedulerContent = (
       <section className="schedulerPage">
-        <header className="schedulerHero">
+        <header className="schedulerHero mobileSchedulerTitle">
           <div>
-            <span className="schedulerPageIcon"><MemoNavIcon type="calendar" /></span>
             <h1>{schedulerTitle}</h1>
-            <p>기록에서 찾아낸 소중한 할 일과 약속들을 보기 쉽게 모았어요.</p>
-          </div>
-          <div className="schedulerStats">
-            <article><span>오늘 달성률</span><strong>{todayCompletionRate}%</strong><small>{todayDoneCount}/{todayItems.length}</small></article>
-            <article><span>금주 달성률</span><strong>{weekCompletionRate}%</strong><small>{weekDoneCount}/{weekItems.length}</small></article>
-            <article><span>전체 달성률</span><strong>{completionRate}%</strong><small>{doneItems.length}/{expandedItems.length}</small></article>
-            <article><span>미완료</span><strong>{pendingItems.length}</strong><small>남은 일정</small></article>
+            <p>{today} · 오늘 일정 {todayItems.length}개 · 완료 {todayDoneCount}개</p>
           </div>
         </header>
         <div className="schedulerAddDock">
@@ -6657,7 +7974,7 @@ function SchedulerPage({ navigate, embedded = false }) {
           </label>
           <button type="submit"><MemoNavIcon type="plus" /> 저장</button>
         </form> : null}
-        {todayPanel}
+        {weekPanel}
         <section className="schedulerDatabase">
           <div className="schedulerCalendarPanel">
             <div className="schedulerCalendarHeader">
@@ -6699,43 +8016,6 @@ function SchedulerPage({ navigate, embedded = false }) {
                 </button>
               ))}
             </div>
-            <div className="schedulerLinkedSchedule">
-              <div className="schedulerLinkedHeader">
-                <div>
-                  <h3>금주 일정</h3>
-                  <p>{today} 기준 · {weekRangeLabel} 일정</p>
-                </div>
-              </div>
-              <div className="schedulerWeekSlots">
-                {weekDays.filter((day) => (itemsByDate[day.key] || []).length).map((day) => {
-                  const dayItems = (itemsByDate[day.key] || []).slice().sort((left, right) => left.time.localeCompare(right.time));
-                  return (
-                    <button
-                      key={day.key}
-                      type="button"
-                      className={[
-                        day.key === selectedDate ? 'selected' : '',
-                        day.key === today ? 'today' : ''
-                      ].filter(Boolean).join(' ')}
-                      onClick={() => {
-                        setSelectedDate(day.key);
-                        setCalendarMonth(day.key.slice(0, 7));
-                        setDraft((current) => ({ ...current, date: day.key }));
-                      }}
-                    >
-                      <strong>{day.weekday}</strong>
-                      <span>{formatDateLabel(day.key)}</span>
-                      <small>{dayItems.length}개</small>
-                      <div>
-                        {dayItems.slice(0, 3).map((item) => <em key={item.id}>{item.time} {item.title}{item.recurring ? ' · 반복' : ''}</em>)}
-                        {dayItems.length > 3 ? <em>+{dayItems.length - 3}개 더</em> : null}
-                      </div>
-                    </button>
-                  );
-                })}
-                {weekItems.length ? null : <p className="schedulerEmptyInline">이번 주는 아직 여유가 있어요. 천천히 채워보세요.</p>}
-              </div>
-            </div>
           </div>
           <div className="schedulerBoardHeader">
             <div>
@@ -6760,17 +8040,19 @@ function SchedulerPage({ navigate, embedded = false }) {
             </div>
             {visibleItems.map((item) => {
               const sourcePath = schedulerItemSourcePath(item);
+              const workoutItem = isWorkoutSchedulerItem(item);
               return (
-                <article className={`schedulerItem ${item.done ? 'done' : ''}`} key={item.id}>
+                <article className={['schedulerItem', item.done ? 'done' : '', workoutItem ? 'workoutScheduleItem' : ''].filter(Boolean).join(' ')} key={item.id}>
                   <div className="schedulerNameCell">
                     <button type="button" className="schedulerCheck" onClick={() => updateVisibleItem(item, { done: !item.done })}>{item.done ? '✓' : ''}</button>
+                    {workoutItem ? <span className="schedulerWorkoutIcon" title="운동"><MemoNavIcon type="trophy" /></span> : null}
                     <strong>{item.title}</strong>
                   </div>
-                  <span className="schedulerTypePill">{item.type}</span>
-                  <time>{item.date} · {item.time}</time>
+                  <span className={`schedulerTypePill ${workoutItem ? 'workout' : ''}`}>{schedulerDisplayType(item)}</span>
+                  <time>{item.date} · {schedulerTimeLabel(item)}</time>
                   <small>{[item.memo || '메모 없음', item.recurring ? item.recurrenceLabel : ''].filter(Boolean).join(' · ')}</small>
                   <div className="schedulerActionsCell">
-                    {sourcePath ? <button type="button" className="schedulerSourceLink" onClick={() => navigate(sourcePath)}>메모</button> : null}
+                    {sourcePath ? <button type="button" className="schedulerSourceLink" onClick={() => navigate(sourcePath)}>{schedulerItemSourceLabel(item)}</button> : null}
                     <button type="button" className="schedulerDelete" onClick={() => deleteVisibleItem(item)}>{item.recurring ? '반복삭제' : '삭제'}</button>
                   </div>
                 </article>
@@ -6787,12 +8069,18 @@ function SchedulerPage({ navigate, embedded = false }) {
   }
 
   return (
-    <main className="schedulerShell">
-      <WorkspaceNavigator active="schedule" navigate={navigate} />
+    <MobilePageShell
+      activeTab="schedule"
+      className="schedulerShell"
+      icon="calendar"
+      navigate={navigate}
+      profile={mobileProfileForRoute(navigate, '/scheduler')}
+      subtitle="오늘과 이번 주"
+      title="일정"
+    >
       {schedulerContent}
       {schedulerDeleteDialog}
-      <MobileWorkspaceTabs active="schedule" navigate={navigate} />
-    </main>
+    </MobilePageShell>
   );
 }
 
@@ -6830,6 +8118,7 @@ export default function App() {
     : routePath === '/connections'
       ? APP_SHORTCUTS.dataConnections.path
       : '';
+  const activeRoutePath = redirectPath || routePath;
 
   useEffect(() => {
     if (redirectPath) {
@@ -6838,47 +8127,59 @@ export default function App() {
     }
   }, [redirectPath]);
 
-  if (routePath === '/analysis' || routePath.startsWith('/analysis/')) {
+  if (activeRoutePath === '/analysis' || activeRoutePath.startsWith('/analysis/')) {
     return <AnalysisFileEditorPage navigate={navigate} />;
   }
 
-  if (routePath === '/analysisadmin' || routePath.startsWith('/analysisadmin/')) {
+  if (activeRoutePath === '/analysisadmin' || activeRoutePath.startsWith('/analysisadmin/')) {
     return <WorkspaceApp navigate={navigate} />;
   }
 
-  if (routePath === '/scheduler' || routePath.startsWith('/scheduler/')) {
+  if (activeRoutePath === '/scheduler' || activeRoutePath.startsWith('/scheduler/')) {
     return <SchedulerPage navigate={navigate} />;
   }
 
-  if (routePath === '/connect' || routePath.startsWith('/connect/')) {
+  if (activeRoutePath === '/connect' || activeRoutePath.startsWith('/connect/')) {
     return <ConnectionsPage navigate={navigate} />;
   }
 
-  if (routePath === '/notes' || routePath.startsWith('/notes/')) {
+  if (activeRoutePath === '/notes' || activeRoutePath.startsWith('/notes/')) {
     return <NotionNotesPage navigate={navigate} />;
   }
 
-  if (routePath === '/portfolio' || routePath.startsWith('/portfolio/')) {
+  if (activeRoutePath === '/portfolio' || activeRoutePath.startsWith('/portfolio/')) {
     return <PortfolioHomePage navigate={navigate} />;
   }
 
-  if (routePath === '/more' || routePath.startsWith('/more/')) {
+  if (activeRoutePath === '/more' || activeRoutePath.startsWith('/more/')) {
     return <MorePage navigate={navigate} />;
   }
 
-  if (routePath === '/login') {
+  if (activeRoutePath === '/mypage' || activeRoutePath.startsWith('/mypage/')) {
+    return <AccountPage navigate={navigate} />;
+  }
+
+  if (activeRoutePath === '/budget' || activeRoutePath.startsWith('/budget/')) {
+    return <BudgetPage navigate={navigate} />;
+  }
+
+  if (activeRoutePath === '/workout' || activeRoutePath.startsWith('/workout/')) {
+    return <WorkoutPage navigate={navigate} />;
+  }
+
+  if (activeRoutePath === '/reading' || activeRoutePath.startsWith('/reading/')) {
+    return <ReadingPage navigate={navigate} />;
+  }
+
+  if (activeRoutePath === '/login') {
     return <AppAuthPage mode="login" navigate={navigate} />;
   }
 
-  if (routePath === '/signup') {
+  if (activeRoutePath === '/signup') {
     return <AppAuthPage mode="signup" navigate={navigate} />;
   }
 
-  if (redirectPath) {
-    return null;
-  }
-
-  if (routePath === '/app' || routePath.startsWith('/app/')) {
+  if (activeRoutePath === '/app' || activeRoutePath.startsWith('/app/')) {
     return <SpaceHomePage navigate={navigate} />;
   }
 

@@ -43,7 +43,15 @@
 @import './styles/localtrip-travel-refresh.css';
 @import './styles/blocknote-memo.css';
 @import './styles/workspace-cleanup.css';
+@import './styles/localtrip-simple-travel.css';
+@import './styles/notes-rounded-directories.css';
+@import './styles/mobile-app-shell.css';
+@import './styles/desktop-app-shell.css';
+@import './styles/localtrip-mobile-plan.css';
+@import './styles/workout-scheduler.css';
+@import './styles/reading-library.css';
 
+@media (max-width: 900px) {
 #root {
   width: min(100%, 430px);
   min-height: 100vh;
@@ -294,4 +302,5 @@
   background: #111827 !important;
   color: #ffffff !important;
   box-shadow: none !important;
+}
 }

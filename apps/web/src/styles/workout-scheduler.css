@@ -1,0 +1,263 @@
+.workoutProfileCard {
+  grid-column: 1 / -1;
+}
+
+.workoutProfileGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mobilePageShell .workoutStatsGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.workoutPageShell .utilityField select,
+.workoutPageShell .workoutExerciseRow select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid #dbe7ef;
+  border-radius: 8px;
+  background: #f8fbff;
+  color: #111827;
+  padding: 0 10px;
+  font: inherit;
+  font-weight: 850;
+  outline: none;
+}
+
+.workoutPageShell .utilityField select:focus,
+.workoutPageShell .workoutExerciseRow select:focus {
+  border-color: rgba(16, 185, 129, 0.62);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+}
+
+.workoutPageShell input[readonly] {
+  color: #475569;
+  background: #eef6f8;
+}
+
+.workoutMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.workoutMetricGrid article {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #dbe7ef;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.workoutMetricGrid span,
+.workoutMetricGrid small {
+  color: #64748b;
+  font-size: 0.74rem;
+  line-height: 1.2;
+  font-weight: 850;
+}
+
+.workoutMetricGrid strong {
+  min-width: 0;
+  color: #111827;
+  font-size: 1.02rem;
+  line-height: 1.15;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.workoutExerciseTable.cardio .workoutExerciseHeader,
+.workoutExerciseTable.cardio .workoutExerciseRow {
+  grid-template-columns: minmax(140px, 1.35fr) minmax(64px, 0.55fr) minmax(64px, 0.55fr) minmax(82px, 0.75fr) 38px;
+}
+
+.workoutExerciseCalories {
+  min-width: 0;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dbe7ef;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f766e;
+  padding: 0 8px;
+  font-size: 0.8rem;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.workoutScheduleToggle {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #dbe7ef;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #334155;
+  padding: 12px;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.workoutScheduleToggle.enabled {
+  border-color: #86efac;
+  background: #ecfdf5;
+  color: #065f46;
+  box-shadow: 0 10px 24px rgba(16, 185, 129, 0.12);
+}
+
+.workoutScheduleToggle:focus-within {
+  outline: 3px solid rgba(16, 185, 129, 0.18);
+  outline-offset: 2px;
+}
+
+.workoutScheduleToggle input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.workoutScheduleSwitch {
+  width: 48px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #cbd5e1;
+  padding: 3px;
+  transition: background 0.16s ease;
+}
+
+.workoutScheduleSwitch i {
+  width: 22px;
+  height: 22px;
+  display: block;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+  transform: translateX(0);
+  transition: transform 0.16s ease;
+}
+
+.workoutScheduleToggle.enabled .workoutScheduleSwitch {
+  background: #10b981;
+}
+
+.workoutScheduleToggle.enabled .workoutScheduleSwitch i {
+  transform: translateX(20px);
+}
+
+.workoutScheduleCopy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.workoutScheduleToggle strong {
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.workoutScheduleToggle small {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.workoutScheduleToggle.enabled small {
+  color: #047857;
+}
+
+.workoutScheduleToggle em {
+  min-width: 42px;
+  display: inline-flex;
+  justify-content: center;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #475569;
+  padding: 5px 8px;
+  font-size: 0.74rem;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.workoutScheduleToggle.enabled em {
+  background: #dcfce7;
+  color: #047857;
+}
+
+.schedulerItem.workoutScheduleItem {
+  border-color: #bbf7d0 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #ecfdf5 100%) !important;
+}
+
+.schedulerTypePill.workout {
+  background: #dcfce7 !important;
+  color: #047857 !important;
+}
+
+.schedulerWorkoutIcon {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #047857;
+}
+
+.schedulerWorkoutIcon .memoNavIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.schedulerTodayEvents button.workoutScheduleItem {
+  border-color: #bbf7d0 !important;
+  background: #ecfdf5 !important;
+}
+
+.schedulerWeekSlots button.workoutScheduleDay {
+  border-color: #86efac !important;
+  background: linear-gradient(180deg, #ffffff 0%, #ecfdf5 100%) !important;
+}
+
+@media (max-width: 520px) {
+  .mobilePageShell .workoutStatsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .workoutProfileGrid,
+  .workoutMetricGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .workoutExerciseTable.cardio .workoutExerciseRow {
+    grid-template-columns: minmax(0, 1fr) 62px 62px 76px 34px;
+    gap: 6px;
+  }
+
+  .workoutPageShell .workoutExerciseRow select {
+    font-size: 0.84rem;
+    padding: 0 6px;
+  }
+
+  .workoutExerciseCalories {
+    padding: 0 4px;
+    font-size: 0.68rem;
+  }
+
+  .workoutScheduleToggle {
+    border-radius: 14px;
+  }
+}

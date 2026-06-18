@@ -1,0 +1,155 @@
+@media (min-width: 901px) {
+  #root {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 100vh;
+    margin: 0;
+    background: transparent !important;
+  }
+
+  .mobilePageShell {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: visible !important;
+    background: transparent !important;
+  }
+
+  .mobilePageShell > .mobilePageHeader,
+  .mobilePageShell > .mobileWorkspaceTabs,
+  .mobilePageShell .mobileWorkspaceTabs {
+    display: none !important;
+  }
+
+  .mobilePageContent {
+    display: block !important;
+    min-width: 0;
+  }
+
+  .mobilePageShell.spaceHome.referenceHome:not(.utilityPageShell) .mobilePageContent {
+    min-height: 100vh !important;
+    display: grid !important;
+    align-items: start !important;
+    justify-items: center !important;
+    padding: 32px !important;
+    background: #f6f8fb !important;
+  }
+
+  .mobilePageShell.spaceHome.referenceHome:not(.utilityPageShell) .spaceAppFrame.appHomeDashboard {
+    width: min(1180px, calc(100vw - 64px)) !important;
+    min-height: auto !important;
+    margin: 0 auto !important;
+    padding: 22px !important;
+    border: 1px solid rgba(214, 228, 238, 0.88) !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    box-shadow: 0 28px 80px rgba(30, 95, 128, 0.12) !important;
+  }
+
+  .mobilePageShell.spaceHome.referenceHome:not(.utilityPageShell) .desktopAppHomeHeader {
+    display: grid !important;
+  }
+
+  .notesShell.aiNoteShell {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  .notesShell.mobilePageShell .notesWorkspace {
+    display: block !important;
+    width: min(1880px, calc(100% - 40px)) !important;
+    margin: 16px auto 46px !important;
+    padding-bottom: 0 !important;
+  }
+
+  .notesShell.mobilePageShell .notesDesktopLayout {
+    min-height: calc(100vh - 72px) !important;
+    display: grid !important;
+    grid-template-columns: 264px 320px minmax(680px, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .notesShell.mobilePageShell .notesDesktopLayout.sidebarCollapsed {
+    grid-template-columns: 48px 340px minmax(720px, 1fr) !important;
+  }
+
+  .notesShell.mobilePageShell .notesMobileWorkspace,
+  .notesShell.mobilePageShell .notesMobileFolders,
+  .notesShell.mobilePageShell .notesMobileList,
+  .notesShell.mobilePageShell .notesMobileDetail {
+    display: none !important;
+  }
+
+  .ltShell,
+  .ltShell.mobilePageShell,
+  .schedulerShell,
+  .spaceAppFrame,
+  .appAuthShell {
+    max-width: none !important;
+  }
+
+  .ltShellTravelStart.mobilePageShell .ltTravelStartPage {
+    width: min(1120px, calc(100% - 48px)) !important;
+    min-height: auto !important;
+    margin: 0 auto !important;
+    padding: 48px 0 !important;
+  }
+
+  .utilityPageShell .mobilePageContent {
+    min-height: 100vh !important;
+    display: grid !important;
+    align-items: start !important;
+    justify-items: center !important;
+    padding: 32px !important;
+    background: #f6f8fb !important;
+  }
+
+  .utilityPageShell .spaceAppFrame.appHomeDashboard.utilityPageDashboard {
+    width: min(1180px, calc(100vw - 64px)) !important;
+    min-height: auto !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 360px !important;
+    align-items: start !important;
+    gap: 16px !important;
+    margin: 0 auto !important;
+    padding: 22px !important;
+    border: 1px solid rgba(214, 228, 238, 0.88) !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    box-shadow: 0 28px 80px rgba(30, 95, 128, 0.12) !important;
+  }
+
+  .utilityPageShell .utilityPageCard,
+  .utilityPageShell .utilityStatsGrid article {
+    border-radius: 8px !important;
+  }
+
+  .utilityPageShell .utilityStatsGrid {
+    grid-column: 1 / -1 !important;
+  }
+
+  .budgetPageShell .budgetCalendarCard {
+    grid-column: 1 !important;
+    grid-row: 2 / span 2 !important;
+  }
+
+  .budgetPageShell .utilityForm,
+  .budgetPageShell .utilityRecentCard {
+    grid-column: 2 !important;
+  }
+
+  .workoutPageShell .spaceAppFrame.appHomeDashboard.utilityPageDashboard {
+    grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr) !important;
+  }
+
+  .workoutPageShell .workoutRecordCard {
+    grid-column: 1 !important;
+  }
+
+  .workoutPageShell .utilityRecentCard {
+    grid-column: 2 !important;
+  }
+}

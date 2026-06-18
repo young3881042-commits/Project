@@ -1,0 +1,165 @@
+/* Notes rounded directory refresh */
+.notesShell.aiNoteShell {
+  --notes-round-sm: 14px;
+  --notes-round-md: 18px;
+  --notes-round-lg: 24px;
+  --notes-round-xl: 28px;
+}
+
+.notesShell .notesFolderPanel,
+.notesShell .notesListPanel,
+.notesShell .notesDetailPanel,
+.notesShell .notesMobileFileSection,
+.notesShell .notesMobileExplorerMenu,
+.notesShell .appDialog {
+  border-radius: var(--notes-round-lg) !important;
+}
+
+.notesShell .notesFolderPanel header,
+.notesShell .notesListPanel header,
+.notesShell .notesDetailTopbar,
+.notesShell .notesScheduleBar,
+.notesShell .notesSearchField,
+.notesShell .notesListItem,
+.notesShell .notesMobileFolderOpen,
+.notesShell .notesMobileFolderAction,
+.notesShell .notesMobileExplorerOpen,
+.notesShell .notesMobileExplorerGear,
+.notesShell .notesMobileEmptyState,
+.notesShell .notesMobilePathBar,
+.notesShell .notesMobileDirectorySwitch,
+.notesShell .notesMobileCurrentActions,
+.notesShell .notesMobileAccountButton,
+.notesShell .notesMobileAppIconButton,
+.notesShell .notionBlockInputWrap,
+.notesShell .slashCommandMenu {
+  border-radius: var(--notes-round-md) !important;
+}
+
+.notesShell button,
+.notesShell input,
+.notesShell textarea,
+.notesShell .notesShareButton,
+.notesShell .notesDeleteButton {
+  border-radius: var(--notes-round-sm) !important;
+}
+
+.notesFolderHeaderHint {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dbeafe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 0 10px;
+  font-size: 0.76rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.notesDetailTopbar .notesScheduleBar {
+  grid-template-columns: minmax(136px, 0.85fr) minmax(148px, 1fr) minmax(124px, 0.85fr) auto auto !important;
+  align-items: end !important;
+  background: #f8fcff !important;
+}
+
+.notesScheduleOnOffButton {
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 900;
+  text-align: left;
+}
+
+.notesScheduleOnOffButton .memoNavIcon {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  background: #f1f5f9;
+  color: currentColor;
+}
+
+.notesScheduleOnOffButton strong {
+  min-width: 42px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #475569;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  line-height: 1;
+  text-align: center;
+}
+
+.notesScheduleOnOffButton.active {
+  border-color: #93c5fd;
+  background: linear-gradient(180deg, #eff6ff 0%, #ecfdf5 100%);
+  color: #0f766e;
+}
+
+.notesScheduleOnOffButton.active .memoNavIcon {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.notesScheduleOnOffButton.active strong {
+  background: #dcfce7;
+  color: #047857;
+}
+
+.notesMobileDirectorySwitch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid #dbe7ef;
+  background: #f8fafc;
+}
+
+.notesMobileDirectorySwitch button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #475569;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.notesMobileDirectorySwitch button.active {
+  border-color: #bfdbfe;
+  background: #ffffff;
+  color: #1d4ed8;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.08);
+}
+
+.notesMobileDirectorySwitch .memoNavIcon {
+  width: 19px;
+  height: 19px;
+  min-width: 19px;
+  background: transparent;
+  color: currentColor;
+}
+
+@media (max-width: 1120px) {
+  .notesDetailTopbar .notesScheduleBar {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .notesDetailTopbar .notesScheduleOnOffButton {
+    grid-column: 1 / -1 !important;
+  }
+}

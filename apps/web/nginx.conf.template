@@ -16,10 +16,6 @@ server {
     return 200 "ok\n";
   }
 
-  location = / {
-    return 302 /app;
-  }
-
   location = /apps {
     return 302 /app;
   }
@@ -41,6 +37,10 @@ server {
   }
 
   location ~ (^|/)\.(?!well-known/) {
+    return 404;
+  }
+
+  location ~* (^|/)([^/]*\.env(\..*)?|env\.(old|backup|dev|prod|production|local|staging)|sendgrid\.env)$ {
     return 404;
   }
 

@@ -8,11 +8,18 @@ export function HomeRobotHero({ appOverview, navigate, planMode = 'personal' }) 
   const workspace = normalizeWorkspaceMode(planMode);
   const isTravel = workspace === 'travel';
   const travelPlan = appOverview?.travelPlanPreview;
+  const badge = isTravel ? 'Travel mode' : 'Today mode';
+  const title = isTravel ? '여행 코스, 같이 정리돼요' : '오늘 할 일, 같이 정리돼요';
+  const description = isTravel ? '코스 메모와 일정을 한 화면에서 이어서 볼 수 있어요.' : '메모와 일정을 가볍게 도와드려요.';
+  const imageSrc = isTravel ? '/assets/travel-home-hero.png' : '/robot-guide.png';
+  const imageAlt = isTravel ? '여행 일정을 정리하는 이미지' : '일정과 메모를 들고 있는 AI 로봇';
 
   return (
     <section className={`appHomeRobotHero ${isTravel ? 'travel' : 'personal'}`} aria-label="AI 로봇 홈">
       <div className="appHomeRobotHeroCopy">
-        <p>{isTravel ? '코스 메모와 일정' : '일정 관리'}</p>
+        <span>{badge}</span>
+        <strong>{title}</strong>
+        <p>{description}</p>
         {isTravel ? (
           <div className="appHomeTravelCountdown" aria-label="여행 D-day">
             <strong>{travelPlan?.dDayLabel || 'D-day'}</strong>
@@ -32,6 +39,9 @@ export function HomeRobotHero({ appOverview, navigate, planMode = 'personal' }) 
           </div>
         ) : null}
       </div>
+      <figure className="appHomeRobotImage">
+        <img src={imageSrc} alt={imageAlt} />
+      </figure>
     </section>
   );
 }

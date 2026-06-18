@@ -1,4 +1,4 @@
-import MobileWorkspaceTabs from '../MobileWorkspaceTabs.jsx';
+import MobilePageShell from '../MobilePageShell.jsx';
 import HomeScheduleCards from './HomeScheduleCards.jsx';
 import { loginUrlForRedirect } from '../../authRoutes.js';
 import {
@@ -21,6 +21,8 @@ export default function AppHome({
   const showAccountPanel = Boolean(accountError || inlineAuth?.open);
   const accountName = isMemberSession ? session?.username || 'Member' : 'Guest';
   const accountPath = isMemberSession ? '/mypage' : loginUrlForRedirect('/app');
+  const accountLabel = isMemberSession ? '내 정보' : '로그인';
+  const accountInitial = accountName.slice(0, 1).toUpperCase();
   const openAccount = () => {
     if (accountPath.startsWith('http://') || accountPath.startsWith('https://')) {
       window.location.assign(accountPath);
@@ -30,22 +32,30 @@ export default function AppHome({
   };
 
   return (
-    <main className={`spaceHome referenceHome${isMemberSession ? ' memberSession' : ''}`}>
+    <MobilePageShell
+      activeTab="home"
+      className={`spaceHome referenceHome${isMemberSession ? ' memberSession' : ''}`}
+      icon="home"
+      navigate={navigate}
+      profile={{
+        name: accountName,
+        label: accountLabel,
+        onClick: openAccount
+      }}
+      subtitle="일정 · 메모 도우미"
+      title="개인 워크스페이스"
+    >
       <section className="spaceAppFrame appHomeDashboard" aria-label="앱 홈">
-        <header className="appHomeHeader">
+        <header className="appHomeHeader desktopAppHomeHeader">
           <div className="appHomeTitleGroup">
-            <h1>MU Editor</h1>
-            <p>일정 · 메모 도우미</p>
+            <h1>개인 워크스페이스</h1>
+            <p>AI 일정 · 메모 도우미</p>
           </div>
           <div className="appHomeHeaderActions">
-            <button
-              type="button"
-              className="appHomeLoginButton appHomeAccountButton"
-              onClick={openAccount}
-            >
-              <span>{accountName.slice(0, 1).toUpperCase()}</span>
+            <button type="button" className="appHomeAccountButton" onClick={openAccount}>
+              <span>{accountInitial}</span>
               <strong>{accountName}</strong>
-              <small>{isMemberSession ? '내 정보' : '로그인'}</small>
+              <small>{accountLabel}</small>
             </button>
           </div>
         </header>
@@ -66,8 +76,7 @@ export default function AppHome({
         ) : null}
 
         <HomeScheduleCards appOverview={appOverview} navigate={navigate} onScheduleToggle={onScheduleToggle} />
-        <MobileWorkspaceTabs active="home" navigate={navigate} />
       </section>
-    </main>
+    </MobilePageShell>
   );
 }

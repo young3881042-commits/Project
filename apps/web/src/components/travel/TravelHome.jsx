@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { QUICK_ACTIONS } from './TravelHomeData.js';
+
+const POPULAR_SEARCHES = ['서울', '부산', '제주', '경주'];
 
 function Icon({ children, size = 18 }) {
   return (
@@ -251,9 +254,66 @@ export function TravelQuickActions({ navigate, title = '' }) {
 export default function TravelHome({
   navigate
 }) {
+  const [query, setQuery] = useState('');
+  const trimmedQuery = query.trim();
+  const destinationPath = trimmedQuery ? `/destinations?query=${encodeURIComponent(trimmedQuery)}` : '/destinations';
+  const plannerPath = trimmedQuery ? `/planner?query=${encodeURIComponent(trimmedQuery)}` : '/planner';
+
+  const submitSearch = (event) => {
+    event.preventDefault();
+    navigate(destinationPath);
+  };
+
   return (
     <main className="ltPage ltHomePage ltTravelStartPage">
-      <TravelQuickActions navigate={navigate} title="빠른 메뉴" />
+      <section className="ltTravelStartHeader">
+        <div>
+          <span>여행</span>
+          <h1>여행 준비</h1>
+          <p>검색하고 계획만 만들면 됩니다.</p>
+        </div>
+      </section>
+
+      <section className="ltTravelSearchPanel" aria-label="여행 검색">
+        <div>
+          <span className="ltSectionEyebrow">검색</span>
+          <h2>어디로 갈까요</h2>
+        </div>
+        <form className="ltHeroSearch" onSubmit={submitSearch}>
+          <label>
+            <span>여행지</span>
+            <div className="ltHeroSearchInput">
+              <Icon size={20}>
+                <circle cx="11" cy="11" r="7"></circle>
+                <path d="m20 20-3.5-3.5"></path>
+              </Icon>
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="도시, 장소, 테마 검색"
+              />
+            </div>
+          </label>
+        </form>
+        <div className="ltTravelPrimaryActions" aria-label="여행 주요 메뉴">
+          <button type="button" className="ltPrimaryButton" onClick={() => navigate(plannerPath)}>
+            <TravelQuickIcon type="route" />
+            계획 만들기
+          </button>
+        </div>
+        <div className="ltHeroFilters" aria-label="빠른 검색">
+          <span>빠른 검색</span>
+          {POPULAR_SEARCHES.map((item) => (
+            <button key={item} type="button" onClick={() => navigate(`/destinations?query=${encodeURIComponent(item)}`)}>
+              {item}
+            </button>
+          ))}
+        </div>
+        <button type="button" className="ltSecondaryButton ltTravelPlansButton" onClick={() => navigate('/plans')}>
+          <TravelQuickIcon type="calendar" />
+          내 계획
+        </button>
+      </section>
     </main>
   );
 }
