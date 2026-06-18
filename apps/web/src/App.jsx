@@ -24,7 +24,9 @@ import {
   normalizeWorkoutProfile,
   parseWorkoutNumber,
   workoutDurationMinutes,
-  workoutExerciseCalories
+  workoutExerciseCalories,
+  workoutKindForTemplate,
+  workoutKindLabel
 } from './components/workout/workoutMetrics.js';
 import {
   DEFAULT_NOTE_DIRECTORIES,
@@ -690,6 +692,9 @@ function normalizeWorkoutLog(log, index = 0) {
   const template = WORKOUT_TEMPLATES.find((item) => item.id === log?.templateId)
     || WORKOUT_TEMPLATES.find((item) => item.title === log?.title)
     || WORKOUT_TEMPLATES[0];
+  const workoutKind = log?.workoutKind === 'cardio' || log?.workoutType === 'cardio' || template.id === 'cardio'
+    ? 'cardio'
+    : 'strength';
   const date = isDateKey(log?.date) ? log.date : toDateKey(new Date());
   const createdAt = typeof log?.createdAt === 'string' && log.createdAt ? log.createdAt : new Date().toISOString();
   const exercises = Array.isArray(log?.exercises) && log.exercises.length
@@ -700,6 +705,7 @@ function normalizeWorkoutLog(log, index = 0) {
   return {
     id: String(log?.id || `workout-${date}-${template.id}-${index}`),
     templateId: template.id,
+    workoutKind,
     title: template.title,
     date,
     startTime: isTimeKey(log?.startTime) ? log.startTime : '',
@@ -758,6 +764,7 @@ function workoutScheduleTitle(log) {
 
 function workoutScheduleDescription(log) {
   return [
+    log?.workoutKind ? `분류: ${workoutKindLabel(log.workoutKind)}` : '',
     workoutLogSummary(log),
     log?.caloriesBurned ? `예상 소모: ${formatKcal(log.caloriesBurned)}` : '',
     log?.memo ? `메모: ${log.memo}` : ''
@@ -4709,6 +4716,8 @@ function SpaceHomePage({ navigate }) {
   const [inlineAuthPassword, setInlineAuthPassword] = useState('');
   const [inlineAuthLoading, setInlineAuthLoading] = useState(false);
   const [inlineAuthError, setInlineAuthError] = useState('');
+  const [quickMemoText, setQuickMemoText] = useState('');
+  const [quickMemoStatus, setQuickMemoStatus] = useState('');
   const accountMode = session?.token && !session?.isGuest && session?.username !== 'guestuser'
     ? 'member'
     : session?.token
@@ -4889,6 +4898,46 @@ function SpaceHomePage({ navigate }) {
     setAppOverview(summarizeAppActivity() || EMPTY_APP_OVERVIEW);
   };
 
+  const submitQuickMemo = (event) => {
+    event.preventDefault();
+    const rawText = quickMemoText.trim();
+    if (!rawText) {
+      setQuickMemoStatus('메모 내용을 입력하세요.');
+      return;
+    }
+    const lines = rawText.split('\n').map((line) => line.trim()).filter(Boolean);
+    const title = (lines[0] || '빠른 메모').slice(0, 48);
+    const body = lines.slice(1).join('\n');
+    const timestamp = memoTimestamp();
+    const noteId = `note-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const nextNote = normalizeNoteBlock({
+      id: noteId,
+      type: 'text',
+      title,
+      content: body ? `# ${title}\n\n${body}` : `# ${title}\n`,
+      folderId: 'personal',
+      sector: 'personal',
+      boardId: 'personal',
+      status: 'todo',
+      parentId: '',
+      filePath: `memo-files/personal/${noteId}.md`,
+      createdAt: timestamp,
+      updatedAt: timestamp
+    });
+    const noteBlocksKey = noteBlocksStorageKey(session);
+    const nextNotes = [nextNote, ...readNoteBlocks(session)];
+    localStorage.setItem(noteBlocksKey, JSON.stringify(nextNotes));
+    if (noteBlocksKey !== AI_NOTE_KEY && localStorage.getItem(AI_NOTE_KEY)) {
+      localStorage.removeItem(AI_NOTE_KEY);
+    }
+    window.dispatchEvent(new CustomEvent('codex:notes-updated', {
+      detail: { note: nextNote, storageKey: noteBlocksKey }
+    }));
+    setQuickMemoText('');
+    setQuickMemoStatus('빠른 메모에 저장했습니다.');
+    setAppOverview(summarizeAppActivity() || EMPTY_APP_OVERVIEW);
+  };
+
   return (
     <AppHome
       accountError={accountError}
@@ -4911,14 +4960,22 @@ function SpaceHomePage({ navigate }) {
       }}
       isMemberSession={isMemberSession}
       navigate={navigate}
+      onQuickMemoChange={(value) => {
+        setQuickMemoText(value);
+        if (quickMemoStatus) setQuickMemoStatus('');
+      }}
+      onQuickMemoSubmit={submitQuickMemo}
       onStartGuest={startGuest}
       onScheduleToggle={toggleHomeSchedule}
+      quickMemoStatus={quickMemoStatus}
+      quickMemoText={quickMemoText}
       session={session}
     />
   );
 }
 
 function MorePage({ navigate }) {
+  const session = readStoredAuth();
   const extraFeatures = [
     {
       key: 'travel',
@@ -4951,7 +5008,17 @@ function MorePage({ navigate }) {
       icon: 'book',
       path: '/reading',
       status: '열기'
-    }
+    },
+    ...(session?.admin || session?.role === 'ADMIN'
+      ? [{
+        key: 'admin',
+        title: '관리',
+        description: '분석환경과 작업 실행 기능을 확인해요.',
+        icon: 'shield',
+        path: '/analysisadmin',
+        status: '관리자'
+      }]
+      : [])
   ];
 
   useEffect(() => {
@@ -5306,6 +5373,8 @@ function WorkoutPage({ navigate }) {
     [draft.templateId]
   );
   const isCardioTemplate = activeTemplate.id === 'cardio';
+  const workoutKind = workoutKindForTemplate(activeTemplate.id);
+  const workoutKindText = workoutKindLabel(workoutKind);
   const normalizedDraftExercises = useMemo(
     () => draft.exercises.map(normalizeWorkoutExercise).filter(Boolean),
     [draft.exercises]
@@ -5352,7 +5421,6 @@ function WorkoutPage({ navigate }) {
     setDraft((current) => ({
       ...current,
       templateId: template.id,
-      durationMinutes: template.id === 'cardio' ? '' : current.durationMinutes,
       exercises: workoutExercisesForTemplate(template)
     }));
   };
@@ -5415,16 +5483,27 @@ function WorkoutPage({ navigate }) {
   const submitWorkout = (event) => {
     event.preventDefault();
     const template = WORKOUT_TEMPLATES.find((item) => item.id === draft.templateId) || WORKOUT_TEMPLATES[0];
-    const exercises = draft.exercises.map(normalizeWorkoutExercise).filter(Boolean);
+    const durationMinutes = workoutDurationMinutes({
+      templateId: template.id,
+      durationMinutes: draft.durationMinutes,
+      exercises: draft.exercises
+    });
+    const rawExercises = template.id === 'cardio' && durationMinutes
+      ? [{
+        ...(draft.exercises[0] || createCardioExercise(WORKOUT_CARDIO_ACTIVITIES[0])),
+        mode: 'cardio',
+        durationMinutes: String(durationMinutes)
+      }]
+      : draft.exercises;
+    const exercises = rawExercises.map(normalizeWorkoutExercise).filter(Boolean);
     if (!exercises.length) {
       setStatusText('운동 항목을 하나 이상 입력하세요.');
       return;
     }
-    const durationMinutes = workoutDurationMinutes({
-      templateId: template.id,
-      durationMinutes: draft.durationMinutes,
-      exercises
-    });
+    if (!durationMinutes) {
+      setStatusText('운동 시간을 입력하면 소모 칼로리가 자동 계산됩니다.');
+      return;
+    }
     const caloriesBurned = parseWorkoutNumber(draft.caloriesBurned) || estimateWorkoutCalories({
       templateId: template.id,
       durationMinutes,
@@ -5434,6 +5513,7 @@ function WorkoutPage({ navigate }) {
     const nextLog = normalizeWorkoutLog({
       id: `workout-${Date.now()}`,
       templateId: template.id,
+      workoutKind: workoutKindForTemplate(template.id),
       title: template.title,
       date: isDateKey(draft.date) ? draft.date : today,
       startTime: draft.startTime,
@@ -5449,7 +5529,15 @@ function WorkoutPage({ navigate }) {
     if (draft.addToSchedule) {
       upsertWorkoutScheduleItem(schedulerKey, buildWorkoutScheduleItem(nextLog, draft.startTime));
     }
-    setDraft((current) => ({ ...current, startTime: '', durationMinutes: '', caloriesBurned: '', memo: '', addToSchedule: true }));
+    setDraft((current) => ({
+      ...current,
+      startTime: '',
+      durationMinutes: '',
+      caloriesBurned: '',
+      memo: '',
+      addToSchedule: true,
+      exercises: workoutExercisesForTemplate(template)
+    }));
     setStatusText(draft.addToSchedule
       ? `${nextLog.date} ${nextLog.title} 운동과 일정을 기록했습니다.${nextLog.caloriesBurned ? ` 예상 소모 ${formatKcal(nextLog.caloriesBurned)}.` : ''}`
       : `${nextLog.date} ${nextLog.title} 운동을 기록했습니다.${nextLog.caloriesBurned ? ` 예상 소모 ${formatKcal(nextLog.caloriesBurned)}.` : ''}`);
@@ -5540,7 +5628,7 @@ function WorkoutPage({ navigate }) {
         <form className="utilityPageCard workoutRecordCard" aria-label="운동 기록" onSubmit={submitWorkout}>
           <header className="utilitySectionHeader">
             <strong>운동 기록</strong>
-            <small>{isCardioTemplate ? '분 · MET · 칼로리' : '세트 · 횟수 · 무게'}</small>
+            <small>{workoutKindText} · 시간으로 kcal 자동 계산</small>
           </header>
           <div className="workoutTemplateTabs" aria-label="운동 종류">
             {WORKOUT_TEMPLATES.map((template) => (
@@ -5554,6 +5642,11 @@ function WorkoutPage({ navigate }) {
               </button>
             ))}
           </div>
+          <div className={`workoutAutoKind ${workoutKind}`}>
+            <MemoNavIcon type={isCardioTemplate ? 'spark' : 'trophy'} />
+            <span>{workoutKindText}</span>
+            <small>{isCardioTemplate ? '유산소 MET 기준' : `${activeTemplate.title} 근력 MET 기준`}</small>
+          </div>
           <div className="utilityFormGrid workoutMetaGrid">
             <label className="utilityField">
               <span>날짜</span>
@@ -5564,26 +5657,25 @@ function WorkoutPage({ navigate }) {
               <input type="time" value={draft.startTime} onChange={(event) => updateWorkoutDraft('startTime', event.target.value)} />
             </label>
             <label className="utilityField">
-              <span>{isCardioTemplate ? '총 유산소(분)' : '운동 시간(분)'}</span>
+              <span>운동 시간(분)</span>
               <input
                 type="number"
                 min="0"
                 inputMode="numeric"
                 placeholder="분"
-                readOnly={isCardioTemplate}
-                value={isCardioTemplate ? draftDurationMinutes || '' : draft.durationMinutes}
+                value={draft.durationMinutes}
                 onChange={(event) => updateWorkoutDraft('durationMinutes', event.target.value)}
               />
             </label>
             <label className="utilityField">
-              <span>소모 칼로리(kcal)</span>
+              <span>예상 소모(kcal)</span>
               <input
                 type="number"
                 min="0"
                 inputMode="numeric"
-                placeholder={draftEstimatedCalories ? `${draftEstimatedCalories}` : '자동 계산 또는 직접 입력'}
-                value={draft.caloriesBurned}
-                onChange={(event) => updateWorkoutDraft('caloriesBurned', event.target.value)}
+                readOnly
+                placeholder="시간 입력 시 자동 계산"
+                value={draftCaloriesBurned ? Math.round(draftCaloriesBurned) : ''}
               />
             </label>
           </div>
@@ -5662,11 +5754,12 @@ function WorkoutPage({ navigate }) {
                 exercises: log.exercises,
                 profile
               });
+              const logKindLabel = workoutKindLabel(log.workoutKind || workoutKindForTemplate(log.templateId));
               return (
                 <article className="utilityLogRow workoutLogRow" key={log.id}>
                   <span className="utilityLogBadge workout">{log.title.slice(0, 1)}</span>
                   <div>
-                    <strong>{log.date}{log.startTime ? ` · ${log.startTime}` : ''} · {log.title}{log.durationMinutes ? ` · ${log.durationMinutes}분` : ''}{logCalories ? ` · ${formatKcal(logCalories)}` : ''}</strong>
+                    <strong>{log.date}{log.startTime ? ` · ${log.startTime}` : ''} · {log.title} · {logKindLabel}{log.durationMinutes ? ` · ${log.durationMinutes}분` : ''}{logCalories ? ` · ${formatKcal(logCalories)}` : ''}</strong>
                     <small>{workoutLogSummary(log)}{log.memo ? ` · ${log.memo}` : ''}</small>
                   </div>
                   <button type="button" className="utilityIconButton" onClick={() => deleteLog(log.id)} aria-label="운동 로그 삭제">

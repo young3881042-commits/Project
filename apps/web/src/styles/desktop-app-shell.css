@@ -28,28 +28,47 @@
     min-width: 0;
   }
 
-  .mobilePageShell.spaceHome.referenceHome:not(.utilityPageShell) .mobilePageContent {
-    min-height: 100vh !important;
+  .mobilePageShell.spaceHome.referenceHome:not(.utilityPageShell) {
+    width: min(100%, 430px) !important;
+    max-width: 430px !important;
+    min-height: 100dvh !important;
+    margin: 0 auto !important;
+    display: block !important;
+    padding: 12px 16px calc(var(--mobile-nav-height) + 36px + env(safe-area-inset-bottom)) !important;
+    overflow-x: hidden !important;
+    background: var(--mobile-bg) !important;
+  }
+
+  .mobilePageShell.spaceHome.referenceHome:not(.utilityPageShell) > .mobilePageHeader {
     display: grid !important;
-    align-items: start !important;
-    justify-items: center !important;
-    padding: 32px !important;
-    background: #f6f8fb !important;
+  }
+
+  .mobilePageShell.spaceHome.referenceHome:not(.utilityPageShell) .mobilePageContent {
+    min-height: auto !important;
+    display: grid !important;
+    gap: 14px !important;
+    padding: 0 !important;
+    background: transparent !important;
   }
 
   .mobilePageShell.spaceHome.referenceHome:not(.utilityPageShell) .spaceAppFrame.appHomeDashboard {
-    width: min(1180px, calc(100vw - 64px)) !important;
+    width: 100% !important;
     min-height: auto !important;
-    margin: 0 auto !important;
-    padding: 22px !important;
-    border: 1px solid rgba(214, 228, 238, 0.88) !important;
-    border-radius: 8px !important;
-    background: #ffffff !important;
-    box-shadow: 0 28px 80px rgba(30, 95, 128, 0.12) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .mobilePageShell.spaceHome.referenceHome > .mobileWorkspaceTabs {
+    display: grid !important;
+    width: min(calc(100vw - 32px), 398px) !important;
   }
 
   .mobilePageShell.spaceHome.referenceHome:not(.utilityPageShell) .desktopAppHomeHeader {
-    display: grid !important;
+    display: none !important;
   }
 
   .notesShell.aiNoteShell {

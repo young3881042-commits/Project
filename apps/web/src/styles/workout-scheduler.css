@@ -36,6 +36,56 @@
   background: #eef6f8;
 }
 
+.workoutAutoKind {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #dbe7ef;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #334155;
+  padding: 10px 12px;
+}
+
+.workoutAutoKind.cardio {
+  border-color: #bae6fd;
+  background: #f0f9ff;
+  color: #0369a1;
+}
+
+.workoutAutoKind.strength {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #047857;
+}
+
+.workoutAutoKind .memoNavIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.workoutAutoKind span,
+.workoutAutoKind small {
+  min-width: 0;
+  line-height: 1.2;
+  font-weight: 950;
+}
+
+.workoutAutoKind span {
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+
+.workoutAutoKind small {
+  color: #64748b;
+  font-size: 0.76rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .workoutMetricGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

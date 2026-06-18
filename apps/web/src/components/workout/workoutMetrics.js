@@ -5,6 +5,8 @@ export const DEFAULT_WORKOUT_PROFILE = {
   sex: 'male'
 };
 
+export const DEFAULT_WORKOUT_WEIGHT_KG = 70;
+
 export const WORKOUT_CARDIO_ACTIVITIES = [
   { id: 'brisk-walk', name: '빠른 걷기', met: 4.3, durationMinutes: 30 },
   { id: 'jogging', name: '조깅', met: 7, durationMinutes: 25 },
@@ -20,6 +22,7 @@ export const WORKOUT_TEMPLATES = [
   {
     id: 'upper',
     title: '상체',
+    kind: 'strength',
     met: 3.8,
     items: ['푸시업', '덤벨 로우', '숄더 프레스'],
     exercises: [
@@ -31,6 +34,7 @@ export const WORKOUT_TEMPLATES = [
   {
     id: 'lower',
     title: '하체',
+    kind: 'strength',
     met: 4.8,
     items: ['스쿼트', '런지', '힙 브릿지'],
     exercises: [
@@ -42,12 +46,13 @@ export const WORKOUT_TEMPLATES = [
   {
     id: 'cardio',
     title: '유산소',
+    kind: 'cardio',
     met: 6,
     items: ['빠른 걷기', '인터벌', '스트레칭'],
-    exercises: WORKOUT_CARDIO_ACTIVITIES.slice(0, 3).map((activity) => ({
+    exercises: WORKOUT_CARDIO_ACTIVITIES.slice(0, 1).map((activity) => ({
       mode: 'cardio',
       name: activity.name,
-      durationMinutes: String(activity.durationMinutes),
+      durationMinutes: '',
       met: String(activity.met)
     }))
   }
@@ -79,9 +84,17 @@ export function createCardioExercise(activity = WORKOUT_CARDIO_ACTIVITIES[0]) {
     sets: '',
     reps: '',
     weight: '',
-    durationMinutes: String(activity.durationMinutes),
+    durationMinutes: '',
     met: String(activity.met)
   };
+}
+
+export function workoutKindForTemplate(templateId) {
+  return templateId === 'cardio' ? 'cardio' : 'strength';
+}
+
+export function workoutKindLabel(kind) {
+  return kind === 'cardio' ? '유산소' : '근력운동';
 }
 
 export function normalizeWorkoutProfile(profile = {}) {
@@ -104,12 +117,14 @@ export function calculateWorkoutBmr(profile) {
 }
 
 export function workoutDurationMinutes({ templateId, durationMinutes, exercises } = {}) {
-  if (templateId === 'cardio') {
+  const explicitMinutes = parseWorkoutNumber(durationMinutes);
+  if (explicitMinutes) return Math.round(explicitMinutes);
+  if (workoutKindForTemplate(templateId) === 'cardio') {
     return Math.round((exercises || []).reduce((total, exercise) => (
       total + parseWorkoutNumber(exercise?.durationMinutes || exercise?.reps)
     ), 0));
   }
-  return Math.round(parseWorkoutNumber(durationMinutes));
+  return 0;
 }
 
 export function workoutExerciseCalories(exercise, profile) {
@@ -121,14 +136,15 @@ export function workoutExerciseCalories(exercise, profile) {
 }
 
 export function estimateWorkoutCalories({ templateId, durationMinutes, exercises, profile } = {}) {
-  const weightKg = parseWorkoutNumber(profile?.weightKg);
-  if (!weightKg) return null;
-  if (templateId === 'cardio') {
+  const weightKg = parseWorkoutNumber(profile?.weightKg) || DEFAULT_WORKOUT_WEIGHT_KG;
+  const template = WORKOUT_TEMPLATES.find((item) => item.id === templateId) || WORKOUT_TEMPLATES[0];
+  const minutes = parseWorkoutNumber(durationMinutes);
+  if (minutes) {
+    return Math.round((template.met * 3.5 * weightKg * minutes) / 200);
+  }
+  if (workoutKindForTemplate(templateId) === 'cardio') {
     const total = (exercises || []).reduce((sum, exercise) => sum + (workoutExerciseCalories(exercise, profile) || 0), 0);
     return total > 0 ? Math.round(total) : null;
   }
-  const template = WORKOUT_TEMPLATES.find((item) => item.id === templateId) || WORKOUT_TEMPLATES[0];
-  const minutes = parseWorkoutNumber(durationMinutes);
-  if (!minutes) return null;
-  return Math.round((template.met * 3.5 * weightKg * minutes) / 200);
+  return null;
 }

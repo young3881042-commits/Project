@@ -142,13 +142,85 @@ function WeekScheduleCard({ appOverview, onScheduleToggle }) {
   );
 }
 
-export default function HomeScheduleCards({ appOverview = {}, onScheduleToggle }) {
+function QuickMemoCard({ onChange, onSubmit, status, value }) {
+  return (
+    <section className="appHomeCard appHomeQuickMemoCard" aria-label="빠른 메모">
+      <header className="appHomeCardHeader">
+        <span>
+          <MemoNavIcon type="board" />
+          <strong>빠른 메모</strong>
+        </span>
+      </header>
+      <form className="appHomeQuickMemoForm" onSubmit={onSubmit}>
+        <textarea
+          value={value}
+          onChange={(event) => onChange?.(event.target.value)}
+          placeholder="지금 떠오른 생각이나 할 일을 적어두세요."
+          rows={3}
+        />
+        <button type="submit">저장</button>
+      </form>
+      {status ? <p className="appHomeInlineStatus">{status}</p> : null}
+    </section>
+  );
+}
+
+function RecentMemoCard({ appOverview, navigate }) {
+  const recentItems = appOverview.recentMemoItems?.personal || [];
+
+  return (
+    <section className="appHomeCard appHomeRecentCard" aria-label="최근 메모">
+      <header className="appHomeCardHeader">
+        <span>
+          <MemoNavIcon type="board" />
+          <strong>최근 메모</strong>
+        </span>
+        <button type="button" onClick={() => navigate('/notes')}>전체</button>
+      </header>
+      {recentItems.length ? (
+        <div className="appHomeMemoList">
+          {recentItems.map((item) => (
+            <button type="button" key={item.id} onClick={() => navigate(item.path || '/notes')}>
+              <span>
+                <strong>{item.title}</strong>
+                <small>{item.summary}</small>
+              </span>
+              <MemoNavIcon type="chevronRight" />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <EmptyScheduleState
+          title="최근 메모가 없어요."
+          description="빠른 메모에 적으면 여기에 바로 보여요."
+        />
+      )}
+    </section>
+  );
+}
+
+export default function HomeScheduleCards({
+  appOverview = {},
+  navigate,
+  onQuickMemoChange,
+  onQuickMemoSubmit,
+  onScheduleToggle,
+  quickMemoStatus,
+  quickMemoText
+}) {
   return (
     <>
       <TodayScheduleCard
         appOverview={appOverview}
         onScheduleToggle={onScheduleToggle}
       />
+      <QuickMemoCard
+        onChange={onQuickMemoChange}
+        onSubmit={onQuickMemoSubmit}
+        status={quickMemoStatus}
+        value={quickMemoText}
+      />
+      <RecentMemoCard appOverview={appOverview} navigate={navigate} />
       <WeekScheduleCard
         appOverview={appOverview}
         onScheduleToggle={onScheduleToggle}

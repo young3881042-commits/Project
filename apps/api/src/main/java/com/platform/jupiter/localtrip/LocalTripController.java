@@ -77,12 +77,14 @@ public class LocalTripController {
     }
 
     @PostMapping("/destinations/sync/mock")
-    public ApiSyncLogResponse syncMockDestinations() {
+    public ApiSyncLogResponse syncMockDestinations(HttpServletRequest servletRequest) {
+        requireAdmin(servletRequest);
         return destinationService.syncMockDestinations();
     }
 
     @PostMapping("/destinations/sync/tour-api")
-    public ApiSyncLogResponse syncTourApiDestinations() {
+    public ApiSyncLogResponse syncTourApiDestinations(HttpServletRequest servletRequest) {
+        requireAdmin(servletRequest);
         return tourApiSyncService.syncDestinations();
     }
 
@@ -111,5 +113,13 @@ public class LocalTripController {
         AuthSession session = authService.requireSession(servletRequest);
         travelPlanService.deletePlan(id, session.username());
         return ResponseEntity.noContent().build();
+    }
+
+    private AuthSession requireAdmin(HttpServletRequest servletRequest) {
+        AuthSession session = authService.requireSession(servletRequest);
+        if (!session.admin()) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN, "Admin access required");
+        }
+        return session;
     }
 }

@@ -178,7 +178,8 @@ public class JupiterController {
     }
 
     @GetMapping("/builds")
-    public List<BuildRecordDto> builds() {
+    public List<BuildRecordDto> builds(HttpServletRequest servletRequest) {
+        requireAdminSession(servletRequest);
         return buildService.listBuilds();
     }
 
@@ -215,7 +216,8 @@ public class JupiterController {
     }
 
     @PostMapping("/builds")
-    public BuildRecordDto createBuild(@Valid @RequestBody BuildRequest request) {
+    public BuildRecordDto createBuild(@Valid @RequestBody BuildRequest request, HttpServletRequest servletRequest) {
+        requireAdminSession(servletRequest);
         return buildService.createBuild(request);
     }
 
@@ -287,13 +289,13 @@ public class JupiterController {
             @RequestParam(defaultValue = "false") boolean autoFix,
             @RequestParam(defaultValue = "true") boolean summarize,
             HttpServletRequest servletRequest) {
-        AuthSession session = authService.requireSession(servletRequest);
+        AuthSession session = requireAdminSession(servletRequest);
         return workspaceExecutionService.runPythonFile(path, session.username(), session.admin(), autoFix, summarize);
     }
 
     @PostMapping("/workspace/gemini")
     public WorkspaceGeminiResponse workspaceGemini(@Valid @RequestBody WorkspaceGeminiRequest request, HttpServletRequest servletRequest) {
-        AuthSession session = authService.requireSession(servletRequest);
+        AuthSession session = requireAdminSession(servletRequest);
         return workspaceExecutionService.runGeminiPrompt(request, session.username(), session.admin());
     }
 
@@ -379,7 +381,8 @@ public class JupiterController {
     }
 
     @PostMapping("/chat/local/v1/chat/completions")
-    public OpenAiChatCompletionResponse localChatCompletion(@Valid @RequestBody OpenAiChatCompletionRequest request) {
+    public OpenAiChatCompletionResponse localChatCompletion(@Valid @RequestBody OpenAiChatCompletionRequest request, HttpServletRequest servletRequest) {
+        requireAdminSession(servletRequest);
         return localChatService.complete(request);
     }
 
@@ -389,12 +392,14 @@ public class JupiterController {
     }
 
     @GetMapping("/notebooks")
-    public List<NotebookInstanceDto> notebooks() {
+    public List<NotebookInstanceDto> notebooks(HttpServletRequest servletRequest) {
+        requireAdminSession(servletRequest);
         return notebookService.listNotebooks();
     }
 
     @PostMapping("/notebooks")
-    public NotebookInstanceDto createNotebook(@Valid @RequestBody NotebookRequest request) {
+    public NotebookInstanceDto createNotebook(@Valid @RequestBody NotebookRequest request, HttpServletRequest servletRequest) {
+        requireAdminSession(servletRequest);
         return notebookService.createNotebook(request);
     }
 
@@ -479,7 +484,8 @@ public class JupiterController {
     }
 
     @PostMapping(value = "/rag/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public RagDocumentSummary uploadRagDocument(@RequestParam("file") MultipartFile file) {
+    public RagDocumentSummary uploadRagDocument(@RequestParam("file") MultipartFile file, HttpServletRequest servletRequest) {
+        requireAdminSession(servletRequest);
         return ragService.upload(file);
     }
 
@@ -508,12 +514,14 @@ public class JupiterController {
     }
 
     @PostMapping("/rag/domains/refresh")
-    public DomainRagStatusResponse ragDomainRefresh() {
+    public DomainRagStatusResponse ragDomainRefresh(HttpServletRequest servletRequest) {
+        requireAdminSession(servletRequest);
         return ragService.refreshDomainData();
     }
 
     @PostMapping("/rag/weather/refresh")
-    public WeatherRagStatusResponse ragWeatherRefresh() {
+    public WeatherRagStatusResponse ragWeatherRefresh(HttpServletRequest servletRequest) {
+        requireAdminSession(servletRequest);
         return ragService.refreshWeatherData();
     }
 

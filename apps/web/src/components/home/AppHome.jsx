@@ -1,10 +1,7 @@
 import MobilePageShell from '../MobilePageShell.jsx';
 import HomeScheduleCards from './HomeScheduleCards.jsx';
 import { loginUrlForRedirect } from '../../authRoutes.js';
-import {
-  HomeAccountStrip,
-  HomeRobotHero
-} from './AppHomeSections.jsx';
+import { HomeAccountStrip } from './AppHomeSections.jsx';
 
 export default function AppHome({
   accountError,
@@ -14,8 +11,12 @@ export default function AppHome({
   inlineAuth,
   isMemberSession,
   navigate,
+  onQuickMemoChange,
+  onQuickMemoSubmit,
   onStartGuest,
   onScheduleToggle,
+  quickMemoStatus,
+  quickMemoText,
   session
 }) {
   const showAccountPanel = Boolean(accountError || inlineAuth?.open);
@@ -42,14 +43,14 @@ export default function AppHome({
         label: accountLabel,
         onClick: openAccount
       }}
-      subtitle="일정 · 메모 도우미"
+      subtitle="모바일에 최적화된 일정 · 메모 앱"
       title="개인 워크스페이스"
     >
       <section className="spaceAppFrame appHomeDashboard" aria-label="앱 홈">
         <header className="appHomeHeader desktopAppHomeHeader">
           <div className="appHomeTitleGroup">
             <h1>개인 워크스페이스</h1>
-            <p>AI 일정 · 메모 도우미</p>
+            <p>모바일에 최적화된 일정 · 메모 앱</p>
           </div>
           <div className="appHomeHeaderActions">
             <button type="button" className="appHomeAccountButton" onClick={openAccount}>
@@ -59,8 +60,6 @@ export default function AppHome({
             </button>
           </div>
         </header>
-
-        <HomeRobotHero appOverview={appOverview} navigate={navigate} planMode="personal" />
 
         {showAccountPanel ? (
           <HomeAccountStrip
@@ -75,7 +74,15 @@ export default function AppHome({
           />
         ) : null}
 
-        <HomeScheduleCards appOverview={appOverview} navigate={navigate} onScheduleToggle={onScheduleToggle} />
+        <HomeScheduleCards
+          appOverview={appOverview}
+          navigate={navigate}
+          onQuickMemoChange={onQuickMemoChange}
+          onQuickMemoSubmit={onQuickMemoSubmit}
+          onScheduleToggle={onScheduleToggle}
+          quickMemoStatus={quickMemoStatus}
+          quickMemoText={quickMemoText}
+        />
       </section>
     </MobilePageShell>
   );
