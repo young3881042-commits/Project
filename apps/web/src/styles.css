@@ -50,6 +50,8 @@
 @import './styles/localtrip-mobile-plan.css';
 @import './styles/workout-scheduler.css';
 @import './styles/reading-library.css';
+@import './styles/frontend-repair.css';
+@import './styles/lifehub.css';
 
 @media (max-width: 900px) {
 #root {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import LifeHubApp from '../LifeHubApp.jsx';
 import AccountPage from '../pages/account/AccountPage.jsx';
 import AdminAnalysisPage from '../pages/admin/AdminAnalysisPage.jsx';
 import AnalysisFileEditorPage from '../pages/admin/AnalysisFileEditorPage.jsx';
@@ -16,6 +17,7 @@ import WorkoutPage from '../pages/workout/WorkoutPage.jsx';
 
 const DEFAULT_APP_PATH = '/app';
 const CONNECTIONS_PATH = '/connect';
+const LIFEHUB_PATHS = ['/app', '/home', '/assistant', '/memo', '/schedule', '/more', '/reading', '/workout', '/travel', '/finance'];
 
 function currentPath() {
   return window.location.pathname + window.location.search;
@@ -29,6 +31,10 @@ function redirectPathForRoute(routePath) {
     return CONNECTIONS_PATH;
   }
   return '';
+}
+
+function isLifeHubRoute(routePath) {
+  return LIFEHUB_PATHS.some((basePath) => routePath === basePath || routePath.startsWith(`${basePath}/`));
 }
 
 export default function AppRouter() {
@@ -74,6 +80,10 @@ export default function AppRouter() {
 
   if (activeRoutePath === '/connect' || activeRoutePath.startsWith('/connect/')) {
     return <ConnectionsPage navigate={navigate} />;
+  }
+
+  if (isLifeHubRoute(activeRoutePath)) {
+    return <LifeHubApp path={path} navigate={navigate} />;
   }
 
   if (activeRoutePath === '/notes' || activeRoutePath.startsWith('/notes/')) {

@@ -1,0 +1,3477 @@
+.lifeHubRoot {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    linear-gradient(180deg, #eef7f4 0%, #f7f8fb 34%, #f3f4f6 100%);
+  color: #172033;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.lifeHubApp {
+  width: min(100%, 430px);
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 10px 12px calc(84px + env(safe-area-inset-bottom));
+  background: #f7f8fb;
+}
+
+.lifeHubTopBar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin: -10px -12px 8px;
+  padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
+  border-bottom: 1px solid rgba(203, 213, 225, 0.72);
+  background: rgba(247, 248, 251, 0.94);
+  backdrop-filter: blur(16px);
+}
+
+.lifeHubTopTitle {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.lifeHubTopIcon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #cae7df;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #0f766e;
+}
+
+.lifeHubTopTitle span {
+  display: block;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.lifeHubTopTitle h1 {
+  margin: 1px 0 0;
+  overflow: hidden;
+  color: #111827;
+  font-size: 1rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubAccountChip {
+  min-width: 0;
+  height: 42px;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 62px) auto;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  border: 1px solid #dce5eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.lifeHubAccountChip .memoNavIcon {
+  width: 20px;
+  height: 20px;
+  color: #0f766e;
+}
+
+.lifeHubAccountChip strong,
+.lifeHubAccountChip span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubAccountChip strong {
+  color: #172033;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.lifeHubAccountChip span {
+  color: #64748b;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.lifeHubAccountChip button {
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.lifeHubPage {
+  display: grid;
+  gap: 10px;
+}
+
+.lifeHubHero,
+.lifeHubAssistantHero,
+.lifeHubCompactHero,
+.lifeHubWorkoutStatus {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid #cfe8df;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.lifeHubHero {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  background:
+    linear-gradient(135deg, rgba(236, 253, 245, 0.96) 0%, rgba(255, 255, 255, 0.98) 58%),
+    #ffffff;
+}
+
+.lifeHubHero span,
+.lifeHubAssistantHero span,
+.lifeHubCompactHero span,
+.lifeHubWorkoutStatus span {
+  color: #0f766e;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.lifeHubHero h2,
+.lifeHubAssistantHero h2,
+.lifeHubCompactHero h2,
+.lifeHubWorkoutStatus h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 1.22rem;
+  line-height: 1.22;
+  font-weight: 950;
+}
+
+.lifeHubHero p,
+.lifeHubAssistantHero p,
+.lifeHubCompactHero p,
+.lifeHubWorkoutStatus p {
+  margin: 0;
+  color: #526173;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.lifeHubHero > strong {
+  min-width: 48px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #0f766e;
+  color: #ffffff;
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.lifeHubAssistantHero {
+  background: #f8fafc;
+  border-color: #dbe4ed;
+}
+
+.lifeHubWorkoutStatus {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.lifeHubWorkoutStatus.done {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.lifeHubBriefGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lifeHubBriefGrid.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lifeHubBriefGrid article {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 11px 10px;
+  border: 1px solid #dce5eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.lifeHubBriefGrid span {
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.lifeHubBriefGrid strong {
+  overflow-wrap: anywhere;
+  color: #111827;
+  font-size: 0.98rem;
+  font-weight: 950;
+}
+
+.lifeHubBriefGrid small {
+  overflow: hidden;
+  color: #6b7280;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubTravelNotice,
+.lifeHubWarningCard,
+.lifeHubContinueCard,
+.lifeHubProgressCard,
+.lifeHubSettingsCard,
+.lifeHubFilterCard,
+.lifeHubDetailsCard,
+.lifeHubQuickMemo,
+.lifeHubMemoComposer,
+.lifeHubFormCard {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #dce5eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.lifeHubTravelNotice {
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.lifeHubTravelNotice .memoNavIcon {
+  color: #2563eb;
+}
+
+.lifeHubTravelNotice strong,
+.lifeHubTravelNotice p {
+  margin: 0;
+}
+
+.lifeHubTravelNotice strong {
+  color: #172033;
+  font-size: 0.88rem;
+}
+
+.lifeHubTravelNotice p {
+  overflow: hidden;
+  color: #526173;
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubTravelNotice button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #1d4ed8;
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.lifeHubSection {
+  display: grid;
+  gap: 8px;
+}
+
+.lifeHubSectionHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px;
+}
+
+.lifeHubSectionHeader span {
+  display: block;
+  color: #0f766e;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.lifeHubSectionHeader h2 {
+  margin: 1px 0 0;
+  color: #111827;
+  font-size: 0.98rem;
+  font-weight: 950;
+}
+
+.lifeHubActionList,
+.lifeHubMiniCards,
+.lifeHubMemoList,
+.lifeHubBookList,
+.lifeHubTripList,
+.lifeHubRoutineList,
+.lifeHubTransactionList,
+.lifeHubCategoryBars,
+.lifeHubScheduleMiniList {
+  display: grid;
+  gap: 8px;
+}
+
+.lifeHubActionCard {
+  display: grid;
+  gap: 10px;
+  padding: 11px;
+  border: 1px solid #dce5eb;
+  border-left: 4px solid #0f766e;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.lifeHubActionCard.danger {
+  border-left-color: #dc2626;
+  background: #fff7f7;
+}
+
+.lifeHubActionCard.warning {
+  border-left-color: #d97706;
+  background: #fffbeb;
+}
+
+.lifeHubActionCard.calm {
+  border-left-color: #2563eb;
+  background: #eff6ff;
+}
+
+.lifeHubActionCard strong {
+  color: #111827;
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.lifeHubActionCard p {
+  margin: 3px 0 0;
+  color: #526173;
+  font-size: 0.76rem;
+  line-height: 1.42;
+}
+
+.lifeHubActionButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lifeHubActionButtons button,
+.lifeHubButton,
+.lifeHubChipRow button,
+.lifeHubSegment button,
+.lifeHubChecklist button,
+.lifeHubSettingsCard button,
+.lifeHubTripChecks button {
+  min-height: 40px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.lifeHubActionButtons button {
+  flex: 1 1 72px;
+  padding: 0 10px;
+}
+
+.lifeHubActionButtons button.primary,
+.lifeHubButton.primary {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.lifeHubButton {
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, auto);
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+}
+
+.lifeHubButton .memoNavIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.lifeHubQuickMemo label,
+.lifeHubMemoComposer label,
+.lifeHubFormCard label,
+.lifeHubFilterCard label,
+.lifeHubDetailsCard label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.lifeHubQuickMemo label span,
+.lifeHubMemoComposer label span,
+.lifeHubFormCard label span,
+.lifeHubFilterCard label span,
+.lifeHubDetailsCard label span {
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.lifeHubQuickMemo input,
+.lifeHubQuickMemo textarea,
+.lifeHubMemoComposer input,
+.lifeHubMemoComposer textarea,
+.lifeHubFormCard input,
+.lifeHubFormCard textarea,
+.lifeHubFormCard select,
+.lifeHubFilterCard input,
+.lifeHubDetailsCard input,
+.lifeHubDetailsCard select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #172033;
+  font: inherit;
+  font-size: 0.86rem;
+  padding: 10px;
+}
+
+.lifeHubQuickMemo textarea,
+.lifeHubMemoComposer textarea {
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.lifeHubQuickActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.lifeHubStatus {
+  margin: 0;
+  color: #0f766e;
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.lifeHubModuleGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lifeHubModuleGrid.wide {
+  grid-template-columns: 1fr;
+}
+
+.lifeHubModuleGrid button {
+  min-width: 0;
+  min-height: 96px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "icon title status"
+    "icon text text";
+  align-items: start;
+  gap: 5px 8px;
+  padding: 11px;
+  border: 1px solid #dce5eb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: inherit;
+  text-align: left;
+}
+
+.lifeHubModuleGrid button > span {
+  grid-area: icon;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #0f766e;
+}
+
+.lifeHubModuleGrid strong {
+  grid-area: title;
+  min-width: 0;
+  color: #111827;
+  font-size: 0.88rem;
+  font-weight: 950;
+}
+
+.lifeHubModuleGrid em {
+  grid-area: status;
+  justify-self: end;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.lifeHubModuleGrid small {
+  grid-area: text;
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.lifeHubEmpty {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.lifeHubEmpty strong {
+  color: #334155;
+  font-size: 0.86rem;
+}
+
+.lifeHubEmpty p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.lifeHubChecklist {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lifeHubChecklist button {
+  min-height: 72px;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  padding: 9px;
+  text-align: left;
+}
+
+.lifeHubChecklist button span {
+  color: #b45309;
+  font-size: 0.66rem;
+  font-weight: 950;
+}
+
+.lifeHubChecklist button.done span {
+  color: #0f766e;
+}
+
+.lifeHubChecklist button strong {
+  color: #172033;
+  font-size: 0.82rem;
+}
+
+.lifeHubScheduleMiniList article,
+.lifeHubTransactionList article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid #dce5eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.lifeHubScheduleMiniList article.done {
+  opacity: 0.72;
+}
+
+.lifeHubScheduleMiniList article > button {
+  min-width: 48px;
+  min-height: 36px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.lifeHubScheduleMiniList strong,
+.lifeHubTransactionList strong {
+  display: block;
+  overflow: hidden;
+  color: #111827;
+  font-size: 0.86rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubScheduleMiniList small,
+.lifeHubTransactionList small {
+  display: block;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubMiniCards button {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid #dce5eb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: inherit;
+  text-align: left;
+}
+
+.lifeHubMiniCards strong {
+  color: #111827;
+  font-size: 0.86rem;
+}
+
+.lifeHubMiniCards small {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.lifeHubReminderGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.lifeHubReminderGrid article {
+  display: grid;
+  gap: 3px;
+  padding: 11px;
+  border: 1px solid #dce5eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.lifeHubReminderGrid article.warn {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.lifeHubReminderGrid span {
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.lifeHubReminderGrid strong {
+  color: #172033;
+  font-size: 0.86rem;
+}
+
+.lifeHubReminderGrid.actionable article {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.lifeHubReminderGrid.actionable span,
+.lifeHubReminderGrid.actionable strong {
+  grid-column: 1;
+}
+
+.lifeHubReminderGrid.actionable div {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.lifeHubReminderGrid.actionable button {
+  min-height: 34px;
+  padding: 0 9px;
+  border: 1px solid #d6dee8;
+  border-radius: 8px;
+  background: #111827;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.64rem;
+  font-weight: 900;
+}
+
+.lifeHubChipRow,
+.lifeHubSegment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lifeHubChipRow.sticky {
+  position: sticky;
+  top: 60px;
+  z-index: 20;
+  padding: 6px 0;
+  background: #f7f8fb;
+}
+
+.lifeHubChipRow button,
+.lifeHubSegment button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 11px;
+}
+
+.lifeHubChipRow button.active,
+.lifeHubSegment button.active {
+  border-color: #0f766e;
+  background: #ecfdf5;
+  color: #0f766e;
+}
+
+.lifeHubMemoList article,
+.lifeHubBookList article,
+.lifeHubTripList article {
+  display: grid;
+  gap: 8px;
+  padding: 11px;
+  border: 1px solid #dce5eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.lifeHubMemoList header,
+.lifeHubBookList header,
+.lifeHubTripList header,
+.lifeHubProgressCard header,
+.lifeHubFormCard header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lifeHubMemoList strong,
+.lifeHubBookList strong,
+.lifeHubTripList strong,
+.lifeHubFormCard strong,
+.lifeHubProgressCard strong,
+.lifeHubSettingsCard strong {
+  color: #111827;
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.lifeHubMemoList header button {
+  min-height: 32px;
+  padding: 0 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.lifeHubMemoList p,
+.lifeHubBookList p,
+.lifeHubTripList p,
+.lifeHubRoutineList p,
+.lifeHubWarningCard p {
+  margin: 0;
+  color: #526173;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.lifeHubMemoList footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.lifeHubMemoList footer span,
+.lifeHubBookList small,
+.lifeHubTripList small,
+.lifeHubProgressCard small,
+.lifeHubFormCard small {
+  color: #64748b;
+  font-size: 0.7rem;
+}
+
+.lifeHubMemoList footer div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.lifeHubMemoList em {
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.62rem;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.lifeHubTwoCol,
+.lifeHubThreeCol {
+  display: grid;
+  gap: 8px;
+}
+
+.lifeHubTwoCol {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.lifeHubThreeCol {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lifeHubProgress {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.lifeHubProgress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #0f766e;
+}
+
+.lifeHubContinueCard {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.lifeHubContinueCard span {
+  color: #2563eb;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.lifeHubContinueCard strong,
+.lifeHubContinueCard p {
+  margin: 0;
+}
+
+.lifeHubContinueCard p {
+  color: #526173;
+  font-size: 0.76rem;
+}
+
+.lifeHubContinueCard button {
+  min-width: 58px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: #1d4ed8;
+  color: #ffffff;
+  font-weight: 950;
+}
+
+.lifeHubBookList header span {
+  color: #b45309;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.lifeHubDetailsCard summary {
+  cursor: pointer;
+  color: #111827;
+  font-weight: 950;
+}
+
+.lifeHubExerciseList {
+  display: grid;
+  gap: 8px;
+}
+
+.lifeHubExerciseList article {
+  display: grid;
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.lifeHubCheckLine {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.lifeHubCheckLine input {
+  width: 20px;
+  min-height: 20px;
+}
+
+.lifeHubWarningCard {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.lifeHubProgressCard header span {
+  color: #0f766e;
+  font-size: 0.84rem;
+  font-weight: 950;
+}
+
+.lifeHubCategoryBars article {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid #dce5eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.lifeHubCategoryBars article > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #172033;
+  font-size: 0.78rem;
+}
+
+.lifeHubCategoryBars article > div:last-child {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.lifeHubCategoryBars article > div:last-child span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #0f766e;
+}
+
+.lifeHubTransactionList article span {
+  min-width: 42px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.66rem;
+  font-weight: 950;
+  text-align: center;
+}
+
+.lifeHubTransactionList article span.deposit {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.lifeHubTransactionList em {
+  color: #111827;
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.lifeHubTripList header span {
+  display: inline-flex;
+  width: fit-content;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #0f766e;
+  font-size: 0.68rem;
+  font-weight: 950;
+}
+
+.lifeHubTripChecks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.lifeHubTripChecks button {
+  min-height: 38px;
+  padding: 0 8px;
+  font-size: 0.72rem;
+}
+
+.lifeHubTripChecks button.done {
+  border-color: #86efac;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.lifeHubRoutineList article {
+  padding: 11px;
+  border: 1px solid #dce5eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.lifeHubRoutineList strong {
+  color: #111827;
+  font-size: 0.86rem;
+  font-weight: 950;
+}
+
+.lifeHubSettingsCard {
+  grid-template-columns: 1fr;
+}
+
+.lifeHubSettingsCard button {
+  width: 100%;
+  text-align: left;
+  padding: 0 12px;
+}
+
+.lifeHubBottomNav {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 80;
+  width: min(100%, 430px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 3px;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(203, 213, 225, 0.9);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+}
+
+.lifeHubBottomNav button {
+  min-width: 0;
+  min-height: 50px;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  font: inherit;
+  font-size: 0.66rem;
+  font-weight: 900;
+}
+
+.lifeHubBottomNav .memoNavIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.lifeHubBottomNav button.active {
+  border-color: #bde7df;
+  background: #ecfdf5;
+  color: #0f766e;
+}
+
+.lifeHubLiveRegion {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+  .lifeHubApp {
+    padding-inline: 10px;
+  }
+
+  .lifeHubTopBar {
+    margin-inline: -10px;
+    padding-inline: 10px;
+  }
+
+  .lifeHubBriefGrid.three,
+  .lifeHubTwoCol,
+  .lifeHubThreeCol,
+  .lifeHubQuickActions,
+  .lifeHubTripChecks,
+  .lifeHubChecklist {
+    grid-template-columns: 1fr;
+  }
+
+  .lifeHubAccountChip {
+    grid-template-columns: 22px auto;
+  }
+
+  .lifeHubAccountChip > div {
+    display: none;
+  }
+}
+
+@media (min-width: 700px) {
+  .lifeHubRoot {
+    display: grid;
+    place-items: start center;
+    padding-block: 18px;
+  }
+
+  .lifeHubApp {
+    min-height: calc(100vh - 36px);
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    border-radius: 8px;
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+  }
+
+  .lifeHubBottomNav {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    border-bottom: 0;
+    border-radius: 8px 8px 0 0;
+  }
+}
+
+/* Native mobile density pass */
+.lifeHubRoot {
+  background: #f2f5f4;
+}
+
+.lifeHubApp {
+  padding: 7px 10px calc(66px + env(safe-area-inset-bottom));
+  background: #f2f5f4;
+}
+
+.lifeHubTopBar {
+  margin: -7px -10px 6px;
+  padding: calc(6px + env(safe-area-inset-top)) 10px 6px;
+  gap: 6px;
+  border-bottom-color: rgba(209, 217, 224, 0.78);
+  background: rgba(242, 245, 244, 0.95);
+}
+
+.lifeHubTopTitle {
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 7px;
+}
+
+.lifeHubTopIcon {
+  width: 30px;
+  height: 30px;
+  border-color: transparent;
+  border-radius: 9px;
+  background: #dff7ef;
+}
+
+.lifeHubTopIcon .memoNavIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.lifeHubTopTitle span {
+  font-size: 0.64rem;
+  letter-spacing: 0;
+}
+
+.lifeHubTopTitle h1 {
+  font-size: 0.94rem;
+}
+
+.lifeHubAccountChip {
+  height: 34px;
+  grid-template-columns: 18px auto;
+  gap: 4px;
+  padding: 4px 6px;
+  border-color: #e1e8ee;
+  border-radius: 999px;
+}
+
+.lifeHubAccountChip .memoNavIcon {
+  width: 17px;
+  height: 17px;
+}
+
+.lifeHubAccountChip > div {
+  display: none;
+}
+
+.lifeHubAccountChip button {
+  min-height: 25px;
+  padding: 0 7px;
+  border: 0;
+  background: #eef2f6;
+  font-size: 0.66rem;
+}
+
+.lifeHubPage {
+  gap: 7px;
+}
+
+.lifeHubHero,
+.lifeHubAssistantHero,
+.lifeHubCompactHero,
+.lifeHubWorkoutStatus {
+  gap: 3px;
+  padding: 10px 11px;
+  border-color: #d9e4e1;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.lifeHubHero {
+  min-height: auto;
+  align-items: center;
+  background: #ffffff;
+}
+
+.lifeHubHero h2,
+.lifeHubAssistantHero h2,
+.lifeHubCompactHero h2,
+.lifeHubWorkoutStatus h2 {
+  font-size: 1.04rem;
+  line-height: 1.18;
+}
+
+.lifeHubHero p,
+.lifeHubAssistantHero p,
+.lifeHubCompactHero p,
+.lifeHubWorkoutStatus p {
+  font-size: 0.75rem;
+  line-height: 1.34;
+}
+
+.lifeHubHero span,
+.lifeHubAssistantHero span,
+.lifeHubCompactHero span,
+.lifeHubWorkoutStatus span {
+  font-size: 0.66rem;
+}
+
+.lifeHubHero > strong {
+  min-width: 42px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+}
+
+.lifeHubBriefGrid {
+  gap: 6px;
+}
+
+.lifeHubHomeBriefGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.lifeHubBriefGrid article {
+  min-height: 66px;
+  gap: 2px;
+  padding: 8px 7px;
+  border-color: #dde5ea;
+  border-radius: 11px;
+}
+
+.lifeHubBriefGrid span {
+  font-size: 0.62rem;
+}
+
+.lifeHubBriefGrid strong {
+  font-size: 0.84rem;
+}
+
+.lifeHubBriefGrid small {
+  font-size: 0.6rem;
+  line-height: 1.24;
+  white-space: normal;
+}
+
+.lifeHubTravelNotice,
+.lifeHubWarningCard,
+.lifeHubContinueCard,
+.lifeHubProgressCard,
+.lifeHubSettingsCard,
+.lifeHubFilterCard,
+.lifeHubDetailsCard,
+.lifeHubQuickMemo,
+.lifeHubMemoComposer,
+.lifeHubFormCard {
+  gap: 7px;
+  padding: 9px;
+  border-color: #dde5ea;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.lifeHubTravelNotice {
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  padding: 8px 9px;
+}
+
+.lifeHubTravelNotice strong {
+  font-size: 0.8rem;
+}
+
+.lifeHubTravelNotice p {
+  font-size: 0.68rem;
+}
+
+.lifeHubTravelNotice button {
+  min-height: 30px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+}
+
+.lifeHubSection {
+  gap: 6px;
+}
+
+.lifeHubSectionHeader {
+  padding: 0 1px;
+}
+
+.lifeHubSectionHeader span {
+  font-size: 0.62rem;
+}
+
+.lifeHubSectionHeader h2 {
+  font-size: 0.86rem;
+}
+
+.lifeHubActionList,
+.lifeHubMiniCards,
+.lifeHubMemoList,
+.lifeHubBookList,
+.lifeHubTripList,
+.lifeHubRoutineList,
+.lifeHubTransactionList,
+.lifeHubCategoryBars,
+.lifeHubScheduleMiniList {
+  gap: 6px;
+}
+
+.lifeHubActionCard {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 7px;
+  padding: 9px;
+  border-left-width: 3px;
+  border-radius: 12px;
+}
+
+.lifeHubActionCard strong {
+  font-size: 0.82rem;
+}
+
+.lifeHubActionCard p {
+  margin-top: 2px;
+  font-size: 0.68rem;
+  line-height: 1.32;
+}
+
+.lifeHubActionButtons {
+  gap: 5px;
+}
+
+.lifeHubActionButtons button,
+.lifeHubButton,
+.lifeHubChipRow button,
+.lifeHubSegment button,
+.lifeHubChecklist button,
+.lifeHubSettingsCard button,
+.lifeHubTripChecks button {
+  min-height: 36px;
+  border-color: #d2dce4;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.lifeHubActionButtons button {
+  flex: 1 1 58px;
+  padding: 0 8px;
+}
+
+.lifeHubButton {
+  gap: 5px;
+  padding: 0 10px;
+}
+
+.lifeHubButton.primary,
+.lifeHubActionButtons button.primary {
+  background: #0f766e;
+  box-shadow: inset 0 -1px 0 rgba(15, 23, 42, 0.14);
+}
+
+.lifeHubQuickMemo label,
+.lifeHubMemoComposer label,
+.lifeHubFormCard label,
+.lifeHubFilterCard label,
+.lifeHubDetailsCard label {
+  gap: 4px;
+}
+
+.lifeHubQuickMemo label span,
+.lifeHubMemoComposer label span,
+.lifeHubFormCard label span,
+.lifeHubFilterCard label span,
+.lifeHubDetailsCard label span {
+  font-size: 0.66rem;
+}
+
+.lifeHubQuickMemo input,
+.lifeHubQuickMemo textarea,
+.lifeHubMemoComposer input,
+.lifeHubMemoComposer textarea,
+.lifeHubFormCard input,
+.lifeHubFormCard textarea,
+.lifeHubFormCard select,
+.lifeHubFilterCard input,
+.lifeHubDetailsCard input,
+.lifeHubDetailsCard select {
+  min-height: 40px;
+  border-color: #d5dee6;
+  border-radius: 10px;
+  background: #f7faf9;
+  font-size: 0.8rem;
+  padding: 8px 9px;
+}
+
+.lifeHubQuickMemo textarea,
+.lifeHubMemoComposer textarea {
+  min-height: 58px;
+}
+
+.lifeHubQuickActions {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.lifeHubQuickActions .lifeHubButton {
+  min-height: 42px;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  padding: 5px 2px;
+  font-size: 0.64rem;
+}
+
+.lifeHubQuickActions .memoNavIcon {
+  width: 17px;
+  height: 17px;
+  margin: 0 auto;
+}
+
+.lifeHubStatus {
+  font-size: 0.68rem;
+}
+
+.lifeHubModuleGrid {
+  gap: 6px;
+}
+
+.lifeHubModuleGrid button {
+  min-height: 74px;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  gap: 3px 6px;
+  padding: 8px;
+  border-color: #dde5ea;
+  border-radius: 12px;
+}
+
+.lifeHubModuleGrid button > span {
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+}
+
+.lifeHubModuleGrid button > span .memoNavIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.lifeHubModuleGrid strong {
+  font-size: 0.78rem;
+}
+
+.lifeHubModuleGrid em {
+  padding: 2px 6px;
+  font-size: 0.58rem;
+}
+
+.lifeHubModuleGrid small {
+  font-size: 0.64rem;
+  line-height: 1.25;
+}
+
+.lifeHubEmpty {
+  gap: 4px;
+  padding: 11px;
+  border-radius: 12px;
+  background: #fbfcfd;
+}
+
+.lifeHubEmpty strong {
+  font-size: 0.8rem;
+}
+
+.lifeHubEmpty p {
+  font-size: 0.7rem;
+}
+
+.lifeHubChecklist {
+  gap: 6px;
+}
+
+.lifeHubChecklist button {
+  min-height: 58px;
+  gap: 3px;
+  padding: 8px;
+  border-radius: 12px;
+}
+
+.lifeHubChecklist button span {
+  font-size: 0.58rem;
+}
+
+.lifeHubChecklist button strong {
+  font-size: 0.74rem;
+}
+
+.lifeHubScheduleMiniList article,
+.lifeHubTransactionList article {
+  gap: 7px;
+  padding: 8px;
+  border-color: #dde5ea;
+  border-radius: 12px;
+}
+
+.lifeHubScheduleMiniList article > button {
+  min-width: 42px;
+  min-height: 32px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+}
+
+.lifeHubScheduleMiniList strong,
+.lifeHubTransactionList strong {
+  font-size: 0.78rem;
+}
+
+.lifeHubScheduleMiniList small,
+.lifeHubTransactionList small {
+  font-size: 0.66rem;
+}
+
+.lifeHubChipRow,
+.lifeHubSegment {
+  gap: 5px;
+}
+
+.lifeHubChipRow.sticky {
+  top: 48px;
+  padding: 4px 0;
+  background: #f2f5f4;
+}
+
+.lifeHubChipRow button,
+.lifeHubSegment button {
+  min-height: 34px;
+  padding: 0 9px;
+  border-radius: 999px;
+}
+
+.lifeHubMemoList article,
+.lifeHubBookList article,
+.lifeHubTripList article,
+.lifeHubRoutineList article {
+  gap: 6px;
+  padding: 9px;
+  border-color: #dde5ea;
+  border-radius: 12px;
+}
+
+.lifeHubMemoList strong,
+.lifeHubBookList strong,
+.lifeHubTripList strong,
+.lifeHubFormCard strong,
+.lifeHubProgressCard strong,
+.lifeHubSettingsCard strong {
+  font-size: 0.82rem;
+}
+
+.lifeHubMemoList p,
+.lifeHubBookList p,
+.lifeHubTripList p,
+.lifeHubRoutineList p,
+.lifeHubWarningCard p {
+  font-size: 0.7rem;
+  line-height: 1.34;
+}
+
+.lifeHubMemoList header button {
+  min-height: 29px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+}
+
+.lifeHubTwoCol,
+.lifeHubThreeCol {
+  gap: 6px;
+}
+
+.lifeHubContinueCard button {
+  min-width: 52px;
+  min-height: 38px;
+  border-radius: 999px;
+}
+
+.lifeHubExerciseList {
+  gap: 6px;
+}
+
+.lifeHubExerciseList article {
+  gap: 6px;
+  padding: 7px;
+  border-radius: 12px;
+}
+
+.lifeHubCategoryBars article {
+  gap: 5px;
+  padding: 8px;
+  border-radius: 12px;
+}
+
+.lifeHubTripChecks {
+  gap: 5px;
+}
+
+.lifeHubTripChecks button {
+  min-height: 34px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+}
+
+.lifeHubBottomNav {
+  width: min(100%, 430px);
+  gap: 2px;
+  padding: 4px 8px calc(4px + env(safe-area-inset-bottom));
+  border-top-color: rgba(209, 217, 224, 0.9);
+}
+
+.lifeHubBottomNav button {
+  min-height: 43px;
+  gap: 1px;
+  border-radius: 10px;
+  font-size: 0.6rem;
+}
+
+.lifeHubBottomNav .memoNavIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.lifeHubBottomNav button.active {
+  border-color: transparent;
+  background: #dff7ef;
+}
+
+@media (max-width: 360px) {
+  .lifeHubHomeBriefGrid,
+  .lifeHubQuickActions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 700px) {
+  .lifeHubRoot {
+    background: #edf3f1;
+  }
+
+  .lifeHubApp {
+    border-radius: 18px;
+  }
+
+  .lifeHubBottomNav {
+    border-radius: 14px 14px 0 0;
+  }
+}
+
+/* Native app refinement pass */
+.lifeHubRoot {
+  background: #f5f6f8;
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+}
+
+.lifeHubApp {
+  padding: 6px 9px calc(58px + env(safe-area-inset-bottom));
+  background: #f5f6f8;
+}
+
+.lifeHubTopBar {
+  min-height: 44px;
+  margin: -6px -9px 5px;
+  padding: calc(5px + env(safe-area-inset-top)) 9px 5px;
+  border-bottom-color: rgba(218, 224, 231, 0.86);
+  background: rgba(245, 246, 248, 0.96);
+}
+
+.lifeHubTopTitle {
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 6px;
+}
+
+.lifeHubTopIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #e8f7f2;
+  color: #087568;
+}
+
+.lifeHubTopIcon .memoNavIcon {
+  width: 17px;
+  height: 17px;
+}
+
+.lifeHubTopTitle span {
+  color: #6b7280;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.lifeHubTopTitle h1 {
+  margin-top: 0;
+  font-size: 0.9rem;
+  line-height: 1.12;
+}
+
+.lifeHubAccountChip {
+  height: 31px;
+  padding: 3px 5px;
+  border-color: #e3e8ef;
+  background: #ffffff;
+}
+
+.lifeHubAccountChip button {
+  min-height: 23px;
+  padding: 0 7px;
+  background: #f1f5f9;
+  color: #111827;
+  font-size: 0.62rem;
+}
+
+.lifeHubPage,
+.lifeHubHomePage {
+  gap: 6px;
+}
+
+.lifeHubHero,
+.lifeHubAssistantHero,
+.lifeHubCompactHero,
+.lifeHubWorkoutStatus,
+.lifeHubTravelNotice,
+.lifeHubWarningCard,
+.lifeHubContinueCard,
+.lifeHubProgressCard,
+.lifeHubSettingsCard,
+.lifeHubFilterCard,
+.lifeHubDetailsCard,
+.lifeHubQuickMemo,
+.lifeHubMemoComposer,
+.lifeHubFormCard,
+.lifeHubActionCard,
+.lifeHubBriefGrid article,
+.lifeHubModuleGrid button,
+.lifeHubMemoList article,
+.lifeHubBookList article,
+.lifeHubTripList article,
+.lifeHubRoutineList article,
+.lifeHubCategoryBars article,
+.lifeHubScheduleMiniList article,
+.lifeHubTransactionList article,
+.lifeHubEmpty {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.lifeHubHero,
+.lifeHubAssistantHero,
+.lifeHubCompactHero,
+.lifeHubWorkoutStatus {
+  gap: 2px;
+  padding: 8px 9px;
+  border-color: #e0e6ed;
+  background: #ffffff;
+}
+
+.lifeHubHero {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.lifeHubHero h2,
+.lifeHubAssistantHero h2,
+.lifeHubCompactHero h2,
+.lifeHubWorkoutStatus h2 {
+  font-size: 0.98rem;
+  line-height: 1.17;
+}
+
+.lifeHubHero p,
+.lifeHubAssistantHero p,
+.lifeHubCompactHero p,
+.lifeHubWorkoutStatus p {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 0.68rem;
+  line-height: 1.28;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.lifeHubHero span,
+.lifeHubAssistantHero span,
+.lifeHubCompactHero span,
+.lifeHubWorkoutStatus span {
+  color: #087568;
+  font-size: 0.58rem;
+  letter-spacing: 0;
+}
+
+.lifeHubHero > strong {
+  min-width: 38px;
+  padding: 5px 7px;
+  background: #111827;
+  font-size: 0.62rem;
+}
+
+.lifeHubHomeBriefGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.lifeHubBriefGrid {
+  gap: 5px;
+}
+
+.lifeHubBriefGrid article {
+  min-height: 52px;
+  gap: 1px;
+  padding: 7px 6px;
+  border-color: #e1e7ee;
+  background: #ffffff;
+}
+
+.lifeHubBriefGrid article:nth-child(1) {
+  box-shadow: inset 2px 0 0 #2563eb;
+}
+
+.lifeHubBriefGrid article:nth-child(2) {
+  box-shadow: inset 2px 0 0 #087568;
+}
+
+.lifeHubBriefGrid article:nth-child(3) {
+  box-shadow: inset 2px 0 0 #d97706;
+}
+
+.lifeHubBriefGrid article:nth-child(4) {
+  box-shadow: inset 2px 0 0 #64748b;
+}
+
+.lifeHubBriefGrid span {
+  font-size: 0.56rem;
+}
+
+.lifeHubBriefGrid strong {
+  font-size: 0.75rem;
+  line-height: 1.15;
+}
+
+.lifeHubBriefGrid small {
+  display: block;
+  overflow: hidden;
+  font-size: 0.56rem;
+  line-height: 1.18;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubHomeFocus {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid #dde5ec;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.lifeHubHomeFocus > .memoNavIcon {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #e8f7f2;
+  color: #087568;
+}
+
+.lifeHubHomeFocus.warning > .memoNavIcon {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.lifeHubHomeFocus.danger > .memoNavIcon {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.lifeHubHomeFocus.calm > .memoNavIcon {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.lifeHubHomeFocus.idle > .memoNavIcon {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.lifeHubHomeFocus div {
+  min-width: 0;
+}
+
+.lifeHubHomeFocus span,
+.lifeHubHomeFocus strong,
+.lifeHubHomeFocus p {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubHomeFocus span {
+  color: #6b7280;
+  font-size: 0.57rem;
+  font-weight: 900;
+}
+
+.lifeHubHomeFocus strong {
+  color: #111827;
+  font-size: 0.8rem;
+  font-weight: 950;
+}
+
+.lifeHubHomeFocus p {
+  margin: 1px 0 0;
+  color: #64748b;
+  font-size: 0.64rem;
+}
+
+.lifeHubHomeFocusActions {
+  display: flex;
+  gap: 4px;
+}
+
+.lifeHubHomeFocusActions button {
+  min-height: 29px;
+  padding: 0 8px;
+  border: 1px solid #d6dee8;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  font: inherit;
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+
+.lifeHubHomeFocusActions button.primary {
+  border-color: #111827;
+  background: #111827;
+  color: #ffffff;
+}
+
+.lifeHubTravelNotice {
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 7px;
+  padding: 7px 8px;
+  border-color: #dbeafe;
+  background: #f8fbff;
+}
+
+.lifeHubTravelNotice .memoNavIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.lifeHubTravelNotice strong {
+  font-size: 0.74rem;
+}
+
+.lifeHubTravelNotice p {
+  font-size: 0.63rem;
+}
+
+.lifeHubSection {
+  gap: 5px;
+}
+
+.lifeHubSectionHeader {
+  align-items: center;
+  padding: 1px 1px 0;
+}
+
+.lifeHubSectionHeader span {
+  font-size: 0.57rem;
+  letter-spacing: 0;
+}
+
+.lifeHubSectionHeader h2 {
+  margin-top: 0;
+  font-size: 0.8rem;
+}
+
+.lifeHubActionList,
+.lifeHubMiniCards,
+.lifeHubMemoList,
+.lifeHubBookList,
+.lifeHubTripList,
+.lifeHubRoutineList,
+.lifeHubTransactionList,
+.lifeHubCategoryBars,
+.lifeHubScheduleMiniList {
+  gap: 5px;
+}
+
+.lifeHubActionCard {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 8px;
+  border-left-width: 0;
+  border-color: #e1e7ee;
+  background: #ffffff;
+}
+
+.lifeHubActionCard.danger,
+.lifeHubActionCard.warning,
+.lifeHubActionCard.calm {
+  background: #ffffff;
+}
+
+.lifeHubActionCard strong {
+  display: block;
+  overflow: hidden;
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubActionCard p {
+  display: block;
+  overflow: hidden;
+  margin-top: 1px;
+  font-size: 0.62rem;
+  line-height: 1.22;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubActionButtons {
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.lifeHubActionButtons button,
+.lifeHubButton,
+.lifeHubChipRow button,
+.lifeHubSegment button,
+.lifeHubChoiceGroup button,
+.lifeHubChecklist button,
+.lifeHubSettingsCard button,
+.lifeHubTripChecks button,
+.lifeHubMemoList header button,
+.lifeHubTravelNotice button,
+.lifeHubContinueCard button {
+  min-height: 32px;
+  border-color: #d6dee8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 0.66rem;
+}
+
+.lifeHubActionButtons button {
+  flex: 0 0 auto;
+  min-width: 42px;
+  padding: 0 7px;
+}
+
+.lifeHubActionButtons button.primary,
+.lifeHubButton.primary,
+.lifeHubContinueCard button,
+.lifeHubTravelNotice button {
+  border-color: #111827;
+  background: #111827;
+  color: #ffffff;
+}
+
+.lifeHubButton {
+  gap: 4px;
+  padding: 0 9px;
+}
+
+.lifeHubButton .memoNavIcon {
+  width: 15px;
+  height: 15px;
+}
+
+.lifeHubQuickMemo,
+.lifeHubMemoComposer,
+.lifeHubFormCard,
+.lifeHubFilterCard,
+.lifeHubDetailsCard {
+  gap: 6px;
+  padding: 8px;
+  border-color: #e0e6ed;
+  background: #ffffff;
+}
+
+.lifeHubFormCard header,
+.lifeHubProgressCard header,
+.lifeHubMemoList header,
+.lifeHubBookList header,
+.lifeHubTripList header {
+  gap: 6px;
+}
+
+.lifeHubFormCard header small,
+.lifeHubProgressCard small {
+  font-size: 0.6rem;
+}
+
+.lifeHubQuickMemo label,
+.lifeHubMemoComposer label,
+.lifeHubFormCard label,
+.lifeHubFilterCard label,
+.lifeHubDetailsCard label {
+  gap: 3px;
+}
+
+.lifeHubQuickMemo label span,
+.lifeHubMemoComposer label span,
+.lifeHubFormCard label span,
+.lifeHubFilterCard label span,
+.lifeHubDetailsCard label span {
+  color: #6b7280;
+  font-size: 0.58rem;
+}
+
+.lifeHubQuickMemo input,
+.lifeHubQuickMemo textarea,
+.lifeHubMemoComposer input,
+.lifeHubMemoComposer textarea,
+.lifeHubFormCard input,
+.lifeHubFormCard textarea,
+.lifeHubFormCard select,
+.lifeHubFilterCard input,
+.lifeHubDetailsCard input,
+.lifeHubDetailsCard select {
+  min-height: 36px;
+  border-color: #dbe3eb;
+  border-radius: 8px;
+  background: #fbfcfd;
+  font-size: 0.76rem;
+  padding: 7px 8px;
+}
+
+.lifeHubQuickMemo textarea,
+.lifeHubMemoComposer textarea {
+  min-height: 48px;
+}
+
+.lifeHubQuickActions {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.lifeHubQuickActions .lifeHubButton {
+  min-height: 36px;
+  padding: 4px 2px;
+  font-size: 0.58rem;
+}
+
+.lifeHubQuickActions .lifeHubButton span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubQuickActions .memoNavIcon {
+  width: 15px;
+  height: 15px;
+}
+
+.lifeHubChipRow,
+.lifeHubSegment {
+  gap: 4px;
+}
+
+.lifeHubChipRow.sticky {
+  top: 43px;
+  margin-inline: -1px;
+  padding: 4px 1px;
+  background: rgba(245, 246, 248, 0.96);
+  backdrop-filter: blur(12px);
+}
+
+.lifeHubChipRow button,
+.lifeHubSegment button {
+  min-height: 31px;
+  padding: 0 9px;
+}
+
+.lifeHubChipRow button.active,
+.lifeHubSegment button.active {
+  border-color: #087568;
+  background: #e8f7f2;
+  color: #087568;
+}
+
+.lifeHubScheduleMiniList article,
+.lifeHubTransactionList article {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 6px;
+  padding: 7px;
+  border-color: #e1e7ee;
+}
+
+.lifeHubScheduleMiniList article > button {
+  min-width: 38px;
+  min-height: 28px;
+  border-radius: 8px;
+  font-size: 0.58rem;
+}
+
+.lifeHubScheduleMiniList strong,
+.lifeHubTransactionList strong {
+  font-size: 0.74rem;
+}
+
+.lifeHubScheduleMiniList small,
+.lifeHubTransactionList small {
+  font-size: 0.62rem;
+}
+
+.lifeHubMiniCards button,
+.lifeHubMemoList article,
+.lifeHubBookList article,
+.lifeHubTripList article,
+.lifeHubRoutineList article,
+.lifeHubCategoryBars article {
+  padding: 8px;
+  border-color: #e1e7ee;
+}
+
+.lifeHubMemoList strong,
+.lifeHubBookList strong,
+.lifeHubTripList strong,
+.lifeHubFormCard strong,
+.lifeHubProgressCard strong,
+.lifeHubSettingsCard strong,
+.lifeHubRoutineList strong {
+  font-size: 0.78rem;
+}
+
+.lifeHubMemoList p,
+.lifeHubBookList p,
+.lifeHubTripList p,
+.lifeHubRoutineList p,
+.lifeHubWarningCard p {
+  font-size: 0.66rem;
+  line-height: 1.3;
+}
+
+.lifeHubBookList header span,
+.lifeHubTripList header span,
+.lifeHubMemoList footer span,
+.lifeHubBookList small,
+.lifeHubTripList small,
+.lifeHubFormCard small {
+  font-size: 0.6rem;
+}
+
+.lifeHubTwoCol,
+.lifeHubThreeCol {
+  gap: 5px;
+}
+
+.lifeHubChecklist {
+  gap: 5px;
+}
+
+.lifeHubChecklist button {
+  min-height: 48px;
+  padding: 7px;
+}
+
+.lifeHubReminderGrid article,
+.lifeHubProgressCard,
+.lifeHubWarningCard,
+.lifeHubContinueCard,
+.lifeHubSettingsCard {
+  padding: 8px;
+  border-color: #e1e7ee;
+}
+
+.lifeHubModuleGrid {
+  gap: 5px;
+}
+
+.lifeHubHomePage .lifeHubModuleGrid,
+.lifeHubModuleGrid.wide {
+  grid-template-columns: 1fr;
+}
+
+.lifeHubHomePage .lifeHubModuleGrid button,
+.lifeHubModuleGrid.wide button {
+  min-height: 42px;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  grid-template-areas: "icon title status";
+  align-items: center;
+  gap: 5px 7px;
+  padding: 7px 8px;
+}
+
+.lifeHubHomePage .lifeHubModuleGrid small,
+.lifeHubModuleGrid.wide small {
+  display: none;
+}
+
+.lifeHubModuleGrid button > span {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+}
+
+.lifeHubModuleGrid button > span .memoNavIcon {
+  width: 15px;
+  height: 15px;
+}
+
+.lifeHubModuleGrid button:nth-child(1) > span {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.lifeHubModuleGrid button:nth-child(2) > span {
+  background: #e8f7f2;
+  color: #087568;
+}
+
+.lifeHubModuleGrid button:nth-child(3) > span {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.lifeHubModuleGrid button:nth-child(4) > span {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.lifeHubModuleGrid button:nth-child(5) > span,
+.lifeHubModuleGrid button:nth-child(6) > span {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.lifeHubModuleGrid strong {
+  font-size: 0.74rem;
+}
+
+.lifeHubModuleGrid em {
+  padding: 2px 6px;
+  background: #f1f5f9;
+  font-size: 0.56rem;
+}
+
+.lifeHubEmpty {
+  gap: 3px;
+  padding: 9px;
+  border-style: solid;
+  border-color: #e1e7ee;
+  background: #fbfcfd;
+}
+
+.lifeHubEmpty strong {
+  font-size: 0.75rem;
+}
+
+.lifeHubEmpty p {
+  font-size: 0.64rem;
+  line-height: 1.3;
+}
+
+.lifeHubProgress {
+  height: 6px;
+}
+
+.lifeHubTripChecks {
+  gap: 4px;
+}
+
+.lifeHubTripChecks button {
+  min-height: 31px;
+  padding: 0 7px;
+  font-size: 0.6rem;
+}
+
+.lifeHubBottomNav {
+  width: min(100%, 430px);
+  gap: 1px;
+  padding: 3px 7px calc(3px + env(safe-area-inset-bottom));
+  border-top-color: rgba(215, 222, 230, 0.92);
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.lifeHubBottomNav button {
+  min-height: 37px;
+  gap: 0;
+  border: 0;
+  border-radius: 8px;
+  font-size: 0.55rem;
+}
+
+.lifeHubBottomNav .memoNavIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.lifeHubBottomNav button.active {
+  background: #e8f7f2;
+  color: #087568;
+}
+
+@media (max-width: 360px) {
+  .lifeHubApp {
+    padding-inline: 8px;
+  }
+
+  .lifeHubTopBar {
+    margin-inline: -8px;
+    padding-inline: 8px;
+  }
+
+  .lifeHubHomeFocus {
+    grid-template-columns: 24px minmax(0, 1fr);
+  }
+
+  .lifeHubHomeFocusActions {
+    grid-column: 1 / -1;
+  }
+
+  .lifeHubHomeFocusActions button {
+    flex: 1 1 0;
+  }
+}
+
+@media (min-width: 700px) {
+  .lifeHubRoot {
+    padding-block: 10px;
+    background: #eef1f4;
+  }
+
+  .lifeHubApp {
+    min-height: calc(100vh - 20px);
+    border-radius: 22px;
+  }
+
+  .lifeHubBottomNav {
+    border-radius: 12px 12px 0 0;
+  }
+}
+
+/* Professional UX pass */
+.lifeHubApp {
+  padding-bottom: calc(70px + env(safe-area-inset-bottom));
+}
+
+.lifeHubToast {
+  position: sticky;
+  top: calc(47px + env(safe-area-inset-top));
+  z-index: 60;
+  min-height: 38px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  padding: 8px 9px;
+  border: 1px solid #b9ead8;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #065f46;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.lifeHubToast.error {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.lifeHubToast span {
+  overflow: hidden;
+  font-size: 0.74rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubToast button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: currentColor;
+}
+
+.lifeHubToast .memoNavIcon {
+  width: 15px;
+  height: 15px;
+}
+
+.lifeHubHomeBriefGrid.five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.lifeHubHomeBriefGrid.five article {
+  min-height: 58px;
+  padding-inline: 5px;
+}
+
+.lifeHubHomeBriefGrid.five strong {
+  font-size: 0.7rem;
+}
+
+.lifeHubChoiceGroup {
+  display: grid;
+  gap: 5px;
+}
+
+.lifeHubChoiceGroup > span {
+  color: #6b7280;
+  font-size: 0.58rem;
+  font-weight: 850;
+}
+
+.lifeHubChoiceGroup > div {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  padding-bottom: 1px;
+  scrollbar-width: none;
+}
+
+.lifeHubChoiceGroup > div::-webkit-scrollbar {
+  display: none;
+}
+
+.lifeHubChoiceGroup button,
+.lifeHubInlineDetails summary,
+.lifeHubEmpty button,
+.lifeHubInlineDelete,
+.lifeHubCardActions button {
+  min-height: 36px;
+  border: 1px solid #d6dee8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  font: inherit;
+  font-size: 0.66rem;
+  font-weight: 850;
+}
+
+.lifeHubChoiceGroup button {
+  flex: 0 0 auto;
+  padding: 0 11px;
+  white-space: nowrap;
+}
+
+.lifeHubChoiceGroup button.active {
+  border-color: #087568;
+  background: #e8f7f2;
+  color: #087568;
+}
+
+.lifeHubFastForm {
+  gap: 7px;
+}
+
+.lifeHubInlineDetails {
+  display: grid;
+  gap: 7px;
+  border: 0;
+}
+
+.lifeHubInlineDetails summary {
+  width: 100%;
+  display: grid;
+  align-items: center;
+  padding: 0 10px;
+  list-style: none;
+  cursor: pointer;
+  background: #f8fafc;
+}
+
+.lifeHubInlineDetails summary::-webkit-details-marker {
+  display: none;
+}
+
+.lifeHubInlineDetails[open] summary {
+  border-color: #cfe4df;
+  background: #f0fdfa;
+  color: #087568;
+}
+
+.lifeHubInlineDetails label:first-of-type {
+  margin-top: 2px;
+}
+
+.lifeHubOptionalFields summary {
+  min-height: 38px;
+}
+
+.lifeHubEmpty {
+  grid-template-columns: 26px minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.lifeHubEmpty .memoNavIcon {
+  grid-row: span 2;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.lifeHubEmpty strong,
+.lifeHubEmpty p {
+  min-width: 0;
+}
+
+.lifeHubEmpty button,
+.lifeHubEmpty > .lifeHubButton {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin-top: 4px;
+  background: #111827;
+  color: #ffffff;
+}
+
+.lifeHubCardActions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.lifeHubCardActions button {
+  min-height: 30px;
+  padding: 0 8px;
+}
+
+.lifeHubCardActions button.quiet,
+.lifeHubInlineDelete {
+  border-color: transparent;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.lifeHubInlineDelete {
+  min-width: 40px;
+  min-height: 30px;
+  padding: 0 7px;
+}
+
+.lifeHubMemoList article.pinned {
+  border-color: #bfdbfe;
+  background: #f8fbff;
+}
+
+.lifeHubMemoList header {
+  align-items: center;
+}
+
+.lifeHubMemoList header > strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubSearchFilter {
+  gap: 6px;
+}
+
+.lifeHubScheduleMiniList article {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.lifeHubScheduleMiniList.danger article,
+.lifeHubScheduleMiniList article.urgent {
+  border-color: #fed7aa;
+  background: #fffaf3;
+}
+
+.lifeHubScheduleMiniList.danger article > button,
+.lifeHubScheduleMiniList article.urgent > button {
+  border-color: #fdba74;
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.lifeHubScheduleMiniList article.done > button {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.lifeHubReadingFocus {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.lifeHubReadingFocus > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.lifeHubReadingFocus .lifeHubActionButtons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lifeHubBookList article.finished {
+  border-color: #bbf7d0;
+  background: #f7fff9;
+}
+
+.lifeHubTransactionList article {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+
+.lifeHubTransactionList .lifeHubInlineDelete {
+  min-width: 34px;
+}
+
+.lifeHubTripFocus {
+  display: grid;
+  gap: 7px;
+  padding: 9px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #f8fbff;
+}
+
+.lifeHubTripFocus span,
+.lifeHubTripFocus strong,
+.lifeHubTripFocus p {
+  display: block;
+  margin: 0;
+}
+
+.lifeHubTripFocus span {
+  color: #2563eb;
+  font-size: 0.64rem;
+  font-weight: 950;
+}
+
+.lifeHubTripFocus strong {
+  overflow: hidden;
+  color: #111827;
+  font-size: 0.9rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubTripFocus p {
+  color: #64748b;
+  font-size: 0.68rem;
+}
+
+.lifeHubTripList header {
+  align-items: center;
+}
+
+.lifeHubSettingsCard p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.68rem;
+  line-height: 1.32;
+}
+
+.lifeHubBottomNav {
+  padding: 4px 7px calc(4px + env(safe-area-inset-bottom));
+}
+
+.lifeHubBottomNav button {
+  min-height: 44px;
+  font-size: 0.58rem;
+}
+
+.lifeHubActionButtons button,
+.lifeHubButton,
+.lifeHubChipRow button,
+.lifeHubSegment button,
+.lifeHubChecklist button,
+.lifeHubSettingsCard button,
+.lifeHubTripChecks button,
+.lifeHubTravelNotice button,
+.lifeHubContinueCard button {
+  min-height: 38px;
+}
+
+.lifeHubQuickActions .lifeHubButton {
+  min-height: 42px;
+}
+
+.lifeHubQuickMemo input,
+.lifeHubQuickMemo textarea,
+.lifeHubMemoComposer input,
+.lifeHubMemoComposer textarea,
+.lifeHubFormCard input,
+.lifeHubFormCard textarea,
+.lifeHubFormCard select,
+.lifeHubFilterCard input,
+.lifeHubDetailsCard input,
+.lifeHubDetailsCard select {
+  min-height: 40px;
+}
+
+@media (max-width: 380px) {
+  .lifeHubHomeBriefGrid.five {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .lifeHubTransactionList article {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .lifeHubTransactionList .lifeHubInlineDelete {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+
+/* Screen-specific product patterns */
+.lifeHubHomePage .lifeHubHero {
+  min-height: 118px;
+  align-items: end;
+  padding: 14px;
+  border: 0;
+  background:
+    radial-gradient(circle at 88% 12%, rgba(20, 184, 166, 0.28), transparent 36%),
+    linear-gradient(145deg, #0f172a 0%, #115e59 100%);
+  color: #ffffff;
+}
+
+.lifeHubHomePage .lifeHubHero span,
+.lifeHubHomePage .lifeHubHero h2,
+.lifeHubHomePage .lifeHubHero p {
+  color: #ffffff;
+}
+
+.lifeHubHomePage .lifeHubHero span {
+  opacity: 0.78;
+}
+
+.lifeHubHomePage .lifeHubHero p {
+  color: #d7f7ef;
+}
+
+.lifeHubHomePage .lifeHubHero > strong {
+  align-self: start;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+.lifeHubHomePage .lifeHubHomeBriefGrid.five {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.lifeHubHomePage .lifeHubHomeBriefGrid.five article {
+  min-height: 62px;
+  padding: 8px;
+  border: 0;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #e0e7ef;
+}
+
+.lifeHubHomePage .lifeHubHomeBriefGrid.five article:first-child {
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 50px;
+  background: #ecfdf5;
+  box-shadow: inset 0 0 0 1px #bbf7d0;
+}
+
+.lifeHubHomePage .lifeHubHomeBriefGrid.five article:first-child strong {
+  justify-self: end;
+  font-size: 1.1rem;
+}
+
+.lifeHubHomePage .lifeHubHomeFocus {
+  border: 0;
+  background: #ffffff;
+  box-shadow: inset 3px 0 0 #0f766e, 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+
+.lifeHubHomePage .lifeHubHomeQuickSection .lifeHubSectionHeader {
+  display: none;
+}
+
+.lifeHubHomePage .lifeHubQuickMemo {
+  grid-template-columns: minmax(0, 1fr);
+  border-style: dashed;
+}
+
+.lifeHubHomePage .lifeHubModuleGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lifeHubHomePage .lifeHubModuleGrid button {
+  min-height: 58px;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "icon"
+    "title";
+  justify-items: center;
+  text-align: center;
+}
+
+.lifeHubHomePage .lifeHubModuleGrid em,
+.lifeHubHomePage .lifeHubModuleGrid small {
+  display: none;
+}
+
+.lifeHubAssistantPage {
+  gap: 8px;
+}
+
+.lifeHubAssistantPage .lifeHubChecklist {
+  grid-template-columns: 1fr;
+}
+
+.lifeHubAssistantPage .lifeHubChecklist button {
+  min-height: 44px;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  align-content: center;
+  padding: 7px 9px;
+  border: 0;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #e1e7ee;
+}
+
+.lifeHubAssistantPage .lifeHubChecklist button span {
+  width: 34px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.lifeHubAssistantPage .lifeHubChecklist button.done span {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.lifeHubAssistantPage .lifeHubAssistantHero {
+  border: 0;
+  background: #f8fbff;
+  box-shadow: inset 4px 0 0 #2563eb;
+}
+
+.lifeHubAssistantPage .lifeHubActionCard {
+  grid-template-columns: minmax(0, 1fr);
+  border: 0;
+  box-shadow: inset 0 0 0 1px #e1e7ee;
+}
+
+.lifeHubAssistantPage .lifeHubActionCard.warning {
+  box-shadow: inset 0 0 0 1px #fed7aa, inset 4px 0 0 #f97316;
+}
+
+.lifeHubAssistantPage .lifeHubActionCard.danger {
+  box-shadow: inset 0 0 0 1px #fecaca, inset 4px 0 0 #ef4444;
+}
+
+.lifeHubAssistantPage .lifeHubMiniCards button {
+  border: 0;
+  background: #fffbeb;
+  box-shadow: inset 0 0 0 1px #fde68a;
+}
+
+.lifeHubAssistantPage .lifeHubReminderGrid.actionable article {
+  border: 0;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #e1e7ee;
+}
+
+.lifeHubMemoPage {
+  background:
+    linear-gradient(#edf2f7 1px, transparent 1px) 0 58px / 100% 31px;
+}
+
+.lifeHubMemoPage .lifeHubCompactHero {
+  border: 0;
+  background: transparent;
+  padding-inline: 2px;
+}
+
+.lifeHubMemoPage .lifeHubMemoComposer {
+  border: 0;
+  background: #fffde7;
+  box-shadow: 0 8px 22px rgba(92, 71, 20, 0.12), inset 0 0 0 1px #fde68a;
+}
+
+.lifeHubMemoPage .lifeHubSearchFilter {
+  grid-template-columns: minmax(0, 1fr);
+  border: 0;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.lifeHubMemoPage .lifeHubMemoList {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.lifeHubMemoPage .lifeHubMemoList article {
+  min-height: 112px;
+  align-content: space-between;
+  border: 0;
+  background: #fff8c5;
+  box-shadow: 0 8px 18px rgba(69, 52, 16, 0.1);
+}
+
+.lifeHubMemoPage .lifeHubMemoList article:nth-child(3n + 2) {
+  background: #e8f7f2;
+}
+
+.lifeHubMemoPage .lifeHubMemoList article:nth-child(3n) {
+  background: #eff6ff;
+}
+
+.lifeHubMemoPage .lifeHubMemoList article.pinned {
+  position: relative;
+  background: #fef2f2;
+}
+
+.lifeHubMemoPage .lifeHubMemoList article.pinned::before {
+  content: "PIN";
+  position: absolute;
+  top: -6px;
+  right: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.52rem;
+  font-weight: 950;
+}
+
+.lifeHubSchedulePage .lifeHubCompactHero {
+  border: 0;
+  background: #ffffff;
+  box-shadow: inset 0 -2px 0 #0f766e;
+}
+
+.lifeHubSchedulePage .lifeHubChipRow.sticky {
+  border-bottom: 1px solid #dbe3eb;
+}
+
+.lifeHubSchedulePage .lifeHubScheduleMiniList {
+  position: relative;
+  padding-left: 12px;
+}
+
+.lifeHubSchedulePage .lifeHubScheduleMiniList::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 18px;
+  width: 2px;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.lifeHubSchedulePage .lifeHubScheduleMiniList article {
+  position: relative;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  margin-left: 12px;
+  border: 0;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #e1e7ee;
+}
+
+.lifeHubSchedulePage .lifeHubScheduleMiniList article::before {
+  content: "";
+  position: absolute;
+  left: -18px;
+  top: 18px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #0f766e;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.lifeHubSchedulePage .lifeHubScheduleMiniList article.done {
+  background: #f8fafc;
+}
+
+.lifeHubSchedulePage .lifeHubScheduleMiniList article > button:first-child {
+  min-width: 46px;
+  border-radius: 8px;
+}
+
+.lifeHubSchedulePage .lifeHubFormCard {
+  border: 0;
+  background: #ffffff;
+  box-shadow: 0 -1px 0 #e1e7ee, 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.lifeHubReadingPage .lifeHubCompactHero {
+  border: 0;
+  background: #f8fafc;
+}
+
+.lifeHubReadingPage .lifeHubReadingFocus {
+  position: relative;
+  padding-left: 54px;
+  border: 0;
+  background: #fff7ed;
+  box-shadow: inset 0 0 0 1px #fed7aa;
+}
+
+.lifeHubReadingPage .lifeHubReadingFocus::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  bottom: 12px;
+  width: 28px;
+  border-radius: 5px 2px 2px 5px;
+  background: linear-gradient(90deg, #ea580c 0 8px, #fed7aa 8px 100%);
+  box-shadow: 4px 0 0 #ffedd5;
+}
+
+.lifeHubReadingPage .lifeHubBriefGrid.three article {
+  border: 0;
+  background: #ffffff;
+  box-shadow: inset 0 -3px 0 #0f766e;
+}
+
+.lifeHubReadingPage .lifeHubBookList article {
+  grid-template-columns: 30px minmax(0, 1fr);
+  border: 0;
+  background: #ffffff;
+  box-shadow: inset 5px 0 0 #0f766e, inset 0 0 0 1px #e1e7ee;
+}
+
+.lifeHubReadingPage .lifeHubBookList article::before {
+  content: "";
+  grid-row: 1 / span 3;
+  width: 20px;
+  border-radius: 4px;
+  background: #0f766e;
+}
+
+.lifeHubReadingPage .lifeHubBookList article.finished {
+  box-shadow: inset 5px 0 0 #eab308, inset 0 0 0 1px #fde68a;
+}
+
+.lifeHubWorkoutPage .lifeHubWorkoutStatus {
+  min-height: 112px;
+  align-content: end;
+  border: 0;
+  background:
+    radial-gradient(circle at 88% 12%, rgba(34, 197, 94, 0.35), transparent 34%),
+    linear-gradient(145deg, #111827 0%, #166534 100%);
+}
+
+.lifeHubWorkoutPage .lifeHubWorkoutStatus span,
+.lifeHubWorkoutPage .lifeHubWorkoutStatus h2,
+.lifeHubWorkoutPage .lifeHubWorkoutStatus p {
+  color: #ffffff;
+}
+
+.lifeHubWorkoutPage .lifeHubBriefGrid.three article {
+  min-height: 70px;
+  place-content: center;
+  text-align: center;
+  border: 0;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #dbe3eb;
+}
+
+.lifeHubWorkoutPage .lifeHubFormCard {
+  border: 0;
+  background: #f0fdf4;
+  box-shadow: inset 0 0 0 1px #bbf7d0;
+}
+
+.lifeHubWorkoutPage .lifeHubChoiceGroup:first-of-type button {
+  min-width: 86px;
+  min-height: 48px;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.lifeHubWorkoutPage .lifeHubChoiceGroup:first-of-type button.active {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.lifeHubFinancePage .lifeHubCompactHero {
+  border: 0;
+  background: #111827;
+}
+
+.lifeHubFinancePage .lifeHubCompactHero span,
+.lifeHubFinancePage .lifeHubCompactHero h2,
+.lifeHubFinancePage .lifeHubCompactHero p {
+  color: #ffffff;
+}
+
+.lifeHubFinancePage .lifeHubBriefGrid.three {
+  grid-template-columns: 1fr;
+  gap: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #e1e7ee;
+}
+
+.lifeHubFinancePage .lifeHubBriefGrid.three article {
+  min-height: 50px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.lifeHubFinancePage .lifeHubBriefGrid.three article:last-child {
+  border-bottom: 0;
+}
+
+.lifeHubFinancePage .lifeHubBriefGrid.three strong {
+  justify-self: end;
+  font-size: 1rem;
+}
+
+.lifeHubFinancePage .lifeHubCategoryBars article {
+  border: 0;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #e1e7ee;
+}
+
+.lifeHubFinancePage .lifeHubTransactionList article {
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px dashed #cbd5e1;
+  background: #fffdf7;
+}
+
+.lifeHubFinancePage .lifeHubTransactionList article:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.lifeHubFinancePage .lifeHubTransactionList article:last-child {
+  border-bottom: 0;
+  border-radius: 0 0 8px 8px;
+}
+
+.lifeHubTravelPage .lifeHubCompactHero,
+.lifeHubTravelPage .lifeHubTripFocus {
+  border: 0;
+  background:
+    linear-gradient(135deg, #eff6ff 0%, #ecfdf5 100%);
+  box-shadow: inset 0 0 0 1px #bfdbfe;
+}
+
+.lifeHubTravelPage .lifeHubTripFocus {
+  position: relative;
+  padding: 14px 12px;
+}
+
+.lifeHubTravelPage .lifeHubTripFocus::before,
+.lifeHubTravelPage .lifeHubTripFocus::after,
+.lifeHubTravelPage .lifeHubTripList article::before,
+.lifeHubTravelPage .lifeHubTripList article::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #f5f6f8;
+  transform: translateY(-50%);
+}
+
+.lifeHubTravelPage .lifeHubTripFocus::before,
+.lifeHubTravelPage .lifeHubTripList article::before {
+  left: -9px;
+}
+
+.lifeHubTravelPage .lifeHubTripFocus::after,
+.lifeHubTravelPage .lifeHubTripList article::after {
+  right: -9px;
+}
+
+.lifeHubTravelPage .lifeHubTripList article {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #bfdbfe;
+}
+
+.lifeHubTravelPage .lifeHubTripList header {
+  border-bottom: 1px dashed #bfdbfe;
+  padding-bottom: 6px;
+}
+
+.lifeHubTravelPage .lifeHubTripChecks {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.lifeHubTravelPage .lifeHubTripChecks::-webkit-scrollbar {
+  display: none;
+}
+
+.lifeHubTravelPage .lifeHubTripChecks button {
+  flex: 0 0 auto;
+  min-width: 96px;
+}
+
+.lifeHubMorePage .lifeHubCompactHero {
+  border: 0;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #e1e7ee;
+}
+
+.lifeHubMorePage .lifeHubModuleGrid.wide {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.lifeHubMorePage .lifeHubModuleGrid.wide button {
+  min-height: 78px;
+  grid-template-columns: 26px minmax(0, 1fr);
+  grid-template-areas:
+    "icon title"
+    "icon status";
+  align-items: center;
+  border: 0;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #e1e7ee;
+}
+
+.lifeHubMorePage .lifeHubModuleGrid.wide small {
+  display: none;
+}
+
+.lifeHubMorePage .lifeHubRoutineList article {
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
+  border: 0;
+  background: #f8fafc;
+}
+
+.lifeHubMorePage .lifeHubRoutineList article::before {
+  content: "✓";
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #e8f7f2;
+  color: #0f766e;
+  font-weight: 950;
+}
+
+.lifeHubMorePage .lifeHubSettingsCard {
+  border: 0;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #e1e7ee;
+}
+
+.lifeHubMorePage .lifeHubSettingsCard button {
+  border: 0;
+  border-top: 1px solid #eef2f6;
+  border-radius: 0;
+  background: transparent;
+}
+
+@media (max-width: 360px) {
+  .lifeHubMemoPage .lifeHubMemoList,
+  .lifeHubMorePage .lifeHubModuleGrid.wide {
+    grid-template-columns: 1fr;
+  }
+
+  .lifeHubHomePage .lifeHubModuleGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
