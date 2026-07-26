@@ -1,0 +1,29 @@
+{
+  "name": "ai-assitant",
+  "version": "1.0.0",
+  "description": "`ai-assitant`는 모바일에서 먼저 써보며 다듬는 개인용 메모/일정 앱입니다.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "npm run bridge:test && npm --prefix apps/web test",
+    "bridge:test": "npm --prefix tools/lifehub-bridge test",
+    "bridge:dev": "npm --prefix tools/lifehub-bridge run dev",
+    "bridge:build": "npm --prefix tools/lifehub-bridge run build",
+    "bridge:start": "npm --prefix tools/lifehub-bridge run start",
+    "bridge:pair": "npm --prefix tools/lifehub-bridge run pair",
+    "bridge:status": "npm --prefix tools/lifehub-bridge run status"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/young3881042-commits/Project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/young3881042-commits/Project/issues"
+  },
+  "homepage": "https://github.com/young3881042-commits/Project#readme"
+}

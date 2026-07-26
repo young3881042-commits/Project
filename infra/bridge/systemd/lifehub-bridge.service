@@ -1,0 +1,19 @@
+[Unit]
+Description=Orbit LifeHub Bridge
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Project
+Environment=NODE_ENV=production
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=-%h/Project/tools/lifehub-bridge/.env
+ExecStart=/usr/bin/env node %h/Project/tools/lifehub-bridge/dist/server-main.js
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

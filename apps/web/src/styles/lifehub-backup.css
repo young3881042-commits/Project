@@ -1,0 +1,203 @@
+.lifeHubBackupPanel {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--lifehub-border, #e6e8ec);
+  border-radius: 20px;
+  background: var(--lifehub-surface, #fff);
+}
+
+.lifeHubBackupPanel > header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.lifeHubBackupPanel > header > span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 12px;
+  color: #3157d5;
+  background: #eef2ff;
+}
+
+.lifeHubBackupPanel header div {
+  display: grid;
+  gap: 4px;
+}
+
+.lifeHubBackupPanel header p,
+.lifeHubBackupPanel header strong,
+.lifeHubBackupPanel p {
+  margin: 0;
+}
+
+.lifeHubBackupPanel header p {
+  color: var(--lifehub-muted, #68707d);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.lifeHubBackupActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lifeHubBackupActions button,
+.lifeHubBackupPreview > button {
+  min-height: 44px;
+  border: 1px solid #dfe3ea;
+  border-radius: 12px;
+  color: #24304a;
+  background: #fff;
+  font-weight: 700;
+}
+
+.lifeHubBackupActions button:disabled,
+.lifeHubBackupPreview button:disabled {
+  cursor: wait;
+  opacity: .55;
+}
+
+.lifeHubBackupStatus {
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.lifeHubBackupStatus.success {
+  color: #17613a;
+  background: #eaf8f0;
+}
+
+.lifeHubBackupStatus.error,
+.lifeHubBackupWarning {
+  color: #9b3c2a;
+  background: #fff1ed;
+}
+
+.lifeHubBackupPreview {
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  background: #f7f8fb;
+}
+
+.lifeHubBackupPreviewHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lifeHubBackupPreviewHeading > div {
+  display: grid;
+  gap: 3px;
+}
+
+.lifeHubBackupPreviewHeading span {
+  color: #5f6773;
+  font-size: 12px;
+}
+
+.lifeHubBackupPreviewHeading .quiet {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 5px 8px;
+  border: 0;
+  color: #606876;
+  background: transparent;
+}
+
+.lifeHubBackupModes {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.lifeHubBackupModes legend {
+  margin-bottom: 7px;
+  color: #606876;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.lifeHubBackupModes label {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid #e1e4ea;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.lifeHubBackupModes input {
+  margin-top: 3px;
+  accent-color: #3157d5;
+}
+
+.lifeHubBackupModes span {
+  display: grid;
+  gap: 2px;
+}
+
+.lifeHubBackupModes small {
+  color: #5f6773;
+  line-height: 1.35;
+}
+
+.lifeHubBackupCounts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.lifeHubBackupCounts > span {
+  display: grid;
+  gap: 2px;
+  padding: 9px;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.lifeHubBackupCounts small,
+.lifeHubBackupCounts em {
+  color: #5f6773;
+  font-size: 11px;
+  font-style: normal;
+}
+
+.lifeHubBackupCounts strong {
+  font-size: 17px;
+}
+
+.lifeHubBackupWarning {
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.lifeHubBackupPreview > button.primary {
+  color: #fff;
+  border-color: #3157d5;
+  background: #3157d5;
+}
+
+@media (max-width: 420px) {
+  .lifeHubBackupActions {
+    grid-template-columns: 1fr;
+  }
+
+  .lifeHubBackupCounts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

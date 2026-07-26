@@ -1,0 +1,298 @@
+# 프로젝트 변경 기록
+
+## 2026-07-16 생활 기록·브리핑·버전형 백업
+
+변경 내용:
+
+- 일반 AI가 `메모: ...`, 지출, 수입, 운동, 식단의 명시적인 한 줄을 일정 파서 다음 순서로 해석하고, 미리보기 뒤 `저장` 또는 `취소`를 받는 2단계 로컬 기록 흐름을 추가했습니다.
+- 생활 기록은 Bridge가 끊겨도 현재 owner의 메모·가계부·운동·식단 저장소에 반영됩니다. 같은 request ID의 저장 재시도만 중복 차단하고 fingerprint는 origin 추적에 남겨, 같은 날 같은 금액·운동·식사를 새 요청으로 다시 기록할 수 있습니다. pending 초안은 로컬 thread 캐시에 허용 필드만 보관합니다.
+- 홈에 아침·저녁 브리핑 카드를 추가하고, `/more`에서 각 시간대와 알림 사용 여부를 설정하도록 연결했습니다. 브리핑 알림은 기존 일정 알림과 시간순으로 함께 예약하고 foreground 복귀 때 재동기화하며, 알림의 아침·저녁 query를 카드 선택에 반영합니다.
+- `formatVersion`을 가진 LifeHub JSON 백업, 컬렉션별 복원 미리보기, `merge`·`replace`, 일부 쓰기 실패 시 전체 rollback을 추가했습니다. 복원 직전 최신 데이터를 다시 읽고, 신체정보·브리핑 설정 변경도 미리 알립니다. Bridge 토큰·승인·대화·thread 상태는 백업하지 않습니다.
+- Android 백업 파일 선택을 Storage Access Framework의 문서 생성·열기와 JSON MIME으로 구현하고, WebView adapter와 native coordinator/policy 경계를 분리했습니다. 웹과 Android 모두 strict UTF-8·JSON 객체 검증과 8 MiB 단일 상한을 사용하며, native 시작 전 실패용 WebView JSON 선택도 같은 검증 경로를 재사용합니다.
+- 서비스 워커 캐시를 `orbit-web-v26`으로 갱신하고 브리핑·백업 전용 스타일과 `features/automation`, `features/backup`, `features/life-records` 단위 테스트 경계를 추가했습니다.
+- 하단 `홈·일정·메모·운동·식단·가계부` 6개 탭은 그대로 유지하고, 제거했던 홈 `빠른 기록` 카드는 다시 추가하지 않았습니다. 일정·식단·가계부·운동·여행 저장소의 예전 고정 개수 제한도 제거했습니다.
+
+검증 기준:
+
+- 웹 전체 테스트 203/203 통과, Vite production build 348 modules 통과
+- 생활 기록·백업·브리핑 데이터 테스트 45/45, LifeHub 구조·모바일·브랜드 테스트 40/40, LifeHub AI 테스트 61/61 통과
+- Bridge 테스트 66개 중 65개 통과, opt-in 공식 SDK 실연동 1개 제외, 실패 0; TypeScript build 통과
+- Android Java/API compile, SAF static/native smoke test, v1/v2/v3 서명, source·manifest·DEX·credential 검사 통과. 현재 경량 SDK에 Android Lint가 없어 명시적으로 제외
+- 생성 APK `0.5.2-debug` (`versionCode 18`), 305,021 bytes, SHA-256 `b3e0a8764983c597bf34561b1d626a2f2a61f2cadf8c88499460af8febd40fd4`
+- 실제 기기 백업 왕복·merge/replace/rollback·아침/저녁 알림·오프라인 회귀는 이번 환경에서 미실행
+
+## 2026-07-14 Play Protect 대응과 삼성월렛 수동 기록
+
+변경 내용:
+
+- Play Protect가 인터넷에서 직접 설치한 앱의 민감 기능으로 분류하는 Android
+  `NotificationListenerService`와 카드 승인 알림 자동 수집 기능을 완전히 제거했습니다.
+- 가계부에는 삼성월렛 결제 알림에서 금액과 사용처를 확인한 뒤 바로 지출 입력으로 이동하는
+  안내를 추가했습니다. Orbit은 다른 앱의 알림이나 삼성월렛 내부 사용내역을 읽지 않습니다.
+- 이전 버전에서 이미 가계부에 저장한 거래는 유지하고, 업데이트 후 첫 실행에서 더 이상
+  사용하지 않는 native 카드 가져오기 대기열만 삭제합니다.
+- APK 버전을 `0.4.9-debug` (`versionCode 15`)로, 설치형 web cache를 v22로 올렸습니다.
+
+검증 기준:
+
+- web 전체 테스트와 production build
+- Android manifest/DEX에서 알림 리스너 및 카드 자동 수집 코드 부재 확인
+- Android Lint/native smoke test, APK 서명·credential scan
+- `git diff --check`
+- 배포 APK SHA-256: `f33f743c374cb3896479ee361668463a8fe2524aeacaeb9a02d089cdb34fa9ab`
+
+## 2026-07-14 등록 프로젝트 원격 명령과 제한된 Git push
+
+변경 내용:
+
+- 웹 Codex 개발 모드에서 등록 프로젝트의 정확한 한 명령을 준비하고 최종 확인 뒤 한 번
+  실행하는 원격 명령 패널을 추가했습니다.
+- Bridge 원격 명령은 기본 비활성화하고 기기·프로젝트 권한, 2분 일회성 승인, 실행 allowlist,
+  프로젝트 경로 검증, 동시 실행·시간·출력 제한을 적용했습니다.
+- 직접 입력한 `git push`는 현재 branch와 설정된 remote만 허용하고 force/refspec/임의 URL을
+  차단하며, 준비 후 HEAD·branch·remote 변경을 다시 검사합니다.
+- Git 원격 host는 `LIFEHUB_GIT_PUSH_HOSTS`로 제한하고 인증 prompt와 앱 credential 입력을
+  막았습니다. 서버에는 repo 전용 deploy key 또는 짧은 수명 credential을 별도로 준비해야
+  합니다.
+- 파일 인자는 실행 직전 다시 검사하고, build/interpreter 프로젝트 코드는 OS sandbox가
+  아니라는 운영 경계를 문서화했습니다.
+- APK 버전을 `0.4.8-debug` (`versionCode 14`)로, 설치형 web cache를 v21로 올렸습니다.
+
+검증 기준:
+
+- Bridge TypeScript 빌드와 원격 명령 정책/API 자동 테스트
+- 웹 LifeHub 구조 테스트와 production build
+- Android Lint/native smoke test, APK 서명·credential scan
+- `git diff --check`
+- 배포 APK SHA-256: `32d0e011ec6b3d3242492fda140a036663e51742993053c7163cf6d572e00eea`
+
+## 2026-07-14 카드 결제 자동 기록과 Orbit O 아이콘
+
+변경 내용:
+
+- Android 알림 접근을 사용자가 직접 허용하면 카드 승인 알림에서 금액·사용처·시각과 중복 방지용 알림 앱 식별자를 판별해 가계부 지출로 자동 등록합니다.
+- 알림 원문, 카드번호와 잔액은 저장하지 않고, 취소·환불·거절·입출금·광고 알림은 자동 등록에서 제외했습니다.
+- 앱이 닫힌 동안 받은 거래도 해시된 LifeHub 소유자별 private native 대기열에 보관한 뒤 `peek → 가계부 저장 → ack` 순서로 반영해 계정 혼입과 저장 실패 유실을 막았습니다.
+- 같은 알림의 정확한 재전송과 카드 앱·문자 앱의 교차 알림을 중복 방지하되, 같은 가게·같은 금액의 연속 실결제는 각각 보존합니다.
+- 가계부 240건 한도에서는 기존 기록을 삭제하지 않고 남은 용량만 저장·ack하며, React StrictMode에서도 import 작업을 직렬화합니다.
+- Android 13+ 사이드로드의 제한된 설정 안내와 앱 정보 바로가기를 제공하고, low-RAM Android Q 이하는 지원하지 않는 상태로 표시합니다.
+- Android 런처와 web/PWA 아이콘을 남색 바탕의 중앙 청록색 `O`로 통일하고, 의존성 없는 재현 가능한 PNG 생성기를 추가했습니다.
+- APK 버전을 `0.4.7-debug` (`versionCode 13`)로, 설치형 web cache를 v20으로 올렸습니다.
+
+검증:
+
+- 카드 승인 파서, native 대기열 경계, 권한 Bridge, web 정규화·중복 방지·2단계 저장 테스트
+- web 전체 테스트와 production build, Android Lint/native smoke test, APK 서명·credential scan
+- 배포 APK SHA-256: `a542aec24eef11f5f905c9af467cc8e91c184f9142dabff4d633619839123dee`
+
+## 2026-07-13 Orbit 페어링 연결 복구
+
+변경 내용:
+
+- Android native transport가 일시적인 `status 0` 네트워크·timeout 오류를 반환해도 승인 claim을 5초 간격으로 다시 확인하도록 수정했습니다.
+- Bridge가 claim을 저장한 직후 응답이 유실돼도 60초 안에는 같은 기기와 토큰을 안전하게 복구하도록 claim을 멱등화했습니다.
+- 복구 토큰은 서버 전용 비밀과 일회성 요청 비밀을 함께 사용한 HMAC으로 파생하며, 토큰 원문과 요청 비밀 원문은 상태 파일에 저장하지 않습니다.
+- APK 버전을 `0.4.6-debug` (`versionCode 12`)로 올리고 수정된 내장 웹을 새 APK에 포함했습니다.
+
+검증:
+
+- LifeHub AI 테스트 31개와 UI 테스트 27개 통과
+- Bridge 테스트 52개 중 50개 통과(환경 의존 2개 제외), TypeScript 빌드 통과
+- Android Lint 오류 0, native security smoke test, v1/v2/v3 서명 검증과 APK credential scan 통과
+- 기존 배포 APK와 새 APK의 signing certificate SHA-256 일치 확인
+- 배포 APK SHA-256: `8d3b64f3a9a0ea28bf675ac6979135c37956cacae7c5b8b70152057438362b53`
+
+## 2026-07-13 페어링 자동 연결·모바일 UX 개선
+
+변경 내용:
+
+- 휴대폰에서 6자리 코드를 한 번만 제출하면 관리자 승인 뒤 자동으로 claim해 연결을 완료하도록 개선했습니다.
+- 관리자 화면에 접속 허용 후 휴대폰 등록을 기다리는 상태를 별도로 표시하고, claim이 끝난 기기만 연결 완료 목록에 노출합니다.
+- 모바일 페어링 단계와 필수·선택 권한을 명확히 안내하고, 연결 진행 중에는 입력을 잠가 중복 요청을 방지합니다.
+- APK 버전을 `0.4.5-debug` (`versionCode 11`)로, 설치형 web cache를 v18로 갱신했습니다.
+
+검증:
+
+- 웹 전체 테스트와 production 빌드, Bridge 전체 테스트 52개 중 50개 통과(환경 의존 2개 제외), TypeScript 빌드 통과
+- 공개 HTTPS에서 연결 요청 → 관리자 승인 → 5초 자동 claim → 접속 허용 기기 등록 → 토큰 인증을 확인하고 검증 기기를 폐기
+- Wikimedia Commons 비빔밥 JPEG를 공개 Bridge에 업로드해 `산채비빔밥의 보이는 나물·달걀 토핑`, `299kcal` 분석 결과 수신 확인
+- Android Lint 오류 0, native security smoke test, v1/v2/v3 서명 검증, APK credential scan 통과
+- 배포 APK SHA-256: `25d941193bebb3b1d6e58f35267e69f675c2c0184aef408958016706ef0140c6`
+
+## 2026-07-13 다이어리 아이콘·음식 사진 분석 안정화
+
+변경 내용:
+
+- Android 런처 아이콘을 헤드셋 Agent에서 링·책갈피·체크 표시가 있는 다이어리로 교체했습니다.
+- APK 버전을 `0.4.4-debug` (`versionCode 10`)로 올렸습니다.
+- 음식별 보이는 양(g)과 100g당 열량을 서버에서 한 번만 합산해 최종 칼로리로 사용하고, 1kcal 미만 항목을 강제로 1kcal로 올리던 과대 계산을 제거했습니다.
+- 손상된 `Infinity`·`NaN`·음수 칼로리 기록이 일일 섭취·운동 합계를 오염시키지 않도록 제외했습니다.
+- 15초 Bridge 상태 확인 중의 일시적인 `checking` 상태가 진행 중인 최대 90초 사진 분석을 취소하지 않도록 수정했습니다.
+- APK native transport의 사진 data URL 전송부터 결과 정규화와 `ready` 화면 상태까지 회귀 테스트를 추가했습니다.
+
+검증:
+
+- Bridge 전체 테스트 52개 중 50개 통과, 환경 의존 테스트 2개 제외, 실패 0
+- 웹 전체 테스트, Bridge TypeScript 빌드, Vite production 빌드 통과
+- 공개 HTTPS Bridge에 Wikimedia Commons 비빔밥 JPEG를 업로드해 약 26초 뒤 `돌솥비빔밥`, `487kcal`과 영양 결과 수신 확인
+- Android Lint 오류 0, native security smoke test, v1/v2/v3 서명 검증, APK credential scan 통과
+- 배포 APK SHA-256: `888c7fcc5d04989e6daf218acc7ebf1538c7d42d3319afad58ecf39bded28974`
+
+## 2026-07-13 Notebook·Bridge 실행 경로 복구
+
+변경 내용:
+
+- 앱 홈에 Bridge 연결 상태와 AI Assistant 진입 카드를 다시 노출했습니다.
+- `/ai`를 홈으로 돌려보내던 redirect를 제거하고 기존 LifeHub shell 안에 Bridge 대화 화면을 복구했습니다.
+- 신규 페어링에서 대화 외에 프로젝트 읽기·수정, 명령·빌드, Git 권한을 명시적으로 요청할 수 있게 복구했습니다.
+- 설치형 web cache를 v17로 갱신해 이전 app shell이 Bridge 진입점을 가리지 않게 했습니다.
+- 기본 Docker Compose에 loopback 전용 JupyterLab과 영구 `notebook_data` volume을 추가했습니다.
+- 수동 Bridge 프로세스 대신 재부팅·실패 후 재시작할 수 있는 user systemd unit과 설치 안내를 추가했습니다.
+- Bridge 전용 HTTPS hostname을 loopback runtime에 연결하는 Caddy reverse proxy 예제를 추가했습니다.
+- 승인된 Android Agent 아이콘은 변경하지 않았습니다.
+
+검증:
+
+- 초기 소스 커밋에서는 사용자 요청에 따라 서비스 실행과 빌드를 수행하지 않았습니다.
+- 호스트 상태를 읽기 전용으로 확인한 결과, 수동 Bridge는 `127.0.0.1:4317`에 실행 중이었고 Notebook listener와 Bridge user service는 없었습니다.
+- 후속 요청으로 `scripts/build_android_apk.sh`를 실행해 web production build, Android Lint,
+  native security smoke test, v1/v2/v3 서명 검증과 APK credential scan을 통과했습니다.
+- 이전 배포 APK와 재빌드 APK의 signing certificate SHA-256이 일치하고,
+  배포 파일 SHA-256이 sidecar와 일치함을 확인했습니다.
+
+## 2026-07-12 식단 사진 분석 UX 리팩터링
+
+변경 내용:
+
+- 558줄이던 식단 화면에서 사진 요청 훅, 에너지 카드, 입력 폼, 기록 목록과 표시 helper를 분리했습니다.
+- 사진 선택 → 양 확인 → 기록의 3단계 안내와 재분석·사진 제거·분석 중 상태를 추가했습니다.
+- 분석 결과는 현재 식사 시간대로 바로 기록하거나 입력칸에서 수정할 수 있습니다.
+- AI 결과를 수동 수정하면 더 이상 예전 탄수화물·단백질·지방과 신뢰도 정보가 함께 저장되지 않습니다.
+- BMR + 오늘 운동 값을 추천 섭취 목표처럼 보이지 않는 단순 비교 기준으로 명확히 표시합니다.
+- 라일락·민트·피치 색상 토큰, 44px 터치 영역, 2열 양 선택, 모션 감소와 접근성 상태를 적용했습니다.
+
+검증 기준:
+
+- 사진 요청 취소·미리보기 URL 정리·재시도 흐름과 양 보정이 한 훅에서 관리되는지 확인
+- 시간대별 기본 식사와 수동 수정 시 AI 메타데이터 제거 테스트
+- 웹 전체 테스트와 프로덕션 빌드 통과
+
+## 2026-07-12 Orbit Android 내장 웹 단일 모드
+
+변경 내용:
+
+- APK가 실행 즉시 `https://appassets.androidplatform.net/app`의 내장 웹 빌드를 열도록 단일 모드로 정리했습니다.
+- 첫 실행 로컬/서버 선택, 사용자가 입력하는 상단 WebView 서버 주소, 모드 전환 설정을 제거했습니다.
+- 음식 사진 분석과 Codex 기능은 내장 화면에서 빌드 시 설정한 HTTPS Orbit Bridge로 요청합니다.
+- Bridge 주소는 분석 API endpoint일 뿐 원격 웹 화면 주소가 아니며, 기기 토큰은 기존처럼 Android Keystore에 암호화해 보관합니다.
+- 이전 설치에 남은 모드·서버 URL 설정만 폐기하고, 내장 웹 빌드 cache busting, 기기 데이터, Keystore 토큰과 예약 알림은 업데이트 후에도 유지합니다.
+- 외부 상단 navigation 차단, 내장 origin 전용 native capability, TLS 검증, 제한된 Bridge transport와 이미지 검증을 그대로 유지합니다.
+- APK 버전을 `0.4.3-debug` (`versionCode 9`)로 올렸습니다.
+
+검증 기준:
+
+- 신규 설치와 기존 서버 모드 설정이 남은 업데이트 설치 모두 선택 화면 없이 내장 `/app` 진입
+- 외부 상단 navigation 차단과 내장 origin 전용 Keystore·Bridge·알림 capability 확인
+- `adb install -r` 뒤 기기 데이터·페어링 토큰·예약 알림 보존 및 새 embedded web build 반영
+
+## 2026-07-12 개인 칼로리 비율과 Agent 아이콘
+
+변경 내용:
+
+- 음식 사진 분석 결과에 해당 음식 칼로리가 사용자의 하루 참고 칼로리에서 차지하는 비율을 `%`와 진행 막대로 표시했습니다.
+- 하루 참고 칼로리는 앱에 이미 저장된 나이·성별·키·몸무게로 계산한 BMR과 오늘 기록된 운동 소모량만 사용합니다.
+- 신체정보는 사진이나 Bridge 요청에 포함하지 않고 기기 안에서만 계산합니다. 신체정보가 없으면 기존 분석값을 유지하고 비율 안내만 숨깁니다.
+- 복잡한 탄수화물·단백질·지방 권장 비율 기능은 추가하지 않고 기존 g 추정 표시만 유지했습니다.
+- Android 아이콘에서 궤도 모양을 제거하고 사람형 AI Agent, 헤드셋, 자동화 스파크, 완료 체크 배지로 교체했습니다.
+- APK 버전을 `0.4.2-debug` (`versionCode 8`)로 올렸습니다.
+
+검증:
+
+- 0%, 1% 미만, 31%, 100% 초과와 신체정보 미입력 경계 계산 테스트
+- 식단 UI 계약 및 Agent 벡터 아이콘 정적 검사
+
+## 2026-07-12 Orbit 관리자 웹
+
+변경 내용:
+
+- Bridge가 직접 제공하는 `/admin/` 화면에서 6자리 페어링 코드 발급·복사, 요청 승인·거절, 연결 기기 해제를 클릭으로 처리하도록 했습니다.
+- 관리자 화면은 모바일 React/APK 번들과 분리해 관리자 인증 정보가 앱 패키지에 들어가지 않도록 했습니다.
+- HTTPS Basic 인증, loopback backend, same-origin 검사, JSON content type, rate limit, `no-store`와 엄격한 CSP를 적용했습니다.
+- 기기 이름은 HTML로 삽입하지 않고 DOM `textContent`로만 렌더링하며, 관리자 상태 응답에서 token hash, pairing secret, 실제 프로젝트 경로를 제외했습니다.
+- 서버 시작 때 자동으로 연결 코드를 만들고 로그에 출력하던 동작을 제거하고, 필요할 때 관리자 화면에서만 생성하도록 했습니다.
+
+검증:
+
+- 관리자 미인증·오인증·기기 Bearer 접근 거부, 악성 Origin 거부, JSON 이외 변경 요청 거부
+- 관리자 정적 자산의 CSP/no-store와 비밀값 비노출 확인
+- 관리자 웹 API로 코드 생성 → 휴대폰 요청 → 승인 → token claim → 기기 폐기까지 HTTP 통합 테스트
+- LifeHub Bridge 자동 테스트 51개 중 49개 통과, 환경 의존 테스트 2개 선택 실행으로 제외
+
+## 2026-07-12 Codex 음식 사진 영양 분석
+
+변경 내용:
+
+- 별도 OpenAI API 키 없이 서버에 로그인된 ChatGPT Codex 세션을 공식 SDK로 호출하도록 했습니다.
+- 기기 Bearer 인증과 `chat` 권한이 필요한 `POST /api/food/analyze` JSON API를 추가했습니다.
+- JPEG·PNG·WebP 사진의 MIME, 매직 바이트, 파일 크기와 픽셀 수를 검증하고 전송 전 1280px·1.5MiB 이하 JPEG data URL로 줄입니다.
+- 음식명, 칼로리, 탄수화물, 단백질, 지방, 신뢰도와 추정 설명을 strict JSON schema로 받고 서버에서 다시 검증합니다.
+- 음식이 없거나 식별할 수 없는 사진은 수치를 지어내지 않고 `422 FOOD_NOT_RECOGNIZED`로 처리합니다.
+- `local_image`, strict output schema와 음식 전용 고정 프롬프트로 분석 범위를 제한했습니다.
+- 음식 전용 Codex 실행은 read-only·ephemeral이며 사용자 설정·규칙, shell, MCP/apps, web/network, 이미지 생성과 multi-agent를 비활성화했습니다.
+- 클라이언트 이탈, 기기 페어링 폐기, 75초 제한 시 진행 중 분석을 중단하고 늦게 도착한 결과를 폐기합니다.
+- 식단 화면에서 사진을 선택해 결과를 확인한 뒤 명시적으로 기존 식단 기록에 반영하도록 했고, 예전 식단 데이터도 그대로 읽습니다.
+- Android WebView에 단일 이미지 선택기를 연결하고 음식 API 경로에만 2.25MiB·90초 전송 한도를 허용했습니다.
+- 다른 휴대폰도 각 기기에서 별도로 페어링하면 같은 서버의 음식 분석 API를 사용할 수 있습니다.
+
+검증:
+
+- LifeHub Bridge TypeScript 빌드 통과, 자동 테스트 50개 중 48개 통과 및 환경 의존 테스트 2개는 선택 실행으로 제외
+- Codex 이미지·schema 실행 계약, 로그인 오류, 사용량 제한, timeout, 취소, 금지 도구 이벤트와 비정상 structured output의 안전 매핑 확인
+- 웹 자동 테스트 74개와 Vite production build 통과
+- Android API 35 Java 컴파일, 네이티브 정적 보안 테스트, Android Lint 0 errors
+- DEX 생성, APK 자격증명 스캔, v1/v2/v3 서명 및 SHA-256 검증
+- APK 내부 음식 분석 UI와 `/api/food/analyze` 경로 포함 확인
+- APK 표시 이름 `Orbit`, 새 궤도 아이콘, versionCode 7 포함 확인
+- `git diff --check`
+
+## 2026-07-12 Android 휴대폰 알림 연동
+
+변경 내용:
+
+- Android 13 이상의 `POST_NOTIFICATIONS` 런타임 권한 요청을 로컬 내장 화면에만 허용했습니다.
+- LifeHub 일정을 Android `AlarmManager`에 동기화해 앱 화면이 닫혀도 시스템 알림을 받을 수 있게 했습니다.
+- 알림 표시 권한이 아직 없어도 예약 시각은 보존하고, 권한을 나중에 켜면 기존 일정을 다시 만들 필요가 없도록 했습니다.
+- Android 12 이상에서는 “알람 및 리마인더” 권한이 있을 때 정각 알람을 사용하고, 없으면 지연 가능한 알람으로 안전하게 대체합니다.
+- 이미 지난 알림과 14일 밖 알림을 실제 예약 개수에서 제외하고 그 이유를 일정 저장 결과에 표시합니다.
+- 재부팅, 앱 업데이트, 시간대 변경 뒤 남은 일정 알림을 다시 등록합니다.
+- 앱 재실행 시에도 예약을 복구하고, 복구 시점 기준 6시간 안에 놓친 알림은 전달합니다.
+- AI 화면이 백그라운드에서 Bridge 이벤트를 받고 있을 때 승인 요청과 작업 완료·실패를 휴대폰 알림으로 표시합니다.
+- 알림을 누르면 검증된 `/schedule` 또는 `/ai` 내부 경로만 열리도록 제한했습니다.
+- 다른 Android 앱의 알림을 읽는 권한이나 서비스는 추가하지 않았습니다.
+
+검증:
+
+- `npm --prefix apps/web test`
+- `npm --prefix apps/web run build`
+- 정시·5분·10분·30분 전, 과거 시각, 14일 경계, 반복 일정 알림 단위 테스트
+- Android Java 컴파일 및 네이티브 보안 스모크 테스트
+- DEX 생성, APK 자격증명 스캔, `apksigner verify --verbose`
+- `git diff --check`
+
+## 2026-06-06 공개 포트폴리오 정리
+
+변경 내용:
+
+- 앱 표기를 `ai-assistant`로 정리했습니다.
+- Android/APK 소스, 다운로드 APK, Android 빌드 스크립트를 Git 대상에서 제거했습니다.
+- Gradle의 내부 Maven 주소 기본값을 제거하고 `MAVEN_REPO_URL` 환경 변수로만 사설 저장소를 연결하게 했습니다.
+- API 설정의 내부 IP 기본값을 localhost 또는 placeholder로 교체했습니다.
+- 웹 로그인 경로의 외부 IP 하드코딩을 제거하고 `/login` 기본값과 `VITE_LOGIN_URL` 옵션으로 정리했습니다.
+- README를 프로젝트 목적, 주요 기능, 아키텍처, 기술 스택, 실행 방법, 배포 구조, 트러블슈팅 경험, 향후 개선 계획 중심으로 다시 작성했습니다.
+
+검증 예정:
+
+- `git diff --check`
+- `npm --prefix apps/web run build`
+- API Gradle build 또는 Docker build
+- 내부 IP/오타 잔여 검색

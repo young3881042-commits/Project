@@ -1,0 +1,1419 @@
+/* LocalTrip AI - production UI refresh */
+.ltShell,
+.ltShell * {
+  letter-spacing: 0;
+}
+
+.ltShell {
+  min-height: 100vh;
+  background: #f6f8fb;
+  color: #17202f;
+  font-family: "Pretendard", "SUIT", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+.ltShell a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ltShell button,
+.ltShell input,
+.ltShell select,
+.ltShell textarea {
+  font: inherit;
+}
+
+.ltNav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid #dbe3ee;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: none;
+  backdrop-filter: blur(16px);
+}
+
+.ltNavInner {
+  width: min(1180px, calc(100% - 32px));
+  min-height: 64px;
+  margin: 0 auto;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.ltBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #111827;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.ltBrand strong {
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #0f766e;
+  color: #fff;
+  font-size: 0.82rem;
+  box-shadow: none;
+}
+
+.ltNavLinks {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.ltNavLinks a {
+  min-width: 100px;
+  padding: 9px 14px;
+  border-radius: 6px;
+  color: #526071;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.ltNavLinks a:hover,
+.ltNavLinks a.active {
+  background: #ffffff;
+  color: #0f766e;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.ltNavAction,
+.ltPrimaryButton,
+.ltHeroActions a:first-child,
+.ltPlannerTeaser button {
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid #0f766e;
+  border-radius: 8px;
+  background: #0f766e;
+  color: #ffffff;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.ltNavAction:hover,
+.ltPrimaryButton:hover,
+.ltHeroActions a:first-child:hover,
+.ltPlannerTeaser button:hover {
+  transform: translateY(-1px);
+  background: #115e59;
+  box-shadow: none;
+}
+
+.ltSecondaryButton,
+.ltHeroActions a:last-child,
+.ltBackButton {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #cad5e2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ltPage {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 44px 0 72px;
+  animation: none;
+}
+
+.ltHero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
+  gap: 40px;
+  align-items: center;
+  margin-bottom: 48px;
+}
+
+.ltEyebrow {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #e8f5f3;
+  color: #0f766e;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.ltHeroCopy h1 {
+  max-width: 620px;
+  margin-bottom: 18px;
+  color: #111827;
+  font-size: 3.8rem;
+  line-height: 1.04;
+  font-weight: 900;
+}
+
+.ltHeroCopy p {
+  max-width: 560px;
+  margin-bottom: 28px;
+  color: #526071;
+  font-size: 1.08rem;
+  line-height: 1.72;
+}
+
+.ltHeroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ltHeroVisual {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  grid-template-rows: 200px 200px;
+  gap: 12px;
+  min-height: 412px;
+}
+
+.ltHeroImage {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid #dbe3ee;
+  background-color: #dbe3ee;
+  background-size: cover;
+  background-position: center;
+}
+
+.ltHeroImage.main {
+  grid-row: span 2;
+}
+
+.ltHeroImage::after,
+.ltDestinationPhoto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.28));
+}
+
+.ltHeroImage span {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #17202f;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.ltHeroPanel {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+}
+
+.ltHeroPanel div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px;
+}
+
+.ltHeroPanel span {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.ltHeroPanel strong {
+  overflow: hidden;
+  color: #111827;
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ltSectionHeader,
+.ltPageTitle {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 34px 0 18px;
+}
+
+.ltSectionHeader.compact {
+  margin: 0 0 14px;
+}
+
+.ltSectionHeader h2,
+.ltPageTitle h1 {
+  color: #111827;
+  font-size: 2rem;
+  line-height: 1.15;
+  font-weight: 900;
+}
+
+.ltPageActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.ltDestinationGrid,
+.ltPlansGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.ltDestinationCard,
+.ltPlanCard,
+.ltRecentPlans,
+.ltPlannerForm,
+.ltPlannerPreview,
+.ltSelectedSummary,
+.ltGeneratedPreview,
+.ltFilterBar,
+.ltTimelineDay,
+.ltPlanHero,
+.ltFactItem {
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.ltDestinationCard {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.ltDestinationCard:hover,
+.ltPlanCard:hover {
+  transform: translateY(-3px);
+  border-color: #a7b8ca;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.09);
+}
+
+.ltDestinationCard.compact .ltDestinationBody {
+  padding: 16px;
+}
+
+.ltDestinationPhoto {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background-color: #dbe3ee;
+  overflow: hidden;
+}
+
+.ltDestinationPhoto img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.ltDestinationPhoto.noPhoto img {
+  display: none;
+}
+
+.ltPhotoPlaceholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background:
+    linear-gradient(135deg, #e8f5f3 0%, #f8fafc 100%);
+  color: #0f766e;
+  font-weight: 900;
+}
+
+.ltDestinationPhoto span {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+  max-width: calc(100% - 24px);
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #0f766e;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.ltDestinationBody,
+.ltPlanCard {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+}
+
+.ltDestinationBody h3,
+.ltPlanCard h3,
+.ltTimelineItemContent h3 {
+  color: #111827;
+  font-size: 1.18rem;
+  line-height: 1.25;
+  font-weight: 900;
+}
+
+.ltDestinationBody p,
+.ltPlanCard p,
+.ltPlannerTeaser p {
+  color: #526071;
+  line-height: 1.62;
+}
+
+.ltCardTopline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.ltCardTopline strong small {
+  color: #94a3b8;
+  font-size: 0.74rem;
+}
+
+.ltTagRow,
+.ltInterestGroup div,
+.ltPlanMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ltTagRow span,
+.ltPlanMeta span {
+  padding: 5px 9px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #526071;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.ltTagRow.small span {
+  font-size: 0.74rem;
+}
+
+.ltTextButton {
+  color: #0f766e;
+  font-weight: 900;
+}
+
+.ltSplitSection {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+  gap: 24px;
+}
+
+.ltPlannerTeaser {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 18px;
+  padding: 34px;
+  border-radius: 8px;
+  background: #12343b;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.ltPlannerTeaser h2 {
+  color: #ffffff;
+  font-size: 2rem;
+  line-height: 1.12;
+  font-weight: 900;
+}
+
+.ltPlannerTeaser p {
+  color: #d6e4e7;
+}
+
+.ltRecentPlans {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+}
+
+.ltInlineNotice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 12px 14px;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.ltInlineNotice.error {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.ltInlineNotice strong {
+  white-space: nowrap;
+}
+
+.ltEmptyState {
+  display: grid;
+  place-items: center;
+  min-height: 160px;
+  padding: 24px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #64748b;
+  text-align: center;
+}
+
+.ltEmptyState.large {
+  min-height: 360px;
+  gap: 18px;
+}
+
+.ltFilterBar,
+.ltPlannerForm {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.ltFilterBar label,
+.ltPlannerForm label,
+.ltInterestGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.ltFilterBar label span,
+.ltPlannerForm label span,
+.ltInterestGroup > span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.ltFilterBar input,
+.ltPlannerForm input,
+.ltPlannerForm select,
+.ltPlannerForm textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #cad5e2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #17202f;
+  outline: none;
+}
+
+.ltPlannerForm textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.ltFilterBar input:focus,
+.ltPlannerForm input:focus,
+.ltPlannerForm select:focus,
+.ltPlannerForm textarea:focus {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+}
+
+.ltSegmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ltSegmented button,
+.ltInterestGroup button {
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid #cad5e2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #526071;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.ltSegmented.compact button {
+  min-height: 34px;
+  padding-inline: 10px;
+}
+
+.ltSegmented button.active,
+.ltInterestGroup button.active {
+  border-color: #0f766e;
+  background: #e8f5f3;
+  color: #0f766e;
+  box-shadow: none;
+}
+
+.ltPlannerLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(340px, 0.75fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.ltFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ltPlannerPreview {
+  position: sticky;
+  top: 84px;
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.ltAutocompleteGroup {
+  position: relative;
+  display: grid;
+  gap: 10px;
+}
+
+.ltAutocompleteContainer {
+  position: relative;
+}
+
+.ltAutocompleteDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: grid;
+  gap: 4px;
+  max-height: 280px;
+  overflow: auto;
+  padding: 8px;
+  border: 1px solid #cad5e2;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12);
+}
+
+.ltAutocompleteDropdown button {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.ltAutocompleteDropdown button:hover {
+  background: #f1f5f9;
+}
+
+.ltAutocompleteDropdown button span,
+.ltMiniDestCard span {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.ltSelectedTagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ltSelectedTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid #99f6e4;
+  border-radius: 8px;
+  background: #ecfeff;
+  color: #0f766e;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.ltSelectedTag button {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  color: #0f766e;
+  line-height: 1;
+}
+
+.ltSelectedSummary {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  margin: 0;
+  box-shadow: none;
+}
+
+.ltMiniDestList {
+  display: grid;
+  gap: 10px;
+}
+
+.ltMiniDestCard {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.ltMiniDestPhoto {
+  width: 58px;
+  height: 58px;
+  border-radius: 8px;
+  border: 1px solid #dbe3ee;
+  object-fit: cover;
+}
+
+.ltMiniDestPhoto.placeholder,
+.ltMiniDestCard.noPhoto .ltMiniDestPhoto {
+  display: grid;
+  place-items: center;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.ltMiniDestCard strong {
+  display: block;
+  overflow: hidden;
+  color: #111827;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ltGeneratedPreview {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  box-shadow: none;
+}
+
+.ltPlanDetailContainer {
+  display: grid;
+  gap: 28px;
+}
+
+.ltPlanHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, auto);
+  gap: 24px;
+  align-items: center;
+  padding: 28px;
+  box-shadow: none;
+}
+
+.ltPlanHeroMain {
+  display: grid;
+  gap: 12px;
+}
+
+.ltPlanHeroMain h1 {
+  color: #111827;
+  font-size: 2.4rem;
+  line-height: 1.12;
+  font-weight: 900;
+}
+
+.ltPlanHeroMain p {
+  color: #526071;
+  line-height: 1.68;
+}
+
+.ltPlanFacts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.ltFactItem {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 14px;
+  background: #f8fafc;
+  box-shadow: none;
+}
+
+.ltFactItem span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.ltFactItem strong {
+  color: #111827;
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.ltTimeline {
+  display: grid;
+  gap: 18px;
+}
+
+.ltTimelineDay {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 18px;
+  padding: 20px;
+  box-shadow: none;
+}
+
+.ltTimelineDayHeader span {
+  color: #0f766e;
+  font-weight: 900;
+}
+
+.ltTimelineDayHeader h2 {
+  margin-top: 6px;
+  color: #111827;
+  font-size: 1.35rem;
+}
+
+.ltTimelineItems {
+  display: grid;
+  gap: 12px;
+}
+
+.ltTimelineItem {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.ltTimelineItem time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 12px;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.ltTimelineItemContent {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.ltTimelinePlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #64748b;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.ltTimelineNote {
+  color: #526071;
+  font-size: 0.94rem;
+  line-height: 1.62;
+}
+
+.ltMarkdownPlan {
+  display: grid;
+  gap: 16px;
+}
+
+.ltDayCards {
+  display: grid;
+  gap: 14px;
+}
+
+.ltDayCard {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.ltDayCardHeader {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.ltDayCover {
+  width: 132px;
+  height: 92px;
+  border-radius: 8px;
+  border: 1px solid #dbe3ee;
+  object-fit: cover;
+}
+
+.ltDayCover.placeholder {
+  display: grid;
+  place-items: center;
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 900;
+}
+
+.ltDayCardHeader span {
+  color: #0f766e;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.ltDayCardHeader h2 {
+  margin-top: 5px;
+  color: #111827;
+  font-size: 1.42rem;
+  line-height: 1.22;
+  font-weight: 900;
+}
+
+.ltDayCardHeader p {
+  color: #526071;
+  line-height: 1.62;
+}
+
+.ltDaySlots {
+  display: grid;
+  gap: 8px;
+}
+
+.ltDaySlot {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+  padding: 10px;
+  border: 1px solid #edf2f7;
+  border-radius: 8px;
+  background: #fbfdff;
+}
+
+.ltDaySlot time {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+  border-radius: 8px;
+  background: #e8f5f3;
+  color: #0f766e;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.ltDaySlotBody {
+  display: grid;
+  gap: 6px;
+  align-content: center;
+  min-width: 0;
+}
+
+.ltDaySlotBody h3 {
+  color: #111827;
+  font-size: 1rem;
+  line-height: 1.28;
+  font-weight: 900;
+}
+
+.ltDaySlotBody span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.ltDaySlotBody p {
+  color: #526071;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.ltMarkdownDayBlock {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.ltMarkdownDayHeader,
+.ltMarkdownHeading {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px;
+  align-items: baseline;
+}
+
+.ltMarkdownDayHeader span,
+.ltMarkdownHeading span {
+  color: #94a3b8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-weight: 800;
+}
+
+.ltMarkdownDayHeader h2 {
+  color: #111827;
+  font-size: 1.45rem;
+  line-height: 1.22;
+  font-weight: 900;
+}
+
+.ltMarkdownItems {
+  display: grid;
+  gap: 10px;
+}
+
+.ltMarkdownBlock {
+  display: grid;
+  gap: 8px;
+  padding: 14px 0 14px 54px;
+  border-top: 1px solid #edf2f7;
+}
+
+.ltMarkdownBlock:first-child {
+  border-top: 0;
+}
+
+.ltMarkdownHeading h3 {
+  color: #1f2937;
+  font-size: 1rem;
+  line-height: 1.35;
+  font-weight: 900;
+}
+
+.ltMarkdownBlock p,
+.ltMarkdownBlock li {
+  color: #526071;
+  line-height: 1.62;
+}
+
+.ltMarkdownBlock ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.ltMarkdownBlock strong {
+  color: #334155;
+  font-weight: 900;
+}
+
+.ltFooter {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 36px;
+  border-top: 1px solid #dbe3ee;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: #64748b;
+  font-size: 0.86rem;
+}
+
+@media (max-width: 1024px) {
+  .ltHero,
+  .ltSplitSection,
+  .ltPlannerLayout,
+  .ltPlanHero {
+    grid-template-columns: 1fr;
+  }
+
+  .ltPlannerPreview {
+    position: static;
+  }
+
+  .ltHeroCopy h1 {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .ltNavInner {
+    width: min(100% - 24px, 1180px);
+    min-height: auto;
+    padding: 12px 0;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .ltBrand {
+    min-width: 0;
+  }
+
+  .ltBrand span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ltNavLinks {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .ltNavLinks a {
+    min-width: 0;
+    padding: 9px 8px;
+    font-size: 0.86rem;
+  }
+
+  .ltNavAction {
+    width: 100%;
+  }
+
+  .ltPage {
+    width: min(100% - 24px, 1180px);
+    padding: 24px 0 48px;
+  }
+
+  .ltHero {
+    gap: 26px;
+    margin-bottom: 34px;
+  }
+
+  .ltHeroCopy h1,
+  .ltPlanHeroMain h1 {
+    font-size: 2.25rem;
+    line-height: 1.08;
+  }
+
+  .ltHeroCopy p {
+    margin-bottom: 22px;
+    font-size: 1rem;
+  }
+
+  .ltHeroActions,
+  .ltPageActions {
+    width: 100%;
+  }
+
+  .ltHeroActions a,
+  .ltPrimaryButton,
+  .ltSecondaryButton,
+  .ltBackButton {
+    width: 100%;
+  }
+
+  .ltHeroActions a {
+    min-height: 46px;
+  }
+
+  .ltHeroVisual {
+    grid-template-columns: 1fr;
+    grid-template-rows: 220px 140px 140px;
+    min-height: 0;
+  }
+
+  .ltHeroImage.main {
+    grid-row: auto;
+  }
+
+  .ltHeroPanel {
+    position: static;
+    grid-template-columns: 1fr;
+    margin-top: 10px;
+    box-shadow: none;
+  }
+
+  .ltSectionHeader,
+  .ltPageTitle,
+  .ltPageActions,
+  .ltFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ltSectionHeader,
+  .ltPageTitle {
+    gap: 12px;
+    margin: 28px 0 16px;
+  }
+
+  .ltSectionHeader h2,
+  .ltPageTitle h1 {
+    font-size: 1.65rem;
+  }
+
+  .ltDestinationGrid,
+  .ltPlansGrid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .ltDestinationBody,
+  .ltPlanCard,
+  .ltRecentPlans,
+  .ltFilterBar,
+  .ltPlannerForm,
+  .ltPlannerPreview,
+  .ltPlanHero,
+  .ltTimelineDay,
+  .ltDayCard,
+  .ltMarkdownDayBlock {
+    padding: 16px;
+  }
+
+  .ltDestinationCard:hover,
+  .ltPlanCard:hover,
+  .ltNavAction:hover,
+  .ltPrimaryButton:hover,
+  .ltHeroActions a:first-child:hover,
+  .ltPlannerTeaser button:hover {
+    transform: none;
+  }
+
+  .ltDestinationPhoto {
+    aspect-ratio: 4 / 3;
+  }
+
+  .ltCardTopline {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .ltInlineNotice {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .ltInlineNotice strong {
+    white-space: normal;
+  }
+
+  .ltSegmented {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .ltSegmented::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ltSegmented button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .ltPlannerTeaser {
+    padding: 24px;
+  }
+
+  .ltPlannerTeaser h2 {
+    font-size: 1.6rem;
+  }
+
+  .ltFormGrid,
+  .ltTimelineDay,
+  .ltTimelineItem,
+  .ltMarkdownDayHeader,
+  .ltMarkdownHeading,
+  .ltDayCardHeader,
+  .ltDaySlot,
+  .ltPlanFacts {
+    grid-template-columns: 1fr;
+  }
+
+  .ltSelectedTag {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .ltSelectedTag button {
+    flex: 0 0 auto;
+  }
+
+  .ltSelectedSummary h3,
+  .ltGeneratedPreview h2 {
+    font-size: 1.05rem;
+  }
+
+  .ltMiniDestCard {
+    grid-template-columns: 52px minmax(0, 1fr);
+  }
+
+  .ltMiniDestPhoto {
+    width: 52px;
+    height: 52px;
+  }
+
+  .ltPlanFacts {
+    gap: 8px;
+  }
+
+  .ltFactItem strong {
+    overflow-wrap: anywhere;
+  }
+
+  .ltDaySlot time {
+    min-height: 38px;
+    justify-content: flex-start;
+    padding: 0 12px;
+  }
+
+  .ltDayCover {
+    width: 100%;
+    height: 150px;
+  }
+
+  .ltMarkdownBlock {
+    padding-left: 0;
+  }
+
+  .ltMarkdownBlock ul {
+    padding-left: 16px;
+  }
+
+  .ltFooter {
+    width: min(100% - 24px, 1180px);
+    padding: 22px 0 28px;
+  }
+}
+
+@media (max-width: 420px) {
+  .ltNavInner,
+  .ltPage,
+  .ltFooter {
+    width: min(100% - 18px, 1180px);
+  }
+
+  .ltBrand strong {
+    width: 32px;
+    height: 32px;
+  }
+
+  .ltNavLinks a {
+    padding-inline: 6px;
+    font-size: 0.8rem;
+  }
+
+  .ltNavAction,
+  .ltPrimaryButton,
+  .ltSecondaryButton,
+  .ltHeroActions a:first-child,
+  .ltHeroActions a:last-child,
+  .ltPlannerTeaser button,
+  .ltBackButton {
+    min-height: 44px;
+    padding-inline: 12px;
+  }
+
+  .ltHeroCopy h1,
+  .ltPlanHeroMain h1 {
+    font-size: 1.95rem;
+  }
+
+  .ltHeroVisual {
+    grid-template-rows: 190px 126px 126px;
+    gap: 8px;
+  }
+
+  .ltHeroImage span,
+  .ltDestinationPhoto span {
+    left: 10px;
+    bottom: 10px;
+    top: auto;
+    max-width: calc(100% - 20px);
+  }
+
+  .ltHeroPanel,
+  .ltDestinationBody,
+  .ltPlanCard,
+  .ltRecentPlans,
+  .ltFilterBar,
+  .ltPlannerForm,
+  .ltPlannerPreview,
+  .ltPlanHero,
+  .ltDayCard,
+  .ltMarkdownDayBlock {
+    padding: 14px;
+  }
+
+  .ltSectionHeader h2,
+  .ltPageTitle h1 {
+    font-size: 1.45rem;
+  }
+
+  .ltTagRow span,
+  .ltPlanMeta span,
+  .ltSegmented button,
+  .ltInterestGroup button {
+    font-size: 0.76rem;
+  }
+}

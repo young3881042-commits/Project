@@ -1,0 +1,1672 @@
+/* Home summary and local LifeHub Bridge / AI surfaces. */
+.lifeHubRoot .lifeHubBottomNav {
+  grid-template-columns: repeat(6, minmax(44px, 1fr));
+  gap: 0;
+  padding-inline: 4px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.lifeHubRoot .lifeHubBottomNav::-webkit-scrollbar {
+  display: none;
+}
+
+.lifeHubRoot .lifeHubBottomNav button {
+  min-width: 44px;
+  padding-inline: 1px;
+}
+
+.lifeHubRoot .lifeHubBottomNav button > span {
+  font-size: 0.64rem;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.lifeHubRoot .lifeHubTopBar {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.lifeHubHomeSimplePage {
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.lifeHubHomeSimplePage > * {
+  width: 100%;
+  min-width: 0;
+}
+
+.lifeHubHomeGreeting,
+.lifeHubHomeScheduleSummary,
+.lifeHubAiHomeCard,
+.lifeHubWeeklySummary {
+  border: 1px solid var(--lh-border);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.055);
+}
+
+.lifeHubHomeGreeting {
+  position: relative;
+  min-height: 154px;
+  display: block;
+  padding: 24px 154px 24px 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 88% 18%, rgba(15, 150, 133, 0.16), transparent 38%),
+    linear-gradient(140deg, #effbf8, #fff 72%);
+}
+
+.lifeHubHomeGreeting > div {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.lifeHubHomeGreeting > div > span {
+  color: #0f7f72;
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.lifeHubHomeGreeting h2 {
+  margin: 0;
+  color: var(--lh-ink);
+  font-size: clamp(1.35rem, 4vw, 1.9rem);
+  line-height: 1.22;
+  word-break: keep-all;
+}
+
+.lifeHubHomeGreeting p {
+  margin: 0;
+  color: var(--lh-muted);
+  line-height: 1.55;
+}
+
+.lifeHubHomeGreeting > .lifeHubPackIcon {
+  position: absolute;
+  right: 22px;
+  bottom: 18px;
+  width: 124px;
+  height: 112px;
+}
+
+.lifeHubLocalStorageCard {
+  min-height: 82px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.lifeHubLocalStorageCard > span {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #e9f8f5;
+  color: #087f72;
+}
+
+.lifeHubLocalStorageCard > span .memoNavIcon {
+  width: 23px;
+  height: 23px;
+}
+
+.lifeHubLocalStorageCard strong {
+  color: var(--lh-ink);
+  font-size: 0.9rem;
+}
+
+.lifeHubLocalStorageCard p {
+  margin: 4px 0 0;
+  color: var(--lh-muted);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.lifeHubHomeScheduleSummary,
+.lifeHubWeeklySummary {
+  padding: 18px;
+}
+
+.lifeHubAiHomeCard {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) minmax(230px, 0.8fr);
+  grid-template-areas:
+    "icon copy status"
+    "icon actions status";
+  align-items: center;
+  gap: 12px 18px;
+  padding: 22px;
+  border-color: #bfded9;
+  background: linear-gradient(145deg, #f0fbf9, #fff 64%);
+}
+
+.lifeHubAiHomeIcon {
+  grid-area: icon;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  align-self: start;
+  border-radius: 17px;
+  background: #0f766e;
+  color: #fff;
+}
+
+.lifeHubAiHomeIcon .memoNavIcon {
+  width: 30px;
+  height: 30px;
+}
+
+.lifeHubAiHomeCopy {
+  grid-area: copy;
+  min-width: 0;
+}
+
+.lifeHubAiHomeCopy > span {
+  color: #0f766e;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.lifeHubAiHomeCopy h2 {
+  margin: 3px 0 0;
+  color: var(--lh-ink);
+  font-size: 1.35rem;
+}
+
+.lifeHubAiHomeCopy p {
+  margin: 6px 0 0;
+  color: var(--lh-muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.lifeHubAiHomeStatus {
+  grid-area: status;
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #d9e7e4;
+  border-radius: 14px;
+  background: #d9e7e4;
+}
+
+.lifeHubAiHomeStatus > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.lifeHubAiHomeStatus dt,
+.lifeHubAiHomeStatus dd {
+  min-width: 0;
+  margin: 0;
+  font-size: 0.78rem;
+}
+
+.lifeHubAiHomeStatus dt {
+  color: var(--lh-muted);
+  font-weight: 800;
+}
+
+.lifeHubAiHomeStatus dd {
+  overflow: hidden;
+  color: var(--lh-ink);
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubConnectionDot {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+  margin-right: 6px;
+  border-radius: 999px;
+  background: #94a3b8;
+}
+
+.lifeHubConnectionDot.connected { background: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.13); }
+.lifeHubConnectionDot.offline,
+.lifeHubConnectionDot.disconnected,
+.lifeHubConnectionDot.revoked { background: #ef4444; }
+.lifeHubConnectionDot.checking { background: #f59e0b; }
+
+.lifeHubAiHomeActions {
+  grid-area: actions;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lifeHubAiHomeActions button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid #cbd8dd;
+  border-radius: 12px;
+  background: #fff;
+  color: #203047;
+  font-size: 0.86rem;
+  font-weight: 900;
+  white-space: normal;
+}
+
+.lifeHubAiHomeActions button.primary {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #fff;
+}
+
+.lifeHubAiHomeActions .memoNavIcon {
+  width: 19px;
+  height: 19px;
+}
+
+.lifeHubWeeklyStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.lifeHubActivityPeriodTabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: #f1f5f9;
+}
+
+.lifeHubActivityPeriodTabs button {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--lh-muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.lifeHubActivityPeriodTabs button.active {
+  border-color: #bfe5df;
+  background: #ffffff;
+  color: #087f72;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.07);
+}
+
+.lifeHubWeeklyStats button {
+  min-width: 0;
+  min-height: 112px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  padding: 12px 8px;
+  border: 1px solid #e0e8ec;
+  border-radius: 15px;
+  background: #fbfcfd;
+  color: var(--lh-ink);
+}
+
+.lifeHubWeeklyStats .memoNavIcon {
+  width: 28px;
+  height: 28px;
+  color: #0f766e;
+}
+
+.lifeHubWeeklyStats span {
+  color: var(--lh-muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.lifeHubWeeklyStats strong {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.94rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Shared AI surface */
+.lifeHubRoute-ai > .lifeHubApp {
+  width: min(100%, 1180px);
+  padding-top: max(14px, env(safe-area-inset-top));
+  background: #f5f7f9;
+}
+
+.lifeHubRoute-ai > .lifeHubApp > .lifeHubTopBar {
+  display: none;
+}
+
+.lifeHubRoute-ai .lifeHubBottomNav {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  width: min(100%, 1180px);
+}
+
+.lifeHubAiChatPage,
+.lifeHubAiSettingsPage {
+  gap: 14px;
+  min-height: calc(var(--lifehub-ai-viewport-height, 100dvh) - 112px - env(safe-area-inset-bottom));
+}
+
+.lifeHubAiChatHeader,
+.lifeHubAiPageIntro,
+.lifeHubAiControls,
+.lifeHubAiPairForm,
+.lifeHubAiPairedList,
+.lifeHubAiDevPanel {
+  border: 1px solid #dce5e9;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+}
+
+.lifeHubAiChatHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+}
+
+.lifeHubAiChatTitle {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lifeHubAiLogo {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 14px;
+  background: #0f766e;
+  color: #fff;
+}
+
+.lifeHubAiLogo .memoNavIcon {
+  width: 25px;
+  height: 25px;
+}
+
+.lifeHubAiChatTitle > div > span,
+.lifeHubAiPageIntro > div > span,
+.lifeHubAiPairForm header > div > span,
+.lifeHubAiPairedList > header > div > span,
+.lifeHubAiDevPanel > header > div > span {
+  display: block;
+  color: #0f766e;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.lifeHubAiChatTitle h2,
+.lifeHubAiPageIntro h2,
+.lifeHubAiPairForm h3,
+.lifeHubAiPairedList h3,
+.lifeHubAiDevPanel h3 {
+  margin: 2px 0 0;
+  color: #10203a;
+}
+
+.lifeHubAiChatTitle h2 { font-size: 1.3rem; }
+
+.lifeHubAiHeaderActions {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.lifeHubAiHeaderActions > button,
+.lifeHubAiBack {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 11px;
+  border: 1px solid #d8e1e6;
+  border-radius: 11px;
+  background: #fff;
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.lifeHubAiHeaderActions .memoNavIcon,
+.lifeHubAiBack .memoNavIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.lifeHubAiStatusPill {
+  max-width: min(100%, 280px);
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  overflow: hidden;
+  border: 1px solid #d8e1e6;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #526173;
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubAiStatusPill i {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #94a3b8;
+}
+
+.lifeHubAiStatusPill.connected { border-color: #bce8dc; background: #edfcf7; color: #08755f; }
+.lifeHubAiStatusPill.connected i { background: #10b981; }
+.lifeHubAiStatusPill.checking i { background: #f59e0b; animation: lifeHubAiPulse 1s infinite alternate; }
+.lifeHubAiStatusPill.disconnected,
+.lifeHubAiStatusPill.offline,
+.lifeHubAiStatusPill.revoked { border-color: #fecaca; background: #fff5f5; color: #b42318; }
+.lifeHubAiStatusPill.disconnected i,
+.lifeHubAiStatusPill.offline i,
+.lifeHubAiStatusPill.revoked i { background: #ef4444; }
+
+@keyframes lifeHubAiPulse { to { opacity: 0.35; } }
+
+.lifeHubAiControls {
+  display: grid;
+  grid-template-columns: minmax(290px, auto) minmax(240px, 1fr);
+  align-items: end;
+  gap: 14px;
+  padding: 12px 14px;
+}
+
+.lifeHubAiModeSwitch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #edf2f4;
+}
+
+.lifeHubAiModeSwitch button {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #5f6f82;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.lifeHubAiModeSwitch button.active {
+  border-color: #b8ddd7;
+  background: #fff;
+  color: #0f766e;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.07);
+}
+
+.lifeHubAiControls > label,
+.lifeHubAiPairForm label {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.lifeHubAiControls > label > span,
+.lifeHubAiPairForm label > span {
+  color: #526173;
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+
+.lifeHubAiControls select,
+.lifeHubAiPairForm input {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid #cfd9df;
+  border-radius: 11px;
+  background: #fff;
+  color: #10203a;
+}
+
+.lifeHubAiControls.app-editor { grid-template-columns: minmax(280px, 1fr) minmax(240px, 0.7fr); }
+.lifeHubAppEditorMode {
+  min-width: 0;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #0f766e;
+}
+.lifeHubAppEditorMode > .memoNavIcon { width: 24px; height: 24px; flex: 0 0 auto; }
+.lifeHubAppEditorMode > span { min-width: 0; display: grid; gap: 2px; }
+.lifeHubAppEditorMode strong { color: #203047; font-size: 0.82rem; }
+.lifeHubAppEditorMode small { color: #66758b; font-size: 0.7rem; line-height: 1.4; }
+
+.lifeHubAiPermissionDetails.standard { display: contents; }
+.lifeHubAiPermissionDetails.standard > summary { display: none; }
+.lifeHubAiPermissionDetails.app-editor {
+  overflow: hidden;
+  border: 1px solid #dce5e9;
+  border-radius: 15px;
+  background: #fff;
+}
+.lifeHubAiPermissionDetails.app-editor > summary {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 14px;
+  color: #203047;
+  cursor: pointer;
+  list-style: none;
+}
+.lifeHubAiPermissionDetails.app-editor > summary::-webkit-details-marker { display: none; }
+.lifeHubAiPermissionDetails.app-editor > summary > span { min-width: 0; display: grid; gap: 2px; }
+.lifeHubAiPermissionDetails.app-editor > summary strong { font-size: 0.8rem; }
+.lifeHubAiPermissionDetails.app-editor > summary small { color: #66758b; font-size: 0.68rem; line-height: 1.35; }
+.lifeHubAiPermissionDetails.app-editor > summary > .memoNavIcon { width: 19px; height: 19px; flex: 0 0 auto; transition: transform 160ms ease; }
+.lifeHubAiPermissionDetails.app-editor[open] > summary > .memoNavIcon { transform: rotate(180deg); }
+.lifeHubAiPermissionDetails.app-editor .lifeHubAiTurnPermissions { border: 0; border-top: 1px solid #e3eaed; border-radius: 0; }
+
+.lifeHubAiTurnPermissions {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 11px 14px 14px;
+  border: 1px solid #dce5e9;
+  border-radius: 15px;
+  background: #fff;
+}
+
+.lifeHubAiTurnPermissions legend {
+  padding: 0 6px;
+  color: #203047;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.lifeHubAiTurnPermissions > p {
+  margin: 0;
+  color: #66758b;
+  font-size: 0.73rem;
+  line-height: 1.45;
+}
+
+.lifeHubAiTurnPermissions > p strong { color: #0f766e; }
+
+.lifeHubAiTurnPermissionGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.lifeHubAiTurnPermissionGrid > label {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 7px;
+  padding: 9px;
+  border: 1px solid #dce5e9;
+  border-radius: 9px;
+  background: #fafcfd;
+}
+
+.lifeHubAiTurnPermissionGrid > label.selected {
+  border-color: #9fd8cf;
+  background: #effbf8;
+}
+
+.lifeHubAiTurnPermissionGrid > label.unavailable { opacity: 0.55; }
+.lifeHubAiTurnPermissionGrid input { width: 17px; height: 17px; margin: 2px 0 0; accent-color: #0f766e; }
+.lifeHubAiTurnPermissionGrid label > span { min-width: 0; display: grid; gap: 2px; }
+.lifeHubAiTurnPermissionGrid label strong { color: #203047; font-size: 0.73rem; }
+.lifeHubAiTurnPermissionGrid label small { color: #718096; font-size: 0.64rem; line-height: 1.35; }
+
+.lifeHubAiApprovalPlan {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px 12px;
+  padding: 12px;
+  border: 1px solid #f1d397;
+  border-radius: 11px;
+  background: #fffbeb;
+}
+
+.lifeHubAiApprovalPlan > strong,
+.lifeHubAiApprovalPlan > p { grid-column: 1 / -1; }
+.lifeHubAiApprovalPlan > strong { color: #5f3c08; font-size: 0.8rem; }
+.lifeHubAiApprovalPlan > p { margin: -4px 0 0; color: #806022; font-size: 0.7rem; line-height: 1.45; }
+.lifeHubAiApprovalPlan label { min-width: 0; display: grid; gap: 6px; }
+.lifeHubAiApprovalPlan label > span { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px; color: #4d3913; font-size: 0.73rem; font-weight: 900; }
+.lifeHubAiApprovalPlan label em { color: #9a670d; font-size: 0.64rem; font-style: normal; }
+.lifeHubAiApprovalPlan textarea { width: 100%; min-width: 0; min-height: 82px; resize: vertical; padding: 9px 10px; border: 1px solid #ddc48e; border-radius: 9px; background: #fff; color: #2f2410; font-size: 0.78rem; line-height: 1.45; }
+.lifeHubAiApprovalPlan label small { color: #806b42; font-size: 0.64rem; line-height: 1.4; }
+
+.lifeHubAiConnectionBanner,
+.lifeHubAiSecurityNotice {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid #f1d397;
+  border-radius: 15px;
+  background: #fffbeb;
+  color: #754a08;
+}
+
+.lifeHubAiConnectionBanner.offline { border-color: #fecaca; background: #fff5f5; color: #9f2525; }
+.lifeHubAiConnectionBanner.success { border-color: #bce8dc; background: #effcf8; color: #0b6959; }
+.lifeHubAiConnectionBanner.warning,
+.lifeHubAiSecurityNotice.warning { border-color: #fed7aa; background: #fff8ed; color: #8a4510; }
+.lifeHubAiSecurityNotice:not(.warning) { border-color: #bce8dc; background: #effcf8; color: #0b6959; }
+
+.lifeHubAiConnectionBanner > .memoNavIcon,
+.lifeHubAiSecurityNotice > .memoNavIcon {
+  width: 26px;
+  height: 26px;
+}
+
+.lifeHubAiConnectionBanner strong,
+.lifeHubAiConnectionBanner p,
+.lifeHubAiSecurityNotice strong,
+.lifeHubAiSecurityNotice p {
+  display: block;
+  margin: 0;
+}
+
+.lifeHubAiConnectionBanner p,
+.lifeHubAiSecurityNotice p {
+  margin-top: 3px;
+  font-size: 0.79rem;
+  line-height: 1.45;
+}
+
+.lifeHubAiConnectionBanner > button {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  background: #fff;
+  color: inherit;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.lifeHubAiWorkArea.standard { display: contents; }
+
+.lifeHubAiWorkArea.app-editor {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 390px);
+  align-items: start;
+  gap: 14px;
+}
+
+.lifeHubAiWorkspace {
+  min-height: 560px;
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid #dce5e9;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+}
+
+.lifeHubAiWorkArea.app-editor .lifeHubAiWorkspace {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: visible;
+}
+
+.lifeHubAiWorkArea.app-editor .lifeHubAiHistory {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 20;
+  width: min(320px, calc(100% - 28px));
+  display: none;
+  border: 1px solid #dce5e9;
+  border-radius: 18px 0 0 18px;
+  box-shadow: 12px 0 28px rgba(15, 23, 42, 0.16);
+}
+
+.lifeHubAiWorkArea.app-editor .lifeHubAiWorkspace.history-open .lifeHubAiHistory { display: flex; }
+.lifeHubAiWorkArea.app-editor .lifeHubAiHistory > header button { display: grid; }
+
+.lifeHubAiHistory {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px;
+  overflow: auto;
+  border-right: 1px solid #e2e8ec;
+  background: #f8fafb;
+}
+
+.lifeHubAiHistory > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 9px;
+  color: #10203a;
+}
+
+.lifeHubAiHistory > header button {
+  display: none;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #526173;
+}
+
+.lifeHubAiHistory > button {
+  min-width: 0;
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 8px 9px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: #526173;
+  text-align: left;
+}
+
+.lifeHubAiHistory > button.active {
+  border-color: #bce1dc;
+  background: #eaf8f5;
+  color: #0f766e;
+}
+
+.lifeHubAiHistory > button .memoNavIcon { width: 21px; height: 21px; }
+.lifeHubAiHistory > button span { min-width: 0; display: grid; gap: 3px; }
+.lifeHubAiHistory > button strong,
+.lifeHubAiHistory > button small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lifeHubAiHistory > button strong { color: #203047; font-size: 0.79rem; }
+.lifeHubAiHistory > button small { font-size: 0.68rem; }
+.lifeHubAiHistoryEmpty { padding: 24px 10px; color: #728093; font-size: 0.78rem; text-align: center; }
+
+.lifeHubAiConversation {
+  min-width: 0;
+  min-height: 560px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.lifeHubAiMessages {
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+  overflow: auto;
+}
+
+.lifeHubAiWelcome {
+  width: min(100%, 520px);
+  margin: auto;
+  padding: 44px 24px;
+  color: #526173;
+  text-align: center;
+}
+
+.lifeHubAiWelcome > span {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  margin: 0 auto 14px;
+  place-items: center;
+  border-radius: 20px;
+  background: #eaf8f5;
+  color: #0f766e;
+}
+
+.lifeHubAiWelcome .memoNavIcon { width: 33px; height: 33px; }
+.lifeHubAiWelcome h3 { margin: 0; color: #10203a; font-size: 1.3rem; }
+.lifeHubAiWelcome p { margin: 9px 0 0; font-size: 0.86rem; line-height: 1.6; }
+
+.lifeHubAiMessage {
+  width: min(88%, 760px);
+  display: grid;
+  gap: 7px;
+  align-self: flex-start;
+}
+
+.lifeHubAiMessage.user { align-self: flex-end; }
+
+.lifeHubAiMessage > header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #718096;
+  font-size: 0.7rem;
+}
+
+.lifeHubAiMessage.user > header { justify-content: flex-end; }
+.lifeHubAiMessage > header strong { color: #334155; }
+
+.lifeHubAiMessage > p,
+.lifeHubAiMarkdown {
+  min-width: 0;
+  margin: 0;
+  padding: 13px 15px;
+  overflow-wrap: anywhere;
+  border: 1px solid #dfe7eb;
+  border-radius: 5px 17px 17px 17px;
+  background: #f8fafb;
+  color: #18263a;
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.lifeHubAiMessage.user > p {
+  border-color: #0f766e;
+  border-radius: 17px 5px 17px 17px;
+  background: #0f766e;
+  color: #fff;
+  white-space: pre-wrap;
+}
+
+.lifeHubAiMarkdownBody.collapsed {
+  position: relative;
+  max-height: 380px;
+  padding-bottom: 44px;
+  overflow: hidden;
+}
+
+.lifeHubAiMarkdownBody.collapsed::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 74px;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(transparent, #f8fafb 68%);
+}
+
+.lifeHubAiMarkdownBody > :first-child { margin-top: 0; }
+.lifeHubAiMarkdownBody > :last-child { margin-bottom: 0; }
+.lifeHubAiMarkdown h1,
+.lifeHubAiMarkdown h2,
+.lifeHubAiMarkdown h3 { color: #10203a; line-height: 1.35; }
+.lifeHubAiMarkdown a { color: #0a6fba; }
+.lifeHubAiMarkdown table { display: block; max-width: 100%; overflow: auto; border-collapse: collapse; }
+.lifeHubAiMarkdown th,
+.lifeHubAiMarkdown td { padding: 7px 9px; border: 1px solid #d5dfe5; text-align: left; }
+.lifeHubAiMarkdown code { padding: 0.12em 0.35em; border-radius: 5px; background: #e9eef2; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.86em; }
+
+.lifeHubAiCodeBlock {
+  position: relative;
+  margin: 12px 0;
+  overflow: hidden;
+  border-radius: 11px;
+  background: #101827;
+}
+
+.lifeHubAiCodeBlock > button {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  z-index: 2;
+  min-height: 31px;
+  padding: 0 9px;
+  border: 1px solid #435168;
+  border-radius: 7px;
+  background: #1d293b;
+  color: #dbe5ef;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.lifeHubAiCodeBlock pre {
+  max-width: 100%;
+  margin: 0;
+  padding: 42px 14px 14px;
+  overflow: auto;
+}
+
+.lifeHubAiCodeBlock pre code {
+  padding: 0;
+  background: transparent;
+  color: #e5edf5;
+  font-size: 0.78rem;
+}
+
+.lifeHubAiExpand {
+  position: relative;
+  z-index: 2;
+  min-height: 34px;
+  display: block;
+  margin: 12px auto 0;
+  padding: 0 12px;
+  border: 1px solid #cad6dd;
+  border-radius: 9px;
+  background: #fff;
+  color: #425269;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.lifeHubAiTyping { display: inline-flex; gap: 3px; margin-left: 5px; }
+.lifeHubAiTyping i { width: 5px; height: 5px; border-radius: 50%; background: #0f766e; animation: lifeHubAiTyping 900ms infinite alternate; }
+.lifeHubAiTyping i:nth-child(2) { animation-delay: 160ms; }
+.lifeHubAiTyping i:nth-child(3) { animation-delay: 320ms; }
+@keyframes lifeHubAiTyping { to { transform: translateY(-4px); opacity: 0.35; } }
+
+.lifeHubAiMessage > footer { min-height: 24px; display: flex; gap: 5px; }
+.lifeHubAiMessage.user > footer { justify-content: flex-end; }
+.lifeHubAiMessage > footer button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #65758a;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+.lifeHubAiMessage > footer .memoNavIcon { width: 14px; height: 14px; }
+.lifeHubAiMessageError { color: #b42318 !important; }
+
+.lifeHubAiError {
+  width: min(100%, 720px);
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 12px;
+  border: 1px solid #fecaca;
+  border-radius: 11px;
+  background: #fff5f5;
+  color: #a32323;
+  font-size: 0.78rem;
+}
+.lifeHubAiError .memoNavIcon { width: 20px; height: 20px; }
+.lifeHubAiError button { min-height: 44px; border: 1px solid currentColor; border-radius: 8px; background: #fff; color: inherit; font-size: 0.7rem; font-weight: 850; }
+
+.lifeHubAiComposer {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid #e1e8ec;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(14px);
+}
+
+.lifeHubAiComposer textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  max-height: 150px;
+  resize: vertical;
+  padding: 12px 13px;
+  border: 1px solid #cbd7de;
+  border-radius: 13px;
+  color: #10203a;
+  line-height: 1.45;
+}
+
+.lifeHubAiComposer > button {
+  min-width: 98px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 14px;
+  border: 1px solid #0f766e;
+  border-radius: 13px;
+  background: #0f766e;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.lifeHubAiComposer > button.stop { border-color: #dc2626; background: #fff5f5; color: #b42318; }
+.lifeHubAiComposer .memoNavIcon { width: 19px; height: 19px; }
+.lifeHubAiComposer > small { grid-column: 1 / -1; color: #7a8798; font-size: 0.66rem; }
+
+/* Codex task information and approvals */
+.lifeHubAiDevPanel { display: grid; gap: 14px; padding: 16px; }
+.lifeHubAiWorkArea.app-editor .lifeHubAiDevPanel {
+  position: sticky;
+  top: 12px;
+  max-height: calc(var(--lifehub-ai-viewport-height, 100dvh) - 108px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.lifeHubAiDevPanel > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.lifeHubAiDevPanel h4 { margin: 0 0 8px; color: #203047; font-size: 0.86rem; }
+.lifeHubAiDevFacts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.lifeHubAiWorkArea.app-editor .lifeHubAiDevFacts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.lifeHubAiDevFacts > div { min-width: 0; display: grid; gap: 4px; padding: 11px; border: 1px solid #e0e7eb; border-radius: 11px; background: #f8fafb; }
+.lifeHubAiDevFacts dt { color: #6a788b; font-size: 0.68rem; font-weight: 800; }
+.lifeHubAiDevFacts dd { min-width: 0; margin: 0; overflow: hidden; color: #203047; font-size: 0.79rem; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
+.lifeHubAiDevFacts code { font-size: 0.72rem; }
+
+.lifeHubAppEditorProgress {
+  min-width: 0;
+  display: grid;
+  gap: 11px;
+  padding: 13px;
+  border: 1px solid #cfe2e2;
+  border-radius: 14px;
+  background: linear-gradient(150deg, #f2fbf9 0%, #f8fbfc 100%);
+}
+.lifeHubAppEditorProgress.attention { border-color: #f0cf8a; background: #fffbeb; }
+.lifeHubAppEditorProgress.failure { border-color: #fecaca; background: #fff7f7; }
+.lifeHubAppEditorProgress.partial { border-color: #fed7aa; background: #fff9f2; }
+.lifeHubAppEditorProgress > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.lifeHubAppEditorProgress > header > div { min-width: 0; }
+.lifeHubAppEditorProgress > header span { display: block; color: #0f766e; font-size: 0.64rem; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }
+.lifeHubAppEditorProgress > header h4 { margin: 2px 0 0; font-size: 0.92rem; }
+.lifeHubAppEditorProgress > header em {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #d9f5ef;
+  color: #08755f;
+  font-size: 0.65rem;
+  font-style: normal;
+  font-weight: 900;
+}
+.lifeHubAppEditorProgress.attention > header em { background: #fef0bf; color: #8a5b08; }
+.lifeHubAppEditorProgress.failure > header em { background: #fee2e2; color: #b42318; }
+.lifeHubAppEditorProgress.partial > header em { background: #ffedd5; color: #9a4d0c; }
+.lifeHubAppEditorActivity { display: grid; gap: 3px; padding: 10px; border-radius: 10px; background: rgba(255, 255, 255, 0.78); }
+.lifeHubAppEditorActivity > span { color: #64748b; font-size: 0.66rem; font-weight: 850; }
+.lifeHubAppEditorActivity > strong { color: #203047; font-size: 0.78rem; line-height: 1.45; overflow-wrap: anywhere; }
+.lifeHubAppEditorProgressBar { display: grid; gap: 6px; }
+.lifeHubAppEditorProgressBar > div { display: flex; justify-content: space-between; gap: 8px; color: #526173; font-size: 0.68rem; }
+.lifeHubAppEditorProgressBar > div strong { color: #0f766e; }
+.lifeHubAppEditorProgressBar progress { width: 100%; height: 9px; overflow: hidden; border: 0; border-radius: 999px; background: #d9e7e6; accent-color: #0f766e; }
+.lifeHubAppEditorProgressBar progress::-webkit-progress-bar { border-radius: 999px; background: #d9e7e6; }
+.lifeHubAppEditorProgressBar progress::-webkit-progress-value { border-radius: 999px; background: #0f766e; }
+.lifeHubAppEditorIndeterminate { display: grid; gap: 6px; }
+.lifeHubAppEditorIndeterminate > span { height: 5px; overflow: hidden; border-radius: 999px; background: #dce8e8; }
+.lifeHubAppEditorIndeterminate > span i { width: 0; height: 100%; display: block; border-radius: inherit; background: #0f766e; }
+.lifeHubAppEditorIndeterminate.busy > span i { width: 38%; animation: lifeHubAppEditorLoading 1.5s ease-in-out infinite; }
+.lifeHubAppEditorIndeterminate small { color: #66758b; font-size: 0.65rem; line-height: 1.4; }
+@keyframes lifeHubAppEditorLoading {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(290%); }
+}
+.lifeHubAppEditorChecklist { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.lifeHubAppEditorChecklist li { min-width: 0; display: grid; grid-template-columns: 23px minmax(0, 1fr); align-items: center; gap: 8px; color: #718096; }
+.lifeHubAppEditorChecklist li > span { width: 23px; height: 23px; display: grid; place-items: center; border: 1px solid #cbd7de; border-radius: 999px; background: #fff; font-size: 0.7rem; font-weight: 900; }
+.lifeHubAppEditorChecklist li > p { margin: 0; font-size: 0.72rem; line-height: 1.4; overflow-wrap: anywhere; }
+.lifeHubAppEditorChecklist li.completed { color: #08755f; }
+.lifeHubAppEditorChecklist li.completed > span { border-color: #86d4c7; background: #dff8f2; }
+.lifeHubAppEditorChecklist li.in-progress { color: #203047; font-weight: 850; }
+.lifeHubAppEditorChecklist li.in-progress > span { border-color: #0f766e; color: #0f766e; animation: lifeHubAiPulse 0.8s infinite alternate; }
+.lifeHubAppEditorChecklist li.failed { color: #b42318; }
+.lifeHubAppEditorChecklist li.failed > span { border-color: #fecaca; background: #fee2e2; }
+.lifeHubAppEditorChecklist li.skipped { color: #94a3b8; text-decoration: line-through; }
+.lifeHubAppEditorResultFacts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 0; }
+.lifeHubAppEditorResultFacts > div { min-width: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 7px; padding: 7px 8px; border-radius: 8px; background: rgba(255, 255, 255, 0.78); }
+.lifeHubAppEditorResultFacts dt { color: #718096; font-size: 0.62rem; font-weight: 800; }
+.lifeHubAppEditorResultFacts dd { margin: 0; color: #203047; font-size: 0.7rem; font-weight: 900; }
+
+.lifeHubAiRemoteTerminal {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  padding: 15px;
+  overflow: hidden;
+  border: 1px solid #24334b;
+  border-radius: 14px;
+  background: #101827;
+  color: #dbe7f3;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.lifeHubAiRemoteTerminal > header,
+.lifeHubAiRemoteApproval > header,
+.lifeHubAiRemoteResult > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lifeHubAiRemoteTerminal > header > div > span,
+.lifeHubAiRemoteApproval > header span,
+.lifeHubAiRemoteResult > header span {
+  display: block;
+  color: #7dd3c7;
+  font-size: 0.67rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lifeHubAiRemoteTerminal > header h4 {
+  margin: 3px 0 0;
+  color: #f4f8fb;
+  font-size: 0.98rem;
+}
+
+.lifeHubAiRemoteState {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border: 1px solid #3b4b62;
+  border-radius: 999px;
+  background: #172235;
+  color: #bdc9d8;
+  font-size: 0.67rem;
+  font-weight: 900;
+}
+
+.lifeHubAiRemoteState.ready { border-color: #286f67; background: #133b38; color: #8ce1d5; }
+.lifeHubAiRemoteState.preparing,
+.lifeHubAiRemoteState.executing { border-color: #8b651f; background: #3c2d12; color: #f9d783; }
+.lifeHubAiRemoteState.disabled { color: #9ba9ba; }
+.lifeHubAiRemoteIntro { margin: -4px 0 0; color: #aab8ca; font-size: 0.75rem; line-height: 1.5; }
+
+.lifeHubAiRemoteDisabled,
+.lifeHubAiRemoteError {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  padding: 10px 11px;
+  border: 1px solid #6b5530;
+  border-radius: 10px;
+  background: #2c2519;
+  color: #f4d99b;
+  font-size: 0.73rem;
+  line-height: 1.48;
+}
+
+.lifeHubAiRemoteError { border-color: #7b353c; background: #321b22; color: #fecaca; }
+.lifeHubAiRemoteDisabled .memoNavIcon,
+.lifeHubAiRemoteError .memoNavIcon { width: 20px; height: 20px; }
+
+.lifeHubAiRemotePresets { display: flex; flex-wrap: wrap; gap: 7px; }
+.lifeHubAiRemotePresets button {
+  min-height: 40px;
+  padding: 0 11px;
+  border: 1px solid #3a4b63;
+  border-radius: 9px;
+  background: #182438;
+  color: #dce7f2;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.lifeHubAiRemotePresets button:hover:not(:disabled) { border-color: #53b8aa; background: #173b3a; color: #a7f3e7; }
+
+.lifeHubAiRemoteForm { display: grid; gap: 6px; }
+.lifeHubAiRemoteForm > label { color: #bdcad9; font-size: 0.7rem; font-weight: 900; }
+.lifeHubAiRemoteForm > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #3a4a61;
+  border-radius: 11px;
+  background: #0b1220;
+}
+.lifeHubAiRemoteForm > div:focus-within { border-color: #59c7b8; box-shadow: 0 0 0 3px rgba(89, 199, 184, 0.14); }
+.lifeHubAiRemoteForm > div > span { color: #64d4c4; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-align: right; }
+.lifeHubAiRemoteForm input {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 10px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #eff6ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+}
+.lifeHubAiRemoteForm input::placeholder { color: #65758a; }
+.lifeHubAiRemoteForm button {
+  min-height: 48px;
+  align-self: stretch;
+  padding: 0 14px;
+  border: 0;
+  border-left: 1px solid #3a4a61;
+  background: #0f766e;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+.lifeHubAiRemoteForm > small { color: #8392a6; font-size: 0.66rem; line-height: 1.45; }
+
+.lifeHubAiRemoteTerminal button:disabled,
+.lifeHubAiRemoteTerminal input:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.lifeHubAiRemoteApproval,
+.lifeHubAiRemoteResult {
+  display: grid;
+  gap: 11px;
+  padding: 13px;
+  border: 1px solid #d9b35e;
+  border-left: 5px solid #f59e0b;
+  border-radius: 11px;
+  background: #fff9e9;
+  color: #37290f;
+}
+.lifeHubAiRemoteApproval.high,
+.lifeHubAiRemoteApproval.critical { border-color: #ef9a9a; border-left-color: #dc2626; background: #fff3f3; }
+.lifeHubAiRemoteApproval > header span,
+.lifeHubAiRemoteResult > header span { color: #8b5b0a; }
+.lifeHubAiRemoteApproval > header strong,
+.lifeHubAiRemoteResult > header strong { display: block; margin-top: 3px; color: #302616; font-size: 0.84rem; }
+.lifeHubAiRemoteApproval > header em,
+.lifeHubAiRemoteResult > header em {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #f5e3b7;
+  color: #80530a;
+  font-size: 0.67rem;
+  font-style: normal;
+  font-weight: 900;
+}
+.lifeHubAiRemoteCommandPreview {
+  display: block;
+  padding: 10px 11px;
+  overflow-x: auto;
+  border-radius: 9px;
+  background: #151e2d;
+  color: #dcfce7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.76rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.lifeHubAiRemoteApprovalFacts,
+.lifeHubAiRemoteGitFacts,
+.lifeHubAiRemoteResult > dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0;
+}
+.lifeHubAiRemoteApprovalFacts > div,
+.lifeHubAiRemoteGitFacts > div,
+.lifeHubAiRemoteResult > dl > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 8px 9px;
+  border: 1px solid rgba(115, 87, 33, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.58);
+}
+.lifeHubAiRemoteApprovalFacts dt,
+.lifeHubAiRemoteGitFacts dt,
+.lifeHubAiRemoteResult dt { color: #7a6640; font-size: 0.65rem; font-weight: 800; }
+.lifeHubAiRemoteApprovalFacts dd,
+.lifeHubAiRemoteGitFacts dd,
+.lifeHubAiRemoteResult dd { min-width: 0; margin: 0; overflow-wrap: anywhere; color: #332b1e; font-size: 0.74rem; font-weight: 900; }
+.lifeHubAiRemoteGitFacts code { font-size: 0.68rem; }
+
+.lifeHubAiRemoteConfirm {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid #d7bc80;
+  border-radius: 9px;
+  background: #fff;
+  color: #4b3917;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+.lifeHubAiRemoteConfirm input { width: 18px; height: 18px; margin: 0; accent-color: #0f766e; }
+.lifeHubAiRemoteApprovalActions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.lifeHubAiRemoteApprovalActions button {
+  min-height: 48px;
+  padding: 0 13px;
+  border: 1px solid #c9aa67;
+  border-radius: 9px;
+  background: #fff;
+  color: #644511;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+.lifeHubAiRemoteApprovalActions button.execute { border-color: #0f766e; background: #0f766e; color: #fff; }
+
+.lifeHubAiRemoteResult { border-color: #8bd0c4; border-left-color: #0f9b88; background: #f1fcf9; }
+.lifeHubAiRemoteResult.failed,
+.lifeHubAiRemoteResult.timeout { border-color: #ef9a9a; border-left-color: #dc2626; background: #fff4f4; }
+.lifeHubAiRemoteResult > header span { color: #087868; }
+.lifeHubAiRemoteResult > header em { background: #d7f3ed; color: #08705f; }
+.lifeHubAiRemoteResult.failed > header em,
+.lifeHubAiRemoteResult.timeout > header em { background: #fee2e2; color: #a32323; }
+.lifeHubAiRemoteOutput { min-width: 0; overflow: hidden; border: 1px solid #24334b; border-radius: 9px; background: #0b1220; }
+.lifeHubAiRemoteOutput > strong { display: block; padding: 7px 10px; border-bottom: 1px solid #24334b; color: #7dd3c7; font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.lifeHubAiRemoteOutput.stderr > strong { color: #fca5a5; }
+.lifeHubAiRemoteOutput pre {
+  max-height: 360px;
+  margin: 0;
+  padding: 11px;
+  overflow: auto;
+  color: #e5edf5;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.lifeHubAiRemoteNoOutput { margin: 0; color: #66758a; font-size: 0.74rem; }
+
+.lifeHubAiApprovalList { display: grid; gap: 10px; }
+.lifeHubAiApproval { padding: 14px; border: 1px solid #f0c36f; border-left: 5px solid #f59e0b; border-radius: 12px; background: #fffbeb; }
+.lifeHubAiApproval.high,
+.lifeHubAiApproval.danger,
+.lifeHubAiApproval.critical { border-color: #fca5a5; border-left-color: #dc2626; background: #fff5f5; }
+.lifeHubAiApproval > header { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
+.lifeHubAiApproval > header span { display: block; color: #9a620a; font-size: 0.68rem; font-weight: 900; }
+.lifeHubAiApproval > header strong { display: block; margin-top: 3px; color: #3d2c0d; }
+.lifeHubAiApproval > header em { flex: 0 0 auto; padding: 4px 7px; border-radius: 7px; background: rgba(245, 158, 11, 0.14); color: #8a5505; font-size: 0.67rem; font-style: normal; font-weight: 900; }
+.lifeHubAiApproval dl { display: grid; gap: 5px; margin: 12px 0; }
+.lifeHubAiApproval dl > div { display: grid; grid-template-columns: 108px minmax(0, 1fr); gap: 9px; font-size: 0.75rem; }
+.lifeHubAiApproval dt { color: #7b6a49; font-weight: 800; }
+.lifeHubAiApproval dd { min-width: 0; margin: 0; overflow-wrap: anywhere; color: #3d2c0d; font-weight: 850; }
+.lifeHubAiApprovalActions { display: flex; flex-wrap: wrap; gap: 7px; }
+.lifeHubAiApprovalActions button { min-height: 48px; padding: 0 11px; border: 1px solid #d6ad61; border-radius: 9px; background: #fff; color: #704708; font-size: 0.72rem; font-weight: 900; }
+.lifeHubAiApprovalActions button.danger { margin-left: auto; border-color: #e88e8e; color: #a32323; }
+.lifeHubAiApprovalResult { margin: 8px 0 0; font-size: 0.76rem; font-weight: 900; }
+
+.lifeHubAiCommandList,
+.lifeHubAiFinalResult { padding: 13px; border: 1px solid #e0e7eb; border-radius: 11px; background: #f8fafb; }
+.lifeHubAiCommandList p { display: grid; grid-template-columns: 9px minmax(0, 1fr) auto; align-items: center; gap: 8px; margin: 6px 0 0; }
+.lifeHubAiCommandList p > span { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; }
+.lifeHubAiCommandList p > span.completed { background: #10b981; }
+.lifeHubAiCommandList p > span.failed { background: #ef4444; }
+.lifeHubAiCommandList code { min-width: 0; overflow: hidden; color: #243248; font-size: 0.74rem; text-overflow: ellipsis; white-space: nowrap; }
+.lifeHubAiCommandList em { color: #6c788a; font-size: 0.66rem; font-style: normal; }
+.lifeHubAiFinalResult .lifeHubAiMarkdown { padding: 0; border: 0; background: transparent; }
+
+.lifeHubAiChanges > button { width: 100%; min-height: 46px; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto 20px; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid #dce5e9; border-radius: 10px; background: #fff; color: #203047; text-align: left; font-size: 0.8rem; font-weight: 900; }
+.lifeHubAiChanges > button .memoNavIcon { width: 19px; height: 19px; }
+.lifeHubAiChanges > button span { min-width: 26px; padding: 3px 6px; border-radius: 999px; background: #eaf8f5; color: #0f766e; text-align: center; font-size: 0.68rem; }
+.lifeHubAiDiffList { display: grid; gap: 7px; margin-top: 8px; }
+.lifeHubAiDiffList details { overflow: hidden; border: 1px solid #dce5e9; border-radius: 9px; background: #fff; }
+.lifeHubAiDiffList summary { padding: 10px 12px; color: #203047; font-size: 0.76rem; font-weight: 850; cursor: pointer; overflow-wrap: anywhere; }
+.lifeHubAiDiffList summary span { margin-right: 8px; color: #0f766e; }
+.lifeHubAiDiffList pre { max-height: 420px; margin: 0; padding: 12px; overflow: auto; border-top: 1px solid #dce5e9; background: #111827; color: #e5e7eb; font-size: 0.72rem; }
+
+/* Pairing settings */
+.lifeHubAiPageIntro { display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: start; gap: 12px; padding: 18px; }
+.lifeHubAiBack { width: 44px; padding: 0; }
+.lifeHubAiPageIntro p { margin: 7px 0 0; color: #66758b; font-size: 0.84rem; line-height: 1.55; }
+.lifeHubAiSecurityNotice { grid-template-columns: 30px minmax(0, 1fr) auto; }
+.lifeHubAiSecurityRetry { min-width: 76px; min-height: 44px; padding: 0 11px; border: 1px solid currentColor; border-radius: 10px; background: #fff; color: inherit; font-size: 0.78rem; font-weight: 900; }
+
+.lifeHubAiPairForm { display: grid; gap: 15px; padding: 18px; }
+.lifeHubAiPairForm > header,
+.lifeHubAiPairedList > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.lifeHubAiPairSteps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 12px; list-style: none; border: 1px solid #cfe5e1; border-radius: 13px; background: #f4fbf9; }
+.lifeHubAiPairSteps li { min-width: 0; display: grid; justify-items: center; align-content: start; gap: 7px; color: #3f5368; text-align: center; }
+.lifeHubAiPairSteps strong { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: #0f766e; color: #fff; font-size: 0.78rem; }
+.lifeHubAiPairSteps span { font-size: 0.76rem; font-weight: 800; line-height: 1.45; word-break: keep-all; }
+.lifeHubAiLocalConnectButton { min-height: 52px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 13px; border: 1px solid #0f766e; border-radius: 11px; background: #0f766e; color: #fff; font-size: 0.84rem; font-weight: 900; }
+.lifeHubAiLocalConnectButton .memoNavIcon { width: 20px; height: 20px; }
+.lifeHubAiLocalConnectButton:disabled { border-color: #8aa9a4; background: #8aa9a4; cursor: wait; }
+.lifeHubAiRemotePairing { overflow: hidden; border: 1px solid #d6e0e4; border-radius: 12px; background: #fff; }
+.lifeHubAiRemotePairing[open] { display: grid; gap: 12px; padding-bottom: 12px; }
+.lifeHubAiRemotePairing > summary { min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 12px; color: #415268; font-size: 0.78rem; font-weight: 900; cursor: pointer; list-style: none; }
+.lifeHubAiRemotePairing > summary::-webkit-details-marker { display: none; }
+.lifeHubAiRemotePairing > summary::after { content: "열기"; padding: 4px 7px; border-radius: 999px; background: #edf3f4; color: #526173; font-size: 0.68rem; }
+.lifeHubAiRemotePairing[open] > summary::after { content: "닫기"; }
+.lifeHubAiRemotePairing > :not(summary) { margin-right: 12px; margin-left: 12px; }
+.lifeHubAiAddressGrid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(120px, 0.7fr); gap: 10px; }
+.lifeHubAiAddressGrid.code { grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.2fr); }
+.lifeHubAiPairCode { font-size: 1.2rem !important; font-weight: 900; letter-spacing: 0.24em; text-align: center; }
+.lifeHubAiPairForm input:disabled { background: #f1f5f6; color: #637183; opacity: 1; }
+.lifeHubAiPairForm input[aria-invalid="true"] { border-color: #dc5050; box-shadow: 0 0 0 3px rgba(220, 80, 80, 0.1); }
+.lifeHubAiRequiredPermission { min-height: 62px; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 11px 12px; border: 1px solid #a9dacf; border-radius: 12px; background: #f0fbf8; }
+.lifeHubAiRequiredPermission > .memoNavIcon { width: 25px; height: 25px; color: #0f766e; }
+.lifeHubAiRequiredPermission > span { min-width: 0; display: grid; gap: 3px; }
+.lifeHubAiRequiredPermission strong { color: #183f3a; font-size: 0.82rem; }
+.lifeHubAiRequiredPermission small { color: #536d69; font-size: 0.74rem; line-height: 1.4; }
+.lifeHubAiRequiredPermission em { padding: 5px 8px; border-radius: 999px; background: #d9f3ed; color: #086759; font-size: 0.72rem; font-style: normal; font-weight: 900; }
+.lifeHubAiAdvancedPermissions { overflow: hidden; border: 1px solid #d6e0e4; border-radius: 12px; background: #fff; }
+.lifeHubAiAdvancedPermissions summary { min-height: 50px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 0 12px; color: #33455b; font-size: 0.8rem; font-weight: 900; cursor: pointer; list-style: none; }
+.lifeHubAiAdvancedPermissions summary::-webkit-details-marker { display: none; }
+.lifeHubAiAdvancedPermissions summary small { color: #637386; font-size: 0.72rem; font-weight: 750; }
+.lifeHubAiAdvancedPermissions summary::after { content: "열기"; grid-column: 2; grid-row: 1; padding: 4px 7px; border-radius: 999px; background: #edf3f4; color: #526173; font-size: 0.68rem; }
+.lifeHubAiAdvancedPermissions summary small { grid-column: 1; grid-row: 2; margin: -10px 0 8px; }
+.lifeHubAiAdvancedPermissions[open] summary::after { content: "닫기"; }
+.lifeHubAiPermissions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 12px; border: 1px solid #dce5e9; border-radius: 12px; }
+.lifeHubAiAdvancedPermissions .lifeHubAiPermissions { margin: 0 10px 10px; border-radius: 10px; }
+.lifeHubAiPermissions legend { padding: 0 5px; color: #425269; font-size: 0.76rem; font-weight: 900; }
+.lifeHubAiPermissions label { min-width: 0; display: grid; grid-template-columns: 20px minmax(0, 1fr); align-items: start; gap: 7px; padding: 9px; border: 1px solid #e3e9ed; border-radius: 9px; background: #fafcfd; }
+.lifeHubAiPermissions input { width: 18px; min-height: 18px; margin: 2px 0 0; accent-color: #0f766e; }
+.lifeHubAiPermissions label > span { min-width: 0; display: grid; gap: 3px; }
+.lifeHubAiPermissions strong { color: #203047; font-size: 0.78rem; }
+.lifeHubAiPermissions small { color: #5f6f82; font-size: 0.72rem; line-height: 1.45; }
+.lifeHubAiPermissions:disabled { opacity: 0.65; }
+.lifeHubAiFormNotice { margin: 0; padding: 11px 12px; border: 1px solid #dce5e9; border-radius: 9px; background: #f8fafb; color: #526173; font-size: 0.8rem; line-height: 1.5; }
+.lifeHubAiFormNotice.error { border-color: #fecaca; background: #fff5f5; color: #a32323; }
+.lifeHubAiFormNotice.success { border-color: #bce8dc; background: #effcf8; color: #08705f; }
+.lifeHubAiFormNotice.pending,
+.lifeHubAiFormNotice.progress { border-color: #f1d397; background: #fffbeb; color: #855508; }
+.lifeHubAiPairActions { display: flex; align-items: stretch; gap: 8px; }
+.lifeHubAiPrimaryButton { min-height: 50px; display: inline-flex; flex: 1 1 auto; align-items: center; justify-content: center; gap: 8px; padding: 0 14px; border: 1px solid #0f766e; border-radius: 11px; background: #0f766e; color: #fff; font-weight: 900; }
+.lifeHubAiPrimaryButton .memoNavIcon { width: 20px; height: 20px; }
+.lifeHubAiPrimaryButton:disabled { border-color: #8aa9a4; background: #8aa9a4; cursor: wait; }
+.lifeHubAiSecondaryButton { min-height: 50px; padding: 0 14px; border: 1px solid #c8d4d9; border-radius: 11px; background: #fff; color: #415268; font-size: 0.8rem; font-weight: 900; }
+.lifeHubAiPairHelp { margin: -4px 0 0; color: #5f6f82; font-size: 0.78rem; line-height: 1.55; }
+.lifeHubAiPairHelp code { padding: 2px 5px; border-radius: 5px; background: #edf2f4; color: #334155; }
+.lifeHubAiLanWarning { display: flex; align-items: flex-start; gap: 7px; margin: -4px 0 0; padding: 9px 10px; border: 1px solid #fed7aa; border-radius: 9px; background: #fff8ed; color: #8a4510; font-size: 0.7rem; line-height: 1.45; }
+.lifeHubAiLanWarning .memoNavIcon { width: 17px; height: 17px; flex: 0 0 auto; }
+
+.lifeHubAiPairedList { display: grid; gap: 10px; padding: 18px; }
+.lifeHubAiPairedList > header > strong { min-width: 38px; padding: 5px 8px; border-radius: 999px; background: #eaf8f5; color: #0f766e; font-size: 0.74rem; text-align: center; }
+.lifeHubAiPairedList article { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 8px; border: 1px solid #dce5e9; border-radius: 11px; background: #fafcfd; }
+.lifeHubAiPairedList article.selected { border-color: #aadbd3; background: #f0fbf8; }
+.lifeHubAiPcSelect { min-width: 0; min-height: 54px; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 5px 8px; border: 0; background: transparent; color: #203047; text-align: left; }
+.lifeHubAiPcSelect .memoNavIcon { width: 25px; height: 25px; color: #0f766e; }
+.lifeHubAiPcSelect > span { min-width: 0; display: grid; gap: 2px; }
+.lifeHubAiPcSelect strong,
+.lifeHubAiPcSelect small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lifeHubAiPcSelect small { color: #5f6f82; font-size: 0.75rem; }
+.lifeHubAiPcSelect em { color: #0f766e; font-size: 0.7rem; font-style: normal; font-weight: 900; }
+.lifeHubAiRevoke { min-height: 44px; align-self: center; padding: 0 10px; border: 1px solid #efb5b5; border-radius: 9px; background: #fff; color: #a32323; font-size: 0.74rem; font-weight: 900; }
+.lifeHubAiEmptyCompact { display: grid; place-items: center; gap: 6px; padding: 26px; color: #66758b; text-align: center; }
+.lifeHubAiEmptyCompact .memoNavIcon { width: 30px; height: 30px; color: #94a3b8; }
+.lifeHubAiEmptyCompact p { margin: 0; font-size: 0.75rem; }
+
+@media (max-width: 1100px) {
+  .lifeHubAiWorkArea.app-editor { grid-template-columns: minmax(0, 1fr); }
+  .lifeHubAiWorkArea.app-editor .lifeHubAiDevPanel { position: static; max-height: none; overflow: visible; }
+}
+
+@media (max-width: 760px) {
+  .lifeHubRoot .lifeHubBottomNav {
+    grid-template-columns: repeat(6, minmax(44px, 1fr));
+  }
+
+  .lifeHubAiHomeCard {
+    grid-template-columns: 48px minmax(0, 1fr);
+    grid-template-areas:
+      "icon copy"
+      "status status"
+      "actions actions";
+    padding: 17px;
+  }
+
+  .lifeHubAiHomeIcon { width: 48px; height: 48px; border-radius: 14px; }
+  .lifeHubAiHomeIcon .memoNavIcon { width: 25px; height: 25px; }
+  .lifeHubAiHomeStatus > div { grid-template-columns: 88px minmax(0, 1fr); }
+  .lifeHubAiHomeStatus dd { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
+
+  .lifeHubAiChatHeader { align-items: flex-start; flex-direction: column; }
+  .lifeHubAiHeaderActions { width: 100%; justify-content: flex-start; }
+  .lifeHubAiHeaderActions .lifeHubAiStatusPill { order: -1; width: 100%; max-width: none; }
+  .lifeHubAiHeaderActions > button:last-child { margin-left: auto; }
+  .lifeHubAiControls,
+  .lifeHubAiControls.app-editor { grid-template-columns: 1fr; align-items: stretch; }
+  .lifeHubAiTurnPermissionGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lifeHubAiApprovalPlan textarea { font-size: 16px; }
+  .lifeHubAiConnectionBanner { grid-template-columns: 28px minmax(0, 1fr); }
+  .lifeHubAiConnectionBanner > button { grid-column: 1 / -1; }
+
+  .lifeHubAiWorkspace { position: relative; min-height: min(640px, calc(var(--lifehub-ai-viewport-height, 100dvh) - 190px)); display: block; overflow: visible; }
+  .lifeHubAiConversation { min-height: min(640px, calc(var(--lifehub-ai-viewport-height, 100dvh) - 190px)); }
+  .lifeHubAiHistory { position: absolute; inset: 0; z-index: 20; display: none; border: 0; border-radius: 18px; }
+  .lifeHubAiWorkspace.history-open .lifeHubAiHistory { display: flex; }
+  .lifeHubAiHistory > header button { display: grid; }
+  .lifeHubAiChatPage { padding-bottom: 86px; }
+  .lifeHubAiMessages { padding: 16px 12px 96px; }
+  .lifeHubAiMessage { width: 94%; }
+  .lifeHubAiComposer {
+    position: fixed;
+    right: auto;
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    left: 50%;
+    width: min(calc(100% - 20px), 720px);
+    padding: 9px;
+    border: 1px solid #dce5e9;
+    border-radius: 15px 15px 0 0;
+    box-shadow: 0 -10px 26px rgba(15, 23, 42, 0.08);
+    transform: translateX(-50%);
+  }
+  .lifeHubAiComposer > button { min-width: 72px; padding: 0 10px; }
+  .lifeHubAiComposer > small { display: none; }
+
+  .lifeHubAiDevFacts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lifeHubAiRemoteForm input { font-size: 16px; }
+  .lifeHubAiApproval dl > div { grid-template-columns: 1fr; gap: 2px; }
+  .lifeHubAiApprovalActions button { flex: 1 1 130px; }
+  .lifeHubAiApprovalActions button.danger { margin-left: 0; }
+
+  .lifeHubAiAddressGrid,
+  .lifeHubAiAddressGrid.code { grid-template-columns: 1fr; }
+  .lifeHubAiPermissions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 480px) {
+  .lifeHubHomeGreeting {
+    min-height: 0;
+    padding: 18px;
+  }
+
+  .lifeHubHomeGreeting > .lifeHubPackIcon { display: none; }
+  .lifeHubHomeGreeting h2 { font-size: 1.28rem; }
+  .lifeHubHomeGreeting p { font-size: 0.8rem; }
+  .lifeHubWeeklyStats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lifeHubWeeklyStats button { min-height: 96px; }
+  .lifeHubAiHomeActions { display: grid; grid-template-columns: 1fr; }
+  .lifeHubAiHomeActions button { width: 100%; }
+
+  .lifeHubRoute-ai > .lifeHubApp { width: min(100%, 470px); padding: max(10px, env(safe-area-inset-top)) 10px calc(98px + env(safe-area-inset-bottom)); }
+  .lifeHubAiChatPage,
+  .lifeHubAiSettingsPage { gap: 10px; }
+  .lifeHubAiChatHeader,
+  .lifeHubAiControls,
+  .lifeHubAiPairForm,
+  .lifeHubAiPairedList,
+  .lifeHubAiDevPanel { border-radius: 15px; }
+  .lifeHubAiChatHeader { padding: 12px; }
+  .lifeHubAiHeaderActions > button { flex: 1 1 auto; }
+  .lifeHubAiHeaderActions > button:last-child { flex: 0 0 42px; margin-left: 0; }
+  .lifeHubAiModeSwitch button { min-height: 44px; padding: 0 7px; font-size: 0.76rem; }
+  .lifeHubAiPageIntro { padding: 14px; }
+  .lifeHubAiPageIntro p { font-size: 0.78rem; }
+  .lifeHubAiSecurityNotice { padding: 11px; }
+  .lifeHubAiPairForm { padding: 14px; }
+  .lifeHubAiPairForm > header { align-items: flex-start; }
+  .lifeHubAiPairForm > header .lifeHubAiStatusPill { max-width: 150px; }
+  .lifeHubAiPairForm input { font-size: 16px; }
+  .lifeHubAiPairSteps { gap: 5px; padding: 10px 6px; }
+  .lifeHubAiPairSteps span { font-size: 0.75rem; }
+  .lifeHubAiRequiredPermission { grid-template-columns: 25px minmax(0, 1fr) auto; gap: 8px; padding: 10px; }
+  .lifeHubAiRequiredPermission small { font-size: 0.7rem; }
+  .lifeHubAiAdvancedPermissions summary { padding-inline: 10px; }
+  .lifeHubAiPairActions { display: grid; grid-template-columns: 1fr; }
+  .lifeHubAiPrimaryButton,
+  .lifeHubAiSecondaryButton { width: 100%; }
+  .lifeHubAiSecurityNotice { grid-template-columns: 28px minmax(0, 1fr); }
+  .lifeHubAiSecurityRetry { grid-column: 1 / -1; width: 100%; }
+  .lifeHubAiPermissions { grid-template-columns: 1fr; }
+  .lifeHubAiTurnPermissionGrid,
+  .lifeHubAiApprovalPlan { grid-template-columns: 1fr; }
+  .lifeHubAiPairedList article { grid-template-columns: 1fr; }
+  .lifeHubAiRevoke { width: 100%; }
+  .lifeHubAiDevFacts { grid-template-columns: 1fr; }
+  .lifeHubAiWorkArea.app-editor .lifeHubAiDevFacts { grid-template-columns: 1fr; }
+  .lifeHubAppEditorResultFacts { grid-template-columns: 1fr; }
+  .lifeHubAiRemoteTerminal { padding: 12px; }
+  .lifeHubAiRemoteTerminal > header { align-items: center; }
+  .lifeHubAiRemotePresets { display: grid; grid-template-columns: 1fr; }
+  .lifeHubAiRemotePresets button { width: 100%; min-height: 44px; }
+  .lifeHubAiRemoteForm > div { grid-template-columns: 24px minmax(0, 1fr); }
+  .lifeHubAiRemoteForm button { grid-column: 1 / -1; min-height: 48px; border-top: 1px solid #3a4a61; border-left: 0; }
+  .lifeHubAiRemoteApprovalFacts,
+  .lifeHubAiRemoteGitFacts,
+  .lifeHubAiRemoteResult > dl { grid-template-columns: 1fr; }
+  .lifeHubAiRemoteApprovalActions { display: grid; grid-template-columns: 1fr; }
+  .lifeHubAiRemoteApprovalActions button { width: 100%; }
+  .lifeHubAiComposer > button.stop { min-width: 92px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lifeHubAiStatusPill i,
+  .lifeHubAiTyping i { animation: none !important; }
+}

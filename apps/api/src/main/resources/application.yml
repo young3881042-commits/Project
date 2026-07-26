@@ -1,0 +1,76 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mariadb://${DB_HOST:mariadb}:${DB_PORT:3306}/${DB_NAME:jupiter_web}
+    username: ${DB_USER:jupiter}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+  sql:
+    init:
+      mode: never
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+app:
+  namespace: ${APP_NAMESPACE:jupiter}
+  registry: ${APP_REGISTRY:registry.example.com}
+  base-image: ${APP_BASE_IMAGE:registry.example.com/jupiter/base:latest}
+  jupyter-url: ${APP_JUPYTER_URL:http://localhost:30888}
+  frontend-url: ${APP_FRONTEND_URL:http://localhost:5173}
+  api-url: ${APP_API_URL:http://localhost:8080/api}
+  gateway-url: ${APP_GATEWAY_URL:http://localhost:8080}
+  launcher-url: ${APP_LAUNCHER_URL:https://launcher.example.com}
+  adminer-url: ${APP_ADMINER_URL:http://localhost:31081}
+  artifact-registry-url: ${APP_ARTIFACT_REGISTRY_URL:}
+  artifact-registry-username: ${APP_ARTIFACT_REGISTRY_USERNAME:}
+  artifact-registry-password: ${APP_ARTIFACT_REGISTRY_PASSWORD:}
+  kafka-url: ${APP_KAFKA_URL:http://localhost:31082}
+  elk-url: ${APP_ELK_URL:}
+  pypi-proxy-url: ${APP_PYPI_PROXY_URL:}
+  pypi-proxy-host: ${APP_PYPI_PROXY_HOST:}
+  external-host: ${APP_EXTERNAL_HOST:jupiter.example.com}
+  notebook-user: ${APP_NOTEBOOK_USER:jovyan}
+  mariadb-url: ${APP_MARIADB_URL:mariadb:3306/jupiter_web}
+  mariadb-username: ${APP_MARIADB_USERNAME:jupiter}
+  mariadb-password: ${APP_MARIADB_PASSWORD:${DB_PASSWORD:}}
+  workspace-node: ${APP_WORKSPACE_NODE:node02}
+  assistant-data-root: ${APP_ASSISTANT_DATA_ROOT:/data/ai-assistant}
+  conversation-root: ${APP_CONVERSATION_ROOT:/data/ai-assistant/conversations}
+  workspace-root: ${APP_WORKSPACE_ROOT:/data/ai-assistant/workspace}
+  snapshot-root: ${APP_SNAPSHOT_ROOT:/snapshots}
+  rag-root: ${APP_RAG_ROOT:/tmp/jupiter-rag}
+  rag-source-root: ${APP_RAG_SOURCE_ROOT:/tmp/jupiter-rag/source}
+  qdrant-url: ${APP_QDRANT_URL:http://qdrant:6333}
+  rag-collection: ${APP_RAG_COLLECTION:jupiter-rag}
+  rag-embedding-dimensions: ${APP_RAG_EMBEDDING_DIMENSIONS:128}
+  rag-weather-enabled: ${APP_RAG_WEATHER_ENABLED:true}
+  weather-api-base-url: ${APP_WEATHER_API_BASE_URL:https://api.open-meteo.com/v1/forecast}
+  weather-locations: ${APP_WEATHER_LOCATIONS:Seoul:37.5665,126.9780;Busan:35.1796,129.0756;Incheon:37.4563,126.7052;Jeju:33.4996,126.5312;Gangneung:37.7519,128.8761}
+  kakao-rest-api-key: ${APP_KAKAO_REST_API_KEY:}
+  tour-api:
+    base-url: ${APP_TOUR_API_BASE_URL:https://apis.data.go.kr/B551011/KorService2}
+    service-key: ${APP_TOUR_API_SERVICE_KEY:}
+  codex-api-base-url: ${APP_CODEX_API_BASE_URL:https://api.openai.com/v1}
+  codex-model: ${APP_CODEX_MODEL:gpt-5.5}
+  codex-cli-path: ${APP_CODEX_CLI_PATH:/opt/jupiter-cli/bin/codex}
+  codex-cli-bin-dir: ${APP_CODEX_CLI_BIN_DIR:/opt/jupiter-cli/bin}
+  gemini-api-key: ${APP_GEMINI_API_KEY:}
+  open-ai-api-key: ${APP_OPENAI_API_KEY:${OPENAI_API_KEY:}}
+  open-ai-model: ${APP_OPENAI_MODEL:${OPENAI_MODEL:gpt-4.1-mini}}
+  grok-api-key: ${APP_GROK_API_KEY:}
+  python-timeout-seconds: ${APP_PYTHON_TIMEOUT_SECONDS:120}
+  enable-codex-cli-mode: ${ENABLE_CODEX_CLI_MODE:false}
+  enable-travel-plan-codex-cli-mode: ${ENABLE_TRAVEL_PLAN_CODEX_CLI_MODE:false}
+  gemini-oauth-client-id: ${APP_GEMINI_OAUTH_CLIENT_ID:}
+  gemini-oauth-client-secret: ${APP_GEMINI_OAUTH_CLIENT_SECRET:}
+  gemini-oauth-redirect-uri: ${APP_GEMINI_OAUTH_REDIRECT_URI:}

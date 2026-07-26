@@ -1,0 +1,21 @@
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: jupiter-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD in .env before starting Docker Compose}
+      MARIADB_DATABASE: jupiter_web
+      MARIADB_USER: jupiter
+      MARIADB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env before starting Docker Compose}
+    ports:
+      - "3306:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  mariadb_data:

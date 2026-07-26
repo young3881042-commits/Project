@@ -1,0 +1,118 @@
+.loginShell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.loginCard {
+  width: min(440px, 100%);
+  display: grid;
+  gap: 16px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(22, 27, 34, 0.92);
+  box-shadow: var(--shadow);
+}
+
+.loginCard h1 {
+  font-size: 1.6rem;
+  line-height: 1.15;
+}
+
+.loginCard p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.loginField {
+  display: grid;
+  gap: 8px;
+}
+
+.providerButtons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.providerButton {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ink);
+  text-align: left;
+}
+
+.providerButton.disabled {
+  color: var(--muted);
+  opacity: 0.65;
+}
+
+.loginField span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.loginField input,
+.loginButton {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 16px;
+}
+
+.loginField input {
+  border: 1px solid var(--line);
+  background: rgba(9, 12, 17, 0.76);
+  color: var(--ink);
+}
+
+.loginButton {
+  border: 1px solid rgba(124, 198, 255, 0.35);
+  background: linear-gradient(180deg, rgba(124, 198, 255, 0.22), rgba(74, 163, 240, 0.14));
+  color: #fff;
+}
+
+.loginButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.loginHint {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.loginHint strong {
+  font-size: 0.96rem;
+}
+
+.loginHint a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.authSwitch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.authSwitch button {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+}
+
+.authSwitch button.active {
+  color: var(--ink);
+  background: rgba(124, 198, 255, 0.1);
+}

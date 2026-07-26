@@ -1,0 +1,546 @@
+/* LocalTrip visual quality pass */
+.ltShell {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.ltHeroCopy h1,
+.ltPageTitle h1,
+.ltSectionHeader h2 {
+  text-wrap: balance;
+}
+
+.ltDestinationCard,
+.ltPlanCard,
+.ltDayCard,
+.ltPlannerForm,
+.ltFilterBar {
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.ltDestinationPhoto img,
+.ltHeroImage {
+  filter: saturate(1.04) contrast(1.02);
+}
+
+.ltCardTopline > span:first-child,
+.ltDayCardHeader > div > span,
+.ltTimelineDayHeader span {
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #e8f5f3;
+  color: #0f766e;
+}
+
+.ltTextButton {
+  width: fit-content;
+}
+
+.ltPrimaryButton:disabled,
+.ltPlannerForm button[type="submit"]:disabled {
+  border-color: #cad5e2;
+  background: #dbe3ee;
+  color: #7b8794;
+  cursor: not-allowed;
+}
+
+@media (max-width: 760px) {
+  .ltNav {
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+  }
+
+  .ltNavLinks a.active {
+    background: #0f766e;
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(15, 118, 110, 0.24);
+  }
+
+  .ltHeroCopy {
+    display: grid;
+    justify-items: start;
+  }
+
+  .ltHeroCopy h1 {
+    max-width: 10.5em;
+  }
+
+  .ltHeroVisual {
+    padding: 0;
+  }
+
+  .ltHeroImage::after {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.34));
+  }
+
+  .ltHeroPanel {
+    border-color: rgba(203, 213, 225, 0.78);
+    background: rgba(255, 255, 255, 0.96);
+  }
+
+  .ltDestinationCard,
+  .ltPlanCard {
+    overflow: hidden;
+  }
+
+  .ltPlannerLayout {
+    gap: 14px;
+  }
+
+  .ltPlannerPreview {
+    border-style: dashed;
+    background: #fbfdff;
+  }
+}
+
+/* LocalTrip MyPage and mobile navigation */
+.ltNavInner {
+  min-width: 0;
+}
+
+.ltBrand,
+.ltNavAction {
+  min-width: 0;
+}
+
+.ltNavAction {
+  max-width: 240px;
+  gap: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ltNavAction svg {
+  flex: 0 0 auto;
+}
+
+.ltMyHero,
+.ltMyPanel {
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(17, 24, 39, 0.06);
+}
+
+.ltMyHero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: center;
+  padding: 26px;
+}
+
+.ltMyAvatar {
+  width: 72px;
+  height: 72px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 18px;
+  background: #12343b;
+  color: #ffffff;
+  font-size: 1.6rem;
+  font-weight: 900;
+}
+
+.ltMyHeroText {
+  min-width: 0;
+}
+
+.ltMyHeroText h1 {
+  margin: 0 0 8px;
+  color: #111827;
+  font-size: 2rem;
+  line-height: 1.16;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.ltMyHeroText p {
+  max-width: 620px;
+  margin: 0;
+  color: #526071;
+  line-height: 1.68;
+}
+
+.ltMyActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ltMyStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.ltMyGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.75fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.ltMyPanel {
+  min-width: 0;
+  padding: 22px;
+}
+
+.ltSectionHeader.compact {
+  margin: 0 0 16px;
+}
+
+.ltSectionHeader.compact h2 {
+  font-size: 1.25rem;
+}
+
+.ltMyPlanList {
+  display: grid;
+  gap: 12px;
+}
+
+.ltProfileList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.ltProfileList div {
+  display: grid;
+  grid-template-columns: minmax(92px, auto) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.ltProfileList dt {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.ltProfileList dd {
+  min-width: 0;
+  margin: 0;
+  color: #17202f;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.ltProfileList a {
+  color: #0f766e;
+}
+
+.ltMyShortcutList {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.ltMyShortcutList button {
+  min-height: 46px;
+  width: 100%;
+  padding: 0 14px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #243041;
+  font-weight: 900;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ltMyShortcutList button:hover {
+  border-color: #99f6e4;
+  background: #ecfeff;
+  color: #0f766e;
+}
+
+.ltMemberLoginForm {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 0 0 18px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.ltLoginPage {
+  display: grid;
+  align-items: start;
+}
+
+.ltLoginPanel {
+  width: min(520px, 100%);
+  display: grid;
+  gap: 20px;
+  margin: clamp(24px, 7vh, 72px) auto 0;
+  padding: clamp(20px, 4vw, 32px);
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 46px rgba(15, 23, 42, 0.08);
+}
+
+.ltLoginPanel .ltMemberLoginForm {
+  margin: 0;
+  padding: 0;
+  border-bottom: 0;
+}
+
+.ltMemberLoginForm label {
+  display: grid;
+  gap: 6px;
+}
+
+.ltMemberLoginForm label span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.ltMemberLoginForm input {
+  min-height: 44px;
+  width: 100%;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 0 12px;
+  color: #17202f;
+  font: inherit;
+  font-weight: 800;
+}
+
+.ltMemberLoginForm input:focus {
+  outline: 3px solid rgba(15, 118, 110, 0.18);
+  border-color: #0f766e;
+}
+
+.ltAuthError {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .ltMyHero {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .ltMyActions {
+    grid-column: 1 / -1;
+    justify-content: stretch;
+  }
+
+  .ltMyActions .ltPrimaryButton,
+  .ltMyActions .ltSecondaryButton {
+    flex: 1 1 180px;
+  }
+
+  .ltMyStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ltMyGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .ltShell {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom));
+  }
+
+  .ltNavInner {
+    gap: 8px;
+  }
+
+  .ltBrand {
+    flex: 0 1 auto;
+  }
+
+  .ltBrand span {
+    max-width: 112px;
+  }
+
+  .ltNavAction {
+    max-width: min(44vw, 180px);
+    padding-inline: 10px;
+  }
+
+  .ltNavLinks {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    left: 8px;
+    right: 8px;
+    padding: 6px;
+  }
+
+  .ltNavLinks a {
+    min-width: 0;
+    min-height: 46px;
+    padding: 6px 3px;
+    font-size: 0.74rem;
+    line-height: 1.15;
+    white-space: normal;
+    word-break: keep-all;
+  }
+
+  .ltMyHero {
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .ltMyAvatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    font-size: 1.18rem;
+  }
+
+  .ltMyHeroText .ltEyebrow {
+    margin-bottom: 6px;
+  }
+
+  .ltMyHeroText h1 {
+    margin-bottom: 6px;
+    font-size: 1.38rem;
+  }
+
+  .ltMyHeroText p {
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .ltMyActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .ltMyActions .ltPrimaryButton,
+  .ltMyActions .ltSecondaryButton {
+    min-width: 0;
+    padding-inline: 10px;
+    font-size: 0.84rem;
+  }
+
+  .ltMyStats {
+    gap: 8px;
+    margin: 12px 0;
+  }
+
+  .ltMyStats .ltFactItem {
+    min-width: 0;
+    padding: 14px;
+    border-radius: 8px;
+  }
+
+  .ltMyStats .ltFactItem span {
+    font-size: 0.68rem;
+  }
+
+  .ltMyStats .ltFactItem strong {
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+  }
+
+  .ltMyGrid {
+    gap: 12px;
+  }
+
+  .ltMyPanel {
+    padding: 16px;
+  }
+
+  .ltSectionHeader.compact {
+    align-items: center;
+    flex-direction: row;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .ltSectionHeader.compact h2 {
+    font-size: 1.12rem;
+  }
+
+  .ltSectionHeader.compact .ltTextButton {
+    flex: 0 0 auto;
+  }
+
+  .ltMyPlanList .ltPlanCard {
+    padding: 14px;
+  }
+
+  .ltProfileList div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 10px 0;
+  }
+
+  .ltMyShortcutList {
+    gap: 7px;
+    margin-top: 14px;
+  }
+
+  .ltMyShortcutList button {
+    min-height: 44px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 420px) {
+  .ltBrand span {
+    max-width: 84px;
+  }
+
+  .ltNavAction {
+    max-width: 42vw;
+    min-height: 36px;
+    font-size: 0.78rem;
+  }
+
+  .ltNavAction svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .ltNavLinks {
+    left: 6px;
+    right: 6px;
+  }
+
+  .ltNavLinks a {
+    min-height: 44px;
+    font-size: 0.68rem;
+  }
+
+  .ltMyHero {
+    grid-template-columns: 44px minmax(0, 1fr);
+    padding: 14px;
+  }
+
+  .ltMyAvatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 1rem;
+  }
+
+  .ltMyHeroText h1 {
+    font-size: 1.2rem;
+  }
+
+  .ltMyActions {
+    grid-template-columns: 1fr;
+  }
+
+  .ltMyStats {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,1138 @@
+/* Shared mobile app shell */
+:root {
+  --mobile-primary: #0f766e;
+  --mobile-primary-strong: #0f5f59;
+  --mobile-primary-soft: #ccfbf1;
+  --mobile-bg: #f8fafc;
+  --mobile-card: #ffffff;
+  --mobile-text: #0f172a;
+  --mobile-body: #334155;
+  --mobile-muted: #64748b;
+  --mobile-line: #e2e8f0;
+  --mobile-radius: 22px;
+  --mobile-radius-sm: 16px;
+  --mobile-nav-height: 76px;
+}
+
+#root {
+  width: min(100%, 480px) !important;
+  background: var(--mobile-bg) !important;
+}
+
+body:has(.mobilePageShell) {
+  background: var(--mobile-bg) !important;
+}
+
+.mobilePageShell,
+.mobilePageShell * {
+  box-sizing: border-box;
+  letter-spacing: 0;
+}
+
+.mobilePageShell {
+  width: min(100%, 480px) !important;
+  max-width: 480px !important;
+  min-height: 100dvh !important;
+  margin: 0 auto !important;
+  display: block !important;
+  padding: 12px 16px calc(var(--mobile-nav-height) + 36px + env(safe-area-inset-bottom)) !important;
+  overflow-x: hidden;
+  background: var(--mobile-bg) !important;
+  color: var(--mobile-text) !important;
+  font-family: "Pretendard", "SUIT", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+.mobilePageShellNoNav {
+  padding-bottom: calc(22px + env(safe-area-inset-bottom)) !important;
+}
+
+.mobilePageContent {
+  min-width: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.mobilePageHeader {
+  min-height: 60px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0 16px;
+}
+
+.mobilePageHeaderTitle {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.mobilePageHeader:not(.hasBack) .mobilePageHeaderTitle {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.mobilePageBackButton,
+.mobilePageHeaderIcon,
+.mobilePageProfileCard > span {
+  display: grid;
+  place-items: center;
+}
+
+.mobilePageBackButton,
+.mobilePageHeaderIcon {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--mobile-line);
+  border-radius: 14px;
+  background: #ffffff;
+  color: var(--mobile-primary);
+}
+
+.mobilePageBackButton {
+  padding: 0;
+  font: inherit;
+}
+
+.mobilePageHeaderIcon .memoNavIcon,
+.mobilePageBackButton .memoNavIcon {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  background: transparent;
+  color: currentColor;
+}
+
+.mobilePageHeaderTitle div {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+}
+
+.mobilePageHeaderTitle h1 {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mobile-text);
+  font-size: 1.26rem;
+  line-height: 1.05;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobilePageHeaderTitle small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mobile-muted);
+  font-size: 0.76rem;
+  line-height: 1.2;
+  font-weight: 780;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobilePageProfileCard {
+  width: min(136px, 38vw);
+  min-width: 0;
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  grid-template-areas:
+    "avatar name"
+    "avatar meta";
+  align-items: center;
+  column-gap: 8px;
+  border: 1px solid var(--mobile-line);
+  border-radius: 16px;
+  background: #ffffff;
+  color: var(--mobile-text);
+  padding: 6px 9px;
+  text-align: left;
+  font: inherit;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.mobilePageProfileCard > span {
+  grid-area: avatar;
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+  background: var(--mobile-primary);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 950;
+}
+
+.mobilePageProfileCard strong,
+.mobilePageProfileCard small {
+  min-width: 0;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobilePageProfileCard strong {
+  grid-area: name;
+  font-size: 0.82rem;
+  line-height: 1.1;
+  font-weight: 950;
+}
+
+.mobilePageProfileCard small {
+  grid-area: meta;
+  color: var(--mobile-muted);
+  font-size: 0.7rem;
+  line-height: 1.1;
+  font-weight: 850;
+}
+
+.mobilePageShell .mobileWorkspaceTabs {
+  position: fixed !important;
+  right: auto !important;
+  bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+  left: 50% !important;
+  z-index: 240 !important;
+  width: min(calc(100% - 32px), 448px) !important;
+  height: var(--mobile-nav-height) !important;
+  min-height: var(--mobile-nav-height) !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 4px !important;
+  padding: 8px !important;
+  border: 1px solid rgba(226, 232, 240, 0.94) !important;
+  border-radius: 24px !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.16) !important;
+  transform: translateX(-50%) !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+.mobilePageShell .mobileWorkspaceTabButton {
+  min-width: 0 !important;
+  min-height: 56px !important;
+  display: grid !important;
+  place-items: center !important;
+  align-content: center !important;
+  gap: 3px !important;
+  border: 1px solid transparent !important;
+  border-radius: 18px !important;
+  background: transparent !important;
+  color: var(--mobile-muted) !important;
+  padding: 4px 2px !important;
+  font: inherit !important;
+  font-size: 0.68rem !important;
+  line-height: 1.05 !important;
+  font-weight: 850 !important;
+}
+
+.mobilePageShell .mobileWorkspaceTabButton .memoNavIcon {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  background: transparent !important;
+  color: currentColor !important;
+}
+
+.mobilePageShell .mobileWorkspaceTabButton.active {
+  border-color: #99f6e4 !important;
+  background: #ecfdf5 !important;
+  color: var(--mobile-primary) !important;
+}
+
+.mobilePageShell .spaceAppFrame.appHomeDashboard,
+.mobilePageShell .ltPage {
+  width: 100% !important;
+  min-height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.mobilePageShell .appHomeHeader,
+.mobilePageShell .ltTravelStartHeader {
+  display: none !important;
+}
+
+.mobilePageShell .appHomeCard,
+.mobilePageShell .moreFeatureCard,
+.mobilePageShell .utilityPageCard,
+.mobilePageShell .notesDetailPanel,
+.mobilePageShell .notesMobileFileSection,
+.mobilePageShell .schedulerQuickAdd,
+.mobilePageShell .schedulerLinkedSchedule,
+.mobilePageShell .schedulerCalendarPanel,
+.mobilePageShell .schedulerList,
+.mobilePageShell .ltTravelSearchPanel {
+  border: 1px solid var(--mobile-line) !important;
+  border-radius: var(--mobile-radius) !important;
+  background: var(--mobile-card) !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06) !important;
+}
+
+.mobilePageShell h1 {
+  font-size: clamp(1.75rem, 8vw, 2rem);
+  line-height: 1.12;
+}
+
+.mobilePageShell h2,
+.mobilePageShell .appHomeCardHeader strong,
+.mobilePageShell .schedulerLinkedHeader h2,
+.mobilePageShell .schedulerCalendarHeader h2,
+.mobilePageShell .schedulerBoardHeader h2 {
+  color: var(--mobile-text) !important;
+  font-size: 1.22rem !important;
+  line-height: 1.2 !important;
+  font-weight: 950 !important;
+}
+
+.mobilePageShell p,
+.mobilePageShell small,
+.mobilePageShell span {
+  letter-spacing: 0;
+}
+
+/* Home and more */
+.mobilePageShell .appHomeRobotHero {
+  min-height: 112px !important;
+  margin-bottom: 12px !important;
+  padding: 16px !important;
+  border-radius: var(--mobile-radius) !important;
+}
+
+.mobilePageShell .appHomeRobotHeroCopy p {
+  font-size: 0.92rem !important;
+}
+
+.mobilePageShell .appHomeScheduleProgress {
+  padding: 10px 12px !important;
+  border-radius: var(--mobile-radius-sm) !important;
+}
+
+.mobilePageShell .appHomeScheduleRow {
+  min-height: 46px !important;
+  border-radius: var(--mobile-radius-sm) !important;
+}
+
+.mobilePageShell .moreFeatureCard {
+  padding: 14px !important;
+}
+
+.mobilePageShell .moreFeatureList {
+  gap: 8px !important;
+}
+
+.mobilePageShell .moreFeatureList button {
+  min-height: 72px !important;
+  border-radius: 18px !important;
+}
+
+.mobilePageShell .moreFeatureList button.pending {
+  border-color: #e2e8f0 !important;
+  background: #f8fafc !important;
+  color: #334155 !important;
+  opacity: 0.82;
+}
+
+.mobilePageShell .moreFeatureList button.pending > span {
+  background: #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+.mobilePageShell .moreFeatureList button.pending small {
+  color: #475569 !important;
+}
+
+.mobilePageShell .moreFeatureList button.pending em {
+  background: #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+/* Compact utility pages */
+.mobilePageShell .utilityPageDashboard {
+  width: min(100%, 720px);
+  margin: 0 auto;
+  display: grid;
+  gap: 12px;
+}
+
+.mobilePageShell .utilityStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mobilePageShell .utilityStat {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  padding: 12px 10px;
+  border: 1px solid var(--mobile-line);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+}
+
+.mobilePageShell .utilityStat span,
+.mobilePageShell .utilityField span,
+.mobilePageShell .utilitySectionHeader small,
+.mobilePageShell .utilityStatusText,
+.mobilePageShell .utilityEmptyText,
+.mobilePageShell .accountDetailList dt {
+  color: var(--mobile-muted);
+  font-size: 0.74rem;
+  line-height: 1.2;
+  font-weight: 850;
+}
+
+.mobilePageShell .utilityStat strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mobile-text);
+  font-size: 0.95rem;
+  line-height: 1.15;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobilePageShell .utilityStat.income strong,
+.mobilePageShell .utilityLogRow em.deposit {
+  color: #047857;
+}
+
+.mobilePageShell .utilityStat.expense strong,
+.mobilePageShell .utilityLogRow em.withdraw {
+  color: #be123c;
+}
+
+.mobilePageShell .utilityStat.balance strong {
+  color: #0369a1;
+}
+
+.mobilePageShell .utilityPageCard {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.mobilePageShell .utilityForm {
+  align-content: start;
+}
+
+.mobilePageShell .utilitySegment {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border-radius: 16px;
+  background: #f1f5f9;
+}
+
+.mobilePageShell .utilitySegment button,
+.mobilePageShell .utilityPrimaryButton,
+.mobilePageShell .utilitySecondaryButton,
+.mobilePageShell .workoutTemplateCard button {
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.mobilePageShell .utilitySegment button {
+  background: transparent;
+  color: var(--mobile-muted);
+}
+
+.mobilePageShell .utilitySegment button.active {
+  border-color: #99f6e4;
+  background: #ffffff;
+  color: var(--mobile-primary);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+.mobilePageShell .utilityFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mobilePageShell .utilityField {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.mobilePageShell .utilityField.full {
+  grid-column: 1 / -1;
+}
+
+.mobilePageShell .utilityField input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid var(--mobile-line);
+  border-radius: 14px;
+  background: #ffffff;
+  color: var(--mobile-text);
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.mobilePageShell .utilityField input:focus {
+  outline: 2px solid #99f6e4;
+  outline-offset: 1px;
+  border-color: var(--mobile-primary);
+}
+
+.mobilePageShell .utilityPrimaryButton {
+  background: var(--mobile-primary);
+  color: #ffffff;
+}
+
+.mobilePageShell .utilitySecondaryButton {
+  border-color: var(--mobile-line);
+  background: #ffffff;
+  color: var(--mobile-text);
+}
+
+.mobilePageShell .utilityActionRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mobilePageShell .utilityStatusText,
+.mobilePageShell .utilityEmptyText {
+  margin: 0;
+}
+
+.mobilePageShell .utilitySectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mobilePageShell .utilitySectionHeader strong {
+  color: var(--mobile-text);
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.mobilePageShell .utilityRecentList,
+.mobilePageShell .workoutTemplateList {
+  display: grid;
+  gap: 8px;
+}
+
+.mobilePageShell .utilityLogRow,
+.mobilePageShell .workoutTemplateCard {
+  min-width: 0;
+  display: grid;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.mobilePageShell .budgetLogRow {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+
+.mobilePageShell .workoutLogRow {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.mobilePageShell .utilityLogBadge {
+  width: 42px;
+  min-width: 42px;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.74rem;
+  font-weight: 950;
+}
+
+.mobilePageShell .utilityLogBadge.deposit {
+  background: #dcfce7;
+  color: #047857;
+}
+
+.mobilePageShell .utilityLogBadge.withdraw {
+  background: #ffe4e6;
+  color: #be123c;
+}
+
+.mobilePageShell .utilityLogBadge.workout {
+  background: #ecfdf5;
+  color: var(--mobile-primary);
+}
+
+.mobilePageShell .utilityLogRow div,
+.mobilePageShell .workoutTemplateCard div,
+.mobilePageShell .accountSummaryCopy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.mobilePageShell .utilityLogRow strong,
+.mobilePageShell .workoutTemplateCard strong,
+.mobilePageShell .accountSummaryCopy strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mobile-text);
+  font-size: 0.93rem;
+  line-height: 1.15;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobilePageShell .utilityLogRow small,
+.mobilePageShell .workoutTemplateCard small,
+.mobilePageShell .accountSummaryCopy small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mobile-muted);
+  font-size: 0.76rem;
+  line-height: 1.25;
+  font-weight: 780;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobilePageShell .utilityLogRow em {
+  color: var(--mobile-text);
+  font-size: 0.86rem;
+  font-style: normal;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.mobilePageShell .utilityIconButton {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #64748b;
+  padding: 0;
+}
+
+.mobilePageShell .utilityIconButton .memoNavIcon {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+}
+
+.mobilePageShell .workoutTemplateCard {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.mobilePageShell .workoutTemplateCard.done {
+  border-color: #99f6e4;
+  background: #ecfdf5;
+}
+
+.mobilePageShell .workoutTemplateCard button {
+  background: var(--mobile-primary);
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.mobilePageShell .workoutTemplateCard button:disabled {
+  border-color: #bbf7d0;
+  background: #dcfce7;
+  color: #047857;
+}
+
+.mobilePageShell .accountSummaryCard {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.mobilePageShell .accountAvatar {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: var(--mobile-primary);
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 950;
+}
+
+.mobilePageShell .accountDetailList,
+.mobilePageShell .accountSummaryCard .utilityActionRow {
+  grid-column: 1 / -1;
+}
+
+.mobilePageShell .accountDetailList {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+}
+
+.mobilePageShell .accountDetailList div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.mobilePageShell .accountDetailList dd {
+  margin: 0;
+  color: var(--mobile-text);
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+/* Notes */
+.notesShell.mobilePageShell .notesWorkspace {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.notesShell.mobilePageShell .notesMobileWorkspace {
+  min-height: auto !important;
+  background: transparent !important;
+}
+
+.notesShell.mobilePageShell .notesMobileFolders {
+  gap: 12px !important;
+  padding: 0 !important;
+}
+
+.notesShell.mobilePageShell .notesMobileFileSection {
+  gap: 12px !important;
+  padding: 14px !important;
+}
+
+.notesShell.mobilePageShell .notesMobileDirectorySwitch,
+.notesShell.mobilePageShell .notesMobileCurrentActions {
+  gap: 8px !important;
+}
+
+.notesShell.mobilePageShell .notesMobileDirectorySwitch {
+  padding: 4px !important;
+  border-radius: 18px !important;
+}
+
+.notesShell.mobilePageShell .notesMobileDirectorySwitch button {
+  min-height: 42px !important;
+  border-radius: 14px !important;
+  color: var(--mobile-muted) !important;
+  font-size: 0.88rem !important;
+}
+
+.notesShell.mobilePageShell .notesMobileDirectorySwitch button.active {
+  border-color: #99f6e4 !important;
+  background: #ecfdf5 !important;
+  color: var(--mobile-primary) !important;
+}
+
+.notesShell.mobilePageShell .notesMobileCurrentActions {
+  grid-template-columns: 1fr 1fr !important;
+}
+
+.notesShell.mobilePageShell .notesMobileCurrentActions button {
+  min-height: 46px !important;
+  border-radius: 16px !important;
+  font-size: 0.9rem !important;
+}
+
+.notesShell.mobilePageShell .notesMobileCurrentActions button.primary {
+  border-color: var(--mobile-primary) !important;
+  background: var(--mobile-primary) !important;
+  color: #ffffff !important;
+}
+
+.notesMobileSectionLabel {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.notesMobileSectionLabel strong {
+  color: var(--mobile-text);
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.notesMobileSectionLabel small {
+  color: var(--mobile-muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.notesShell.mobilePageShell .notesMobileExplorerList {
+  gap: 7px !important;
+}
+
+.notesShell.mobilePageShell .notesMobileExplorerRow {
+  gap: 7px !important;
+}
+
+.notesShell.mobilePageShell .notesMobileExplorerOpen,
+.notesShell.mobilePageShell .notesMobileExplorerGear,
+.notesShell.mobilePageShell .notesMobileEmptyState {
+  border-radius: 16px !important;
+}
+
+.notesShell.mobilePageShell .notesMobileExplorerOpen {
+  min-height: 52px !important;
+  padding: 8px 10px !important;
+}
+
+.notesShell.mobilePageShell .notesMobileExplorerOpen span strong {
+  color: var(--mobile-text) !important;
+  font-size: 0.94rem !important;
+}
+
+.notesShell.mobilePageShell .notesMobileExplorerOpen span small {
+  color: var(--mobile-muted) !important;
+  font-size: 0.76rem !important;
+}
+
+.notesShell.mobilePageShell .notesMobileDetail {
+  padding: 0 !important;
+}
+
+.notesShell.mobilePageShell .notesMobileDetail .notesDetailPanel {
+  min-height: calc(100dvh - 94px) !important;
+  padding: 12px !important;
+}
+
+.notesShell.mobilePageShell .notesDetailCrumbs {
+  display: none !important;
+}
+
+.notesShell.mobilePageShell .notesDetailTopbar {
+  gap: 10px !important;
+  padding: 12px !important;
+  border-radius: 20px !important;
+}
+
+.notesShell.mobilePageShell .notesTitleHeaderInput {
+  min-height: 44px !important;
+  font-size: 1.5rem !important;
+}
+
+.notesShell.mobilePageShell .notesScheduleBar {
+  gap: 8px !important;
+  border-radius: 18px !important;
+}
+
+.notesShell.mobilePageShell .blockNoteMemoEditor {
+  min-height: calc(100dvh - 260px) !important;
+  border-radius: 20px !important;
+}
+
+.notesShell.mobilePageShell .blockNoteMemoEditor .bn-container,
+.notesShell.mobilePageShell .blockNoteMemoEditor .bn-editor {
+  min-height: calc(100dvh - 260px) !important;
+}
+
+@media (max-width: 680px) {
+  .notesShell.mobilePageShell .bn-root div:has(> .bn-slash-menu),
+  .notesShell.mobilePageShell .bn-root div:has(> .bn-suggestion-menu) {
+    position: fixed !important;
+    top: auto !important;
+    right: 16px !important;
+    bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+    left: 16px !important;
+    z-index: 1000 !important;
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    max-height: 55vh !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+
+  .notesShell.mobilePageShell .blockNoteMemoEditor .bn-slash-menu,
+  .notesShell.mobilePageShell .blockNoteMemoEditor .bn-suggestion-menu,
+  .notesShell.mobilePageShell .bn-slash-menu,
+  .notesShell.mobilePageShell .bn-suggestion-menu {
+    position: static !important;
+    z-index: 1000 !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 55vh !important;
+    overflow-y: auto !important;
+    border: 1px solid var(--mobile-line) !important;
+    border-radius: 24px !important;
+    background: #ffffff !important;
+    box-shadow: 0 20px 48px rgba(15, 23, 42, 0.22) !important;
+    transform: none !important;
+  }
+}
+
+/* Scheduler */
+.schedulerShell.mobilePageShell {
+  grid-template-columns: 1fr !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerPage {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid;
+  gap: 12px;
+}
+
+.schedulerShell.mobilePageShell .schedulerHero {
+  width: 100% !important;
+  display: block !important;
+  padding: 0 !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerHero h1 {
+  margin: 0 !important;
+  color: var(--mobile-text) !important;
+  font-size: 1.75rem !important;
+  line-height: 1.14 !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerHero p {
+  margin: 6px 0 0 !important;
+  color: var(--mobile-muted) !important;
+  font-size: 0.92rem !important;
+  font-weight: 850 !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerAddDock {
+  margin: 0 !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerCuteAdd {
+  width: 100% !important;
+  min-height: 48px !important;
+  justify-content: center !important;
+  border-radius: 18px !important;
+  background: var(--mobile-primary) !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerQuickAdd {
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 14px !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerFormGrid,
+.schedulerShell.mobilePageShell .schedulerQuickAdd {
+  grid-template-columns: 1fr !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerQuickAdd input,
+.schedulerShell.mobilePageShell .schedulerQuickAdd select,
+.schedulerShell.mobilePageShell .schedulerQuickAdd textarea {
+  min-height: 44px !important;
+  border-radius: 14px !important;
+  font-size: 0.95rem !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerLinkedSchedule {
+  margin: 0 !important;
+  padding: 14px !important;
+  border-top: 0 !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerWeekSlots {
+  grid-auto-columns: 132px !important;
+  gap: 8px !important;
+  padding-bottom: 6px !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerWeekSlots button {
+  width: 132px !important;
+  min-width: 132px !important;
+  max-width: 132px !important;
+  height: 118px !important;
+  min-height: 118px !important;
+  border-radius: 16px !important;
+  padding: 10px !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerDatabase {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerCalendarPanel {
+  gap: 9px !important;
+  padding: 14px !important;
+  border-bottom: 1px solid var(--mobile-line) !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerCalendarHeader,
+.schedulerShell.mobilePageShell .schedulerBoardHeader {
+  display: grid !important;
+  gap: 10px !important;
+  align-items: start !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerCalendarControls,
+.schedulerShell.mobilePageShell .schedulerFilters {
+  width: 100%;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}
+
+.schedulerShell.mobilePageShell .schedulerCalendarGrid {
+  gap: 5px !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerCalendarGrid button {
+  min-height: 44px !important;
+  border-radius: 14px !important;
+  padding: 6px !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerBoardHeader {
+  padding: 0 2px !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerList {
+  gap: 7px !important;
+  overflow: visible !important;
+  padding: 12px !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerTableHead {
+  display: none !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerItem {
+  min-width: 0 !important;
+  min-height: 58px !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 8px !important;
+  padding: 10px !important;
+  border: 1px solid var(--mobile-line) !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerItem time,
+.schedulerShell.mobilePageShell .schedulerItem small {
+  grid-column: 1 / -1 !important;
+  font-size: 0.8rem !important;
+}
+
+.schedulerShell.mobilePageShell .schedulerTypePill {
+  justify-self: end;
+}
+
+.schedulerShell.mobilePageShell .schedulerActionsCell {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* Travel */
+.ltShellTravelStart.mobilePageShell .ltTravelStartPage {
+  gap: 12px !important;
+}
+
+.ltShellTravelStart.mobilePageShell .ltTravelSearchPanel {
+  gap: 12px !important;
+  padding: 14px !important;
+}
+
+.ltShellTravelStart.mobilePageShell .ltTravelSearchPanel > div:first-child {
+  display: none !important;
+}
+
+.ltShellTravelStart.mobilePageShell .ltHeroSearchInput {
+  min-height: 50px !important;
+  grid-template-columns: 28px minmax(0, 1fr) !important;
+  border-radius: 18px !important;
+  padding: 8px 12px !important;
+}
+
+.ltShellTravelStart.mobilePageShell .ltHeroSearchInput input {
+  min-height: 36px !important;
+  font-size: 1rem !important;
+}
+
+.ltShellTravelStart.mobilePageShell .ltTravelPrimaryActions {
+  grid-template-columns: 1fr !important;
+}
+
+.ltShellTravelStart.mobilePageShell .ltPrimaryButton,
+.ltShellTravelStart.mobilePageShell .ltSecondaryButton {
+  min-height: 48px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border-radius: 18px !important;
+  padding: 0 16px !important;
+  line-height: 1 !important;
+}
+
+.ltShellTravelStart.mobilePageShell .ltPrimaryButton .ltTravelQuickIcon,
+.ltShellTravelStart.mobilePageShell .ltSecondaryButton .ltTravelQuickIcon {
+  flex: 0 0 auto !important;
+}
+
+.ltShellTravelStart.mobilePageShell .ltTravelPlansButton {
+  width: 100%;
+  gap: 8px;
+}
+
+.ltShellTravelStart.mobilePageShell .ltHeroFilters {
+  gap: 7px !important;
+  padding: 0 !important;
+}
+
+.ltShellTravelStart.mobilePageShell .ltHeroFilters button {
+  min-height: 36px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+  font-weight: 850 !important;
+  box-shadow: none !important;
+}
+
+.ltShellTravelStart.mobilePageShell .ltHeroFilters button:hover,
+.ltShellTravelStart.mobilePageShell .ltHeroFilters button:focus-visible {
+  border-color: #0f766e !important;
+  background: #f0fdfa !important;
+  color: #0f766e !important;
+}

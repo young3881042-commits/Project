@@ -1,0 +1,1055 @@
+.lifeHubRoute-memo {
+  --dm-canvas: #f5f3ed;
+  --dm-paper: #fffdf9;
+  --dm-paper-soft: #faf8f2;
+  --dm-ink: #24332d;
+  --dm-muted: #6c7972;
+  --dm-line: #e3e0d6;
+  --dm-green: #2f6f5e;
+  --dm-green-dark: #235749;
+  --dm-green-soft: #e7f3ee;
+  --dm-coral: #e98568;
+  --dm-coral-soft: #fcebe5;
+  --dm-sun: #efb85f;
+  --dm-shadow: 0 16px 42px rgba(54, 69, 61, 0.08);
+  background: #e9e7df;
+}
+
+.lifeHubRoute-memo .lifeHubApp {
+  background:
+    radial-gradient(circle at 100% 0, rgba(239, 184, 95, 0.12), transparent 220px),
+    var(--dm-canvas);
+}
+
+.lifeHubRoute-memo .lifeHubTopBar {
+  margin-bottom: 14px;
+  border-color: rgba(218, 216, 207, 0.88);
+  background: rgba(245, 243, 237, 0.92);
+}
+
+.lifeHubRoute-memo .lifeHubTopIcon {
+  border-color: #c7ded5;
+  border-radius: 12px;
+  background: var(--dm-green-soft);
+  color: var(--dm-green);
+}
+
+.lifeHubRoute-memo .lifeHubTopTitle h1,
+.lifeHubRoute-memo .lifeHubAccountChip strong {
+  color: var(--dm-ink);
+}
+
+.lifeHubRoute-memo .lifeHubAccountChip {
+  border-color: var(--dm-line);
+  background: rgba(255, 253, 249, 0.9);
+}
+
+.lifeHubRoute-memo .lifeHubAccountChip .memoNavIcon {
+  color: var(--dm-green);
+}
+
+.lifeHubRoute-memo .lifeHubBottomNav {
+  border-color: rgba(218, 216, 207, 0.96);
+  background: rgba(255, 253, 249, 0.96);
+}
+
+.lifeHubRoute-memo .lifeHubBottomNav button.active {
+  border-color: #c7ded5;
+  background: var(--dm-green-soft);
+  color: var(--dm-green-dark);
+}
+
+.lifeHubRoute-memo .lifeHubToast {
+  border-radius: 14px;
+  background: #f2faf6;
+  box-shadow: 0 18px 44px rgba(36, 51, 45, 0.16);
+}
+
+.dailyMemo {
+  display: grid;
+  gap: 18px;
+  color: var(--dm-ink);
+}
+
+.dailyMemo *,
+.dailyMemo *::before,
+.dailyMemo *::after {
+  box-sizing: border-box;
+}
+
+.dailyMemoIcon {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.dailyMemoSrOnly {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
+
+.dailyMemoWelcome {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  overflow: hidden;
+  padding: 18px;
+  border: 1px solid rgba(224, 217, 199, 0.92);
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 249, 0.98), rgba(255, 249, 237, 0.96)),
+    var(--dm-paper);
+  box-shadow: var(--dm-shadow);
+}
+
+.dailyMemoWelcome::after {
+  position: absolute;
+  top: -54px;
+  right: -42px;
+  width: 150px;
+  height: 150px;
+  border: 24px solid rgba(239, 184, 95, 0.09);
+  border-radius: 50%;
+  content: '';
+  pointer-events: none;
+}
+
+.dailyMemoWelcomeCopy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.dailyMemoMark {
+  width: 48px;
+  height: 48px;
+  display: block;
+  filter: drop-shadow(0 8px 14px rgba(47, 111, 94, 0.18));
+}
+
+.dailyMemoWelcomeCopy span {
+  display: block;
+  color: var(--dm-green);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: -0.01em;
+}
+
+.dailyMemoWelcomeCopy h2 {
+  margin: 3px 0 0;
+  color: var(--dm-ink);
+  font-size: clamp(1.22rem, 5vw, 1.6rem);
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+}
+
+.dailyMemoWelcomeCopy p {
+  margin: 6px 0 0;
+  color: var(--dm-muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.dailyMemoRhythm {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.dailyMemoRhythm article {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid rgba(223, 222, 214, 0.92);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.dailyMemoRhythm article.isWarm {
+  border-color: #f2ccb9;
+  background: var(--dm-coral-soft);
+}
+
+.dailyMemoRhythm article > span {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+  color: var(--dm-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dailyMemoRhythm article > span .dailyMemoIcon {
+  color: var(--dm-green);
+}
+
+.dailyMemoRhythm article.isWarm > span .dailyMemoIcon {
+  color: var(--dm-coral);
+}
+
+.dailyMemoRhythm strong {
+  color: var(--dm-ink);
+  font-size: 1.12rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.dailyMemoRhythm strong small {
+  margin-left: 2px;
+  color: var(--dm-muted);
+  font-size: 0.66rem;
+  font-weight: 750;
+}
+
+.dailyMemoComposer {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--dm-line);
+  border-radius: 24px;
+  background: var(--dm-paper);
+  box-shadow: var(--dm-shadow);
+  scroll-margin-top: 88px;
+}
+
+.dailyMemoComposer.isEditing {
+  border-color: #b8d6cb;
+  box-shadow: 0 0 0 3px rgba(47, 111, 94, 0.07), var(--dm-shadow);
+}
+
+.dailyMemoComposerHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dailyMemoEyebrow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--dm-green);
+  font-size: 0.69rem;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+.dailyMemoComposerHeader h2,
+.dailyMemoArchiveHeader h2 {
+  margin: 5px 0 0;
+  color: var(--dm-ink);
+  font-size: 1.12rem;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+
+.dailyMemoComposerCancel {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  border: 1px solid var(--dm-line);
+  border-radius: 12px;
+  background: var(--dm-paper-soft);
+  color: var(--dm-muted);
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.dailyMemoComposer > textarea {
+  width: 100%;
+  min-height: 132px;
+  max-height: 320px;
+  resize: none;
+  padding: 15px 16px;
+  border: 1px solid #dedbd1;
+  border-radius: 18px;
+  outline: 0;
+  background: #fbfaf6;
+  color: var(--dm-ink);
+  font-size: 0.98rem;
+  line-height: 1.65;
+  letter-spacing: -0.015em;
+  transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.dailyMemoComposer > textarea::placeholder,
+.dailyMemoComposerOptional input::placeholder,
+.dailyMemoSearch input::placeholder {
+  color: #9ca49f;
+}
+
+.dailyMemoComposer > textarea:focus {
+  border-color: #8fbbae;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(47, 111, 94, 0.09);
+}
+
+.dailyMemoComposerTags {
+  display: grid;
+  gap: 8px;
+}
+
+.dailyMemoComposerTags > span {
+  color: var(--dm-muted);
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.dailyMemoComposerTags > div {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 1px 1px 4px;
+  scrollbar-width: none;
+}
+
+.dailyMemoComposerTags > div::-webkit-scrollbar,
+.dailyMemoTagFilters::-webkit-scrollbar {
+  display: none;
+}
+
+.dailyMemoComposerTags button {
+  min-height: 40px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 12px;
+  border: 1px solid var(--dm-line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #5f6d66;
+  font-size: 0.73rem;
+  font-weight: 850;
+}
+
+.dailyMemoComposerTags button > span {
+  color: var(--dm-coral);
+  font-size: 0.76rem;
+}
+
+.dailyMemoComposerTags button.isSelected {
+  border-color: #a8cdbf;
+  background: var(--dm-green-soft);
+  color: var(--dm-green-dark);
+}
+
+.dailyMemoComposerTags button.isSelected > span {
+  color: var(--dm-green);
+}
+
+.dailyMemoComposerDetails {
+  border-top: 1px solid #ece9e1;
+}
+
+.dailyMemoComposerDetails summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--dm-muted);
+  font-size: 0.73rem;
+  font-weight: 850;
+}
+
+.dailyMemoComposerDetails summary::-webkit-details-marker {
+  display: none;
+}
+
+.dailyMemoComposerDetails summary > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dailyMemoComposerDetails summary > small {
+  font-size: 0.65rem;
+  font-weight: 750;
+}
+
+.dailyMemoComposerDetails[open] summary {
+  color: var(--dm-green);
+}
+
+.dailyMemoComposerOptional {
+  display: grid;
+  gap: 10px;
+  padding: 4px 0 2px;
+}
+
+.dailyMemoComposerOptional label {
+  display: grid;
+  gap: 6px;
+}
+
+.dailyMemoComposerOptional label > span {
+  color: var(--dm-muted);
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.dailyMemoComposerOptional input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 13px;
+  border: 1px solid var(--dm-line);
+  border-radius: 13px;
+  outline: 0;
+  background: var(--dm-paper-soft);
+  color: var(--dm-ink);
+  font-size: 0.82rem;
+}
+
+.dailyMemoComposerOptional input:focus {
+  border-color: #8fbbae;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(47, 111, 94, 0.08);
+}
+
+.dailyMemoComposerFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dailyMemoDraftStatus {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--dm-muted);
+  font-size: 0.67rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.dailyMemoDraftStatus .dailyMemoIcon {
+  color: var(--dm-green);
+}
+
+.dailyMemoSaveButton {
+  min-width: 126px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 15px;
+  background: var(--dm-green);
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 900;
+  box-shadow: 0 9px 20px rgba(47, 111, 94, 0.19);
+}
+
+.dailyMemoSaveButton:not(:disabled):hover {
+  background: var(--dm-green-dark);
+}
+
+.dailyMemoSaveButton:disabled {
+  box-shadow: none;
+}
+
+.dailyMemoKeyboardHint {
+  display: none;
+  margin-top: -7px;
+  color: #929c96;
+  font-size: 0.62rem;
+  text-align: right;
+}
+
+.dailyMemoArchive {
+  display: grid;
+  gap: 14px;
+  padding-bottom: 8px;
+}
+
+.dailyMemoArchiveHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px;
+}
+
+.dailyMemoArchiveHeader > div:first-child {
+  min-width: 0;
+}
+
+.dailyMemoArchiveHeader p {
+  margin: 5px 0 0;
+  color: var(--dm-muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.dailyMemoArchiveHeader > div:last-child {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 7px;
+}
+
+.dailyMemoArchiveHeader button {
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 11px;
+  border: 1px solid var(--dm-line);
+  border-radius: 13px;
+  background: var(--dm-paper);
+  color: var(--dm-muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.dailyMemoArchiveHeader button.isPrimary {
+  border-color: var(--dm-green);
+  background: var(--dm-green);
+  color: #ffffff;
+}
+
+.dailyMemoFilters {
+  display: grid;
+  gap: 9px;
+}
+
+.dailyMemoSearch {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 0 9px 0 13px;
+  border: 1px solid #d8d8cf;
+  border-radius: 15px;
+  background: var(--dm-paper);
+  color: var(--dm-green);
+  box-shadow: 0 8px 22px rgba(54, 69, 61, 0.05);
+}
+
+.dailyMemoSearch:focus-within {
+  border-color: #8fbbae;
+  box-shadow: 0 0 0 3px rgba(47, 111, 94, 0.08);
+}
+
+.dailyMemoSearch input {
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--dm-ink);
+  font-size: 0.82rem;
+}
+
+.dailyMemoSearch button {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--dm-muted);
+}
+
+.dailyMemoViewTabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--dm-line);
+  border-radius: 15px;
+  background: #ebe9e2;
+}
+
+.dailyMemoViewTabs button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--dm-muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.dailyMemoViewTabs button.isActive {
+  background: var(--dm-paper);
+  color: var(--dm-green-dark);
+  box-shadow: 0 3px 10px rgba(54, 69, 61, 0.08);
+}
+
+.dailyMemoTagFilters {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 1px 1px 4px;
+  scrollbar-width: none;
+}
+
+.dailyMemoTagFilters button {
+  min-height: 38px;
+  flex: 0 0 auto;
+  padding: 0 11px;
+  border: 1px solid var(--dm-line);
+  border-radius: 999px;
+  background: rgba(255, 253, 249, 0.76);
+  color: var(--dm-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.dailyMemoTagFilters button.isActive {
+  border-color: #a8cdbf;
+  background: var(--dm-green-soft);
+  color: var(--dm-green-dark);
+}
+
+.dailyMemoGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.dailyMemoCard {
+  --dm-card-accent: #d6ded9;
+  --dm-card-tint: #fffdf9;
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--dm-line);
+  border-left: 4px solid var(--dm-card-accent);
+  border-radius: 18px;
+  background: var(--dm-card-tint);
+  box-shadow: 0 9px 24px rgba(54, 69, 61, 0.055);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.dailyMemoCard[data-accent='mint'] {
+  --dm-card-accent: #86b9a7;
+  --dm-card-tint: #f8fcfa;
+}
+
+.dailyMemoCard[data-accent='rose'] {
+  --dm-card-accent: #e9a18d;
+  --dm-card-tint: #fffaf8;
+}
+
+.dailyMemoCard[data-accent='lavender'] {
+  --dm-card-accent: #a9a3cc;
+  --dm-card-tint: #fbfaff;
+}
+
+.dailyMemoCard[data-accent='sun'] {
+  --dm-card-accent: #e8bd6c;
+  --dm-card-tint: #fffdf7;
+}
+
+.dailyMemoCard.isPinned {
+  border-color: #edc9bc;
+  border-left-color: var(--dm-coral);
+}
+
+.dailyMemoCard:hover {
+  box-shadow: 0 13px 30px rgba(54, 69, 61, 0.09);
+  transform: translateY(-1px);
+}
+
+.dailyMemoCard > header {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dailyMemoCardMeta {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+  color: var(--dm-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dailyMemoCard.isPinned .dailyMemoCardMeta {
+  color: #a95540;
+}
+
+.dailyMemoCardPin {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #8d9992;
+}
+
+.dailyMemoCardPin:hover,
+.dailyMemoCardPin.isActive {
+  background: var(--dm-coral-soft);
+  color: #bd6249;
+}
+
+.dailyMemoCardBody {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.dailyMemoCardBody strong {
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  color: var(--dm-ink);
+  font-size: 0.96rem;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.dailyMemoCardBody > span {
+  display: -webkit-box;
+  max-height: 4.8em;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  color: #5d6a63;
+  font-size: 0.77rem;
+  line-height: 1.6;
+  white-space: pre-line;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.dailyMemoCardBody > span.isEmpty {
+  color: #929c96;
+  font-style: italic;
+}
+
+.dailyMemoCardTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.dailyMemoCardTags span {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: rgba(47, 111, 94, 0.075);
+  color: var(--dm-green-dark);
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dailyMemoCard > footer {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(226, 224, 215, 0.78);
+}
+
+.dailyMemoCard > footer > span {
+  overflow: hidden;
+  color: #89938e;
+  font-size: 0.62rem;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dailyMemoCard > footer > div {
+  display: flex;
+  gap: 3px;
+}
+
+.dailyMemoCard > footer button {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--dm-muted);
+}
+
+.dailyMemoCard > footer button:hover {
+  background: var(--dm-green-soft);
+  color: var(--dm-green);
+}
+
+.dailyMemoCard > footer button.isDanger:hover {
+  background: #fce9e7;
+  color: #b64e43;
+}
+
+.dailyMemoEmpty {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  padding: 34px 18px;
+  border: 1px dashed #d4d6ce;
+  border-radius: 20px;
+  background: rgba(255, 253, 249, 0.72);
+  text-align: center;
+}
+
+.dailyMemoEmpty > span {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 3px;
+  border-radius: 17px;
+  background: var(--dm-green-soft);
+  color: var(--dm-green);
+}
+
+.dailyMemoEmpty strong {
+  color: var(--dm-ink);
+  font-size: 0.9rem;
+}
+
+.dailyMemoEmpty p {
+  max-width: 340px;
+  margin: 0;
+  color: var(--dm-muted);
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+.dailyMemoEmpty button {
+  min-height: 44px;
+  margin-top: 5px;
+  padding: 0 15px;
+  border: 1px solid var(--dm-green);
+  border-radius: 13px;
+  background: var(--dm-green);
+  color: #ffffff;
+  font-size: 0.73rem;
+  font-weight: 900;
+}
+
+@media (max-width: 380px) {
+  .dailyMemoWelcome,
+  .dailyMemoComposer {
+    padding: 15px;
+    border-radius: 20px;
+  }
+
+  .dailyMemoWelcomeCopy {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+
+  .dailyMemoMark {
+    width: 42px;
+    height: 42px;
+  }
+
+  .dailyMemoWelcomeCopy h2 {
+    font-size: 1.15rem;
+  }
+
+  .dailyMemoWelcomeCopy p {
+    font-size: 0.74rem;
+  }
+
+  .dailyMemoRhythm article {
+    padding: 9px 7px;
+  }
+
+  .dailyMemoRhythm article > span {
+    font-size: 0.6rem;
+  }
+
+  .dailyMemoComposerHeader {
+    display: grid;
+  }
+
+  .dailyMemoComposerCancel {
+    justify-self: start;
+  }
+
+  .dailyMemoComposerFooter {
+    display: grid;
+  }
+
+  .dailyMemoSaveButton {
+    width: 100%;
+  }
+
+  .dailyMemoArchiveHeader button.isPrimary span {
+    display: none;
+  }
+}
+
+@media (max-width: 699px) {
+  .dailyMemoWelcome.hasRecords {
+    gap: 12px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+
+  .dailyMemoWelcome.hasRecords .dailyMemoRhythm article {
+    padding-block: 8px;
+  }
+
+  .dailyMemoComposer > textarea,
+  .dailyMemoComposerOptional input,
+  .dailyMemoSearch input {
+    font-size: 16px;
+  }
+
+  .dailyMemoComposerTags button,
+  .dailyMemoViewTabs button,
+  .dailyMemoTagFilters button {
+    min-height: 44px;
+  }
+}
+
+@media (min-width: 700px) {
+  .lifeHubRoute-memo .lifeHubApp {
+    width: min(calc(100% - 36px), 860px);
+    padding: 20px 24px calc(100px + env(safe-area-inset-bottom));
+  }
+
+  .lifeHubRoute-memo .lifeHubTopBar {
+    margin: -20px -24px 18px;
+    padding: calc(12px + env(safe-area-inset-top)) 24px 12px;
+  }
+
+  .lifeHubRoute-memo .lifeHubBottomNav {
+    width: min(calc(100% - 36px), 860px);
+  }
+
+  .dailyMemo {
+    gap: 22px;
+  }
+
+  .dailyMemoWelcome {
+    grid-template-columns: minmax(0, 1.25fr) minmax(330px, 0.9fr);
+    align-items: center;
+    padding: 22px;
+  }
+
+  .dailyMemoWelcomeCopy h2 {
+    font-size: 1.55rem;
+  }
+
+  .dailyMemoWelcomeCopy p {
+    font-size: 0.84rem;
+  }
+
+  .dailyMemoComposer {
+    padding: 22px;
+  }
+
+  .dailyMemoComposerOptional {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dailyMemoKeyboardHint {
+    display: block;
+  }
+
+  .dailyMemoFilters {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .dailyMemoSearch,
+  .dailyMemoTagFilters {
+    grid-column: 1 / -1;
+  }
+
+  .dailyMemoViewTabs {
+    grid-column: 1 / -1;
+    width: min(100%, 360px);
+  }
+
+  .dailyMemoGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (min-width: 900px) {
+  .dailyMemo {
+    grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+    align-items: start;
+  }
+
+  .dailyMemoWelcome {
+    grid-template-columns: minmax(0, 1fr);
+    align-self: stretch;
+  }
+
+  .dailyMemoComposer {
+    align-self: stretch;
+  }
+
+  .dailyMemoArchive {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dailyMemo *,
+  .dailyMemo *::before,
+  .dailyMemo *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

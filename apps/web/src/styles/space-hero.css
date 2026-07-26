@@ -1,0 +1,152 @@
+/* NASA space hero main */
+.builderShell {
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(3, 7, 18, 0.34), rgba(3, 7, 18, 0.82)),
+    url("https://www.nasa.gov/sites/default/files/thumbnails/image/main_image_star-forming_region_carina_nircam_final-5mb.jpg") center/cover fixed;
+  color: #ffffff;
+}
+
+.builderShell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(56, 189, 248, 0.22), transparent 28%),
+    radial-gradient(circle at 86% 12%, rgba(245, 158, 11, 0.22), transparent 26%);
+}
+
+.builderNav {
+  position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(3, 7, 18, 0.42);
+  backdrop-filter: blur(18px);
+}
+
+.builderBrand,
+.builderNavLinks a {
+  color: #ffffff;
+}
+
+.builderBrand span {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+.builderNavLinks a,
+.builderNav button {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.builderHero {
+  position: relative;
+  z-index: 1;
+  min-height: auto;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+  padding: 82px 0 34px;
+}
+
+.builderHeroCopy {
+  justify-items: center;
+}
+
+.builderKicker {
+  background: rgba(255, 255, 255, 0.14);
+  color: #e0f2fe;
+}
+
+.builderHeroCopy h1 {
+  max-width: 860px;
+  color: #ffffff;
+  font-size: 4.5rem;
+  line-height: 1.02;
+  text-shadow: 0 18px 54px rgba(0, 0, 0, 0.42);
+}
+
+.builderHeroCopy p {
+  max-width: 720px;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.builderHeroActions,
+.builderHeroVisualPanel,
+.builderImageHero {
+  display: none;
+}
+
+.builderServiceSection {
+  position: relative;
+  z-index: 1;
+  padding: 12px 0 92px;
+}
+
+.builderServiceCard {
+  min-height: 260px;
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(20px);
+}
+
+.builderServiceCard::before {
+  opacity: 0.3;
+}
+
+.builderServiceCard span {
+  background: rgba(255, 255, 255, 0.16);
+  color: #e0f2fe;
+}
+
+.builderServiceCard strong {
+  color: #ffffff;
+}
+
+.builderServiceCard p {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.builderServiceCard:hover {
+  border-color: rgba(255, 255, 255, 0.44);
+  background: rgba(255, 255, 255, 0.17);
+  transform: translateY(-4px);
+}
+
+@media (max-width: 1080px) {
+  .builderHeroCopy h1 {
+    font-size: 3.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .builderShell {
+    background-attachment: scroll;
+  }
+
+  .builderHero {
+    padding-top: 46px;
+    text-align: left;
+    justify-items: start;
+  }
+
+  .builderHeroCopy {
+    justify-items: start;
+  }
+
+  .builderHeroCopy h1 {
+    font-size: 2.35rem;
+  }
+
+  .builderHeroCopy p {
+    font-size: 0.96rem;
+  }
+
+  .builderServiceCard {
+    min-height: 178px;
+  }
+}

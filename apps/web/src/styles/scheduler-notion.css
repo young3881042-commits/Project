@@ -1,0 +1,786 @@
+/* Notion-style personal scheduler */
+.schedulerShell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  background: #ffffff;
+  color: #2f3437;
+}
+
+.schedulerSidebar {
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: 18px 14px;
+  border-right: 1px solid #eee;
+  background: #fbfbfa;
+}
+
+.schedulerHomeButton,
+.schedulerSideGroup a,
+.schedulerSideGroup button {
+  min-height: 34px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #37352f;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 650;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.schedulerHomeButton {
+  background: #f1f1ef;
+  font-weight: 800;
+}
+
+.schedulerSideGroup {
+  display: grid;
+  gap: 3px;
+}
+
+.schedulerSideGroup > span {
+  padding: 0 10px 5px;
+  color: #9b9a97;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.schedulerSideGroup a:hover,
+.schedulerSideGroup button:hover,
+.schedulerSideGroup button.active {
+  background: #f1f1ef;
+}
+
+.schedulerPage {
+  min-width: 0;
+  width: min(1080px, calc(100% - 56px));
+  margin: 0 auto;
+  padding: 42px 0 80px;
+}
+
+.schedulerHero {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: end;
+  padding: 0 0 24px;
+}
+
+.schedulerPageIcon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 18px;
+  border-radius: 10px;
+  background: #f1f1ef;
+  font-size: 2rem;
+}
+
+.schedulerHero h1 {
+  margin: 0;
+  color: #2f3437;
+  font-size: 2.8rem;
+  line-height: 1.08;
+  font-weight: 800;
+}
+
+.schedulerHero p {
+  max-width: 640px;
+  margin-top: 10px;
+  color: #787774;
+}
+
+.schedulerStats {
+  display: grid;
+  grid-template-columns: repeat(4, 92px);
+  gap: 8px;
+}
+
+.schedulerStats article {
+  display: grid;
+  gap: 2px;
+  padding: 12px;
+  border: 1px solid #ededeb;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.schedulerStats article span {
+  color: #9b9a97;
+  font-size: 0.74rem;
+}
+
+.schedulerStats article small {
+  color: #9b9a97;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.schedulerStats article strong {
+  color: #2f3437;
+  font-size: 1.2rem;
+}
+
+.schedulerQuickAdd,
+.schedulerDatabase {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid #ededeb;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.schedulerQuickAdd {
+  grid-template-columns: minmax(190px, 1.1fr) minmax(210px, 0.9fr) minmax(210px, 0.9fr) minmax(110px, 0.48fr) minmax(170px, 0.72fr) auto;
+  align-items: end;
+}
+
+.schedulerDatabase {
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+  align-items: start;
+}
+
+.schedulerQuickAdd label {
+  display: grid;
+  gap: 6px;
+}
+
+.schedulerQuickAdd label > span {
+  color: #9b9a97;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.schedulerQuickAdd input,
+.schedulerQuickAdd select,
+.schedulerQuickAdd textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  border: 1px solid #ededeb;
+  border-radius: 6px;
+  background: #fbfbfa;
+  color: #2f3437;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.schedulerQuickAdd textarea {
+  min-height: 36px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.schedulerQuickAdd > button {
+  min-height: 36px;
+  border: 1px solid #2f3437;
+  border-radius: 6px;
+  background: #2f3437;
+  color: #fff;
+  padding: 0 14px;
+  font: inherit;
+  font-weight: 750;
+}
+
+.schedulerCalendarPanel {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #ededeb;
+}
+
+.schedulerTodayPanel {
+  display: grid;
+  gap: 14px;
+  min-height: 100%;
+  padding: 16px;
+  border: 1px solid #ededeb;
+  border-radius: 10px;
+  background: #fbfbfa;
+}
+
+.schedulerTodayHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.schedulerTodayHeader span {
+  color: #9b9a97;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.schedulerTodayHeader h2 {
+  margin: 3px 0 0;
+  color: #2f3437;
+  font-size: 1.35rem;
+}
+
+.schedulerTodayHeader p {
+  margin: 5px 0 0;
+  color: #787774;
+  font-size: 0.86rem;
+}
+
+.schedulerTodayHeader button {
+  min-height: 32px;
+  border: 1px solid #ededeb;
+  border-radius: 999px;
+  background: #fff;
+  color: #37352f;
+  padding: 0 12px;
+  font: inherit;
+  font-weight: 750;
+}
+
+.schedulerTodayTimeline {
+  display: grid;
+  gap: 12px;
+}
+
+.schedulerTodaySlot {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #ededeb;
+}
+
+.schedulerTodaySlot:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.schedulerTodayTime {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+}
+
+.schedulerTodayTime strong {
+  color: #2f3437;
+  font-size: 0.92rem;
+}
+
+.schedulerTodayTime span {
+  color: #9b9a97;
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.schedulerTodayEvents {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.schedulerTodayEvents button {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  border: 1px solid #ededeb;
+  border-radius: 8px;
+  background: #fff;
+  color: #37352f;
+  padding: 10px;
+  text-align: left;
+  font: inherit;
+}
+
+.schedulerTodayEvents button.done {
+  opacity: 0.58;
+}
+
+.schedulerTodayEvents button.done strong {
+  text-decoration: line-through;
+}
+
+.schedulerTodayEvents time {
+  color: #fb7185;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.schedulerTodayEvents strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #2f3437;
+  font-size: 0.98rem;
+}
+
+.schedulerTodayEvents span,
+.schedulerTodayEvents em {
+  color: #787774;
+  font-size: 0.78rem;
+  font-style: normal;
+}
+
+.schedulerCalendarHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.schedulerCalendarHeader h2 {
+  color: #2f3437;
+  font-size: 1.1rem;
+}
+
+.schedulerCalendarHeader p {
+  margin-top: 4px;
+  color: #9b9a97;
+  font-size: 0.86rem;
+}
+
+.schedulerCalendarControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.schedulerCalendarControls button {
+  min-height: 30px;
+  border: 1px solid #ededeb;
+  border-radius: 6px;
+  background: #fff;
+  color: #37352f;
+  padding: 0 10px;
+  font: inherit;
+  font-weight: 700;
+}
+
+.schedulerCalendarControls strong {
+  min-width: 72px;
+  text-align: center;
+  color: #37352f;
+}
+
+.schedulerCalendarWeekdays,
+.schedulerCalendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.schedulerCalendarWeekdays span {
+  color: #9b9a97;
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-align: center;
+}
+
+.schedulerCalendarGrid button {
+  min-height: 62px;
+  display: grid;
+  align-content: space-between;
+  justify-items: start;
+  border: 1px solid #ededeb;
+  border-radius: 8px;
+  background: #fff;
+  color: #37352f;
+  padding: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.schedulerCalendarGrid button.muted {
+  color: #b9b8b5;
+  background: #fbfbfa;
+}
+
+.schedulerCalendarGrid button.today {
+  border-color: #a8a29e;
+}
+
+.schedulerCalendarGrid button.selected {
+  border-color: #2f3437;
+  background: #f1f1ef;
+}
+
+.schedulerCalendarGrid button small {
+  min-width: 20px;
+  min-height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #2f3437;
+  color: #fff;
+  font-size: 0.72rem;
+}
+
+.schedulerLinkedSchedule {
+  display: grid;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid #ededeb;
+}
+
+.schedulerLinkedHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.schedulerLinkedHeader h3 {
+  margin: 0;
+  color: #2f3437;
+  font-size: 1rem;
+}
+
+.schedulerLinkedHeader p {
+  margin: 4px 0 0;
+  color: #9b9a97;
+  font-size: 0.84rem;
+}
+
+.schedulerViewSwitch {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid #ededeb;
+  border-radius: 999px;
+  background: #fbfbfa;
+}
+
+.schedulerViewSwitch button {
+  min-height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #787774;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.schedulerViewSwitch button.active {
+  background: #2f3437;
+  color: #fff;
+}
+
+.schedulerWeekSlots {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.schedulerWeekSlots button,
+.schedulerMonthSlots button {
+  min-width: 0;
+  border: 1px solid #ededeb;
+  border-radius: 8px;
+  background: #fff;
+  color: #37352f;
+  font: inherit;
+  cursor: pointer;
+}
+
+.schedulerWeekSlots button {
+  min-height: 154px;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(58px, 1fr);
+  align-content: start;
+  justify-items: start;
+  gap: 5px;
+  padding: 10px;
+  text-align: left;
+}
+
+.schedulerWeekSlots button > strong {
+  font-size: 0.84rem;
+}
+
+.schedulerWeekSlots button > span,
+.schedulerMonthSlots button > span {
+  color: #787774;
+  font-size: 0.78rem;
+}
+
+.schedulerWeekSlots button > small {
+  min-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #f1f1ef;
+  color: #37352f;
+  padding: 0 7px;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.schedulerWeekSlots button > div {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  align-self: stretch;
+  align-content: start;
+}
+
+.schedulerWeekSlots em {
+  min-width: 0;
+  overflow: hidden;
+  color: #787774;
+  font-size: 0.75rem;
+  font-style: normal;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schedulerWeekSlots button.today,
+.schedulerMonthSlots button.today {
+  border-color: #a8a29e;
+}
+
+.schedulerWeekSlots button.selected,
+.schedulerMonthSlots button.selected {
+  border-color: #2f3437;
+  background: #f1f1ef;
+}
+
+.schedulerMonthSlots {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.schedulerMonthSlots button {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 5px;
+  padding: 8px;
+}
+
+.schedulerMonthSlots button > strong {
+  font-size: 0.88rem;
+}
+
+.schedulerMonthSlots button > small {
+  min-width: 18px;
+  min-height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #2f3437;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.workspaceUserButton.guestLabel {
+  cursor: default;
+}
+
+.schedulerBoardHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.schedulerBoardHeader h2 {
+  color: #2f3437;
+  font-size: 1.1rem;
+}
+
+.schedulerBoardHeader p {
+  margin-top: 4px;
+  color: #9b9a97;
+  font-size: 0.86rem;
+}
+
+.schedulerFilters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.schedulerFilters button {
+  min-height: 32px;
+  border: 1px solid #ededeb;
+  border-radius: 6px;
+  background: #fff;
+  color: #787774;
+  padding: 0 10px;
+  font-size: 0.82rem;
+}
+
+.schedulerFilters button.active {
+  background: #f1f1ef;
+  color: #2f3437;
+}
+
+.schedulerList {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0;
+  overflow: auto;
+}
+
+.schedulerTableHead,
+.schedulerItem {
+  min-width: 760px;
+  display: grid;
+  grid-template-columns: minmax(220px, 1.2fr) 110px 150px minmax(180px, 1fr) 70px;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid #ededeb;
+}
+
+.schedulerTableHead {
+  min-height: 38px;
+  color: #9b9a97;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.schedulerItem {
+  min-height: 50px;
+  padding: 7px 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.schedulerNameCell {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.schedulerNameCell strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #37352f;
+  font-weight: 650;
+}
+
+.schedulerCheck {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  border: 1px solid #d3d3d1;
+  border-radius: 4px;
+  background: #fff;
+  color: #2f3437;
+  font-size: 0.82rem;
+}
+
+.schedulerTypePill {
+  width: fit-content;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #f4eeee;
+  color: #7d4e4e;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.schedulerItem time,
+.schedulerItem small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #787774;
+  font-size: 0.85rem;
+}
+
+.schedulerDelete {
+  min-height: 28px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #9b9a97;
+  padding: 0 8px;
+}
+
+.schedulerDelete:hover {
+  background: #f1f1ef;
+  color: #b91c1c;
+}
+
+.schedulerItem.done {
+  background: #fafaf9;
+}
+
+.schedulerItem.done .schedulerNameCell strong {
+  color: #6b7280;
+  text-decoration: line-through;
+}
+
+@media (max-width: 980px) {
+  .schedulerShell {
+    grid-template-columns: 1fr;
+  }
+
+  .schedulerSidebar {
+    min-height: auto;
+    position: static;
+    border-right: 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .schedulerSideGroup {
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+  }
+
+  .schedulerSideGroup > span {
+    display: none;
+  }
+
+  .schedulerPage {
+    width: min(100% - 28px, 1080px);
+    padding-top: 28px;
+  }
+
+  .schedulerHero,
+  .schedulerQuickAdd {
+    grid-template-columns: 1fr;
+  }
+
+  .schedulerStats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .schedulerHero h1 {
+    font-size: 2rem;
+  }
+
+  .schedulerStats {
+    grid-template-columns: 1fr;
+  }
+}

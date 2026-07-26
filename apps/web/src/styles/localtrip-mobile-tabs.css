@@ -1,0 +1,672 @@
+/* Clean mobile menu-bar pass */
+.ltFold {
+  min-width: 0;
+}
+
+.ltFold > summary {
+  list-style: none;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  color: #111827;
+  font-weight: 900;
+}
+
+.ltFold > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ltFold > summary::after {
+  content: "+";
+  width: 26px;
+  height: 26px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid #dbe3ee;
+  border-radius: 999px;
+  color: #64748b;
+  font-weight: 900;
+}
+
+.ltFold[open] > summary::after {
+  content: "-";
+  border-color: #99f6e4;
+  background: #ecfeff;
+  color: #0f766e;
+}
+
+.ltFold > summary .ltTextButton,
+.ltFold > summary strong {
+  margin-left: auto;
+}
+
+.ltFilterFold {
+  margin: 14px 0 18px;
+  padding: 0 16px 16px;
+  border: 1px solid #dbe3ee;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
+}
+
+.ltFilterFold .ltFilterBar {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+
+.ltMyPanel.ltFold {
+  padding-top: 0;
+}
+
+.ltMyPanel.ltFold > summary {
+  margin-bottom: 10px;
+}
+
+@media (max-width: 760px) {
+  .ltShell {
+    background: #f7fafc;
+  }
+
+  .ltNav {
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: none;
+  }
+
+  .ltNavInner {
+    min-height: 56px;
+  }
+
+  .ltBrand strong {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    font-size: 0.76rem;
+  }
+
+  .ltBrand span {
+    max-width: 128px;
+    font-size: 0.95rem;
+  }
+
+  .ltNavAction {
+    min-height: 34px;
+    max-width: 40vw;
+    border-radius: 999px;
+    background: #f8fafc;
+    color: #334155;
+    border-color: #dbe3ee;
+    box-shadow: none;
+  }
+
+  .ltNavAction:hover {
+    transform: none;
+    background: #f1f5f9;
+  }
+
+  .ltNavLinks {
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    left: 10px;
+    right: 10px;
+    min-height: 58px;
+    padding: 6px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid #dbe3ee;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+  }
+
+  .ltNavLinks a {
+    min-height: 46px;
+    border-radius: 8px;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 900;
+  }
+
+  .ltNavLinks a.active {
+    background: #0f766e;
+    color: #ffffff;
+    box-shadow: none;
+  }
+
+  .ltPage {
+    width: min(100% - 20px, 1180px);
+    padding-top: 16px;
+  }
+
+  .ltHero {
+    gap: 14px;
+  }
+
+  .ltHeroCopy h1 {
+    max-width: 100%;
+    font-size: 1.86rem;
+  }
+
+  .ltHeroCopy p {
+    font-size: 0.92rem;
+  }
+
+  .ltHeroActions {
+    grid-template-columns: 1fr;
+  }
+
+  .ltHeroVisual {
+    grid-template-columns: 1fr;
+    grid-template-rows: 190px auto;
+    gap: 8px;
+  }
+
+  .ltHeroVisual .ltHeroImage:not(.main) {
+    display: none;
+  }
+
+  .ltHeroImage.main {
+    grid-row: auto;
+  }
+
+  .ltHeroPanel {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 0;
+    padding: 8px;
+  }
+
+  .ltDestinationGrid,
+  .ltPlansGrid,
+  .ltDayCards,
+  .ltMyGrid {
+    gap: 10px;
+  }
+
+  .ltDestinationCard,
+  .ltPlanCard,
+  .ltRecentPlans,
+  .ltPlannerForm,
+  .ltPlannerPreview,
+  .ltSelectedSummary,
+  .ltGeneratedPreview,
+  .ltFilterBar,
+  .ltTimelineDay,
+  .ltPlanHero,
+  .ltFactItem,
+  .ltDayCard,
+  .ltMarkdownDayBlock,
+  .ltMyHero,
+  .ltMyPanel,
+  .ltFilterFold {
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.045);
+  }
+
+  .ltMyHero {
+    grid-template-columns: 1fr;
+  }
+
+  .ltMyAvatar {
+    display: none;
+  }
+
+  .ltMyActions {
+    grid-template-columns: 1fr;
+  }
+
+  .ltMyStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ltFold > summary {
+    min-height: 46px;
+  }
+}
+
+@media (max-width: 420px) {
+  .ltNavLinks {
+    left: 8px;
+    right: 8px;
+  }
+
+  .ltNavLinks a {
+    font-size: 0.66rem;
+  }
+
+  .ltHeroCopy h1 {
+    font-size: 1.72rem;
+  }
+
+  .ltMyStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Icon-first mobile tab bar */
+.ltTabIcon {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .ltNavLinks {
+    align-items: center;
+  }
+
+  .ltNavLinks a {
+    display: grid;
+    grid-template-rows: 22px auto;
+    place-items: center;
+    gap: 3px;
+    min-height: 48px;
+    padding: 5px 2px;
+  }
+
+  .ltTabIcon {
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+  }
+
+  .ltTabIcon svg {
+    width: 21px;
+    height: 21px;
+    display: block;
+  }
+
+  .ltTabLabel {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 0.66rem;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ltNavLinks a.active {
+    background: #0f766e;
+  }
+
+  .ltNavLinks a.active .ltTabIcon {
+    color: #ffffff;
+  }
+}
+
+@media (max-width: 420px) {
+  .ltNavLinks a {
+    grid-template-rows: 24px auto;
+    min-height: 50px;
+  }
+
+  .ltTabLabel {
+    font-size: 0.62rem;
+  }
+}
+
+/* Product polish: soft rounded app UI */
+:root {
+  --lt-green: #10b981;
+  --lt-green-dark: #047857;
+  --lt-mint: #ecfdf5;
+  --lt-ink: #17202f;
+  --lt-muted: #64748b;
+  --lt-line: #e2e8f0;
+  --lt-card: rgba(255, 255, 255, 0.92);
+}
+
+.loginShell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(340px, 420px);
+  gap: 24px;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(16, 185, 129, 0.22), transparent 28%),
+    radial-gradient(circle at 80% 0%, rgba(56, 189, 248, 0.18), transparent 26%),
+    linear-gradient(180deg, #f8fffc 0%, #eef8f3 100%);
+}
+
+.loginHeroPanel,
+.loginCard {
+  border: 1px solid rgba(226, 232, 240, 0.92);
+  border-radius: 28px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.1);
+}
+
+.loginHeroPanel {
+  min-height: 560px;
+  padding: 36px;
+  background:
+    linear-gradient(180deg, rgba(5, 46, 22, 0.08), rgba(6, 78, 59, 0.72)),
+    url("https://commons.wikimedia.org/wiki/Special:Redirect/file/SeoulForest.jpg?width=1400") center/cover;
+}
+
+.loginHeroPanel::before {
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.02), rgba(2, 44, 34, 0.7));
+}
+
+.loginHeroPanel > span {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.loginHeroPanel h2 {
+  max-width: 520px;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+.loginPreviewStack div,
+.loginDeviceMock {
+  border-radius: 22px;
+}
+
+.loginCard {
+  width: min(420px, 100%);
+  padding: 28px;
+  gap: 14px;
+  align-self: center;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.loginCard::before {
+  height: 0;
+}
+
+.loginCard .sidebarEyebrow {
+  width: fit-content;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: var(--lt-mint);
+  color: var(--lt-green-dark);
+  font-size: 0.72rem;
+}
+
+.loginCard h1 {
+  color: var(--lt-ink);
+  font-size: 1.72rem;
+  letter-spacing: 0;
+}
+
+.loginCard p {
+  color: var(--lt-muted);
+}
+
+.authSwitch {
+  padding: 5px;
+  border: 1px solid var(--lt-line);
+  border-radius: 999px;
+  background: #f8fafc;
+}
+
+.authSwitch button {
+  min-height: 42px;
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+.authSwitch button.active {
+  background: var(--lt-green);
+  color: #fff;
+  box-shadow: 0 10px 20px rgba(16, 185, 129, 0.24);
+}
+
+.providerButtons {
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.providerButton {
+  min-height: 48px;
+  justify-content: center;
+  padding: 0 10px;
+  border-radius: 18px;
+  background: #fff;
+  font-size: 0.86rem;
+}
+
+.providerButton small {
+  display: none;
+}
+
+.providerMark {
+  width: 24px;
+  height: 24px;
+}
+
+.loginField {
+  gap: 7px;
+}
+
+.loginField span {
+  color: #475569;
+  font-weight: 900;
+}
+
+.loginField input {
+  min-height: 50px;
+  padding: 0 16px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border-color: var(--lt-line);
+}
+
+.loginField input:focus {
+  border-color: var(--lt-green);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.14);
+  outline: none;
+}
+
+.passwordGuide span {
+  min-height: 32px;
+  border-radius: 999px;
+}
+
+.passwordGuide span.ok {
+  background: var(--lt-mint);
+  color: var(--lt-green-dark);
+}
+
+.loginButton {
+  min-height: 52px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--lt-green), var(--lt-green-dark));
+  box-shadow: 0 14px 26px rgba(16, 185, 129, 0.28);
+  font-weight: 900;
+}
+
+.loginButton:hover {
+  background: linear-gradient(180deg, #12c48a, #047857);
+}
+
+.loginHint,
+.loginNotice {
+  border-radius: 18px;
+}
+
+.loginFineprint {
+  color: #94a3b8;
+}
+
+.ltShell {
+  background: linear-gradient(180deg, #fbfffd 0%, #f4f8f6 100%);
+  color: var(--lt-ink);
+}
+
+.ltDestinationCard,
+.ltPlanCard,
+.ltRecentPlans,
+.ltPlannerForm,
+.ltPlannerPreview,
+.ltSelectedSummary,
+.ltGeneratedPreview,
+.ltFilterBar,
+.ltTimelineDay,
+.ltPlanHero,
+.ltFactItem,
+.ltDayCard,
+.ltMarkdownDayBlock,
+.ltMyHero,
+.ltMyPanel,
+.ltFilterFold {
+  border-color: var(--lt-line);
+  border-radius: 22px;
+  background: var(--lt-card);
+  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.07);
+}
+
+.ltPrimaryButton,
+.ltHeroActions a:first-child,
+.ltPlannerTeaser button {
+  border-radius: 16px;
+  border-color: var(--lt-green);
+  background: linear-gradient(180deg, var(--lt-green), var(--lt-green-dark));
+  box-shadow: 0 14px 28px rgba(16, 185, 129, 0.24);
+}
+
+.ltSecondaryButton,
+.ltHeroActions a:last-child,
+.ltBackButton {
+  border-radius: 16px;
+  background: #fff;
+}
+
+.ltDestinationPhoto,
+.ltHeroImage,
+.ltMiniDestPhoto,
+.ltDayCover {
+  border-radius: 18px;
+}
+
+.ltAutocompleteContainer input {
+  border-radius: 18px;
+}
+
+.ltAutocompleteDropdown {
+  border-radius: 22px;
+  padding: 8px;
+}
+
+.ltAutocompleteDropdown button {
+  border-radius: 16px;
+}
+
+.ltSelectedTag {
+  border-radius: 999px;
+  background: var(--lt-mint);
+  color: var(--lt-green-dark);
+  border-color: #bbf7d0;
+}
+
+.ltSelectedTag button {
+  background: rgba(4, 120, 87, 0.08);
+}
+
+.ltSelectedSummary {
+  background: linear-gradient(180deg, #ffffff, #f7fffb);
+}
+
+.ltMiniDestCard {
+  padding: 8px;
+  border: 1px solid var(--lt-line);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.ltMiniDestPhoto {
+  border-radius: 14px;
+}
+
+.ltSegmented button,
+.ltInterestGroup button,
+.ltTagRow span,
+.ltPlanMeta span {
+  border-radius: 999px;
+}
+
+.ltSegmented button.active,
+.ltInterestGroup button.active {
+  background: var(--lt-mint);
+  color: var(--lt-green-dark);
+  border-color: #86efac;
+}
+
+.ltFold > summary::after {
+  border-radius: 999px;
+}
+
+@media (max-width: 760px) {
+  .loginShell {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .loginHeroPanel {
+    min-height: 150px;
+    padding: 20px;
+    border-radius: 26px;
+  }
+
+  .loginHeroPanel h2 {
+    max-width: 12em;
+    font-size: 1.62rem;
+  }
+
+  .loginCard {
+    padding: 20px;
+    border-radius: 26px;
+  }
+
+  .loginCard h1 {
+    font-size: 1.42rem;
+  }
+
+  .providerButtons {
+    grid-template-columns: 1fr;
+  }
+
+  .ltNavLinks {
+    border-radius: 24px;
+    padding: 7px;
+  }
+
+  .ltNavLinks a {
+    border-radius: 18px;
+  }
+
+  .ltNavAction {
+    border-radius: 999px;
+  }
+
+  .ltPage {
+    width: min(100% - 18px, 1180px);
+  }
+
+  .ltDestinationCard,
+  .ltPlanCard,
+  .ltRecentPlans,
+  .ltPlannerForm,
+  .ltPlannerPreview,
+  .ltSelectedSummary,
+  .ltGeneratedPreview,
+  .ltFilterBar,
+  .ltTimelineDay,
+  .ltPlanHero,
+  .ltFactItem,
+  .ltDayCard,
+  .ltMarkdownDayBlock,
+  .ltMyHero,
+  .ltMyPanel,
+  .ltFilterFold {
+    border-radius: 20px;
+  }
+
+  .ltPlannerForm,
+  .ltPlannerPreview,
+  .ltMyPanel {
+    padding: 16px;
+  }
+}

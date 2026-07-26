@@ -1,0 +1,500 @@
+/* Auth onboarding refresh */
+.loginShell {
+  min-height: 100vh;
+  grid-template-columns: minmax(0, 0.86fr) minmax(360px, 440px);
+  gap: 28px;
+  padding: 28px;
+  background:
+    linear-gradient(135deg, rgba(15, 118, 110, 0.12) 0%, transparent 34%),
+    linear-gradient(315deg, rgba(49, 130, 246, 0.14) 0%, transparent 30%),
+    #f7fafc;
+}
+
+.loginHeroPanel,
+.loginCard {
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 46px rgba(15, 23, 42, 0.09);
+}
+
+.loginHeroPanel {
+  min-height: 580px;
+  display: grid;
+  align-content: end;
+  gap: 18px;
+  padding: 34px;
+  overflow: hidden;
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(18, 52, 59, 0.04), rgba(18, 52, 59, 0.18)),
+    url("https://commons.wikimedia.org/wiki/Special:Redirect/file/SeoulForest.jpg?width=1400") center/cover;
+  color: #ffffff;
+}
+
+.loginHeroPanel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.08), rgba(15, 23, 42, 0.74));
+}
+
+.loginHeroPanel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.loginHeroPanel > span {
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.loginHeroPanel h2 {
+  max-width: 560px;
+  color: #ffffff;
+  font-size: clamp(2.4rem, 5vw, 4.4rem);
+  line-height: 1.02;
+  font-weight: 900;
+}
+
+.loginHeroPanel p {
+  max-width: 520px;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 1rem;
+  line-height: 1.68;
+}
+
+.loginPreviewStack {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.loginPreviewStack div {
+  display: grid;
+  gap: 5px;
+  padding: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(12px);
+}
+
+.loginPreviewStack strong {
+  color: #ffffff;
+  font-size: 0.92rem;
+}
+
+.loginPreviewStack span {
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 0.78rem;
+}
+
+.loginCard {
+  align-self: center;
+  width: min(440px, 100%);
+  display: grid;
+  gap: 15px;
+  padding: 24px;
+}
+
+.loginCard h1 {
+  font-size: 1.72rem;
+  line-height: 1.18;
+}
+
+.loginCard p {
+  line-height: 1.58;
+}
+
+.authSwitch {
+  padding: 4px;
+  border: 1px solid #d8e4f2;
+  border-radius: 8px;
+  background: #f6f9fd;
+}
+
+.authSwitch button {
+  min-height: 38px;
+  border: 0;
+  border-radius: 6px;
+}
+
+.authSwitch button.active {
+  background: #ffffff;
+  color: #0f766e;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.providerButtons {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.providerButton {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-color: #d8e4f2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #243041;
+  font-weight: 900;
+  text-align: center;
+}
+
+.providerButton.google .providerMark {
+  color: #2563eb;
+}
+
+.providerButton.naver {
+  border-color: rgba(3, 199, 90, 0.28);
+}
+
+.providerButton.naver .providerMark {
+  color: #03c75a;
+}
+
+.providerMark {
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.loginDivider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #8a94a6;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.loginDivider::before,
+.loginDivider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: #e5edf6;
+}
+
+.loginField input {
+  min-height: 46px;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.loginButton {
+  min-height: 46px;
+  border-radius: 8px;
+  background: #0f766e;
+  box-shadow: 0 12px 24px rgba(15, 118, 110, 0.2);
+}
+
+.loginButton:hover {
+  background: #115e59;
+}
+
+.loginFineprint {
+  color: #64748b;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+@media (max-width: 920px) {
+  .loginShell {
+    grid-template-columns: 1fr;
+    align-content: start;
+    padding: 18px;
+  }
+
+  .loginHeroPanel {
+    min-height: 250px;
+    align-content: end;
+    padding: 22px;
+  }
+
+  .loginHeroPanel h2 {
+    font-size: 2.15rem;
+  }
+
+  .loginHeroPanel p {
+    font-size: 0.94rem;
+  }
+
+  .loginPreviewStack {
+    display: none;
+  }
+
+  .loginCard {
+    justify-self: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .loginShell {
+    display: grid;
+    gap: 12px;
+    padding: 10px;
+    background: #f7fafc;
+  }
+
+  .loginHeroPanel {
+    min-height: 168px;
+    padding: 18px;
+  }
+
+  .loginHeroPanel > span,
+  .loginHeroPanel p {
+    display: none;
+  }
+
+  .loginHeroPanel h2 {
+    max-width: 9em;
+    font-size: 1.72rem;
+  }
+
+  .loginCard {
+    width: 100%;
+    gap: 13px;
+    padding: 18px;
+  }
+
+  .loginCard h1 {
+    font-size: 1.42rem;
+  }
+
+  .loginCard p {
+    font-size: 0.9rem;
+  }
+}
+
+/* Auth quality pass */
+.loginShell {
+  position: relative;
+  overflow: hidden;
+}
+
+.loginShell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 70%);
+}
+
+.loginHeroPanel {
+  isolation: isolate;
+}
+
+.loginDeviceMock {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  z-index: 1;
+  width: min(260px, 34%);
+  min-height: 210px;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(18px);
+}
+
+.mockTopline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mockTopline span {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.mockTopline strong {
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 0.82rem;
+}
+
+.mockBar {
+  width: 62%;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.mockBar.wide {
+  width: 86%;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.mockGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.mockGrid span {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.loginCard {
+  position: relative;
+  overflow: hidden;
+}
+
+.loginCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(90deg, #0f766e, #2563eb, #03c75a);
+}
+
+.loginCard .sidebarEyebrow {
+  color: #0f766e;
+}
+
+.providerButton {
+  position: relative;
+  min-width: 0;
+  padding: 0 74px 0 14px;
+  justify-content: flex-start;
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.providerButton:hover {
+  transform: translateY(-1px);
+  border-color: #b8c8d9;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+}
+
+.providerButton small {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.googleMark {
+  border-color: #dbe3ee;
+  color: #2563eb;
+  background:
+    linear-gradient(90deg, #4285f4 0 25%, #34a853 25% 50%, #fbbc05 50% 75%, #ea4335 75%) bottom/100% 3px no-repeat,
+    #ffffff;
+}
+
+.naverMark {
+  border-color: #03c75a;
+  background: #03c75a;
+  color: #ffffff !important;
+}
+
+.loginNotice {
+  padding: 10px 12px;
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.passwordGuide {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.passwordGuide span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 1px solid #dbe3ee;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.passwordGuide span.ok {
+  border-color: #99f6e4;
+  background: #ecfeff;
+  color: #0f766e;
+}
+
+.loginButton:disabled {
+  border-color: #cad5e2;
+  background: #dbe3ee;
+  color: #7b8794;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.loginHint {
+  border-radius: 8px;
+  line-height: 1.48;
+}
+
+@media (max-width: 920px) {
+  .loginDeviceMock {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .loginShell::before {
+    display: none;
+  }
+
+  .authSwitch {
+    position: sticky;
+    top: 8px;
+    z-index: 2;
+  }
+
+  .providerButton {
+    min-height: 46px;
+  }
+
+  .passwordGuide {
+    grid-template-columns: 1fr;
+  }
+}

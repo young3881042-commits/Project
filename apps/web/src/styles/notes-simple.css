@@ -1,0 +1,1327 @@
+/* Last-pass notes simplification. Keep /notes compact and stable on phones. */
+body:has(.aiNoteShell) {
+  background: #ffffff !important;
+}
+
+.aiNoteShell {
+  background: #ffffff !important;
+}
+
+.aiNoteBoardPanel {
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.aiNoteBoardPanel .projectTopbar,
+.projectBoardHero {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.aiNoteBoardPanel .projectTopbar {
+  margin: 0 0 12px !important;
+}
+
+.aiNoteBoardPanel .projectTopbar h1 {
+  font-size: 1.55rem !important;
+  line-height: 1.2 !important;
+}
+
+.projectBreadcrumb,
+.projectFloatingNote {
+  display: none !important;
+}
+
+.projectTopActions {
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.projectTopActions button,
+.projectNewItemButton,
+.memoDangerButton,
+.memoInlineEditor button,
+.notePadBoardDelete {
+  border-radius: 8px !important;
+}
+
+.projectBoardHero {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 10px !important;
+  align-items: center !important;
+  margin: 0 0 10px !important;
+}
+
+.memoBoardTitleButton {
+  min-height: 34px !important;
+  font-size: 1.12rem !important;
+}
+
+.memoBoardNavigator {
+  margin: 0 0 10px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.memoBoardNavigator button {
+  min-height: 36px !important;
+  padding: 0 10px !important;
+  border-color: #e5e7eb !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.memoBoardNavigator button.active {
+  border-color: #2563eb !important;
+  background: #eff6ff !important;
+}
+
+.memoBoardNavigator .memoNavIcon {
+  display: none !important;
+}
+
+.memoBoardNavigator button small {
+  min-width: auto !important;
+  min-height: auto !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.notePadStart {
+  margin-top: 8px !important;
+}
+
+.notePadBoardGrid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+}
+
+.notePadStart .notePadBoardOpen,
+.notePadStart .notePadAddBoard {
+  min-height: 58px !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  padding: 12px !important;
+  box-shadow: none !important;
+}
+
+.notePadStart .notePadBoardOpen .memoNavIcon,
+.notePadStart .notePadAddBoard .memoNavIcon {
+  display: none !important;
+}
+
+.memoInlineEditor {
+  margin: 10px 0 !important;
+  padding: 12px !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.memoInlineEditor header {
+  align-items: center !important;
+}
+
+.memoInlineEditor header span,
+.memoInlineEditor.editing .memoInlinePreview {
+  display: none !important;
+}
+
+.memoInlineTitleButton {
+  min-height: 32px !important;
+  font-size: 1rem !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.memoInlineTools {
+  gap: 6px !important;
+}
+
+.memoInlineTools button {
+  min-height: 34px !important;
+  padding: 0 10px !important;
+}
+
+.memoFreeformBoard {
+  min-height: auto !important;
+  display: grid !important;
+  gap: 8px !important;
+  margin-top: 8px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.memoBoardCard {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 48px !important;
+  overflow: visible !important;
+  resize: none !important;
+  padding: 12px !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.memoMoveHandle {
+  display: none !important;
+}
+
+.memoBoardCard .memoCardName,
+.memoChecklistCardMeta {
+  padding-left: 0 !important;
+}
+
+.memoCardName,
+.memoCardNameText {
+  font-size: 0.98rem !important;
+  line-height: 1.35 !important;
+}
+
+.memoBoardAddNoteTile {
+  display: none !important;
+}
+
+.memoContextMenu {
+  position: fixed !important;
+  z-index: 220 !important;
+  display: grid !important;
+  gap: 4px !important;
+  min-width: 132px !important;
+  padding: 6px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.16) !important;
+}
+
+.memoContextMenu button {
+  min-height: 34px !important;
+  padding: 0 10px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: #111827 !important;
+  text-align: left !important;
+}
+
+.memoContextMenu button:hover {
+  background: #f1f5f9 !important;
+}
+
+.memoContextMenu .dangerMenuAction {
+  color: #b91c1c !important;
+}
+
+@media (max-width: 760px) {
+  .aiNoteShell {
+    display: block !important;
+    min-height: 100svh !important;
+  }
+
+  .aiNotePage {
+    width: 100% !important;
+    padding: 0 0 22px !important;
+  }
+
+  .aiNoteBoardPanel {
+    min-height: 100svh !important;
+    padding: 0 12px 22px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .aiNoteBoardPanel .projectTopbar,
+  .projectBoardHero {
+    display: none !important;
+  }
+
+  .memoBoardNavigator {
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+    display: flex !important;
+    gap: 6px !important;
+    align-items: center !important;
+    margin: 8px -12px 8px !important;
+    padding: 8px 12px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    background: #ffffff !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+  }
+
+  .memoBoardNavigator::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .memoBoardNavigator button {
+    flex: 0 0 auto !important;
+    min-height: 34px !important;
+    padding: 0 9px !important;
+    font-size: 0.82rem !important;
+  }
+
+  .memoBoardNavigator .memoBoardAddButton span {
+    font-size: 0 !important;
+  }
+
+  .memoBoardNavigator .memoBoardAddButton::after {
+    content: "+" !important;
+    font-size: 1.05rem !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+  }
+
+  .notePadBoardGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .aiNoteBoardPanel:not(.memoWindowIsOpen) > .memoInlineEditor {
+    display: none !important;
+  }
+
+  .aiNoteBoardPanel.memoWindowIsOpen::before {
+    content: "" !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 110 !important;
+    background: rgba(15, 23, 42, 0.28) !important;
+  }
+
+  .memoInlineEditor {
+    margin: 0 !important;
+    padding: 12px !important;
+  }
+
+  .aiNoteBoardPanel.memoWindowIsOpen > .memoInlineEditor {
+    position: fixed !important;
+    top: 64px !important;
+    right: 10px !important;
+    bottom: 12px !important;
+    left: 10px !important;
+    z-index: 130 !important;
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    overflow: auto !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22) !important;
+  }
+
+  .memoInlineEditor header {
+    grid-template-columns: 1fr auto !important;
+    gap: 8px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 2 !important;
+    margin: -12px -12px 10px !important;
+    padding: 10px 12px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    background: #ffffff !important;
+  }
+
+  .memoInlineTools {
+    display: flex !important;
+  }
+
+  .memoInlineTools button {
+    min-height: 36px !important;
+    padding: 0 9px !important;
+    font-size: 0.82rem !important;
+  }
+
+  .memoInlineTools .memoDangerButton {
+    display: none !important;
+  }
+
+  .memoMarkdownComposer textarea,
+  .memoChecklistEditor {
+    min-height: calc(100svh - 210px) !important;
+  }
+
+  .memoInlinePreview {
+    min-height: 84px !important;
+  }
+
+  .memoBoardCard {
+    min-height: 46px !important;
+    padding: 11px 12px !important;
+  }
+
+  .memoBoardAddNoteTile {
+    min-height: 54px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    width: 100% !important;
+    border: 1px dashed #bfdbfe !important;
+    border-radius: 8px !important;
+    background: #f8fbff !important;
+    color: #1d4ed8 !important;
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+  }
+
+  .memoBoardAddNoteTile .memoNavIcon {
+    width: 22px !important;
+    height: 22px !important;
+  }
+}
+
+.memoInlinePreview {
+  min-height: 96px !important;
+  padding: 10px !important;
+}
+
+.memoInlinePreview .markdownRender {
+  gap: 7px !important;
+  font-size: 0.95rem !important;
+  line-height: 1.62 !important;
+  overflow-wrap: anywhere !important;
+}
+
+.memoInlinePreview .markdownRender h1,
+.memoInlinePreview .markdownRender h2,
+.memoInlinePreview .markdownRender h3 {
+  margin: 0 !important;
+  color: #111827 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+.memoInlinePreview .markdownRender h1 {
+  font-size: 1.15rem !important;
+  line-height: 1.28 !important;
+}
+
+.memoInlinePreview .markdownRender h2 {
+  font-size: 1.04rem !important;
+  line-height: 1.32 !important;
+}
+
+.memoInlinePreview .markdownRender h3 {
+  font-size: 0.98rem !important;
+  line-height: 1.36 !important;
+}
+
+.markdownRender ul,
+.markdownRender ol {
+  display: grid !important;
+  gap: 5px !important;
+  margin: 0 !important;
+  padding-left: 1.35rem !important;
+}
+
+.markdownRender li {
+  margin: 0 !important;
+  padding-left: 0.12rem !important;
+  line-height: 1.6 !important;
+}
+
+.markdownRender li > p {
+  display: inline !important;
+  margin: 0 !important;
+}
+
+.markdownRender ul.contains-task-list {
+  padding-left: 0 !important;
+  list-style: none !important;
+}
+
+.markdownRender .task-list-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: 24px !important;
+  padding-left: 0 !important;
+  list-style: none !important;
+}
+
+.markdownRender .task-list-item > input[type="checkbox"],
+.markdownRender input[type="checkbox"].markdownCheckbox,
+.markdownRender input[type="checkbox"],
+.markdownTaskLine input,
+.memoChecklistEditor input[type="checkbox"] {
+  flex: 0 0 auto !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
+  border-radius: 4px !important;
+  accent-color: #2563eb !important;
+  vertical-align: middle !important;
+}
+
+.markdownRender .task-list-item > input[type="checkbox"] {
+  transform: translateY(1px) !important;
+}
+
+.markdownTaskLine {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: #172033 !important;
+}
+
+.memoMarkdownComposer {
+  display: block !important;
+  min-width: 0 !important;
+  gap: 10px !important;
+}
+
+.memoMarkdownComposer textarea,
+.memoChecklistEditor {
+  min-height: 220px !important;
+  font-size: 16px !important;
+}
+
+.memoMarkdownComposer textarea {
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  padding: 12px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.62 !important;
+  resize: vertical !important;
+}
+
+.memoMarkdownComposer textarea:focus {
+  border-color: #2563eb !important;
+  outline: 2px solid rgba(37, 99, 235, 0.18) !important;
+  outline-offset: 1px !important;
+}
+
+.memoChecklistEditor {
+  display: grid !important;
+  align-content: start !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  padding: 10px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+}
+
+.memoChecklistItem {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 8px !important;
+  align-items: center !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+.memoChecklistItem input:not([type="checkbox"]) {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 36px !important;
+  padding: 8px 10px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 7px !important;
+  font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif !important;
+  font-size: 15px !important;
+  line-height: 1.45 !important;
+}
+
+.memoChecklistItem button,
+.memoChecklistAdd,
+.memoMarkdownToolButton {
+  min-height: 34px !important;
+  padding: 0 10px !important;
+  border-radius: 8px !important;
+  white-space: nowrap !important;
+}
+
+.memoMarkdownToolbar {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  align-items: center !important;
+  min-width: 0 !important;
+  margin: 0 0 8px !important;
+}
+
+.memoMarkdownToolButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid #d1d5db !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  font-size: 0.88rem !important;
+}
+
+@media (max-width: 760px) {
+  .memoMarkdownComposer {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .memoMarkdownToolbar {
+    gap: 5px !important;
+    overflow-x: auto !important;
+    padding-bottom: 2px !important;
+  }
+
+  .memoMarkdownToolButton {
+    min-height: 36px !important;
+    padding: 0 9px !important;
+    font-size: 0.82rem !important;
+  }
+
+  .memoChecklistItem button {
+    flex: 0 0 auto !important;
+  }
+
+  .memoMarkdownComposer textarea,
+  .memoChecklistEditor {
+    max-width: 100% !important;
+  }
+}
+
+/* 2026-05-27 mobile memo polish */
+.workspaceNavigatorLinks {
+  gap: 4px !important;
+  padding: 5px !important;
+  border: 1px solid #dbe4ef !important;
+  border-radius: 10px !important;
+  background: #f1f5f9 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+}
+
+.workspaceNavigatorLinks a {
+  min-height: 38px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #475569 !important;
+  box-shadow: none !important;
+}
+
+.workspaceNavigatorLinks a:hover,
+.workspaceNavigatorLinks a.active {
+  border-color: #bfdbfe !important;
+  background: #ffffff !important;
+  color: #1d4ed8 !important;
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.06) !important;
+}
+
+.workspaceNavigatorLinks a .memoNavIcon,
+.workspaceNavigatorLinks a:hover .memoNavIcon,
+.workspaceNavigatorLinks a.active .memoNavIcon {
+  background: transparent !important;
+  color: currentColor !important;
+}
+
+.workspaceNavigatorAccount {
+  row-gap: 5px !important;
+}
+
+.workspaceNavigatorAccount small {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  color: #2563eb !important;
+  font-weight: 950 !important;
+}
+
+.workspaceNavigatorAccount small::after {
+  content: ">";
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.memoBoardNavigator .memoBoardAddButton {
+  min-height: 36px !important;
+  border-style: solid !important;
+  border-color: #bbf7d0 !important;
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+}
+
+.memoBoardNavigator .memoBoardAddButton:hover {
+  border-color: #86efac !important;
+  background: #dcfce7 !important;
+}
+
+.memoBoardAddNoteTile {
+  border-style: solid !important;
+  border-color: #bfdbfe !important;
+  background: #eff6ff !important;
+  box-shadow: none !important;
+}
+
+.memoInlineEditor header {
+  align-items: center !important;
+}
+
+.memoInlineEditor header .memoNavIcon {
+  display: inline-flex !important;
+}
+
+.memoInlineEditor header input {
+  min-height: 42px !important;
+  box-sizing: border-box !important;
+  padding: 0 12px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  line-height: 1.2 !important;
+}
+
+.memoInlineTools {
+  gap: 16px !important;
+  align-items: center !important;
+}
+
+.memoInlineTools button {
+  min-height: 42px !important;
+  box-sizing: border-box !important;
+}
+
+.memoWindowCloseButton {
+  width: 42px !important;
+  min-width: 42px !important;
+  padding: 0 !important;
+}
+
+.memoWindowCloseButton .memoNavIcon {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+}
+
+.memoInlineEditor.previewing .memoReadPreview,
+.memoInlineEditor.previewing .memoInlinePreview {
+  min-height: 64px !important;
+}
+
+.memoMarkdownToolbar {
+  gap: 8px !important;
+}
+
+.memoMarkdownToolButton {
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 !important;
+}
+
+.memoMarkdownToolButton .memoNavIcon {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+}
+
+.memoMarkdownComposer textarea {
+  display: block !important;
+  border-color: #cbd5e1 !important;
+  background-clip: padding-box !important;
+  outline: none !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02) !important;
+}
+
+.memoMarkdownComposer textarea:focus {
+  border-color: #2563eb !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14) !important;
+}
+
+@media (max-width: 760px) {
+  .workspaceNavigatorLinks {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+    padding: 6px !important;
+  }
+
+  .workspaceNavigatorLinks a {
+    min-height: 46px !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    padding: 4px 2px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .workspaceNavigatorAccount {
+    min-height: 46px !important;
+  }
+
+  .memoBoardNavigator button,
+  .memoBoardNavigator .memoBoardAddButton {
+    min-height: 36px !important;
+  }
+
+  .memoBoardNavigator .memoBoardAddButton {
+    min-width: 38px !important;
+  }
+
+  .memoBoardAddNoteTile {
+    border-style: solid !important;
+    background: #eff6ff !important;
+  }
+
+  .aiNoteBoardPanel.memoWindowIsOpen > .memoInlineEditor.previewing {
+    bottom: auto !important;
+    max-height: calc(100svh - 78px) !important;
+    grid-template-rows: auto auto !important;
+  }
+
+  .aiNoteBoardPanel.memoWindowIsOpen > .memoInlineEditor.editing {
+    bottom: 12px !important;
+  }
+
+  .memoInlineEditor header {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+  }
+
+  .memoInlineTools {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 16px !important;
+  }
+
+  .memoInlineTools button {
+    flex: 0 0 auto !important;
+    min-height: 42px !important;
+  }
+
+  .memoInlineTools button.active {
+    min-width: 64px !important;
+  }
+
+  .memoInlineEditor header input {
+    min-height: 42px !important;
+  }
+
+  .memoMarkdownComposer textarea,
+  .memoChecklistEditor {
+    min-height: calc(100svh - 230px) !important;
+  }
+
+  .memoMarkdownToolButton {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+  }
+}
+
+/* 2026-05-27 memo modal checklist/rendering repair */
+.markdownRender .markdownTaskList,
+.markdownRender ul.contains-task-list,
+.markdownRender ul:has(> li > input[type="checkbox"]),
+.markdownRender ul:has(.markdownCheckbox) {
+  display: grid !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  padding-left: 0 !important;
+  list-style: none !important;
+}
+
+.markdownRender .markdownTaskItem,
+.markdownRender .task-list-item,
+.markdownRender li:has(> input[type="checkbox"]),
+.markdownTaskLine,
+.memoChecklistPreviewItem {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  min-height: 26px !important;
+  margin: 0 !important;
+  padding-left: 0 !important;
+  list-style: none !important;
+  line-height: 1.5 !important;
+  color: #172033 !important;
+}
+
+.markdownRender .markdownTaskItem::marker,
+.markdownRender .task-list-item::marker,
+.markdownRender li:has(> input[type="checkbox"])::marker {
+  content: "" !important;
+}
+
+.markdownRender .markdownTaskItem > p,
+.markdownRender .task-list-item > p,
+.markdownRender li:has(> input[type="checkbox"]) > p,
+.markdownTaskLine span,
+.memoChecklistPreviewText {
+  display: inline !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  color: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  text-transform: none !important;
+}
+
+.markdownRender .markdownTaskItem > input[type="checkbox"],
+.markdownRender .task-list-item > input[type="checkbox"],
+.markdownRender li:has(> input[type="checkbox"]) > input[type="checkbox"],
+.markdownRender input[type="checkbox"].markdownCheckbox,
+.markdownTaskLine input[type="checkbox"],
+.memoChecklistPreviewItem input[type="checkbox"],
+.memoChecklistEditor input[type="checkbox"] {
+  appearance: auto !important;
+  -webkit-appearance: checkbox !important;
+  flex: 0 0 18px !important;
+  width: 18px !important;
+  min-width: 18px !important;
+  max-width: 18px !important;
+  height: 18px !important;
+  min-height: 18px !important;
+  max-height: 18px !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  transform: none !important;
+  accent-color: #2563eb !important;
+  vertical-align: middle !important;
+}
+
+.markdownRender input[type="checkbox"].markdownCheckbox[disabled] {
+  opacity: 1 !important;
+}
+
+.memoChecklistPreview {
+  display: grid !important;
+  align-content: start !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.memoChecklistPreviewItem input[type="checkbox"][disabled] {
+  opacity: 1 !important;
+}
+
+.memoMarkdownComposerHeader {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  margin: 0 0 8px !important;
+}
+
+.memoMarkdownComposerHeader .memoMarkdownToolbar {
+  margin: 0 !important;
+}
+
+.memoComposerTabs {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  gap: 3px !important;
+  padding: 3px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  background: #f8fafc !important;
+}
+
+.memoComposerTabs button {
+  min-height: 32px !important;
+  padding: 0 10px !important;
+  border-radius: 6px !important;
+  color: #475569 !important;
+  font-size: 0.82rem !important;
+  font-weight: 900 !important;
+}
+
+.memoComposerTabs button.active {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.memoComposerEditPane {
+  display: none !important;
+}
+
+.memoComposerEditPane.active {
+  display: block !important;
+}
+
+.memoInlineEditor.editing .memoInlinePreview.memoComposerPreview {
+  display: none !important;
+}
+
+.memoInlineEditor.editing .memoInlinePreview.memoComposerPreview.active {
+  display: grid !important;
+}
+
+.memoComposerPreview {
+  min-height: 220px !important;
+  align-content: start !important;
+}
+
+.memoInlineTools {
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.memoWindowCloseButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 !important;
+}
+
+.memoWindowCloseButton .memoNavIcon {
+  width: 22px !important;
+  min-width: 22px !important;
+  height: 22px !important;
+}
+
+@media (max-width: 760px) {
+  .memoMarkdownComposerHeader {
+    align-items: stretch !important;
+  }
+
+  .memoMarkdownComposerHeader .memoMarkdownToolbar {
+    flex: 1 1 128px !important;
+  }
+
+  .memoComposerTabs {
+    flex: 1 1 140px !important;
+  }
+
+  .memoComposerTabs button {
+    flex: 1 1 0 !important;
+    min-height: 36px !important;
+  }
+
+  .memoComposerPreview {
+    min-height: calc(100svh - 230px) !important;
+  }
+
+  .memoInlineTools {
+    gap: 8px !important;
+  }
+
+  .memoWindowCloseButton {
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+  }
+}
+
+/* 2026-05-27 memo edit modal depth and toolbar layout */
+.aiNoteBoardPanel.memoWindowIsOpen > .memoInlineEditor header,
+.memoInlineEditor header {
+  align-items: center !important;
+}
+
+.aiNoteBoardPanel.memoWindowIsOpen > .memoInlineEditor header {
+  padding-right: 18px !important;
+}
+
+.memoInlineEditor header input,
+.memoInlineTools button {
+  height: 44px !important;
+  min-height: 44px !important;
+  box-sizing: border-box !important;
+}
+
+.memoInlineTools {
+  align-items: center !important;
+  gap: 8px !important;
+  padding-right: 2px !important;
+}
+
+.memoInlineTools button.active {
+  min-width: 68px !important;
+}
+
+.memoWindowCloseButton {
+  margin-right: 4px !important;
+}
+
+.memoMarkdownComposerHeader {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  justify-content: normal !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  margin: 0 0 10px !important;
+}
+
+.memoComposerTabs {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  width: 100% !important;
+  flex: 1 1 auto !important;
+  gap: 4px !important;
+  padding: 4px !important;
+}
+
+.memoComposerTabs button {
+  width: 100% !important;
+  min-height: 40px !important;
+}
+
+.memoMarkdownComposerHeader .memoMarkdownToolbar {
+  width: 100% !important;
+  flex: none !important;
+  justify-content: flex-start !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.memoMarkdownToolButton {
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+}
+
+@media (max-width: 760px) {
+  .aiNoteBoardPanel.memoWindowIsOpen > .memoInlineEditor header {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    padding-right: 16px !important;
+  }
+
+  .memoInlineTools {
+    gap: 6px !important;
+    padding-right: 4px !important;
+  }
+
+  .memoInlineTools button.active {
+    min-width: 64px !important;
+  }
+
+  .memoWindowCloseButton {
+    margin-right: 2px !important;
+  }
+
+  .memoComposerTabs {
+    flex: none !important;
+  }
+
+  .memoMarkdownComposerHeader .memoMarkdownToolbar {
+    overflow-x: auto !important;
+  }
+
+  .memoMarkdownComposer textarea,
+  .memoComposerPreview {
+    min-height: calc(100svh - 300px) !important;
+  }
+}
+
+/* 2026-05-29 memo schedule picker and source links */
+.memoSchedulePicker {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 10px !important;
+  border: 1px solid #dbe4ef !important;
+  border-radius: 8px !important;
+  background: #f8fafc !important;
+}
+
+.memoSchedulePicker.enabled {
+  border-color: rgba(15, 118, 110, 0.34) !important;
+  background: #ecfdf5 !important;
+}
+
+.memoScheduleToggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  color: #0f172a !important;
+  font-size: 0.9rem !important;
+  font-weight: 950 !important;
+}
+
+.memoScheduleToggle input[type="checkbox"] {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  padding: 0 !important;
+  accent-color: #0f766e !important;
+}
+
+.memoScheduleFields {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+}
+
+.memoScheduleFields label {
+  display: grid !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+.memoScheduleFields label > span {
+  color: #64748b !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+}
+
+.memoScheduleFields input {
+  min-width: 0 !important;
+  width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  padding: 0 10px !important;
+  font-size: 0.88rem !important;
+  font-weight: 850 !important;
+}
+
+.memoScheduleFields input:disabled {
+  opacity: 0.58 !important;
+  background: #f1f5f9 !important;
+}
+
+.memoScheduleCardMeta,
+.memoScheduleInlineChip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  min-height: 24px !important;
+  padding: 0 8px !important;
+  border-radius: 8px !important;
+  background: #ecfdf5 !important;
+  color: #0f766e !important;
+  font-size: 0.72rem !important;
+  line-height: 1 !important;
+  font-weight: 950 !important;
+}
+
+.memoScheduleInlineChip {
+  margin-top: 8px !important;
+}
+
+.memoScheduleCardMeta .memoNavIcon,
+.memoScheduleInlineChip .memoNavIcon {
+  width: 14px !important;
+  min-width: 14px !important;
+  height: 14px !important;
+}
+
+.schedulerActionsCell {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+}
+
+.schedulerSourceLink {
+  min-height: 34px !important;
+  padding: 0 10px !important;
+  border: 1px solid rgba(15, 118, 110, 0.26) !important;
+  border-radius: 8px !important;
+  background: #ecfdf5 !important;
+  color: #0f766e !important;
+  font-size: 0.78rem !important;
+  font-weight: 950 !important;
+  cursor: pointer !important;
+}
+
+@media (max-width: 760px) {
+  .memoSchedulePicker,
+  .memoScheduleFields {
+    grid-template-columns: 1fr !important;
+  }
+
+  .memoScheduleFields input {
+    min-height: 42px !important;
+    font-size: 16px !important;
+  }
+
+  .schedulerActionsCell {
+    justify-content: flex-start !important;
+  }
+}
+
+/* 2026-05-29 home guide cuttoon */
+.robotGuideMeme.cuttoon {
+  width: min(100%, 520px) !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 10px !important;
+  align-items: stretch !important;
+  justify-self: center !important;
+  padding: 10px !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(203, 213, 225, 0.9) !important;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12) !important;
+}
+
+.robotGuideCuttoonImage {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #f8fafc !important;
+}
+
+.spaceHome .spaceAccountWindow {
+  justify-self: center !important;
+}
+
+.robotGuideMeme.cuttoon .robotGuideActions {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 420px) {
+  .robotGuideMeme.cuttoon {
+    width: 100% !important;
+    padding: 8px !important;
+  }
+
+  .robotGuideMeme.cuttoon .robotGuideActions {
+    grid-template-columns: 1fr !important;
+  }
+}

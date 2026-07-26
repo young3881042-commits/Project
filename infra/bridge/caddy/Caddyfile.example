@@ -1,0 +1,14 @@
+# Replace bridge.example.com with the dedicated HTTPS hostname used by Orbit clients.
+# Keep the Node bridge bound to 127.0.0.1; Caddy owns the public TLS listener.
+bridge.example.com {
+    request_body {
+        max_size 3MB
+    }
+
+    reverse_proxy 127.0.0.1:4317
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        -Server
+    }
+}

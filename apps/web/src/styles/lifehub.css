@@ -1,0 +1,2494 @@
+.lifeHubRoot {
+  --lh-bg: #f4f7f8;
+  --lh-surface: #ffffff;
+  --lh-surface-2: #f8fafc;
+  --lh-text: #172033;
+  --lh-muted: #617084;
+  --lh-border: #d9e2ea;
+  --lh-green: #0f766e;
+  --lh-blue: #2563eb;
+  --lh-amber: #d97706;
+  --lh-red: #dc2626;
+  --lh-ink: #111827;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #e9eef2;
+  color: var(--lh-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.lifeHubRoot *,
+.lifeHubRoot *::before,
+.lifeHubRoot *::after {
+  box-sizing: border-box;
+}
+
+.lifeHubRoot button,
+.lifeHubRoot input,
+.lifeHubRoot textarea,
+.lifeHubRoot select {
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lifeHubRoot button {
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    filter 140ms ease,
+    transform 120ms ease;
+}
+
+.lifeHubRoot button:not(:disabled):active {
+  filter: brightness(0.97);
+  transform: translateY(1px);
+}
+
+.lifeHubRoot button:focus-visible,
+.lifeHubRoot input:focus-visible,
+.lifeHubRoot textarea:focus-visible,
+.lifeHubRoot select:focus-visible,
+.lifeHubRoot summary:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+.lifeHubRoot button:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.lifeHubPackIcon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.lifeHubApp {
+  width: min(100%, 430px);
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  overflow-x: hidden;
+  padding: 10px 12px calc(92px + env(safe-area-inset-bottom));
+  background: var(--lh-bg);
+}
+
+.lifeHubTopBar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin: -10px -12px 8px;
+  padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
+  border-bottom: 1px solid rgba(217, 226, 234, 0.86);
+  background: rgba(244, 247, 248, 0.94);
+  backdrop-filter: blur(16px);
+}
+
+.lifeHubTopTitle {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.lifeHubTopIcon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #c8ddd9;
+  border-radius: 8px;
+  background: #e7f7f3;
+  color: var(--lh-green);
+}
+
+.lifeHubTopTitle span {
+  display: block;
+  color: var(--lh-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.lifeHubTopTitle h1 {
+  margin: 1px 0 0;
+  overflow: hidden;
+  color: var(--lh-ink);
+  font-size: 1rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubTopTitle h1[tabindex="-1"]:focus {
+  outline: none;
+}
+
+.lifeHubAccountChip {
+  min-width: 0;
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 70px) auto;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border: 1px solid var(--lh-border);
+  border-radius: 999px;
+  background: var(--lh-surface);
+}
+
+.lifeHubAccountChip .memoNavIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--lh-green);
+}
+
+.lifeHubAccountChip strong,
+.lifeHubAccountChip span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubAccountChip strong {
+  color: var(--lh-ink);
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.lifeHubAccountChip span {
+  color: var(--lh-muted);
+  font-size: 0.61rem;
+  font-weight: 750;
+}
+
+.lifeHubAccountChip button {
+  min-width: 44px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: #edf2f6;
+  color: #334155;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.lifeHubPage {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.lifeHubSection {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.lifeHubSectionHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px;
+}
+
+.lifeHubSectionHeader span {
+  display: block;
+  color: var(--lh-green);
+  font-size: 0.67rem;
+  font-weight: 900;
+}
+
+.lifeHubSectionHeader h2 {
+  margin: 1px 0 0;
+  color: var(--lh-ink);
+  font-size: 0.98rem;
+  font-weight: 950;
+}
+
+.lifeHubTextAction {
+  min-height: 40px;
+  min-width: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+  color: #334155;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.lifeHubHero,
+.lifeHubCompactHero {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+}
+
+.lifeHubHero h2,
+.lifeHubCompactHero h2 {
+  margin: 0;
+  color: var(--lh-ink);
+  font-size: 1.16rem;
+  line-height: 1.24;
+}
+
+.lifeHubHero p,
+.lifeHubCompactHero p {
+  margin: 0;
+  color: var(--lh-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.lifeHubActionButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lifeHubActionButtons button,
+.lifeHubButton,
+.lifeHubChoiceGroup button,
+.lifeHubChipRow button,
+.lifeHubSegment button {
+  min-height: 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: var(--lh-surface);
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.lifeHubActionButtons button {
+  flex: 1 1 70px;
+  padding: 0 10px;
+}
+
+.lifeHubActionButtons button.primary,
+.lifeHubButton.primary {
+  border-color: var(--lh-ink);
+  background: var(--lh-ink);
+  color: #ffffff;
+}
+
+.lifeHubButton {
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, auto);
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+}
+
+.lifeHubButton .memoNavIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.lifeHubFormCard,
+.lifeHubMemoComposer,
+.lifeHubDetailsCard,
+.lifeHubProgressCard {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+}
+
+.lifeHubFormCard header,
+.lifeHubMemoComposer header,
+.lifeHubProgressCard header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lifeHubFormCard strong,
+.lifeHubMemoComposer header strong,
+.lifeHubProgressCard strong,
+.lifeHubDetailsCard summary {
+  color: var(--lh-ink);
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.lifeHubFormCard small,
+.lifeHubMemoComposer header small,
+.lifeHubProgressCard small {
+  color: var(--lh-muted);
+  font-size: 0.7rem;
+}
+
+.lifeHubFormCard label,
+.lifeHubMemoComposer label,
+.lifeHubDetailsCard label {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.lifeHubFormCard label span,
+.lifeHubMemoComposer label span,
+.lifeHubDetailsCard label span {
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.lifeHubFormCard input,
+.lifeHubFormCard textarea,
+.lifeHubFormCard select,
+.lifeHubMemoComposer input,
+.lifeHubMemoComposer textarea,
+.lifeHubDetailsCard input,
+.lifeHubDetailsCard select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: var(--lh-text);
+  font-size: 0.86rem;
+  padding: 10px;
+}
+
+.lifeHubFormCard textarea,
+.lifeHubMemoComposer textarea {
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.lifeHubFastForm {
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.lifeHubFormClose {
+  min-width: 44px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.lifeHubFieldError {
+  color: #b91c1c !important;
+  font-size: 0.75rem !important;
+  font-weight: 800;
+}
+
+.lifeHubInlineDetails {
+  display: grid;
+  gap: 8px;
+}
+
+.lifeHubInlineDetails summary {
+  cursor: pointer;
+  color: #334155;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.lifeHubChoiceGroup {
+  display: grid;
+  gap: 6px;
+}
+
+.lifeHubChoiceGroup > span {
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.lifeHubChoiceGroup > div,
+.lifeHubChipRow,
+.lifeHubSegment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lifeHubChoiceGroup button,
+.lifeHubChipRow button,
+.lifeHubSegment button {
+  flex: 0 0 auto;
+  padding: 0 11px;
+}
+
+.lifeHubChoiceGroup button.active,
+.lifeHubChipRow button.active,
+.lifeHubSegment button.active {
+  border-color: var(--lh-green);
+  background: #e7f7f3;
+  color: var(--lh-green);
+}
+
+.lifeHubChipRow.sticky {
+  position: sticky;
+  top: 58px;
+  z-index: 20;
+  padding: 6px 0;
+  background: var(--lh-bg);
+}
+
+.lifeHubTwoCol,
+.lifeHubThreeCol {
+  display: grid;
+  gap: 8px;
+}
+
+.lifeHubTwoCol {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.lifeHubThreeCol {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lifeHubProgress {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.lifeHubProgress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--lh-green);
+}
+
+.lifeHubLineClamp {
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.lifeHubCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: flex-end;
+}
+
+.lifeHubCardActions button,
+.lifeHubInlineDelete {
+  min-width: 44px;
+  min-height: 40px;
+  padding: 0 9px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.lifeHubCardActions button.quiet,
+.lifeHubInlineDelete {
+  color: #b91c1c;
+}
+
+.lifeHubEmpty {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: var(--lh-surface);
+}
+
+.lifeHubEmpty .memoNavIcon {
+  width: 22px;
+  height: 22px;
+  color: var(--lh-blue);
+}
+
+.lifeHubEmpty strong {
+  color: #334155;
+  font-size: 0.88rem;
+  font-weight: 900;
+}
+
+.lifeHubEmpty p {
+  margin: 0;
+  color: var(--lh-muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.lifeHubEmpty button {
+  width: fit-content;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--lh-ink);
+  border-radius: 8px;
+  background: var(--lh-ink);
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.lifeHubToast {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top));
+  left: 50%;
+  z-index: 120;
+  width: min(calc(100% - 24px), 406px);
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px 9px 12px;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  background: #f0fdf4;
+  color: #14532d;
+  font-size: 0.82rem;
+  font-weight: 850;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.16);
+  transform: translateX(-50%);
+}
+
+.lifeHubToast.error {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #991b1b;
+}
+
+.lifeHubToast button {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: currentColor;
+}
+
+.lifeHubBottomNav {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 80;
+  width: min(100%, 430px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 3px;
+  padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(203, 213, 225, 0.9);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+}
+
+.lifeHubBottomNav button {
+  min-width: 0;
+  min-height: 50px;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.66rem;
+  font-weight: 900;
+}
+
+.lifeHubBottomNav .memoNavIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.lifeHubBottomNav button.active {
+  border-color: #bde7df;
+  background: #e7f7f3;
+  color: var(--lh-green);
+}
+
+.lifeHubLiveRegion {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.lifeHubHomePage {
+  gap: 9px;
+}
+
+.lifeHubHomeHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 4px 2px 2px;
+}
+
+.lifeHubHomeHero span {
+  display: block;
+  color: var(--lh-green);
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.lifeHubHomeHero h2 {
+  margin: 2px 0 0;
+  color: var(--lh-ink);
+  font-size: 1.26rem;
+  line-height: 1.2;
+  font-weight: 950;
+}
+
+.lifeHubHomeHero p {
+  margin: 4px 0 0;
+  color: var(--lh-muted);
+  font-size: 0.8rem;
+  line-height: 1.42;
+}
+
+.lifeHubHomeHeroActions {
+  display: flex;
+  gap: 7px;
+}
+
+.lifeHubHomeHeroActions button {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+  color: #334155;
+}
+
+.lifeHubHomeHeroActions .lifeHubAvatarButton {
+  border-color: #162033;
+  background: #162033;
+  color: #ffffff;
+}
+
+
+.home-today-routine-card {
+  padding: 12px;
+  border: 1px solid #bde7df;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #f0fdf9 100%);
+  box-shadow: 0 12px 26px rgba(15, 118, 110, 0.08);
+}
+
+.lifeHubTodayRoutineList {
+  display: grid;
+  gap: 7px;
+}
+
+.lifeHubTodayRoutineList > button {
+  min-width: 0;
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 10px;
+  border: 1px solid #d7e8e4;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  color: inherit;
+  text-align: left;
+}
+
+.lifeHubTodayRoutineList > button.done {
+  opacity: 0.64;
+}
+
+.lifeHubTodayRoutineList time {
+  color: var(--lh-green);
+  font-size: 0.8rem;
+  font-weight: 950;
+}
+
+.lifeHubTodayRoutineList strong,
+.lifeHubTodayRoutineList span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubTodayRoutineList strong {
+  color: var(--lh-ink);
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.lifeHubTodayRoutineList span {
+  margin-top: 2px;
+  color: var(--lh-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.lifeHubTodayRoutineList .memoNavIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--lh-green);
+}
+
+.home-compact-widget {
+  padding-top: 2px;
+}
+
+.lifeHubHomeMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.lifeHubHomeMetricGrid article {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 9px 7px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+}
+
+.lifeHubHomeMetricGrid .memoNavIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--lh-green);
+}
+
+.lifeHubHomeMetricGrid span,
+.lifeHubHomeMetricGrid small {
+  overflow: hidden;
+  color: var(--lh-muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubHomeMetricGrid strong {
+  color: var(--lh-ink);
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.lifeHubPriorityFeed {
+  display: grid;
+  gap: 7px;
+}
+
+.lifeHubPriorityFeed article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid var(--lh-border);
+  border-left: 4px solid var(--lh-blue);
+  border-radius: 8px;
+  background: var(--lh-surface);
+}
+
+.lifeHubPriorityFeed article.warning,
+.lifeHubPriorityFeed article.danger {
+  border-left-color: var(--lh-red);
+  background: #fff7f7;
+}
+
+.lifeHubPriorityFeed .memoNavIcon {
+  width: 32px;
+  height: 32px;
+  padding: 7px;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: var(--lh-blue);
+}
+
+.lifeHubPriorityFeed strong,
+.lifeHubPriorityFeed p {
+  overflow: hidden;
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubPriorityFeed strong {
+  color: var(--lh-ink);
+  font-size: 0.84rem;
+  font-weight: 950;
+}
+
+.lifeHubPriorityFeed p {
+  color: var(--lh-muted);
+  font-size: 0.72rem;
+}
+
+.lifeHubPriorityFeed button {
+  min-width: 48px;
+  min-height: 42px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 8px;
+  background: #162033;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.home-quick-action-dock {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.home-quick-action-dock button {
+  min-width: 0;
+  min-height: 56px;
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+  color: #334155;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.home-quick-action-dock .memoNavIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.home-quick-action-dock button:nth-child(1) .memoNavIcon { color: var(--lh-amber); }
+.home-quick-action-dock button:nth-child(2) .memoNavIcon { color: var(--lh-blue); }
+.home-quick-action-dock button:nth-child(3) .memoNavIcon { color: var(--lh-red); }
+.home-quick-action-dock button:nth-child(4) .memoNavIcon { color: var(--lh-green); }
+
+.home-module-rail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.home-module-rail button {
+  min-width: 0;
+  min-height: 78px;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "icon title status"
+    "icon text text";
+  align-items: start;
+  gap: 5px 7px;
+  padding: 9px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+  color: inherit;
+  text-align: left;
+}
+
+.home-module-rail button > span {
+  grid-area: icon;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: var(--lh-blue);
+}
+
+.home-module-rail strong {
+  grid-area: title;
+  color: var(--lh-ink);
+  font-size: 0.8rem;
+  font-weight: 950;
+}
+
+.home-module-rail em {
+  grid-area: status;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #e7f7f3;
+  color: var(--lh-green);
+  font-size: 0.62rem;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.home-module-rail small {
+  grid-area: text;
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--lh-muted);
+  font-size: 0.68rem;
+  line-height: 1.3;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.lifeHubRoutineCompact {
+  display: grid;
+  gap: 7px;
+}
+
+.lifeHubRoutineCompact button {
+  min-height: 50px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+  color: inherit;
+  text-align: left;
+}
+
+.lifeHubRoutineCompact .memoNavIcon {
+  width: 32px;
+  height: 32px;
+  padding: 7px;
+  border-radius: 8px;
+  background: #fef3c7;
+  color: var(--lh-amber);
+}
+
+.lifeHubRoutineCompact strong,
+.lifeHubRoutineCompact span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubRoutineCompact strong {
+  color: var(--lh-ink);
+  font-size: 0.82rem;
+  font-weight: 950;
+}
+
+.lifeHubRoutineCompact span {
+  color: var(--lh-muted);
+  font-size: 0.72rem;
+}
+
+.lifeHubTopIcon.pack .lifeHubPackIcon {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 640px) {
+  .lifeHubRoot input,
+  .lifeHubRoot textarea,
+  .lifeHubRoot select {
+    font-size: 16px;
+  }
+
+}
+
+.lifeHubMemoPage {
+  gap: 10px;
+}
+
+.lifeHubMemoDesk {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fffdf2 0%, #ffffff 100%);
+}
+
+.lifeHubMemoDesk span {
+  color: var(--lh-amber);
+  font-size: 0.7rem;
+  font-weight: 950;
+}
+
+.lifeHubMemoDesk h2 {
+  margin: 2px 0 0;
+  color: var(--lh-ink);
+  font-size: 1.18rem;
+  line-height: 1.2;
+}
+
+.lifeHubMemoDesk p {
+  margin: 4px 0 0;
+  color: var(--lh-muted);
+  font-size: 0.8rem;
+  line-height: 1.42;
+}
+
+.lifeHubMemoDesk > strong {
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.75rem;
+}
+
+.memo-filter-bar {
+  display: grid;
+  gap: 7px;
+  padding: 9px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+}
+
+.memo-filter-bar label {
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid #d6dee8;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.memo-filter-bar input {
+  min-width: 0;
+  min-height: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--lh-text);
+  outline: 0;
+}
+
+.lifeHubMemoFilterPills {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: 2px;
+}
+
+.lifeHubMemoFilterPills button {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid #d6dee8;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.lifeHubMemoFilterPills button.active {
+  border-color: #f59e0b;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.memo-capture-box {
+  border-color: #fcd34d;
+  background: #fffdf2;
+}
+
+.memo-capture-box textarea {
+  min-height: 72px;
+  max-height: 132px;
+}
+
+.lifeHubMemoList,
+.memo-sticky-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.memo-sticky-card {
+  min-width: 0;
+  max-height: 218px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  overflow: hidden;
+  padding: 10px;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  background: #fff8d9;
+  box-shadow: 0 8px 18px rgba(146, 64, 14, 0.06);
+}
+
+.memo-sticky-card:nth-child(3n + 2) {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.memo-sticky-card:nth-child(3n) {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.memo-pinned-card {
+  border-color: #fb7185;
+  background: #fff1f2;
+}
+
+.memo-sticky-card header {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 7px;
+}
+
+.memo-sticky-card header strong {
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  color: var(--lh-ink);
+  font-size: 0.88rem;
+  line-height: 1.25;
+  font-weight: 950;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.memo-line-clamp {
+  display: -webkit-box;
+  max-height: 5.8em;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  color: #4b5563;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+
+.memo-sticky-card footer {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.memo-sticky-card footer span {
+  color: #64748b;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.memo-sticky-card footer div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.memo-sticky-card footer em {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #475569;
+  font-size: 0.62rem;
+  font-style: normal;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubSchedulePage {
+  gap: 10px;
+}
+
+.lifeHubAgendaHero {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+}
+
+.lifeHubAgendaHero span {
+  color: var(--lh-blue);
+  font-size: 0.7rem;
+  font-weight: 950;
+}
+
+.lifeHubAgendaHero h2 {
+  margin: 2px 0 0;
+  color: var(--lh-ink);
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.lifeHubAgendaHero p {
+  margin: 4px 0 0;
+  color: var(--lh-muted);
+  font-size: 0.8rem;
+}
+
+.lifeHubAgendaCounts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.lifeHubAgendaCounts article {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.lifeHubAgendaCounts strong {
+  color: var(--lh-ink);
+  font-size: 1rem;
+}
+
+.lifeHubNotificationNotice {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid #bde7df;
+  border-radius: 8px;
+  background: #f0fdf9;
+}
+
+.lifeHubNotificationNotice.unsupported,
+.lifeHubNotificationNotice.denied {
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+.lifeHubNotificationNotice .memoNavIcon {
+  width: 30px;
+  height: 30px;
+  padding: 6px;
+  border-radius: 8px;
+  background: #d9f5ef;
+  color: var(--lh-green);
+}
+
+.lifeHubNotificationNotice.unsupported .memoNavIcon,
+.lifeHubNotificationNotice.denied .memoNavIcon {
+  background: #fee2e2;
+  color: var(--lh-red);
+}
+
+.lifeHubNotificationNotice strong,
+.lifeHubNotificationNotice span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lifeHubNotificationNotice strong {
+  color: var(--lh-ink);
+  font-size: 0.82rem;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.lifeHubNotificationNotice span {
+  margin-top: 2px;
+  color: var(--lh-muted);
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.lifeHubNotificationNotice button {
+  min-width: 64px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--lh-ink);
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.lifeHubCalendarStrip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.lifeHubCalendarStrip button {
+  min-width: 0;
+  min-height: 54px;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+  color: #475569;
+}
+
+.lifeHubCalendarStrip button.active {
+  border-color: var(--lh-blue);
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.lifeHubCalendarStrip span {
+  font-size: 0.64rem;
+  font-weight: 850;
+}
+
+.lifeHubCalendarStrip strong {
+  font-size: 0.94rem;
+  font-weight: 950;
+}
+
+.schedule-missed-strip {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fff1f2;
+  color: #991b1b;
+  text-align: left;
+}
+
+.schedule-missed-strip .memoNavIcon {
+  width: 26px;
+  height: 26px;
+}
+
+.schedule-missed-strip span {
+  overflow: hidden;
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schedule-missed-strip strong {
+  font-size: 0.72rem;
+}
+
+.schedule-timeline {
+  position: relative;
+  display: grid;
+  gap: 8px;
+}
+
+.schedule-timeline-item {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 48px 14px minmax(0, 1fr);
+  gap: 8px;
+  align-items: stretch;
+}
+
+.schedule-timeline-item time {
+  padding-top: 12px;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-align: right;
+}
+
+.schedule-time-rail {
+  position: relative;
+  display: block;
+}
+
+.schedule-time-rail::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: -8px;
+  left: 50%;
+  width: 2px;
+  background: #cbd5e1;
+  transform: translateX(-50%);
+}
+
+.schedule-time-rail::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--lh-blue);
+  border-radius: 999px;
+  background: #ffffff;
+  transform: translateX(-50%);
+}
+
+.schedule-timeline-item > div {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  padding: 11px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+}
+
+.schedule-timeline-item.urgent > div {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.schedule-completed-row > div {
+  opacity: 0.68;
+  background: #f8fafc;
+}
+
+.schedule-timeline-item header {
+  min-width: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.schedule-timeline-item strong {
+  overflow: hidden;
+  color: var(--lh-ink);
+  font-size: 0.9rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schedule-timeline-item em {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 0.62rem;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.schedule-timeline-item p {
+  margin: 0;
+  overflow: hidden;
+  color: var(--lh-muted);
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schedule-timeline-item footer {
+  display: flex;
+  gap: 6px;
+}
+
+.schedule-timeline-item footer button {
+  min-width: 48px;
+  min-height: 42px;
+  padding: 0 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.schedule-timeline-item footer button:first-child {
+  border-color: var(--lh-ink);
+  background: var(--lh-ink);
+  color: #ffffff;
+}
+
+.schedule-compact-panel {
+  border-color: #bfdbfe;
+  scroll-margin-block: 88px;
+}
+
+.schedule-custom-weekdays {
+  min-width: 0;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.schedule-custom-weekdays.invalid {
+  border-color: #ef4444;
+}
+
+.schedule-custom-weekdays legend {
+  padding: 0 4px;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.schedule-custom-weekdays > div {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.schedule-custom-weekdays button {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.schedule-custom-weekdays button.active {
+  border-color: var(--lh-green);
+  background: #e7f7f3;
+  color: var(--lh-green);
+}
+
+.schedule-custom-weekdays > small {
+  display: block;
+  margin-top: 6px;
+}
+
+.lifeHubFloatingAdd {
+  position: sticky;
+  bottom: calc(78px + env(safe-area-inset-bottom));
+  z-index: 25;
+  justify-self: end;
+  min-height: 44px;
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--lh-ink);
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 900;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.22);
+}
+
+.workout-session-panel {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fff7f7 0%, #ffffff 100%);
+}
+
+.workout-session-panel.done {
+  border-color: #bbf7d0;
+  background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+}
+
+.workout-status-badge {
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 0.66rem;
+  font-weight: 950;
+}
+
+.workout-session-panel.done .workout-status-badge {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.workout-session-panel h2 {
+  margin: 0;
+  color: var(--lh-ink);
+  font-size: 1.24rem;
+  line-height: 1.18;
+}
+
+.workout-session-panel p {
+  margin: 0;
+  color: var(--lh-muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.workout-duration-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) repeat(4, minmax(0, 0.8fr));
+  gap: 6px;
+  padding: 9px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+}
+
+.workout-duration-grid > div {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+}
+
+.workout-duration-grid span {
+  color: var(--lh-muted);
+  font-size: 0.66rem;
+  font-weight: 850;
+}
+
+.workout-duration-grid strong {
+  overflow: hidden;
+  color: var(--lh-ink);
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workout-duration-grid button {
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.workout-duration-grid button.active,
+.workout-type-chip button.active {
+  border-color: var(--lh-red);
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.workout-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.workout-metric-tile {
+  display: grid;
+  gap: 3px;
+  padding: 9px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.workout-metric-tile span {
+  color: var(--lh-muted);
+  font-size: 0.66rem;
+  font-weight: 850;
+}
+
+.workout-metric-tile strong {
+  color: var(--lh-ink);
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.workout-coach-card {
+  border-color: #fecaca;
+}
+
+.lifeHubWorkoutDateList {
+  display: grid;
+  gap: 7px;
+}
+
+.lifeHubWorkoutDateList article {
+  min-width: 0;
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.lifeHubWorkoutDateList article > span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: #f2edff;
+  color: #6d28d9;
+}
+
+.lifeHubWorkoutDateList .memoNavIcon {
+  width: 17px;
+  height: 17px;
+}
+
+.lifeHubWorkoutDateList div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.lifeHubWorkoutDateList strong,
+.lifeHubWorkoutDateList small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubWorkoutDateList strong {
+  color: var(--lh-ink);
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.lifeHubWorkoutDateList small {
+  color: var(--lh-muted);
+  font-size: 0.65rem;
+  font-weight: 750;
+}
+
+.lifeHubWorkoutDateList em {
+  color: #6d28d9;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.lifeHubExerciseList {
+  display: grid;
+  gap: 8px;
+}
+
+.lifeHubExerciseList article {
+  display: grid;
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.lifeHubCheckLine {
+  min-height: 44px;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.lifeHubCheckLine input {
+  width: 20px;
+  min-height: 20px;
+}
+
+.finance-wallet-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+}
+
+.finance-wallet-card header {
+  display: grid;
+  gap: 3px;
+}
+
+.finance-wallet-card span {
+  color: var(--lh-green);
+  font-size: 0.7rem;
+  font-weight: 950;
+}
+
+.finance-wallet-card strong {
+  color: var(--lh-ink);
+  font-size: 1.55rem;
+  line-height: 1.1;
+}
+
+.finance-wallet-card small,
+.finance-wallet-card p {
+  margin: 0;
+  color: var(--lh-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.finance-budget-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+}
+
+.finance-budget-bar > div,
+.finance-budget-bar .lifeHubProgress {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dbe7e1;
+}
+
+.finance-budget-bar > div > span,
+.finance-budget-bar .lifeHubProgress span {
+  display: block;
+  height: 100%;
+  background: var(--lh-green);
+}
+
+.finance-insight-card {
+  display: grid;
+  gap: 5px;
+  padding: 11px;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  background: #fffbeb;
+}
+
+.finance-insight-card strong {
+  color: #92400e;
+  font-size: 0.9rem;
+}
+
+.finance-insight-card p {
+  margin: 0;
+  color: #9a5b12;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.lifeHubCategoryBars {
+  display: grid;
+  gap: 7px;
+}
+
+.finance-category-bar {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+}
+
+.finance-category-bar > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--lh-text);
+  font-size: 0.78rem;
+}
+
+.finance-category-bar > div:last-child {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.finance-category-bar > div:last-child span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--lh-blue);
+}
+
+.lifeHubTransactionList {
+  display: grid;
+  gap: 7px;
+}
+
+.finance-ledger-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+}
+
+.finance-ledger-row > span {
+  min-width: 42px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.66rem;
+  font-weight: 950;
+  text-align: center;
+}
+
+.finance-ledger-row > span.deposit {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.finance-ledger-row strong,
+.finance-ledger-row small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.finance-ledger-row strong {
+  color: var(--lh-ink);
+  font-size: 0.84rem;
+}
+
+.finance-ledger-row small {
+  color: var(--lh-muted);
+  font-size: 0.7rem;
+}
+
+.finance-ledger-row em {
+  color: var(--lh-ink);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.travel-boarding-pass {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 14px 16px;
+  overflow: hidden;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+}
+
+.travel-boarding-pass::before,
+.travel-boarding-pass::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--lh-bg);
+  transform: translateY(-50%);
+}
+
+.travel-boarding-pass::before { left: -9px; }
+.travel-boarding-pass::after { right: -9px; }
+
+.travel-dday-hero {
+  border-color: #93c5fd;
+}
+
+.travel-boarding-pass span {
+  color: var(--lh-blue);
+  font-size: 0.7rem;
+  font-weight: 950;
+}
+
+.travel-boarding-pass h2,
+.travel-boarding-pass p {
+  margin: 0;
+}
+
+.travel-boarding-pass h2 {
+  overflow-wrap: anywhere;
+  color: var(--lh-ink);
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.travel-boarding-pass p {
+  color: var(--lh-muted);
+  font-size: 0.78rem;
+  line-height: 1.42;
+}
+
+.travel-boarding-pass > strong {
+  align-self: start;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.78rem;
+}
+
+.lifeHubTravelActions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 2px;
+}
+
+.lifeHubTravelActions button {
+  min-height: 44px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1d4ed8;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.lifeHubTravelActions button.primary {
+  border-color: var(--lh-green);
+  background: var(--lh-green);
+  color: #ffffff;
+}
+
+.lifeHubTripFocus {
+  display: grid;
+  gap: 10px;
+}
+
+.lifeHubTripList {
+  display: grid;
+  gap: 8px;
+}
+
+.travel-itinerary-row {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.travel-itinerary-row header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.travel-itinerary-row small {
+  display: block;
+  color: var(--lh-muted);
+  font-size: 0.7rem;
+}
+
+.travel-checklist-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: 2px;
+}
+
+.travel-checklist-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.travel-checklist-strip button {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.travel-checklist-strip button.done {
+  border-color: #86efac;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.travel-empty-state .lifeHubEmpty {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.more-account-strip {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+}
+
+.lifeHubProfileAvatar {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #162033;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.more-account-strip strong,
+.more-account-strip span,
+.more-account-strip p {
+  display: block;
+  overflow: hidden;
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.more-account-strip strong {
+  color: var(--lh-ink);
+  font-size: 0.98rem;
+  font-weight: 950;
+}
+
+.more-account-strip span {
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 850;
+}
+
+.more-account-strip span em {
+  color: var(--lh-green);
+  font-style: normal;
+}
+
+.more-account-strip p {
+  color: var(--lh-muted);
+  font-size: 0.7rem;
+}
+
+.more-account-strip > button {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+}
+
+.more-control-section {
+  padding: 11px;
+  border: 1px solid var(--lh-border);
+  border-radius: 8px;
+  background: var(--lh-surface);
+}
+
+.lifeHubMoreProCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border-color: #c7d2fe;
+  background: #eef2ff;
+}
+
+.lifeHubMoreProCard strong,
+.lifeHubMoreProCard span {
+  display: block;
+}
+
+.lifeHubMoreProCard strong {
+  color: #312e81;
+  font-size: 0.9rem;
+}
+
+.lifeHubMoreProCard span {
+  color: #475569;
+  font-size: 0.72rem;
+}
+
+.lifeHubMoreProCard button {
+  min-width: 48px;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #312e81;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.more-module-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.more-module-grid button {
+  min-height: 70px;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  grid-template-areas:
+    "icon title"
+    "icon status";
+  align-items: center;
+  gap: 3px 8px;
+  padding: 9px;
+  border: 1px solid #d9e2ea;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: inherit;
+  text-align: left;
+}
+
+.more-module-grid .memoNavIcon {
+  grid-area: icon;
+  width: 28px;
+  height: 28px;
+  color: var(--lh-blue);
+}
+
+.more-module-grid strong {
+  grid-area: title;
+  color: var(--lh-ink);
+  font-size: 0.82rem;
+  font-weight: 950;
+}
+
+.more-module-grid span {
+  grid-area: status;
+  color: var(--lh-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.more-routine-list {
+  display: grid;
+  gap: 7px;
+}
+
+.more-routine-list button {
+  min-height: 50px;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #d9e2ea;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: inherit;
+  text-align: left;
+}
+
+.more-routine-list .memoNavIcon {
+  width: 30px;
+  height: 30px;
+  padding: 6px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--lh-green);
+}
+
+.more-routine-list strong,
+.more-routine-list span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.more-routine-list strong {
+  color: var(--lh-ink);
+  font-size: 0.82rem;
+}
+
+.more-routine-list span {
+  color: var(--lh-muted);
+  font-size: 0.7rem;
+}
+
+.more-routine-list em {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--lh-green);
+}
+
+.lifeHubSettingsList {
+  display: grid;
+  gap: 7px;
+}
+
+.more-settings-row {
+  min-height: 50px;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto 18px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #d9e2ea;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: inherit;
+  text-align: left;
+}
+
+.more-settings-row .memoNavIcon {
+  width: 22px;
+  height: 22px;
+  color: #475569;
+}
+
+.more-settings-row .memoNavIcon:first-child {
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--lh-blue);
+}
+
+.more-settings-row span {
+  overflow: hidden;
+  color: var(--lh-ink);
+  font-size: 0.84rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.more-settings-row small {
+  color: var(--lh-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+@media (max-width: 360px) {
+  .lifeHubApp {
+    padding-inline: 10px;
+  }
+
+  .lifeHubTopBar {
+    margin-inline: -10px;
+    padding-inline: 10px;
+  }
+
+  .lifeHubAccountChip {
+    grid-template-columns: 20px auto;
+  }
+
+  .lifeHubAccountChip > div {
+    display: none;
+  }
+
+  .lifeHubHomeMetricGrid,
+  .home-quick-action-dock,
+  .workout-metric-grid,
+  .workout-duration-grid,
+  .lifeHubMemoList,
+  .memo-sticky-grid,
+  .more-module-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .workout-duration-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workout-duration-grid > div {
+    grid-column: 1 / -1;
+  }
+
+  .lifeHubTwoCol,
+  .lifeHubThreeCol {
+    grid-template-columns: 1fr;
+  }
+
+  .finance-ledger-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .finance-ledger-row button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 700px) {
+  .lifeHubRoot {
+    display: grid;
+    place-items: start center;
+    padding-block: 18px;
+  }
+
+  .lifeHubApp {
+    width: min(calc(100% - 36px), 720px);
+    min-height: calc(100vh - 36px);
+    padding: 18px 20px calc(98px + env(safe-area-inset-bottom));
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    border-radius: 8px;
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+  }
+
+  .lifeHubBottomNav {
+    width: min(calc(100% - 36px), 720px);
+    right: auto;
+    left: 50%;
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    border-bottom: 0;
+    border-radius: 8px 8px 0 0;
+    transform: translateX(-50%);
+  }
+
+}

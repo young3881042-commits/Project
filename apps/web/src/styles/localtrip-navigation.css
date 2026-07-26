@@ -1,0 +1,591 @@
+/* Left navigation layout */
+@media (min-width: 901px) {
+  .ltShell {
+    display: grid;
+    grid-template-columns: 248px minmax(0, 1fr);
+    align-items: start;
+    min-height: 100vh;
+    background: #f7fafc;
+    overflow-x: hidden;
+  }
+
+  .ltNav {
+    position: sticky !important;
+    top: 0 !important;
+    align-self: start;
+    width: auto !important;
+    height: 100vh;
+    min-height: 100vh;
+    margin: 0 !important;
+    overflow-y: auto;
+    border: 0;
+    border-right: 1px solid #dbe3ee;
+    border-radius: 0;
+    background: #ffffff;
+    box-shadow: none;
+    z-index: 80;
+  }
+
+  .ltNavInner {
+    width: 100% !important;
+    min-height: 100%;
+    padding: 22px 18px !important;
+    display: flex;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 20px;
+  }
+
+  .ltBrand {
+    width: 100%;
+    padding: 4px 6px 18px;
+    border-bottom: 1px solid #edf2f7;
+  }
+
+  .ltBrand span {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .ltBrand small {
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+
+  .ltNavLinks {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    gap: 22px !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .ltNavGroup {
+    display: grid;
+    gap: 7px;
+  }
+
+  .ltNavGroupTitle {
+    padding: 0 10px;
+    color: #94a3b8;
+    font-size: 0.72rem;
+    font-weight: 900;
+  }
+
+  .ltNavLinks a {
+    width: 100%;
+    min-width: 0 !important;
+    min-height: 42px;
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-start !important;
+    gap: 10px;
+    padding: 10px 12px !important;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: #475569;
+    font-size: 0.94rem;
+    text-align: left;
+    box-shadow: none !important;
+  }
+
+  .ltNavLinks a:hover {
+    border-color: #dbe3ee;
+    background: #f8fafc;
+    color: #0f766e;
+  }
+
+  .ltNavLinks a.active {
+    border-color: #b7eadf;
+    background: #e8f5f3;
+    color: #0f766e;
+    box-shadow: none !important;
+  }
+
+  .ltTabIcon {
+    width: 22px;
+    height: 22px;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+  }
+
+  .ltTabIcon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .ltTabLabel {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ltNavUserCard {
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid #dbe3ee;
+    border-radius: 8px;
+    background: #f8fafc;
+  }
+
+  .ltNavUserCard > span {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: #0f766e;
+    color: #ffffff;
+    font-weight: 900;
+  }
+
+  .ltNavUserCard div {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .ltNavUserCard strong {
+    overflow: hidden;
+    color: #111827;
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ltNavUserCard small {
+    color: #64748b;
+    font-size: 0.74rem;
+    font-weight: 800;
+  }
+
+  .ltPage {
+    grid-column: 2;
+    width: min(1120px, calc(100% - 48px)) !important;
+    margin: 0 auto !important;
+    padding: 34px 0 72px !important;
+  }
+
+  .ltFooter {
+    grid-column: 2;
+    width: min(1120px, calc(100% - 48px)) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .ltShell {
+    display: block;
+  }
+
+  .ltNav {
+    position: sticky !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: auto;
+    min-height: auto;
+    margin: 0 !important;
+    overflow: visible;
+    border: 0;
+    border-bottom: 1px solid #dbe3ee;
+    border-radius: 0;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: none;
+    z-index: 100;
+  }
+
+  .ltNavInner {
+    width: min(100%, calc(100% - 16px)) !important;
+    min-height: auto;
+    margin: 0 auto;
+    padding: 10px 0 12px !important;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "brand"
+      "account"
+      "menu";
+    align-items: center !important;
+    gap: 8px;
+  }
+
+  .ltBrand {
+    grid-area: brand;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .ltBrand small {
+    display: none;
+  }
+
+  .ltNavUserCard {
+    grid-area: account;
+    justify-self: stretch;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .ltNavLinks {
+    grid-area: menu;
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100% !important;
+    gap: 6px !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .ltNavGroup {
+    display: contents;
+  }
+
+  .ltNavGroupTitle {
+    display: none;
+  }
+
+  .ltNavLinks a {
+    width: 100%;
+    min-width: 0 !important;
+    min-height: 40px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: flex-start !important;
+    gap: 7px;
+    padding: 8px 10px !important;
+    border: 1px solid #dbe3ee;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 0.84rem;
+    box-shadow: none !important;
+  }
+
+  .ltNavLinks a.active {
+    border-color: #b7eadf;
+    background: #e8f5f3;
+    color: #0f766e;
+  }
+
+  .ltTabIcon {
+    width: 18px;
+    height: 18px;
+    display: inline-grid;
+    place-items: center;
+  }
+
+  .ltTabIcon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .ltNavUserCard {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 0 10px;
+    border: 1px solid #dbe3ee;
+    border-radius: 999px;
+    background: #f8fafc;
+  }
+
+  .ltNavUserCard > span {
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: #0f766e;
+    color: #ffffff;
+    font-size: 0.76rem;
+    font-weight: 900;
+  }
+
+  .ltNavUserCard div {
+    display: grid;
+    min-width: 0;
+  }
+
+  .ltNavUserCard strong {
+    max-width: 100%;
+    overflow: hidden;
+    color: #111827;
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ltNavUserCard small {
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+}
+
+@media (max-width: 420px) {
+  .ltNavLinks {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .ltShell .ltNav {
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+
+  .ltShell .ltNavInner {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 10px 12px 12px !important;
+    margin: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas:
+      "brand account"
+      "menu menu" !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+    justify-items: stretch !important;
+    text-align: left !important;
+  }
+
+  .ltShell .ltBrand,
+  .ltShell .ltNavUserCard,
+  .ltShell .ltNavLinks {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ltShell .ltBrand {
+    justify-content: flex-start;
+  }
+
+  .ltShell .ltNavUserCard {
+    justify-self: end !important;
+    max-width: 240px !important;
+  }
+
+  .ltShell .ltNavLinks {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    overflow: visible !important;
+    max-width: none !important;
+    justify-self: stretch !important;
+  }
+
+  .ltShell .ltNavLinks a {
+    min-width: 0 !important;
+    width: 100% !important;
+    min-height: 38px;
+    padding: 6px 8px !important;
+    justify-content: center !important;
+    white-space: normal !important;
+    text-align: center;
+    line-height: 1.08;
+    font-size: 0.72rem;
+  }
+
+}
+
+@media (max-width: 900px) {
+  .ltShell .ltTabLabel {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 390px) {
+  .ltShell .ltNavLinks {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .ltShell .ltNavUserCard {
+    max-width: 180px !important;
+  }
+}
+
+/* LocalTrip responsive layout guard */
+body:has(.ltShell) {
+  overflow-x: hidden;
+}
+
+.ltShell {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  border-inline: 0;
+  box-shadow: none;
+}
+
+.ltDestinationGrid,
+.ltPlansGrid,
+.ltPlannerLayout,
+.ltSplitSection,
+.ltPartnerGrid,
+.ltMyGrid,
+.ltFormGrid {
+  min-width: 0;
+}
+
+.ltHeroSearchInput input,
+.ltPlannerForm input,
+.ltPlannerForm select,
+.ltPlannerForm textarea,
+.ltFilterBar input {
+  min-width: 0;
+}
+
+@media (min-width: 901px) {
+  .ltShell {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    display: grid;
+    grid-template-columns: 248px minmax(0, 1fr);
+  }
+
+  .ltPage {
+    grid-column: 2;
+    width: min(1120px, calc(100% - 48px)) !important;
+    max-width: 1120px;
+  }
+
+  .ltHeroSearchInput {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .ltHeroSearchInput button {
+    grid-column: auto;
+    width: auto;
+    min-width: 104px;
+  }
+
+  .ltDestinationGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+  }
+
+  .ltPlansGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 18px;
+  }
+
+  .ltPlannerLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+    gap: 20px;
+  }
+
+  .ltPlannerPreview {
+    position: sticky;
+    top: 24px;
+  }
+
+  .ltSplitSection {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  }
+
+  .ltPartnerGrid,
+  .ltMyGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.72fr);
+    gap: 18px;
+  }
+
+  .ltPartnerStats,
+  .ltPlanFacts,
+  .ltMyStats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .ltFormGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .ltShell {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  .ltPage {
+    width: min(100% - 24px, 680px) !important;
+    max-width: 680px;
+  }
+
+  .ltHeroSearchInput {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .ltHeroSearchInput button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .ltShell .ltNavInner {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas:
+      "brand"
+      "account"
+      "menu" !important;
+  }
+
+  .ltShell .ltNavUserCard {
+    justify-self: stretch !important;
+    max-width: none !important;
+  }
+
+  .ltShell .ltNavLinks {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .ltHeroPanel,
+  .ltMyStats,
+  .ltPartnerStats,
+  .ltPlanFacts {
+    grid-template-columns: 1fr;
+  }
+
+  .ltDayCardHeader,
+  .ltMiniDestCard {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+
+  .ltDayCover,
+  .ltMiniDestPhoto {
+    width: 64px;
+    height: 64px;
+  }
+}

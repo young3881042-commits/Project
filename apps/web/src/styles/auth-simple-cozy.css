@@ -1,0 +1,652 @@
+/* Simple auth screen */
+.loginShell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  padding: 18px;
+  overflow: auto;
+  background: #f7f8fa;
+}
+
+.loginShell::before,
+.loginHeroPanel,
+.loginDeviceMock,
+.loginPreviewStack,
+.providerButtons,
+.loginDivider,
+.loginNotice,
+.loginFineprint,
+.passwordGuide,
+.loginCard::before,
+.loginCard .sidebarEyebrow,
+.authSwitch {
+  display: none;
+}
+
+.loginNav {
+  width: min(100%, 960px);
+  min-height: 56px;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 10px 8px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.loginNav strong {
+  color: #111827;
+  font-size: 1rem;
+}
+
+.loginNav div {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.loginNav button {
+  min-width: 76px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 6px;
+  color: #6b7280;
+  font-weight: 800;
+}
+
+.loginNav button.active {
+  background: #111827;
+  color: #ffffff;
+}
+
+.loginCard {
+  width: min(100%, 360px);
+  align-self: start;
+  justify-self: center;
+  display: grid;
+  gap: 14px;
+  padding: 24px;
+  overflow: visible;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+}
+
+.loginCard h1 {
+  color: #111827;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.loginField {
+  display: grid;
+  gap: 7px;
+}
+
+.loginField span {
+  color: #374151;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.loginField input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 16px;
+}
+
+.loginField input:focus {
+  border-color: #111827;
+  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.1);
+  outline: none;
+}
+
+.loginButton {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 8px;
+  background: #111827;
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: none;
+}
+
+.loginButton:hover {
+  background: #1f2937;
+}
+
+.loginButton:disabled {
+  background: #d1d5db;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.loginHint {
+  padding: 10px 12px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.loginRule {
+  margin: -2px 0 2px;
+  color: #475569;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  font-weight: 800;
+}
+
+.ltOptionGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.ltOptionGroup > span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.ltOptionGroup > div {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
+  gap: 8px;
+}
+
+.ltOptionGroup button {
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid #cad5e2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #526071;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.ltOptionGroup button:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.ltOptionGroup button.active {
+  border-color: #0f766e;
+  background: #ecfdf5;
+  color: #047857;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+}
+
+@media (max-width: 520px) {
+  .loginShell {
+    gap: 16px;
+    padding: 12px;
+  }
+
+  .loginNav {
+    min-height: auto;
+    align-items: stretch;
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  .loginNav div {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .loginNav button {
+    width: 100%;
+  }
+
+  .loginCard {
+    padding: 20px;
+  }
+}
+
+/* Cozy pastel refresh */
+:root {
+  --bg: #fff8f2;
+  --panel: rgba(255, 255, 255, 0.9);
+  --panel-soft: #fffaf5;
+  --panel-strong: #ffe9dd;
+  --line: rgba(226, 173, 151, 0.38);
+  --ink: #33251f;
+  --muted: #8c6f64;
+  --accent: #ff8fb3;
+  --accent-strong: #f06f9c;
+  --accent-deep: #d95686;
+  --mint: #7dd9c2;
+  --lemon: #ffd66b;
+  --sky: #8bc7ff;
+  --shadow: 0 24px 60px rgba(143, 88, 64, 0.14);
+  --radius-lg: 24px;
+  --radius-md: 18px;
+  --radius-sm: 12px;
+}
+
+body {
+  background:
+    radial-gradient(circle at 12% 12%, rgba(255, 214, 107, 0.34), transparent 24%),
+    radial-gradient(circle at 88% 8%, rgba(139, 199, 255, 0.26), transparent 26%),
+    linear-gradient(180deg, #fff8f2 0%, #fff3f8 48%, #f6fbff 100%);
+  color: var(--ink);
+}
+
+.loginShell {
+  position: relative;
+  isolation: isolate;
+  gap: 28px;
+  padding: 22px;
+  overflow: hidden auto;
+  background:
+    radial-gradient(circle at 16% 16%, rgba(255, 214, 107, 0.34), transparent 22%),
+    radial-gradient(circle at 84% 12%, rgba(125, 217, 194, 0.32), transparent 24%),
+    linear-gradient(135deg, #fff8ec 0%, #fff1f8 52%, #eef8ff 100%);
+}
+
+.loginShell::before,
+.loginShell::after {
+  content: "";
+  position: fixed;
+  display: block;
+  z-index: -1;
+  width: 210px;
+  height: 210px;
+  border: 2px solid rgba(255, 143, 179, 0.22);
+  border-radius: 36% 64% 58% 42%;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.loginShell::before {
+  left: -72px;
+  bottom: 12%;
+  transform: rotate(-14deg);
+}
+
+.loginShell::after {
+  right: -82px;
+  top: 18%;
+  border-color: rgba(125, 217, 194, 0.25);
+  transform: rotate(18deg);
+}
+
+.loginNav {
+  width: min(100%, 980px);
+  min-height: 64px;
+  padding: 10px 12px 10px 18px;
+  border-color: rgba(255, 255, 255, 0.78);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 18px 44px rgba(143, 88, 64, 0.12);
+  backdrop-filter: blur(18px);
+}
+
+.loginNav strong {
+  color: #403027;
+  font-size: 1.08rem;
+  letter-spacing: 0.01em;
+}
+
+.loginNav strong::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 9px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent), var(--lemon));
+  box-shadow: 0 0 0 5px rgba(255, 143, 179, 0.16);
+  vertical-align: -1px;
+}
+
+.loginNav div {
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid rgba(226, 173, 151, 0.28);
+  border-radius: 17px;
+  background: rgba(255, 248, 242, 0.78);
+}
+
+.loginNav button {
+  min-height: 38px;
+  border-radius: 13px;
+  color: #8c6f64;
+  transition: transform 0.16s ease, background-color 0.16s ease, color 0.16s ease;
+}
+
+.loginNav button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.loginNav button.active {
+  background: linear-gradient(135deg, #ff8fb3 0%, #ffb46f 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(240, 111, 156, 0.24);
+}
+
+.loginCard {
+  width: min(100%, 390px);
+  gap: 16px;
+  padding: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.84);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 250, 246, 0.88)),
+    radial-gradient(circle at top right, rgba(255, 214, 107, 0.2), transparent 34%);
+  box-shadow: 0 28px 70px rgba(143, 88, 64, 0.16);
+  backdrop-filter: blur(20px);
+}
+
+.loginCardHeader {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.loginMascot {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #fff;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #ff8fb3 0%, #ffd66b 100%);
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 900;
+  box-shadow: 0 14px 28px rgba(240, 111, 156, 0.22);
+}
+
+.loginCard h1 {
+  color: #33251f;
+  font-size: 1.62rem;
+  letter-spacing: 0;
+}
+
+.loginCardHeader p {
+  margin-top: 5px;
+  color: var(--muted);
+  line-height: 1.45;
+  font-size: 0.93rem;
+}
+
+.loginField span {
+  color: #684f46;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.loginField input {
+  min-height: 48px;
+  padding: 0 15px;
+  border: 1px solid rgba(226, 173, 151, 0.44);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #33251f;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.loginField input:focus {
+  border-color: rgba(240, 111, 156, 0.72);
+  box-shadow: 0 0 0 4px rgba(255, 143, 179, 0.16);
+}
+
+.loginButton {
+  min-height: 48px;
+  border-radius: 17px;
+  background: linear-gradient(135deg, #ff8fb3 0%, #ffb46f 100%);
+  color: #ffffff;
+  box-shadow: 0 16px 32px rgba(240, 111, 156, 0.26);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.loginButton:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #f06f9c 0%, #ffa657 100%);
+  box-shadow: 0 20px 38px rgba(240, 111, 156, 0.3);
+}
+
+.loginButton:disabled {
+  transform: none;
+  background: #efd8d1;
+  color: #9a8279;
+  box-shadow: none;
+}
+
+.loginHint {
+  border-color: rgba(240, 111, 156, 0.32);
+  border-radius: 17px;
+  background: rgba(255, 241, 248, 0.92);
+  color: #b53867;
+}
+
+.workspaceBrowserShell {
+  background:
+    radial-gradient(circle at 8% 12%, rgba(255, 214, 107, 0.22), transparent 24%),
+    radial-gradient(circle at 92% 8%, rgba(139, 199, 255, 0.2), transparent 26%),
+    linear-gradient(135deg, #fff8f2 0%, #fff3f8 48%, #f1f9ff 100%);
+}
+
+.workspacePathCard,
+.workspaceTopTabs,
+.workspaceUserButton,
+.browserListPanel,
+.browserPreviewPanel,
+.assistantPanel,
+.accountDialog,
+.userMenuDropdown,
+.contextMenu,
+.entryRow,
+.treeRootLabel,
+.treeRow,
+.previewEmpty,
+.previewState,
+.previewBody,
+.settingsPanel,
+.ragControls,
+.terminalToolbar,
+.terminalSurface,
+.outputBlock,
+.citationCard {
+  border-color: var(--line);
+  background-color: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow);
+}
+
+.browserListPanel,
+.browserPreviewPanel,
+.assistantPanel,
+.accountDialog {
+  border-radius: 28px;
+}
+
+.workspacePathCard,
+.workspaceUserButton,
+.workspaceTopTabs {
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px);
+}
+
+.sidebarEyebrow,
+.panelEyebrow,
+.assistantLabel {
+  color: var(--accent-deep);
+}
+
+.workspacePathCode,
+.assistantPathPill {
+  border-color: rgba(139, 199, 255, 0.42);
+  background: #f5fbff;
+  color: #326da8;
+}
+
+.ghostButton,
+.iconButton,
+.ragTopButton,
+.assistantSuggestion,
+.ltOptionGroup button {
+  border-color: rgba(226, 173, 151, 0.34);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.76);
+  color: #684f46;
+}
+
+.ghostButton.active,
+.iconButton.primary,
+.ragTopButton.primary,
+.sendButton,
+.ragSendButton {
+  background: linear-gradient(135deg, #ff8fb3 0%, #ffb46f 100%);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 14px 28px rgba(240, 111, 156, 0.24);
+}
+
+.ghostButton:hover,
+.iconButton:hover,
+.ragTopButton:hover,
+.assistantSuggestion:hover,
+.entryRow:hover,
+.treeRootLabel:hover,
+.treeRow:hover {
+  background: #fff4f8;
+}
+
+.treeRootLabel.selected,
+.treeRow.selected,
+.entryRow.active,
+.workspaceUserButton.open {
+  border-color: rgba(255, 143, 179, 0.36);
+  background: #fff1f7;
+  color: #b53867;
+}
+
+.entryType {
+  background: #fff0db;
+  color: #9b6231;
+}
+
+.entryType.dir {
+  background: #e9fbf6;
+  color: #14786a;
+}
+
+.panelTop input,
+.listFilterGroup input,
+.inlineNameInput,
+.settingsPanel input,
+.settingsPanel textarea,
+.chatComposer textarea,
+.assistantComposer textarea,
+.ragControls input {
+  border-color: rgba(226, 173, 151, 0.38);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--ink);
+}
+
+.panelTop input:focus,
+.listFilterGroup input:focus,
+.inlineNameInput:focus,
+.settingsPanel input:focus,
+.settingsPanel textarea:focus,
+.chatComposer textarea:focus,
+.assistantComposer textarea:focus,
+.ragControls input:focus {
+  border-color: rgba(240, 111, 156, 0.62);
+  box-shadow: 0 0 0 4px rgba(255, 143, 179, 0.14);
+  outline: none;
+}
+
+.previewBody,
+.terminalSurface,
+.terminalTranscript,
+.outputBlock {
+  background: #fffaf6;
+  color: #3c2d27;
+}
+
+.previewError,
+.outputBlock.error {
+  border-color: rgba(240, 111, 156, 0.3);
+  background: #fff1f7;
+  color: #b53867;
+}
+
+.assistantAvatar.assistant {
+  background: linear-gradient(135deg, #ff8fb3, #ffb46f);
+}
+
+.assistantAvatar.user {
+  background: #e9fbf6;
+  color: #14786a;
+}
+
+.assistantEmpty {
+  border-color: rgba(255, 143, 179, 0.28);
+  background: rgba(255, 250, 246, 0.84);
+}
+
+.ltShell {
+  --lt-bg: #fff8f2;
+  --lt-panel: rgba(255, 255, 255, 0.88);
+  --lt-ink: #33251f;
+  --lt-muted: #8c6f64;
+  --lt-line: rgba(226, 173, 151, 0.38);
+  --lt-accent: #ff8fb3;
+  --lt-accent-strong: #f06f9c;
+}
+
+.ltNav,
+.ltDestinationCard,
+.ltPlanCard,
+.ltPlannerForm,
+.ltPlannerTeaser,
+.ltHeroPanel {
+  border-color: var(--line);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 520px) {
+  .loginShell {
+    gap: 18px;
+    padding: 14px;
+  }
+
+  .loginCardHeader {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .loginMascot {
+    justify-self: center;
+  }
+
+  .loginCard {
+    padding: 22px;
+  }
+}

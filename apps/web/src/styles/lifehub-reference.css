@@ -1,0 +1,402 @@
+/* Final mobile polish based on the July 2026 LifeHub reference screens. */
+.lifeHubRoot {
+  --lh-bg: #fbfcfd;
+  --lh-surface: #ffffff;
+  --lh-surface-2: #f7fafb;
+  --lh-text: #10203a;
+  --lh-muted: #66758b;
+  --lh-border: #dce5e9;
+  --lh-green: #0f9685;
+  --lh-blue: #2563eb;
+  --lh-ink: #0d1b34;
+  background: #edf2f4;
+}
+
+.lifeHubApp {
+  width: min(100%, 470px);
+  padding: 14px 16px calc(104px + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 95% 0, rgba(15, 150, 133, 0.035), transparent 240px),
+    var(--lh-bg);
+}
+
+.lifeHubTopBar {
+  margin: -14px -16px 18px;
+  padding: calc(18px + env(safe-area-inset-top)) 18px 14px;
+  border-bottom: 0;
+  background: rgba(251, 252, 253, 0.94);
+}
+
+.lifeHubRoot .lifeHubTopTitle {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+.lifeHubRoot .lifeHubTopBar {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.lifeHubTopAction {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--lh-border);
+  border-radius: 14px;
+  background: #ffffff;
+  color: #52647a;
+}
+
+.lifeHubTopAction .memoNavIcon {
+  width: 21px;
+  height: 21px;
+}
+
+.lifeHubRoot .lifeHubTopIcon {
+  display: none;
+}
+
+.lifeHubTopTitle span {
+  color: #53647d;
+  font-size: 0.78rem;
+  letter-spacing: -0.01em;
+}
+
+.lifeHubTopTitle h1 {
+  margin-top: 5px;
+  color: var(--lh-ink);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.lifeHubAccountChip {
+  min-height: 58px;
+  grid-template-columns: 23px minmax(0, 82px) auto;
+  gap: 8px;
+  padding: 6px 8px 6px 12px;
+  border-color: #e1e7ea;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 9px 25px rgba(15, 23, 42, 0.085);
+}
+
+.lifeHubAccountChip .memoNavIcon {
+  width: 21px;
+  height: 21px;
+  color: var(--lh-green);
+}
+
+.lifeHubAccountChip strong {
+  font-size: 0.78rem;
+}
+
+.lifeHubAccountChip span {
+  font-size: 0.67rem;
+}
+
+.lifeHubAccountChip button {
+  min-width: 56px;
+  min-height: 44px;
+  border-radius: 999px;
+  background: #f3f6f8;
+  font-size: 0.72rem;
+}
+
+.lifeHubPage {
+  gap: 14px;
+}
+
+.lifeHubRouteLoading {
+  min-height: 42vh;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  color: var(--lh-muted);
+  text-align: center;
+}
+
+.lifeHubRouteLoading > span {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #dce5e9;
+  border-top-color: var(--lh-green);
+  border-radius: 50%;
+  animation: lifeHubRouteSpin 700ms linear infinite;
+}
+
+.lifeHubRouteLoading p {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+@keyframes lifeHubRouteSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lifeHubRouteLoading > span {
+    animation: none;
+    border-color: var(--lh-green);
+  }
+}
+
+.lifeHubAgendaHero,
+.lifeHubNotificationNotice,
+.lifeHubCalendarStrip,
+.lifeHubFormCard,
+.lifeHubDetailsCard,
+.lifeHubProgressCard,
+.lifeHubSection.more-control-section,
+.more-account-strip,
+.finance-wallet-card,
+.workout-session-panel,
+.workout-metric-tile,
+.travel-boarding-pass {
+  border-radius: 20px;
+  border-color: var(--lh-border);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.055);
+}
+
+.lifeHubTodayRoutineList button {
+  border-radius: 16px;
+}
+
+.lifeHubBottomNav {
+  width: min(100%, 470px);
+  padding: 9px 10px calc(9px + env(safe-area-inset-bottom));
+  border-color: #dce5e9;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.055);
+}
+
+.lifeHubBottomNav button {
+  min-height: 60px;
+  border-radius: 14px;
+}
+
+.lifeHubBottomNav .memoNavIcon {
+  width: 22px;
+  height: 22px;
+}
+
+.lifeHubBottomNav button > span {
+  line-height: 1.15;
+}
+
+.lifeHubBottomNav button.active {
+  border-color: #bfe5df;
+  background: #e9f8f5;
+  color: #087f72;
+}
+
+.lifeHubAgendaHero {
+  border-color: #c6e8e2;
+  background:
+    radial-gradient(circle at 88% 18%, rgba(15, 150, 133, 0.13), transparent 32%),
+    linear-gradient(145deg, #f2fbf9, #ffffff);
+}
+
+.lifeHubCalendarStrip button,
+.lifeHubChipRow button,
+.lifeHubChoiceGroup button {
+  border-radius: 12px;
+}
+
+.lifeHubCalendarStrip button.active,
+.lifeHubChipRow button.active,
+.lifeHubChoiceGroup button.active {
+  border-color: var(--lh-green);
+  background: #e9f8f5;
+  color: #087f72;
+}
+
+.lifeHubFloatingAdd,
+.lifeHubButton.primary,
+.lifeHubFormCard button.primary {
+  background: #0d1b34;
+}
+
+.workout-duration-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.workout-duration-grid > div {
+  grid-column: 1 / -1;
+}
+
+.workout-type-chip > div {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.workout-type-chip button {
+  min-width: 0;
+  padding-inline: 7px;
+  font-size: 0.7rem;
+  line-height: 1.15;
+}
+
+@media (max-width: 480px) {
+  .workout-duration-grid,
+  .workout-type-chip > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.lifeHubFinancePage .lifeHubCategoryBars {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.lifeHubFinancePage .finance-category-bar {
+  padding: 14px;
+  border: 1px solid var(--lh-border);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.more-account-strip,
+.more-control-section {
+  padding: 16px;
+}
+
+.more-account-strip > button,
+.lifeHubMoreProCard button,
+.more-module-grid button {
+  border-radius: 14px;
+}
+
+.more-module-grid {
+  gap: 12px;
+}
+
+.more-module-grid button {
+  min-height: 118px;
+  padding: 16px;
+  border-color: var(--lh-border);
+  background: #ffffff;
+}
+
+.more-module-grid .memoNavIcon {
+  color: var(--lh-green);
+}
+
+.more-settings-list {
+  overflow: hidden;
+  border: 1px solid var(--lh-border);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.more-settings-row {
+  min-height: 62px;
+  border: 0;
+  border-bottom: 1px solid #e8edef;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.more-settings-row:last-child {
+  border-bottom: 0;
+}
+
+.more-settings-row .memoNavIcon:first-child {
+  color: var(--lh-green);
+  background: #e9f8f5;
+}
+
+.lifeHubRoute-memo {
+  --dm-canvas: #fbfcfd;
+  --dm-paper: #ffffff;
+  --dm-paper-soft: #f7faf9;
+  --dm-ink: #10203a;
+  --dm-muted: #66758b;
+  --dm-line: #dce5e9;
+  --dm-green: #0f8f7f;
+  --dm-green-dark: #08756a;
+  --dm-green-soft: #e9f8f5;
+  --dm-coral: #0f8f7f;
+  --dm-coral-soft: #e9f8f5;
+  --dm-sun: #65bfae;
+  --dm-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+  background: #edf2f4;
+}
+
+.lifeHubRoute-memo .lifeHubApp {
+  background:
+    radial-gradient(circle at 100% 0, rgba(15, 150, 133, 0.05), transparent 220px),
+    var(--dm-canvas);
+}
+
+.lifeHubRoute-memo .lifeHubTopBar,
+.lifeHubRoute-memo .lifeHubBottomNav {
+  border-color: var(--dm-line);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.dailyMemoWelcome,
+.dailyMemoComposer,
+.dailyMemoCard {
+  border-radius: 20px;
+  border-color: var(--dm-line);
+  background: #ffffff;
+}
+
+main h1[tabindex='-1']:focus {
+  outline: none;
+}
+
+.mobilePageShell.ltShellTravelStart {
+  background: #fbfcfd;
+}
+
+.mobilePageShell .ltPlannerSimplePage {
+  gap: 18px;
+}
+
+.mobilePageShell .ltPlannerSimplePage .ltPageTitle h1 {
+  color: #0d1b34;
+  font-size: clamp(1.7rem, 7vw, 2.2rem) !important;
+}
+
+.mobilePageShell .ltPlannerSimplePage .ltPageTitle p {
+  color: #66758b;
+}
+
+.mobilePageShell .ltPlannerSimpleCard,
+.mobilePageShell .ltPlannerOptionalPanel {
+  border-color: #dce5e9;
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.055);
+}
+
+.mobilePageShell .ltCountrySwitch.compact button,
+.mobilePageShell .ltPlannerSearchBox,
+.mobilePageShell .ltPlannerSelectionBlock,
+.mobilePageShell .ltPlannerEssentialGrid input,
+.mobilePageShell .ltPlannerOptionalPanel summary {
+  border-radius: 14px;
+}
+
+.mobilePageShell .ltPlannerCreateButton {
+  min-height: 58px;
+  border-radius: 14px;
+  background: #0d1b34;
+}
+
+@media (max-width: 360px) {
+  .lifeHubFinancePage .lifeHubCategoryBars {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workout-type-chip > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .more-module-grid {
+    grid-template-columns: 1fr;
+  }
+}

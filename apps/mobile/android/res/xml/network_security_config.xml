@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- The app UI and fixed Orbit Bridge use HTTPS. Android's policy remains app-wide here so
+         the native Bridge transport can reach explicitly validated private-network development
+         endpoints; BridgeHttpProxy enforces that narrower destination policy in code. -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

@@ -1,0 +1,1088 @@
+/* Final AI memo board override: keep it aligned with the AI Trip clean UI. */
+body:has(.aiNoteShell) { background: #f7f8fa; }
+
+.aiNoteShell,
+.aiNoteShell * { letter-spacing: 0 !important; }
+
+.aiNoteShell {
+  --memo-accent: #2563eb;
+  --memo-accent-dark: #1d4ed8;
+  --memo-accent-soft: #e8f1ff;
+  --memo-ink: #111827;
+  --memo-body: #4b5563;
+  --memo-muted: #6b7280;
+  --memo-line: #e5e7eb;
+  --memo-soft: #f7f8fa;
+  grid-template-columns: 280px minmax(0, 1fr) !important;
+  background: var(--memo-soft) !important;
+  color: var(--memo-ink) !important;
+}
+
+.aiNoteSidebar {
+  max-height: 100vh !important;
+  gap: 12px !important;
+  padding: 16px !important;
+  border-right: 1px solid var(--memo-line) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  overflow-y: auto !important;
+}
+
+.aiNoteHomeButton,
+.aiNoteSideGroup,
+.memoBoardNav,
+.aiNoteBoardPanel,
+.aiNoteBoardPanel .projectKanbanColumn,
+.memoBoardCard,
+.memoContextMenu,
+.memoBoardNavSection,
+.memoBoardNavSection > button,
+.memoBoardNavSection div button,
+.memoBoardNavSection input,
+.aiNoteSideGroup a,
+.aiNoteSideGroup button,
+.memoCardTop button,
+.memoCardPath input { border-radius: 8px !important; }
+
+.aiNoteSideGroup,
+.memoBoardNav {
+  display: grid !important;
+  gap: 8px !important;
+  padding: 12px !important;
+  border: 1px solid var(--memo-line) !important;
+  background: #fff !important;
+}
+
+.aiNoteHomeButton,
+.aiNoteSideGroup a,
+.aiNoteSideGroup button,
+.memoBoardNavSection > button,
+.memoBoardNavSection div button,
+.memoBoardNavSection input {
+  min-height: 36px !important;
+  border: 1px solid var(--memo-line) !important;
+  background: #fff !important;
+  color: var(--memo-body) !important;
+  padding: 0 10px !important;
+  font: inherit !important;
+  font-size: 0.82rem !important;
+  font-weight: 850 !important;
+  text-align: left !important;
+}
+
+.aiNoteHomeButton:hover,
+.aiNoteSideGroup a:hover,
+.aiNoteSideGroup button:hover,
+.aiNoteSideGroup button.active,
+.memoBoardNavSection button:hover,
+.memoBoardNavSection input:focus,
+.memoCardTop button:hover {
+  border-color: rgba(37, 99, 235, 0.34) !important;
+  background: var(--memo-accent-soft) !important;
+  color: var(--memo-accent-dark) !important;
+  outline: none !important;
+}
+
+.aiNoteSideGroup span,
+.memoBoardNav > span {
+  color: var(--memo-muted) !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+}
+
+.memoBoardNavSection {
+  display: grid !important;
+  gap: 6px !important;
+  padding: 8px !important;
+  border: 1px solid transparent !important;
+}
+
+.memoBoardNavSection.active {
+  border-color: rgba(37, 99, 235, 0.24) !important;
+  background: #f8fbff !important;
+}
+
+.memoBoardNavSection > button {
+  color: var(--memo-ink) !important;
+  font-weight: 900 !important;
+}
+
+.memoBoardNavSection div {
+  display: grid !important;
+  gap: 5px !important;
+  padding-left: 8px !important;
+}
+
+.memoBoardNavSection div button {
+  min-height: 30px !important;
+  overflow: hidden !important;
+  color: var(--memo-muted) !important;
+  font-size: 0.78rem !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.memoBoardNavigator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 4px 0 8px;
+  scrollbar-width: none;
+}
+
+.memoBoardNavigator::-webkit-scrollbar {
+  display: none;
+}
+
+.memoBoardNavigator button {
+  min-height: 42px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--memo-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--memo-body);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.memoBoardNavigator button.active {
+  border-color: rgba(37, 99, 235, 0.36);
+  background: var(--memo-accent-soft);
+  color: var(--memo-accent-dark);
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+}
+
+.memoBoardNavigator button span {
+  max-width: 148px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memoBoardNavigator button small {
+  min-width: 22px;
+  min-height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.07);
+  color: currentColor;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.memoBoardNavigator .memoBoardAddButton {
+  border-style: dashed;
+  color: #047857;
+}
+
+.memoBoardTitleRow {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.memoBoardTitleRow input {
+  width: min(360px, 100%);
+  min-height: 38px;
+  border: 1px solid var(--memo-line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--memo-ink);
+  padding: 0 12px;
+  font: inherit;
+  font-weight: 850;
+}
+
+.memoBoardTitleRow input:focus {
+  border-color: rgba(37, 99, 235, 0.42);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.memoNavIcon {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--memo-accent-soft);
+  color: var(--memo-accent-dark);
+}
+
+.memoNavIcon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.aiNoteSideGroup a,
+.aiNoteSideGroup button,
+.memoBoardNavSection > button,
+.memoBoardNavSection div button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.aiNotePage {
+  width: min(1180px, calc(100% - 32px)) !important;
+  padding: 28px 0 56px !important;
+}
+
+.aiNotePage.schedulerMode {
+  width: min(1320px, calc(100% - 32px)) !important;
+}
+
+.schedulerEmbedded {
+  min-width: 0;
+}
+
+.schedulerEmbedded .schedulerPage {
+  width: 100% !important;
+  padding: 0 !important;
+}
+
+.schedulerEmbedded .schedulerHero {
+  border-radius: 8px !important;
+}
+
+.schedulerEmbedded .schedulerDatabase {
+  margin-bottom: 0 !important;
+}
+
+.aiNoteBoardPanel {
+  padding: 22px !important;
+  border: 1px solid var(--memo-line) !important;
+  background: #fff !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05) !important;
+}
+
+.aiNoteBoardPanel .projectTopbar h1 {
+  color: var(--memo-ink) !important;
+  font-size: clamp(1.85rem, 4vw, 2.85rem) !important;
+  line-height: 1.08 !important;
+}
+
+.aiNoteBoardPanel .projectFloatingNote {
+  top: 88px !important;
+  right: 22px !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07) !important;
+}
+
+.aiNoteBoardPanel .projectKanbanColumn {
+  min-height: 360px !important;
+  background: #f9fafb !important;
+  box-shadow: none !important;
+}
+
+.memoFreeformBoard {
+  position: relative;
+  min-height: 520px;
+  display: block;
+  margin-top: 28px;
+  padding: 14px;
+  border: 1px solid var(--memo-line);
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.memoBoardCard {
+  position: absolute !important;
+  display: grid !important;
+  gap: 9px !important;
+  min-height: 48px !important;
+  min-width: 260px !important;
+  max-width: 100% !important;
+  align-content: center !important;
+  cursor: pointer !important;
+  overflow: auto !important;
+  resize: both !important;
+  padding: 10px 12px !important;
+}
+
+.memoBoardCard.active {
+  border-color: var(--memo-accent) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 10px 24px rgba(15, 23, 42, 0.06) !important;
+}
+
+.memoProjectCard.active {
+  border-color: var(--memo-accent) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 10px 24px rgba(15, 23, 42, 0.06) !important;
+}
+
+.memoCardTop span { color: var(--memo-muted) !important; }
+
+.memoCardTop button,
+.memoCardPath input {
+  border: 1px solid var(--memo-line) !important;
+  background: #f8fafc !important;
+  color: var(--memo-body) !important;
+}
+
+.memoCardTitle {
+  width: 100% !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--memo-ink) !important;
+  font: inherit !important;
+  font-size: 0.98rem !important;
+  font-weight: 900 !important;
+  line-height: 1.35 !important;
+  text-align: left !important;
+}
+
+.memoCardTitle:hover { color: var(--memo-accent-dark) !important; }
+.memoCardPath span { color: var(--memo-muted) !important; }
+.memoCardPath input:focus { outline: 2px solid rgba(37, 99, 235, 0.2) !important; }
+
+.memoCardName {
+  width: 100%;
+  min-height: 30px;
+  min-width: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--memo-ink);
+  font: inherit;
+  font-size: 0.98rem;
+  font-weight: 900;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.memoBoardCard .memoCardName {
+  padding-left: 24px;
+}
+
+.memoCardName:focus {
+  outline: 2px solid rgba(37, 99, 235, 0.16);
+  background: #f8fbff;
+}
+
+.memoChecklistCardMeta {
+  padding-left: 24px;
+  color: var(--memo-muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.memoBoardCreateActions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.memoInlineEditor {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0 18px;
+  padding: 14px;
+  border: 1px solid var(--memo-line);
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.memoInlineEditor header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.memoInlineEditor header > div:first-child {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.memoInlineEditor span {
+  color: var(--memo-muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.memoInlineEditor input {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--memo-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--memo-ink);
+  padding: 0 11px;
+  font: inherit;
+  font-weight: 900;
+}
+
+.memoInlineEditor header > div:last-child {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--memo-line);
+  border-radius: 999px;
+  background: #fff;
+}
+
+.memoInlineEditor button {
+  min-height: 30px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--memo-muted);
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.memoInlineEditor button.active {
+  background: var(--memo-accent);
+  color: #fff;
+}
+
+.memoInlineEditor textarea {
+  width: 100%;
+  min-height: 150px;
+  border: 1px solid var(--memo-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--memo-ink);
+  padding: 12px;
+  font: inherit;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.memoChecklistEditor {
+  display: grid;
+  gap: 8px;
+  min-height: 150px;
+  padding: 12px;
+  border: 1px solid var(--memo-line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.memoChecklistItem {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.memoChecklistItem input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+  padding: 0;
+  accent-color: var(--memo-accent);
+}
+
+.memoChecklistItem input[type="text"] {
+  min-height: 34px;
+  padding: 0 10px;
+  font-weight: 700;
+}
+
+.memoChecklistItem button,
+.memoChecklistAdd {
+  min-height: 34px;
+  border: 1px solid var(--memo-line);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: var(--memo-body);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 850;
+}
+
+.memoChecklistAdd {
+  justify-self: start;
+}
+
+.memoInlinePreview {
+  min-height: 150px;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--memo-line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.memoInlinePreview h1,
+.memoInlinePreview h2,
+.memoInlinePreview h3,
+.memoInlinePreview p {
+  margin: 0;
+}
+
+.memoInlinePreview h1 {
+  font-size: 1.35rem;
+}
+
+.memoInlinePreview h2 {
+  font-size: 1.15rem;
+}
+
+.memoInlinePreview p,
+.memoInlinePreview label {
+  color: var(--memo-body);
+  line-height: 1.6;
+}
+
+.analysisEditorShell {
+  min-height: 100vh;
+  padding: 24px;
+  background: #f7f8fa;
+  color: #111827;
+}
+
+.analysisEditorPanel {
+  width: min(1440px, 100%);
+  min-height: calc(100vh - 48px);
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  gap: 14px;
+  margin: 0 auto;
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.memoEditorPanel {
+  width: min(1180px, 100%);
+  gap: 12px;
+  padding: 18px;
+  border-color: #fed7aa;
+  background:
+    radial-gradient(circle at 18px 18px, rgba(251, 146, 60, 0.14) 0 7px, transparent 8px),
+    linear-gradient(180deg, #fffdf8 0%, #fff7ed 100%);
+}
+
+.analysisEditorPanel.compact {
+  width: min(520px, 100%);
+  min-height: auto;
+  align-content: center;
+}
+
+.analysisEditorHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 2px 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.analysisEditorHeader span,
+.analysisPathBar span,
+.analysisPaneHeader span {
+  color: #6b7280;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.analysisEditorHeader h1 {
+  margin-top: 4px;
+  color: #111827;
+  font-size: clamp(1.45rem, 3.2vw, 2.2rem);
+  line-height: 1.12;
+}
+
+.analysisEditorHeader p {
+  margin-top: 6px;
+  max-width: min(72vw, 680px);
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analysisEditorHeader > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.analysisEditorHeader button,
+.analysisPathBar button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #4b5563;
+  padding: 0 12px;
+  font: inherit;
+  font-weight: 850;
+}
+
+.analysisEditorHeader button .memoNavIcon {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  background: #eff6ff;
+  color: currentColor;
+}
+
+.analysisEditorHeader button .memoNavIcon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.analysisEditorHeader .analysisPrimaryAction,
+.analysisPathBar button {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.memoEditorPanel .analysisEditorHeader {
+  border-bottom-color: #fed7aa;
+}
+
+.memoEditorPanel .analysisEditorHeader h1 {
+  color: #7c2d12;
+}
+
+.memoEditorPanel .analysisEditorHeader p {
+  color: #9a3412;
+}
+
+.memoEditorStatusBar {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  background: rgba(255, 247, 237, 0.86);
+  color: #9a3412;
+}
+
+.memoEditorStatusBar strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #7c2d12;
+  font-size: 0.95rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memoEditorStatusBar span {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #fff;
+  color: #c2410c;
+  padding: 6px 10px;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.analysisPathBar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.memoEditorPanel .analysisPathBar {
+  border-color: #dbeafe;
+  background: #eff6ff;
+}
+
+.analysisPathBar label {
+  display: grid;
+  gap: 6px;
+}
+
+.analysisPathBar input {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #111827;
+  padding: 0 12px;
+  font: inherit;
+}
+
+.analysisSaveStatus {
+  color: #2563eb;
+  font-weight: 850;
+}
+
+.analysisEditorGrid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.analysisEditorGrid.markdown {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
+}
+
+.analysisEditorGrid.autoPreview.showPreview {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
+}
+
+.analysisEditorGrid.autoPreview.showPreview .analysisMarkdownPreview {
+  min-height: 60vh;
+}
+
+.analysisEditSurface,
+.analysisMarkdownPreview {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.analysisPaneHeader {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 14px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.analysisPaneHeader strong {
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.analysisPaneHeader button {
+  min-height: 30px;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #9a3412;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.analysisCodeWrap {
+  min-height: 520px;
+}
+
+.analysisCodeWrap .cm-editor,
+.analysisCodeWrap .cm-scroller {
+  min-height: 520px;
+}
+
+.analysisMarkdownBody {
+  min-height: 520px;
+  padding: 22px;
+  overflow: auto;
+  color: #1f2937;
+  line-height: 1.7;
+}
+
+.analysisMarkdownBody h1,
+.analysisMarkdownBody h2,
+.analysisMarkdownBody h3 {
+  margin: 0 0 12px;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.analysisMarkdownBody h1 { font-size: 2rem; }
+.analysisMarkdownBody h2 { margin-top: 18px; font-size: 1.5rem; }
+.analysisMarkdownBody h3 { margin-top: 14px; font-size: 1.15rem; }
+
+.analysisMarkdownBody p,
+.analysisMarkdownBody li,
+.analysisMarkdownBody blockquote {
+  margin: 0 0 10px;
+}
+
+.analysisMarkdownBody li {
+  list-style-position: inside;
+}
+
+.analysisMarkdownBody code {
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: #eef2ff;
+  color: #1d4ed8;
+}
+
+.analysisMarkdownBody blockquote {
+  padding: 10px 12px;
+  border-left: 3px solid #2563eb;
+  background: #f8fbff;
+}
+
+.analysisMarkdownCheck {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 760px) {
+  .analysisEditorShell {
+    min-height: 100svh;
+    padding: 0;
+    background: #fff;
+  }
+
+  .analysisEditorPanel,
+  .memoEditorPanel {
+    width: 100%;
+    min-height: 100svh;
+    gap: 10px;
+    padding: 12px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .analysisEditorHeader {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin: -12px -12px 0;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(14px);
+  }
+
+  .analysisEditorHeader h1 {
+    font-size: 1.35rem;
+  }
+
+  .analysisEditorHeader p {
+    max-width: 100%;
+    font-size: 0.78rem;
+  }
+
+  .analysisEditorHeader > div:last-child {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    justify-content: stretch;
+  }
+
+  .analysisEditorHeader button {
+    min-width: 0;
+    min-height: 42px;
+  }
+
+  .analysisPathBar {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+
+  .analysisPathBar input {
+    min-height: 42px;
+    font-size: 16px;
+  }
+
+  .analysisPathBar button {
+    min-height: 42px;
+  }
+
+  .analysisEditorGrid,
+  .analysisEditorGrid.markdown {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .analysisEditorGrid.autoPreview.showPreview {
+    grid-template-columns: 1fr;
+  }
+
+  .analysisEditorGrid.autoPreview.showPreview .analysisEditSurface {
+    display: none;
+  }
+
+  .analysisEditSurface,
+  .analysisMarkdownPreview {
+    border-radius: 8px;
+  }
+
+  .analysisCodeWrap,
+  .analysisCodeWrap .cm-editor,
+  .analysisCodeWrap .cm-scroller,
+  .analysisMarkdownBody {
+    min-height: 52vh;
+  }
+
+  .analysisMarkdownBody {
+    padding: 14px;
+  }
+}
+
+.memoContextMenu {
+  border: 1px solid var(--memo-line) !important;
+  background: #fff !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14) !important;
+}
+
+.memoContextMenu button:hover {
+  background: var(--memo-accent-soft) !important;
+  color: var(--memo-accent-dark) !important;
+}
+
+.ltAddressGrid,
+.ltRouteFacts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ltPlannerInfoCard {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 8px 12px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid var(--lt-border, #e5e7eb);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.ltPlannerInfoIcon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--lt-primary-soft, #dff8ee);
+  color: var(--lt-primary-dark, #047857);
+}
+
+.ltPlannerInfoCard strong {
+  color: var(--lt-ink, #111827);
+  font-size: 0.98rem;
+  font-weight: 900;
+}
+
+.ltPlannerInfoCard p {
+  margin-top: 4px;
+  color: var(--lt-muted, #64748b);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.ltPlannerInfoBody {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.ltAddressSearch {
+  position: relative;
+}
+
+.ltAddressSearch input + input {
+  margin-top: 8px;
+}
+
+.ltAddressDropdown {
+  top: calc(100% + 6px);
+}
+
+.ltAddressSearching {
+  padding: 10px 12px;
+  color: var(--lt-muted, #64748b);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.ltBudgetPreview,
+.ltRouteFacts article {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.ltRouteFacts article {
+  padding: 14px;
+  border: 1px solid var(--lt-border, #e5e7eb);
+  background: #fff;
+}
+
+.ltBudgetPreview span,
+.ltRouteFacts span {
+  color: var(--lt-muted, #64748b);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.ltBudgetPreview strong,
+.ltRouteFacts strong {
+  color: var(--lt-ink, #111827);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.ltRouteFacts {
+  margin: 18px 0 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 860px) {
+  .aiNoteShell { grid-template-columns: 1fr !important; }
+
+  .aiNoteSidebar {
+    position: static !important;
+    min-height: auto !important;
+    max-height: none !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--memo-line) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .ltAddressGrid,
+  .ltRouteFacts {
+    grid-template-columns: 1fr;
+  }
+}

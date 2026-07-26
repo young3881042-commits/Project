@@ -1,0 +1,93 @@
+.lifeHubBodyProfileCard {
+  padding: 14px;
+  border-color: #99d9d0;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fffd 100%);
+}
+
+.lifeHubBodyProfileCard > summary {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.lifeHubBodyProfileCard > summary > span {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.lifeHubBodyProfileCard > summary > span:last-child {
+  justify-items: end;
+  text-align: right;
+}
+
+.lifeHubBodyProfileCard > summary small {
+  color: #64748b;
+  font-size: 0.67rem;
+  font-weight: 800;
+}
+
+.lifeHubBodyProfileCard > summary strong {
+  color: #0f172a;
+  font-size: 0.88rem;
+  font-weight: 950;
+}
+
+.lifeHubBodyProfileCard[open] > summary {
+  margin-bottom: 2px;
+}
+
+.lifeHubBodyProfileMetrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lifeHubBodyProfileMetrics article {
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid #ccebe6;
+  border-radius: 10px;
+  background: #ecfdf9;
+}
+
+.lifeHubBodyProfileMetrics span {
+  color: #52706c;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.lifeHubBodyProfileMetrics output {
+  color: #0f766e;
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.lifeHubBodyProfileCard > p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+.lifeHubBodyProfileCard > button {
+  width: 100%;
+  min-height: 46px;
+  border: 0;
+  border-radius: 10px;
+  background: #0f766e;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+@media (max-width: 380px) {
+  .lifeHubBodyProfileCard > summary {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}

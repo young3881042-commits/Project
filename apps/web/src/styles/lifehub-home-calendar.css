@@ -1,0 +1,492 @@
+.homeMonthCalendarCard {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+  padding: 8px;
+  overflow: hidden;
+  border: 1px solid #d9e5e8;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.045);
+}
+
+.homeMonthCalendarHeader {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px;
+}
+
+.homeMonthCalendarHeader > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.homeMonthCalendarHeader > div > span {
+  color: #0f8f7f;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.homeMonthCalendarHeader h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.03rem;
+  font-weight: 950;
+  letter-spacing: -0.025em;
+}
+
+.homeMonthCalendarHeader nav {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.homeMonthCalendarHeader nav button {
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #d7e2e6;
+  border-radius: 11px;
+  background: #f8fafc;
+  color: #334155;
+}
+
+.homeMonthCalendarHeader nav button.today {
+  padding-inline: 9px;
+  color: #0f766e;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.homeMonthCalendarHeader .memoNavIcon {
+  width: 17px;
+  height: 17px;
+}
+
+.homeMonthGrid {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.homeMonthWeekdays,
+.homeMonthWeek {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.homeMonthFinanceTotals {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding-inline: 4px;
+}
+
+.homeMonthFinanceTotals article {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 8px 9px;
+  border: 1px solid #dce7e5;
+  border-radius: 10px;
+  background: #f6fbfa;
+}
+
+.homeMonthFinanceTotals span {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.62rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.homeMonthFinanceTotals strong {
+  overflow: hidden;
+  color: #15803d;
+  font-size: 0.78rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.homeMonthFinanceTotals article.expense {
+  border-color: #f1dce1;
+  background: #fff8f9;
+}
+
+.homeMonthFinanceTotals article.expense strong {
+  color: #be123c;
+}
+
+.homeMonthCalendarLegend {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 8px;
+  padding-inline: 4px;
+  color: #64748b;
+  font-size: 0.65rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.homeMonthCalendarLegend strong {
+  color: #0f766e;
+  font-weight: 950;
+}
+
+.homeMonthWeekdays span {
+  min-width: 0;
+  padding-block: 3px;
+  color: #64748b;
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.homeMonthWeekdays span:first-child {
+  color: #dc4c64;
+}
+
+.homeMonthWeekdays span:last-child {
+  color: #4275b8;
+}
+
+.homeMonthDay {
+  min-width: 0;
+  min-height: 82px;
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding: 4px 2px;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: #f8fafc;
+  color: #334155;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.homeMonthDay.outside {
+  background: #fbfcfd;
+  color: #a0aec0;
+}
+
+.homeMonthDay.selected {
+  border-color: #14a896;
+  background: #eafaf7;
+  box-shadow: inset 0 0 0 1px rgba(20, 168, 150, 0.12);
+}
+
+.homeMonthDay:focus-visible,
+.homeMonthCalendarHeader button:focus-visible,
+.homeMonthSelectedDetail button:focus-visible {
+  outline: 3px solid rgba(20, 168, 150, 0.3);
+  outline-offset: 1px;
+}
+
+.homeMonthDay > time {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: inherit;
+  font-size: 0.7rem;
+  font-weight: 950;
+}
+
+.homeMonthDay.today > time {
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.homeMonthDayMarkers {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.homeMonthDayMarkers > span {
+  min-width: 0;
+  display: block;
+  padding: 1px 2px;
+  overflow: hidden;
+  border-radius: 4px;
+  font-size: 0.58rem;
+  font-weight: 900;
+  line-height: 1.18;
+  letter-spacing: -0.04em;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.homeMonthDayMarkers .income {
+  background: #e7f8ef;
+  color: #15803d;
+}
+
+.homeMonthDayMarkers .expense {
+  background: #fff0f2;
+  color: #be123c;
+}
+
+.homeMonthDayMarkers .planned,
+.homeMonthDayMarkers .workoutPlanned {
+  background: #fff7df;
+  color: #9a6700;
+}
+
+.homeMonthDayMarkers .done,
+.homeMonthDayMarkers .workoutDone {
+  background: #e8f5ff;
+  color: #1769a7;
+}
+
+.homeMonthDayMarkers .workoutPlanned,
+.homeMonthDayMarkers .workoutDone {
+  border-left: 2px solid #7c3aed;
+}
+
+.homeMonthSelectedDetail {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+  padding: 12px 4px 4px;
+  scroll-margin-block: 72px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.homeMonthSelectedDetail > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.homeMonthSelectedDetail > header > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.homeMonthSelectedDetail > header span {
+  color: #0f8f7f;
+  font-size: 0.66rem;
+  font-weight: 900;
+}
+
+.homeMonthSelectedDetail h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.homeMonthSelectedDetail > header > button {
+  min-width: 70px;
+  min-height: 44px;
+  padding-inline: 10px;
+  border: 1px solid #b7ddd7;
+  border-radius: 10px;
+  background: #edfaf7;
+  color: #0f766e;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.homeMonthMoneySummary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.homeMonthMoneySummary button {
+  min-width: 0;
+  min-height: 50px;
+  display: grid;
+  gap: 3px;
+  padding: 8px 10px;
+  border: 1px solid #dde6ea;
+  border-radius: 11px;
+  background: #f8fafc;
+  text-align: left;
+}
+
+.homeMonthMoneySummary span {
+  color: #64748b;
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+
+.homeMonthMoneySummary strong {
+  overflow: hidden;
+  color: #15803d;
+  font-size: 0.78rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.homeMonthMoneySummary button:last-child strong {
+  color: #be123c;
+}
+
+.homeMonthActivityList {
+  display: grid;
+  gap: 6px;
+}
+
+.homeMonthActivityList > button {
+  min-width: 0;
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 11px;
+  background: #ffffff;
+  text-align: left;
+}
+
+.homeMonthActivityIcon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #edf8ff;
+  color: #1769a7;
+}
+
+.homeMonthActivityIcon.workout {
+  background: #f2edff;
+  color: #6d28d9;
+}
+
+.homeMonthActivityIcon .memoNavIcon {
+  width: 17px;
+  height: 17px;
+}
+
+.homeMonthActivityList > button > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.homeMonthActivityList strong,
+.homeMonthActivityList small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.homeMonthActivityList strong {
+  color: #1e293b;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.homeMonthActivityList small {
+  color: #64748b;
+  font-size: 0.65rem;
+  font-weight: 750;
+}
+
+.homeMonthActivityList em {
+  padding: 4px 6px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-style: normal;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.homeMonthActivityList em.planned {
+  background: #fff7df;
+  color: #9a6700;
+}
+
+.homeMonthActivityList em.done {
+  background: #e7f8ef;
+  color: #15803d;
+}
+
+.homeMonthRemainingActions,
+.homeMonthEmptyDetail {
+  margin: 0;
+  padding: 8px;
+  color: #64748b;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.homeMonthRemainingActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.homeMonthRemainingActions span {
+  flex-basis: 100%;
+}
+
+.homeMonthRemainingActions button {
+  min-height: 44px;
+  padding: 7px 10px;
+  border: 1px solid #b7ddd7;
+  border-radius: 10px;
+  background: #edfaf7;
+  color: #0f766e;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+@media (max-width: 380px) {
+  .homeMonthCalendarCard {
+    padding: 6px;
+  }
+
+  .homeMonthGrid {
+    gap: 1px;
+  }
+
+  .homeMonthWeekdays,
+  .homeMonthWeek {
+    gap: 1px;
+  }
+
+  .homeMonthCalendarHeader {
+    align-items: flex-start;
+  }
+
+  .homeMonthCalendarHeader nav {
+    gap: 2px;
+  }
+
+  .homeMonthDay {
+    min-height: 80px;
+  }
+
+  .homeMonthDayMarkers > span {
+    font-size: 0.58rem;
+  }
+}

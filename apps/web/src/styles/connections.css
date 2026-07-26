@@ -1,0 +1,598 @@
+.connectionsShell,
+.connectionsWorkspaceShell,
+.connectionsShell * {
+  box-sizing: border-box;
+  letter-spacing: 0;
+}
+
+.connectionsWorkspaceShell {
+  min-height: 100vh;
+  background: #f7f8fa;
+}
+
+.connectionsShell {
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(247, 248, 250, 0.96), rgba(255, 255, 255, 0.98)),
+    #f7f8fa;
+  color: #262a2f;
+  padding: 36px min(5vw, 56px) 72px;
+  font-family: "Pretendard", "SUIT", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+.connectionsHero,
+.connectionsStats,
+.connectionsGrid,
+.inboxPanel {
+  width: min(1180px, 100%);
+  margin-inline: auto;
+}
+
+.connectionsHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: end;
+  padding-bottom: 22px;
+}
+
+.connectionsEyebrow,
+.connectionsSectionTitle span,
+.connectionsStats span,
+.connectionsField > span,
+.connectionsReadiness span,
+.connectionsInboxItem span {
+  color: #74716d;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.connectionsHero h1 {
+  margin: 8px 0 0;
+  color: #202124;
+  font-size: clamp(2.2rem, 5vw, 4.6rem);
+  line-height: 1.03;
+  font-weight: 850;
+}
+
+.connectionsHero p {
+  max-width: 660px;
+  margin: 12px 0 0;
+  color: #5f6368;
+  line-height: 1.65;
+}
+
+.connectionsHeroActions,
+.connectionsButtonRow,
+.connectionsSectionAction {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.connectionsPrimaryButton,
+.connectionsGhostButton,
+.connectionsSegmented button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #cfd8d2;
+  border-radius: 7px;
+  padding: 0 13px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.connectionsPrimaryButton {
+  border-color: #24564a;
+  background: #24564a;
+  color: #fff;
+}
+
+.connectionsGhostButton,
+.connectionsSegmented button {
+  background: #fff;
+  color: #2f3437;
+}
+
+.connectionsGhostButton.danger {
+  color: #a83232;
+}
+
+.connectionsPrimaryButton:disabled,
+.connectionsGhostButton:disabled,
+.connectionsSegmented button:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.connectionsStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.connectionsStats article,
+.connectionsPanel {
+  border: 1px solid #e0e3df;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(39, 45, 51, 0.06);
+}
+
+.connectionsStats article {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 15px;
+}
+
+.connectionsStats strong {
+  color: #24564a;
+  font-size: 1.45rem;
+  line-height: 1.1;
+}
+
+.connectionsStats small {
+  color: #6f7378;
+  font-size: 0.82rem;
+}
+
+.connectionsNotice {
+  width: min(1180px, 100%);
+  margin: 0 auto 14px;
+  border: 1px solid #f0d8a8;
+  border-radius: 8px;
+  background: #fff8e8;
+  color: #72561c;
+  padding: 11px 13px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.connectionsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.connectionsPanel {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 18px;
+}
+
+.settingsPanel {
+  grid-row: span 2;
+}
+
+.connectionsSectionHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+}
+
+.connectionsSectionTitle {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+}
+
+.connectionsSectionTitle h2 {
+  margin: 2px 0 0;
+  color: #242629;
+  font-size: 1.18rem;
+  line-height: 1.2;
+}
+
+.connectionsSectionTitle p {
+  margin: 7px 0 0;
+  color: #646970;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.connectionsIcon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(15, 118, 110, 0.16);
+  border-radius: 8px;
+  background: #f0fdfa;
+  color: #24564a;
+}
+
+.connectionsIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.connectionsStatus {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: 0.78rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.connectionsStatus.ok {
+  background: #e7f5ef;
+  color: #176143;
+}
+
+.connectionsStatus.warn {
+  background: #fff1d8;
+  color: #7a4a0b;
+}
+
+.connectionsStatus.neutral {
+  background: #eef1f4;
+  color: #4a5562;
+}
+
+.connectionsField,
+.connectionsKeyForm {
+  display: grid;
+  gap: 8px;
+}
+
+.connectionsField input,
+.connectionsField select {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  border: 1px solid #d9dfda;
+  border-radius: 7px;
+  background: #fbfcfb;
+  color: #262a2f;
+  padding: 0 11px;
+  font: inherit;
+  font-size: 0.94rem;
+}
+
+.connectionsField input:disabled {
+  background: #f1f3f1;
+  color: #8a8f95;
+}
+
+.connectionsField input:focus,
+.connectionsField select:focus {
+  border-color: #24564a;
+  outline: 3px solid rgba(36, 86, 74, 0.14);
+}
+
+.connectionsFieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.connectionsSegmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.connectionsSegmented button.active {
+  border-color: #24564a;
+  background: #e7f5ef;
+  color: #174c3d;
+}
+
+.connectionsDataShape {
+  display: grid;
+  gap: 7px;
+  border-left: 3px solid #90b0a7;
+  background: #f5f7f4;
+  padding: 11px 12px;
+}
+
+.connectionsDataShape code {
+  color: #24463e;
+  font-size: 0.82rem;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.connectionsDataShape span {
+  color: #686f75;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.connectionsMetaList {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+}
+
+.connectionsMetaList div {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 12px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid #edf0ec;
+}
+
+.connectionsMetaList dt {
+  color: #777b80;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.connectionsMetaList dd {
+  min-width: 0;
+  margin: 0;
+  color: #292d31;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.connectionsReadiness {
+  display: grid;
+  gap: 5px;
+  border: 1px solid #e4e2dc;
+  border-radius: 8px;
+  background: #fcfbf8;
+  padding: 13px;
+}
+
+.connectionsReadiness strong {
+  color: #252a2e;
+  font-size: 1rem;
+}
+
+.connectionsReadiness small {
+  color: #6b7177;
+  line-height: 1.5;
+}
+
+.inboxPanel {
+  margin-top: 14px;
+}
+
+.connectionsInboxList {
+  display: grid;
+  gap: 10px;
+}
+
+.connectionsInboxItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  border: 1px solid #e5e8e3;
+  border-radius: 8px;
+  background: #fbfcfb;
+  padding: 13px;
+}
+
+.connectionsInboxItem strong {
+  display: block;
+  margin-top: 3px;
+  color: #272b30;
+  font-size: 1rem;
+}
+
+.connectionsInboxItem p {
+  margin: 6px 0 0;
+  color: #62686f;
+  line-height: 1.5;
+}
+
+.connectionsInboxMeta {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+}
+
+.connectionsInboxMeta time {
+  color: #7a7f85;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 960px) {
+  .connectionsShell {
+    padding-inline: 18px;
+  }
+
+  .connectionsHero,
+  .connectionsGrid,
+  .connectionsSectionHeader,
+  .connectionsInboxItem {
+    grid-template-columns: 1fr;
+  }
+
+  .connectionsHeroActions,
+  .connectionsSectionAction,
+  .connectionsInboxMeta {
+    justify-content: start;
+    justify-items: start;
+  }
+
+  .settingsPanel {
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 620px) {
+  .connectionsStats,
+  .connectionsFieldGrid,
+  .connectionsMetaList div,
+  .connectionsSegmented {
+    grid-template-columns: 1fr;
+  }
+
+  .connectionsHero h1 {
+    font-size: 2.25rem;
+  }
+
+  .connectionsPrimaryButton,
+  .connectionsGhostButton {
+    width: 100%;
+  }
+}
+
+.connectionsShell.simple .connectionsHero,
+.connectionsChoiceGrid,
+.connectionsSimplePanel,
+.connectionsAdvanced {
+  width: min(860px, 100%);
+  margin-inline: auto;
+}
+
+.connectionsShell.simple .connectionsHero {
+  align-items: center;
+  min-height: 240px;
+  margin-bottom: 16px;
+  padding: 28px;
+  border: 1px solid rgba(203, 213, 225, 0.76);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.82)),
+    #ffffff;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+}
+
+.connectionsChoiceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.connectionsChoiceGrid > button {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid #dfe5df;
+  border-radius: 8px;
+  background: #fff;
+  color: #24292d;
+  padding: 15px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(39, 45, 51, 0.05);
+}
+
+.connectionsChoiceGrid > button.active {
+  border-color: #24564a;
+  background: linear-gradient(180deg, #f0fdfa, #ffffff);
+  box-shadow: 0 16px 36px rgba(15, 118, 110, 0.1);
+}
+
+.connectionsChoiceGrid strong,
+.connectionsChoiceGrid small,
+.connectionsProviderList strong,
+.connectionsProviderList p {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.connectionsChoiceGrid strong {
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.connectionsChoiceGrid small {
+  margin-top: 4px;
+  color: #6b716d;
+  line-height: 1.35;
+}
+
+.connectionsProviderList {
+  display: grid;
+  gap: 10px;
+}
+
+.connectionsProviderList article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 220px);
+  gap: 12px;
+  align-items: center;
+  border: 1px solid #edf0ec;
+  border-radius: 8px;
+  background: #fbfcfb;
+  padding: 13px;
+}
+
+.connectionsProviderList article.connectionsProviderWithField {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.connectionsProviderList strong {
+  color: #24282c;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.connectionsProviderList p {
+  margin: 5px 0 0;
+  color: #676f75;
+  line-height: 1.45;
+}
+
+.connectionsAdvanced {
+  margin-top: 14px;
+}
+
+.connectionsAdvanced summary {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid #dfe5df;
+  border-radius: 8px;
+  background: #fff;
+  padding: 12px 14px;
+  color: #30363a;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(39, 45, 51, 0.05);
+}
+
+.connectionsAdvancedGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+
+@media (max-width: 760px) {
+  .connectionsChoiceGrid,
+  .connectionsChoiceGrid > button,
+  .connectionsProviderList article,
+  .connectionsAdvanced summary,
+  .connectionsAdvancedGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .connectionsChoiceGrid .connectionsStatus,
+  .connectionsAdvanced .connectionsStatus {
+    justify-self: start;
+  }
+}

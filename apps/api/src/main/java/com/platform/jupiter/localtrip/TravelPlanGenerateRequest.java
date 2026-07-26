@@ -1,0 +1,35 @@
+package com.platform.jupiter.localtrip;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import java.util.List;
+
+public record TravelPlanGenerateRequest(
+        String region,
+        List<String> regions,
+        List<Long> destinationIds,
+        String style,
+        List<String> styles,
+        List<String> travelStyle,
+        String startDate,
+        @Min(1) @Max(7) Integer days,
+        @Min(1) @Max(12) Integer travelerCount,
+        String travelerType,
+        String transportType,
+        String budgetLevel,
+        String pace,
+        String mealPreference,
+        String restPreference,
+        String mustVisit,
+        String avoid,
+        String dayStartTime,
+        String dayEndTime,
+        String startPlace,
+        String startAddress,
+        String endPlace,
+        String endAddress,
+        String departureTime,
+        String arrivalTime,
+        List<DailyRouteRequest> dailyRoutes,
+        String memo) {
+}

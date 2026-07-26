@@ -1,0 +1,148 @@
+.blockNoteMemoEditor {
+  min-height: 60dvh;
+  overflow: hidden;
+  border: 1px solid #e5ecf4;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.blockNoteLoading {
+  min-height: 280px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.92rem;
+  font-weight: 850;
+}
+
+.blockNoteMemoEditor .bn-container {
+  min-height: 60dvh;
+  --bn-colors-editor-background: #ffffff;
+  --bn-colors-menu-background: #ffffff;
+  --bn-colors-tooltip-background: #111827;
+  --bn-colors-tooltip-text: #ffffff;
+  --bn-colors-hovered-background: #f1f5f9;
+  --bn-colors-selected-background: #e8f8f4;
+  --bn-colors-border: #dbe7ef;
+  color: #111827;
+  font-family: Inter, "Pretendard Variable", "Apple SD Gothic Neo", system-ui, sans-serif;
+}
+
+.blockNoteMemoEditor .bn-editor {
+  width: 100%;
+  min-height: 60dvh;
+  box-sizing: border-box;
+  padding: 14px 8px 120px;
+}
+
+.blockNoteMemoEditor .bn-block-content {
+  max-width: none;
+  color: #111827;
+  font-size: 0.96rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.blockNoteMemoEditor .bn-block-content[data-content-type="heading"] {
+  color: #0f172a;
+  font-weight: 950;
+}
+
+.blockNoteMemoEditor .bn-block-content[data-content-type="codeBlock"] {
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.blockNoteMemoEditor .bn-side-menu,
+.blockNoteMemoEditor .bn-formatting-toolbar,
+.blockNoteMemoEditor .bn-slash-menu,
+.blockNoteMemoEditor .bn-suggestion-menu {
+  border-radius: 8px;
+}
+
+.notesDocument.blockNoteDocument {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.notesDetailPanel .notesEditorModeTabs {
+  padding: 4px;
+  border: 1px solid #dbe7ef;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.notesDetailPanel .notesEditorModeTabs button {
+  min-height: 34px;
+  border-radius: 7px;
+}
+
+.notesDetailPanel .notesEditorModeTabs button.active {
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.notesDetailPanel .notesDetailCrumbs > strong {
+  flex: 0 0 auto;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #dbe7ef;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #0f766e;
+  padding: 0 10px;
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.notesDetailTopbar {
+  border: 1px solid #e5ecf4;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+}
+
+.notesTitleHeaderInput {
+  font-size: 1.32rem !important;
+  font-weight: 950 !important;
+}
+
+.notesDetailPanel,
+.notesDetailPanel * {
+  min-width: 0;
+}
+
+.blockNoteMemoEditor .bn-block-outer,
+.blockNoteMemoEditor .bn-block,
+.blockNoteMemoEditor .bn-block-content {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.notesDetailTopbar .notesScheduleBar {
+  width: 100% !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+}
+
+.notesDetailTopbar .notesScheduleToggle {
+  grid-column: 1 / -1 !important;
+}
+
+.notesDetailTopbar .notesScheduleBar input[type="date"],
+.notesDetailTopbar .notesScheduleBar input[type="time"] {
+  width: 100%;
+}
+
+.notesDetailTopbar .notesShareButton,
+.notesDetailTopbar .notesDeleteButton {
+  grid-column: auto !important;
+}

@@ -1,0 +1,3322 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import MobilePageShell from './components/MobilePageShell.jsx';
+import TravelHome from './components/travel/TravelHome.jsx';
+import TravelPlannerPage from './components/travel/TravelPlannerPage.jsx';
+import TripMobilePage from './components/travel/TripMobilePlanPage.jsx';
+import {
+  cloneTripMobilePlan,
+  isOsakaKyotoUsjPlan,
+  legacyPlanToTripMobilePlan
+} from './components/travel/tripMobilePlan.js';
+import {
+  DEFAULT_NOTE_DIRECTORY_ID_SET,
+  createDefaultNoteDirectories,
+  normalizeNoteDirectoryId
+} from './components/notes/notesDirectoryRules.js';
+import { loginUrlForRedirect, redirectToLogin } from './authRoutes.js';
+
+const AUTH_KEY = 'codex-workspace-auth';
+const SCHEDULER_KEY = 'codex-personal-scheduler-items';
+const AI_NOTE_KEY = 'codex-ai-note-blocks';
+const AI_NOTE_BOARDS_KEY = 'codex-ai-note-boards';
+const LOCALTRIP_DAY_CHECK_KEY = 'localtrip-day-route-checks';
+const LOCALTRIP_DAY_ROUTE_KEY = 'localtrip-day-route-inputs';
+const LOCALTRIP_PLANNER_DRAFT_KEY = 'localtrip-planner-draft';
+const DEFAULT_TRANSPORT_TYPE = '대중교통';
+const DEFAULT_TRAVEL_PACE = '보통';
+const DEFAULT_BUDGET_LEVEL = '보통';
+const DEFAULT_REST_PREFERENCE = '중간 휴식';
+
+function commonsImage(fileName, width = 1200) {
+  return `https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(fileName)}?width=${width}`;
+}
+
+const DEFAULT_IMAGES = [
+  commonsImage('Gyeongbokgung Palace Main Gate.jpg'),
+  commonsImage('Gamcheon Culture Village.jpg'),
+  commonsImage('Seongsan Ilchulbong 01.jpg'),
+  commonsImage('Bulguksa temple main building.jpg')
+];
+
+const DESTINATION_IMAGES = {
+  'SEOUL-001': commonsImage('Gyeongbokgung Palace Main Gate.jpg'),
+  'SEOUL-002': commonsImage('Bukchon Hanok Village 05.jpg'),
+  'SEOUL-003': commonsImage('Cafe storefront in Seongsu-dong.jpg'),
+  'SEOUL-004': commonsImage('Mercado Mangwon en Seúl.jpg'),
+  'SEOUL-005': commonsImage('Yeouido, Seoul.jpg'),
+  'SEOUL-006': commonsImage('N Seoul Tower a4.jpg'),
+  'SEOUL-007': commonsImage('20240601 144028 Dongdaemun Design Plaza, Seoul 08.jpg'),
+  'SEOUL-008': commonsImage('KOCIS Cheonggyecheon (stream) in Seoul (7085882037).jpg'),
+  'GYEONGJU-001': commonsImage('Bulguksa temple main building.jpg'),
+  'GYEONGJU-002': commonsImage('Donggung Palace and Wolji Pond in Gyeongju.jpg'),
+  'GYEONGJU-003': commonsImage('Cheomseongdae, Gyeongju.jpg'),
+  'GYEONGJU-004': commonsImage('Street in Gyeongju.jpg'),
+  'GYEONGJU-005': commonsImage('Bomun Lake.jpg'),
+  'GYEONGJU-006': commonsImage('Gyochon Village 1.jpg'),
+  'GYEONGJU-007': commonsImage('Woljeonggyo Bridge.jpg'),
+  'GYEONGJU-008': commonsImage('Daereungwon Tomb Complex.jpg'),
+  'BUSAN-001': commonsImage('Gamcheon culture village.jpg'),
+  'BUSAN-002': commonsImage('Haeundae Beach Busan (45698772312).jpg'),
+  'BUSAN-003': commonsImage('Gwangalli Beach in Busan.jpg'),
+  'BUSAN-004': commonsImage('Gukje Market.jpg'),
+  'BUSAN-005': commonsImage('Seomyeon Street.jpg'),
+  'BUSAN-006': commonsImage('Taejongdae in Busan.jpg'),
+  'BUSAN-007': commonsImage('Jagalchi Market Busan.jpg'),
+  'BUSAN-008': commonsImage('Oryukdo Skywalk.jpg'),
+  'JEJU-001': commonsImage('Seongsan Ilchulbong 01.jpg'),
+  'JEJU-002': commonsImage('Udo, Jeju Province, South Korea 01.jpg'),
+  'JEJU-003': commonsImage('Hyeop-jae Beach.jpg'),
+  'JEJU-004': commonsImage('Jeju dongmun market 1.JPG'),
+  'JEJU-005': commonsImage('Aewol in Jeju island.jpg'),
+  'JEJU-006': commonsImage('Bijarim forest, Jeju.jpg'),
+  'JEJU-007': commonsImage('Hallasan Mountain.jpg'),
+  'JEJU-008': commonsImage('Eco-Pond, Camellia Hill, Jeju (생태연못, 제주 카멜리아힐) - panoramio.jpg'),
+  SEOKGURAM: commonsImage('Front view of Seokguram from front chamber.jpg'),
+  GYEONGJU_MUSEUM: commonsImage('Gyeongju National Museum.jpg'),
+  GYEONGJU_WORLD: commonsImage('Entrance of Gyeongju World and Draken.jpg'),
+  YANGDONG: commonsImage('Yangdong Village 02.jpg'),
+  HUINNYEOUL: commonsImage('Stairway at Huinnyeoul Culture Village in Busan, South Korea.jpg'),
+  DONGBAEKSEOM: commonsImage('Dongbaekseom, Busan (2).jpg'),
+  DADAEPO: commonsImage('Dadaepo Beach, Busan, Korea.jpg'),
+  SONGJEONG: commonsImage('Songjeong Beach.jpg'),
+  CHANGDEOKGUNG: commonsImage('Exterior view of Seongjeonggak with blue sky at Changdeokgung Palace in Seoul.jpg'),
+  GWANGJANG: commonsImage('Gwangjang Market, Seoul 02.jpg'),
+  SEOUL_FOREST: commonsImage('SeoulForest.jpg'),
+  IKSEONDONG: commonsImage('Ikseon-dong 익선동 October 1 2020 6.jpg'),
+  GYEONGUI_FOREST: commonsImage('Gyeonguiseon Forest Trail Park and Ttaeng-ttaeng Street in Seoul (near Hongdae, 1).jpg'),
+  DEOKSUGUNG_ROAD: commonsImage('Road of Deoksugung.jpg'),
+  SARYEONI: commonsImage('사려니숲길 외부 모습.jpg'),
+  CHEONJIYEON: commonsImage('Cheonjiyeon Waterfall (14523691134).jpg'),
+  OSULLOC: commonsImage('Osulloc Tea Museum & Fields, Jeju.jpg')
+};
+
+const DESTINATION_NAME_IMAGES = {
+  경복궁: DESTINATION_IMAGES['SEOUL-001'],
+  북촌한옥마을: DESTINATION_IMAGES['SEOUL-002'],
+  '성수 카페거리': DESTINATION_IMAGES['SEOUL-003'],
+  망원시장: DESTINATION_IMAGES['SEOUL-004'],
+  여의도한강공원: DESTINATION_IMAGES['SEOUL-005'],
+  여의도: DESTINATION_IMAGES['SEOUL-005'],
+  남산서울타워: DESTINATION_IMAGES['SEOUL-006'],
+  동대문디자인플라자: DESTINATION_IMAGES['SEOUL-007'],
+  청계천: DESTINATION_IMAGES['SEOUL-008'],
+  불국사: DESTINATION_IMAGES['GYEONGJU-001'],
+  동궁과월지: DESTINATION_IMAGES['GYEONGJU-002'],
+  첨성대: DESTINATION_IMAGES['GYEONGJU-003'],
+  황리단길: DESTINATION_IMAGES['GYEONGJU-004'],
+  보문호수: DESTINATION_IMAGES['GYEONGJU-005'],
+  교촌마을: DESTINATION_IMAGES['GYEONGJU-006'],
+  월정교: DESTINATION_IMAGES['GYEONGJU-007'],
+  대릉원: DESTINATION_IMAGES['GYEONGJU-008'],
+  감천문화마을: DESTINATION_IMAGES['BUSAN-001'],
+  해운대해수욕장: DESTINATION_IMAGES['BUSAN-002'],
+  광안리해변: DESTINATION_IMAGES['BUSAN-003'],
+  국제시장: DESTINATION_IMAGES['BUSAN-004'],
+  전포카페거리: DESTINATION_IMAGES['BUSAN-005'],
+  태종대: DESTINATION_IMAGES['BUSAN-006'],
+  자갈치시장: DESTINATION_IMAGES['BUSAN-007'],
+  오륙도스카이워크: DESTINATION_IMAGES['BUSAN-008'],
+  성산일출봉: DESTINATION_IMAGES['JEJU-001'],
+  우도: DESTINATION_IMAGES['JEJU-002'],
+  협재해변: DESTINATION_IMAGES['JEJU-003'],
+  동문시장: DESTINATION_IMAGES['JEJU-004'],
+  애월카페거리: DESTINATION_IMAGES['JEJU-005'],
+  절물자연휴양림: DESTINATION_IMAGES['JEJU-006'],
+  한라산성판악: DESTINATION_IMAGES['JEJU-007'],
+  카멜리아힐: DESTINATION_IMAGES['JEJU-008'],
+  석굴암: DESTINATION_IMAGES.SEOKGURAM,
+  국립경주박물관: DESTINATION_IMAGES.GYEONGJU_MUSEUM,
+  경주월드: DESTINATION_IMAGES.GYEONGJU_WORLD,
+  양동마을: DESTINATION_IMAGES.YANGDONG,
+  흰여울문화마을: DESTINATION_IMAGES.HUINNYEOUL,
+  동백섬: DESTINATION_IMAGES.DONGBAEKSEOM,
+  다대포해수욕장: DESTINATION_IMAGES.DADAEPO,
+  송정해변: DESTINATION_IMAGES.SONGJEONG,
+  창덕궁: DESTINATION_IMAGES.CHANGDEOKGUNG,
+  광장시장: DESTINATION_IMAGES.GWANGJANG,
+  서울숲: DESTINATION_IMAGES.SEOUL_FOREST,
+  익선동한옥거리: DESTINATION_IMAGES.IKSEONDONG,
+  연남동경의선숲길: DESTINATION_IMAGES.GYEONGUI_FOREST,
+  덕수궁돌담길: DESTINATION_IMAGES.DEOKSUGUNG_ROAD,
+  사려니숲길: DESTINATION_IMAGES.SARYEONI,
+  천지연폭포: DESTINATION_IMAGES.CHEONJIYEON,
+  오설록티뮤지엄: DESTINATION_IMAGES.OSULLOC
+};
+
+const FALLBACK_DESTINATIONS = [
+  {
+    id: 'seoul-seongsu',
+    name: '성수 카페거리',
+    region: '서울',
+    summary: '로스터리, 편집숍, 갤러리를 짧은 도보 산책으로 즐기기 좋은 서울 동부 상권입니다.',
+    tags: ['카페', '커플', '사진'],
+    category: '카페',
+    imageUrl: DESTINATION_IMAGES['SEOUL-003']
+  },
+  {
+    id: 'busan-yeongdo',
+    name: '감천문화마을',
+    region: '부산',
+    summary: '계단식 마을 풍경과 전망 포인트를 함께 보는 부산 대표 촬영 코스입니다.',
+    tags: ['사진', '가족', '커플'],
+    category: '마을',
+    imageUrl: DESTINATION_IMAGES['BUSAN-001']
+  },
+  {
+    id: 'jeju-seogwipo',
+    name: '성산일출봉',
+    region: '제주',
+    summary: '분화구 능선과 동부 해안 전망을 함께 보는 제주 핵심 자연 명소입니다.',
+    tags: ['자연', '사진', '가족'],
+    category: '오름',
+    imageUrl: DESTINATION_IMAGES['JEJU-001']
+  }
+];
+
+const DESTINATION_PAGE_SIZE = 500;
+const DESTINATION_MAX_PAGES = 10;
+const DESTINATION_INITIAL_VISIBLE = 80;
+const DESTINATION_VISIBLE_STEP = 80;
+
+const INTERESTS = ['맛집', '자연', '역사', '카페', '가족', '커플', '사진'];
+
+const GYEONGJU_FALLBACK_ITINERARY = [
+  {
+    day: 1,
+    title: '1일차 · 불국사와 황리단길',
+    summary: '세계유산 관광, 경주 디저트, 야경 산책을 자연스럽게 잇는 첫날 코스입니다.',
+    items: [
+      { startTime: '09:00', endTime: '10:30', title: '불국사', category: '관광지', location: '토함산 서쪽', description: '경주 대표 세계문화유산으로 여행 첫 코스에 어울리는 고즈넉한 사찰입니다.', travelTimeFromPrevious: '' },
+      { startTime: '10:50', endTime: '11:40', title: '석굴암', category: '관광지', location: '불국사에서 차량 이동', description: '토함산 전망과 함께 석굴암 본존불을 둘러보는 오전 핵심 코스입니다.', travelTimeFromPrevious: '이동 20분' },
+      { startTime: '12:10', endTime: '13:20', title: '함양집 보불로점', category: '식당', location: '불국사·보문단지 이동 동선', description: '경주식 한우물회와 전통 한식 메뉴로 점심 식사 만족도가 높은 곳입니다.', recommendedMenu: '한우물회, 육회비빔밥', travelTimeFromPrevious: '이동 30분' },
+      { startTime: '14:00', endTime: '15:30', title: '황리단길', category: '관광지', location: '대릉원 서쪽 골목', description: '한옥 골목, 편집숍, 간식거리를 함께 둘러보기 좋은 경주 도심 산책지입니다.', travelTimeFromPrevious: '이동 40분' },
+      { startTime: '15:30', endTime: '16:20', title: '황남빵 본점', category: '디저트, 카페', location: '황리단길·대릉원 근처', description: '경주 대표 디저트로 여행 중 간단히 들르기 좋습니다.', recommendedMenu: '황남빵, 찰보리빵', travelTimeFromPrevious: '도보 5분' },
+      { startTime: '16:40', endTime: '17:40', title: '대릉원', category: '관광지', location: '황리단길 인근', description: '왕릉 산책로와 포토 스폿을 여유 있게 둘러보는 오후 코스입니다.', travelTimeFromPrevious: '도보 15분' },
+      { startTime: '18:10', endTime: '19:20', title: '도솔마을', category: '식당, 한식', location: '대릉원·첨성대 근처', description: '정갈한 한정식 구성으로 하루 관광 후 저녁 식사에 부담이 적습니다.', recommendedMenu: '한정식, 떡갈비 정식', travelTimeFromPrevious: '이동 20분' },
+      { startTime: '19:40', endTime: '20:30', title: '월정교 야경', category: '야경, 산책', location: '교촌마을 남쪽', description: '조명이 켜진 목조 교량과 물가 산책로를 함께 즐기는 야간 마무리 코스입니다.', travelTimeFromPrevious: '이동 20분' }
+    ]
+  },
+  {
+    day: 2,
+    title: '2일차 · 첨성대와 동궁과 월지',
+    summary: '도심 유적과 박물관, 교촌마을, 동궁과 월지 야경을 연결한 하루입니다.',
+    items: [
+      { startTime: '09:30', endTime: '10:40', title: '첨성대', category: '관광지', location: '경주 역사유적지구', description: '경주 도심 여행의 중심이 되는 신라 천문대와 주변 산책로입니다.', travelTimeFromPrevious: '' },
+      { startTime: '11:00', endTime: '12:00', title: '동궁과 월지 근처 산책', category: '산책, 관광지', location: '첨성대 동쪽', description: '동궁과 월지 주변 녹지와 유적 동선을 가볍게 걸어보는 코스입니다.', travelTimeFromPrevious: '도보 20분' },
+      { startTime: '12:10', endTime: '13:20', title: '별채반 교동쌈밥', category: '식당, 한식', location: '교촌마을·첨성대 근처', description: '쌈밥과 경주 한식 구성이 좋아 여러 명이 함께 먹기 편한 점심 장소예요.', recommendedMenu: '교동쌈밥, 불고기 정식', travelTimeFromPrevious: '이동 10분' },
+      { startTime: '14:00', endTime: '15:20', title: '국립경주박물관', category: '관광지, 박물관', location: '월성 동쪽', description: '신라 유물과 역사 흐름을 실내에서 차분히 볼 수 있는 오후 코스입니다.', travelTimeFromPrevious: '이동 25분' },
+      { startTime: '15:40', endTime: '16:30', title: '카페 능', category: '카페, 디저트', location: '교촌마을·월정교 근처', description: '한옥 분위기에서 쉬어가기 좋은 카페로 도보 여행 중 휴식 포인트가 됩니다.', recommendedMenu: '아메리카노, 계절 디저트', travelTimeFromPrevious: '이동 20분' },
+      { startTime: '17:00', endTime: '18:00', title: '교촌마을', category: '관광지, 산책', location: '월정교 북쪽', description: '한옥 마을과 전통문화 거리 분위기를 함께 느끼는 저녁 전 산책 코스입니다.', travelTimeFromPrevious: '도보 15분' },
+      { startTime: '18:20', endTime: '19:30', title: '교리김밥 본점', category: '식당, 분식', location: '교촌마을 인근', description: '가볍지만 경주 로컬 감성이 있어 저녁으로 들르기 좋아요.', recommendedMenu: '교리김밥, 잔치국수', travelTimeFromPrevious: '이동 10분' },
+      { startTime: '20:00', endTime: '20:50', title: '동궁과 월지 야경', category: '야경, 산책', location: '월성 동쪽', description: '수면에 비치는 야경이 좋아 경주 밤 산책의 대표 마무리 코스입니다.', travelTimeFromPrevious: '이동 20분' }
+    ]
+  },
+  {
+    day: 3,
+    title: '3일차 · 보문호와 여행 마무리',
+    summary: '호수 산책, 카페, 보문단지 체험을 거쳐 여유 있게 마무리하는 일정입니다.',
+    items: [
+      { startTime: '09:30', endTime: '10:30', title: '보문호 산책', category: '산책, 관광지', location: '보문관광단지', description: '호수 둘레를 따라 걷기 좋은 아침 산책 코스입니다.', travelTimeFromPrevious: '' },
+      { startTime: '10:50', endTime: '11:40', title: '엘로우 카페', category: '카페, 브런치', location: '보문호 근처', description: '보문호 주변에서 가볍게 쉬어가기 좋은 카페예요.', recommendedMenu: '라떼, 브런치 플레이트', travelTimeFromPrevious: '이동 15분' },
+      { startTime: '12:00', endTime: '13:10', title: '맷돌순두부', category: '식당, 한식', location: '보문단지 근처', description: '따뜻한 순두부 메뉴로 마지막 날 점심을 편하게 해결하기 좋습니다.', recommendedMenu: '순두부찌개, 해물파전', travelTimeFromPrevious: '이동 10분' },
+      { startTime: '13:40', endTime: '15:00', title: '경주월드 또는 보문단지', category: '관광지, 액티비티', location: '보문관광단지', description: '동행 성향에 따라 놀이공원 또는 보문단지 산책으로 선택할 수 있는 코스입니다.', travelTimeFromPrevious: '이동 20분' },
+      { startTime: '15:20', endTime: '16:00', title: '기념품/로컬샵', category: '쇼핑, 로컬샵', location: '보문단지·황리단길 이동 동선', description: '찰보리빵, 지역 소품, 여행 기념품을 챙기는 마무리 쇼핑 시간입니다.', travelTimeFromPrevious: '이동 20분' },
+      { startTime: '16:00', endTime: '17:00', title: '이동 및 여행 마무리', category: '이동', location: '터미널 또는 역 방향', description: '짐 정리와 귀가 이동을 고려한 완충 시간입니다.', travelTimeFromPrevious: '여유 이동' }
+    ]
+  }
+];
+
+const GENERIC_DAY_SLOTS = [
+  { startTime: '08:30', endTime: '09:20', category: '아침 식당', title: '아침 식당 추천', recommendedMenu: '아침 메뉴', travelTimeFromPrevious: '' },
+  { startTime: '09:50', endTime: '11:20', category: '관광지', travelTimeFromPrevious: '이동 20분' },
+  { startTime: '12:00', endTime: '13:10', category: '점심 식당', title: '점심 식당 추천', recommendedMenu: '지역 대표 메뉴', travelTimeFromPrevious: '이동 20분' },
+  { startTime: '13:50', endTime: '15:10', category: '관광지', travelTimeFromPrevious: '이동 30분' },
+  { startTime: '15:20', endTime: '15:50', category: '간식', title: '간식 거리 추천', recommendedMenu: '로컬 간식', travelTimeFromPrevious: '이동 10분' },
+  { startTime: '16:10', endTime: '16:55', category: '카페', title: '카페 추천', recommendedMenu: '시그니처 음료', travelTimeFromPrevious: '이동 20분' },
+  { startTime: '18:00', endTime: '19:10', category: '저녁 식당', title: '저녁 식당 추천', recommendedMenu: '저녁 추천 메뉴', travelTimeFromPrevious: '이동 20분' }
+];
+
+const COUNTRY_OPTIONS = [
+  { key: 'korea', label: '한국', hint: '국내 여행' },
+  { key: 'japan', label: '일본', hint: '일본 여행' }
+];
+const JAPAN_REGION_KEYWORDS = ['도쿄', '오사카', '교토', '후쿠오카', '삿포로', '오키나와', '나고야', '나라', '고베', '요코하마', '일본', 'tokyo', 'osaka', 'kyoto', 'fukuoka', 'sapporo', 'okinawa', 'nagoya', 'japan'];
+
+function countryForDestination(destination) {
+  const text = [destination?.region, destination?.name, destination?.summary, destination?.category]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return JAPAN_REGION_KEYWORDS.some((keyword) => text.includes(keyword.toLowerCase())) ? 'japan' : 'korea';
+}
+
+function countryForPlan(plan) {
+  const text = [plan?.destinationRegion, plan?.destinationName, plan?.title, plan?.summary]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return JAPAN_REGION_KEYWORDS.some((keyword) => text.includes(keyword.toLowerCase())) ? 'japan' : 'korea';
+}
+
+const PARTNER_TASKS = [
+  { title: '사진 품질 점검', detail: '대표 이미지 없는 장소 2곳 확인', tone: 'warning' },
+  { title: '예약 문의 응답', detail: '오늘 도착한 문의 4건', tone: 'primary' },
+  { title: '태그 정리', detail: '계절 테마 태그 업데이트', tone: 'neutral' }
+];
+
+function OptionGroup({ label, value, options, onChange }) {
+  return (
+    <div className="ltOptionGroup">
+      <span>{label}</span>
+      <div>
+        {options.map((option) => (
+          <button
+            key={option}
+            type="button"
+            className={value === option ? 'active' : ''}
+            onClick={() => onChange(option)}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+async function localTripRequest(path, { method = 'GET', body } = {}) {
+  const session = await ensureLocalTripSession();
+  const headers = {
+    Accept: 'application/json',
+    ...(session?.token ? { Authorization: `Bearer ${session.token}` } : {})
+  };
+  const init = { method, headers };
+  if (body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+    init.body = JSON.stringify(body);
+  }
+  const response = await fetch(path, init);
+  if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem(AUTH_KEY);
+      throw new Error('세션이 만료되었습니다. 다시 로그인해 주세요.');
+    }
+    throw new Error(localTripErrorMessage(response.status, await response.text()));
+  }
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
+}
+
+function localTripErrorMessage(status, text = '') {
+  const fallback = `요청을 처리하지 못했습니다. (HTTP ${status})`;
+  const trimmed = `${text || ''}`.trim();
+  if (!trimmed) return fallback;
+  if (/^\s*</.test(trimmed) || /<html[\s>]/i.test(trimmed)) {
+    if ([502, 503, 504].includes(Number(status))) {
+      return '서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.';
+    }
+    return fallback;
+  }
+  try {
+    const payload = JSON.parse(trimmed);
+    const message = pickString(payload.message, payload.error, payload.detail);
+    if (message) return message;
+  } catch {
+    // Plain-text API errors are handled below.
+  }
+  return trimmed.length > 160 ? `${trimmed.slice(0, 160)}...` : trimmed;
+}
+
+async function ensureLocalTripSession() {
+  const session = readStoredAuth();
+  if (session?.token) return session;
+  const response = await fetch('/api/auth/guest', {
+    method: 'POST',
+    headers: { Accept: 'application/json' }
+  });
+  if (!response.ok) {
+    throw new Error((await response.text()) || '게스트 세션을 만들 수 없습니다.');
+  }
+  const guestSession = await response.json();
+  localStorage.setItem(AUTH_KEY, JSON.stringify({ ...guestSession, isGuest: true }));
+  return { ...guestSession, isGuest: true };
+}
+
+function readStoredAuth() {
+  try {
+    const raw = localStorage.getItem(AUTH_KEY);
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    return session?.username === 'guestuser' && !session.isGuest ? { ...session, isGuest: true } : session;
+  } catch {
+    return null;
+  }
+}
+
+function storageUsername(session = readStoredAuth()) {
+  const username = session?.username;
+  return String(username || 'guestuser').trim().toLowerCase().replace(/[^a-z0-9._-]/g, '_') || 'guestuser';
+}
+
+function userStorageKey(baseKey, session = readStoredAuth()) {
+  return `${baseKey}:${storageUsername(session)}`;
+}
+
+function schedulerStorageKey(session = readStoredAuth()) {
+  return userStorageKey(SCHEDULER_KEY, session);
+}
+
+function noteBlocksStorageKey(session = readStoredAuth()) {
+  return userStorageKey(AI_NOTE_KEY, session);
+}
+
+function noteBoardsStorageKey(session = readStoredAuth()) {
+  return userStorageKey(AI_NOTE_BOARDS_KEY, session);
+}
+
+function migrateLegacySchedulerStorage(scopedKey) {
+  if (localStorage.getItem(scopedKey) !== null) return;
+  const legacyRaw = localStorage.getItem(SCHEDULER_KEY);
+  if (legacyRaw === null) return;
+  try {
+    const parsed = JSON.parse(legacyRaw);
+    if (Array.isArray(parsed)) {
+      localStorage.setItem(scopedKey, JSON.stringify(parsed));
+      localStorage.removeItem(SCHEDULER_KEY);
+    }
+  } catch {
+    localStorage.removeItem(SCHEDULER_KEY);
+  }
+}
+
+function readSchedulerArray(storageKey) {
+  try {
+    if (storageKey !== SCHEDULER_KEY) {
+      migrateLegacySchedulerStorage(storageKey);
+    }
+    const raw = localStorage.getItem(storageKey);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function dedupeSchedulerItems(items) {
+  const seen = new Set();
+  return items.filter((item) => {
+    const key = item?.id || `${item?.date || ''}:${item?.time || ''}:${item?.title || ''}`;
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function readLocalArray(storageKey) {
+  try {
+    const raw = localStorage.getItem(storageKey);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function ensureMemoFolder(session = readStoredAuth()) {
+  const storageKey = noteBoardsStorageKey(session);
+  const boards = readLocalArray(storageKey);
+  const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
+  const defaultBoards = createDefaultNoteDirectories(now);
+  const updatedAtById = new Map(boards
+    .map((board) => ({ ...board, id: normalizeNoteDirectoryId(board?.id || board?.name || '') }))
+    .filter((board) => DEFAULT_NOTE_DIRECTORY_ID_SET.has(board.id))
+    .map((board) => [board.id, board.updatedAt]));
+  const nextBoards = defaultBoards.map((board) => ({ ...board, updatedAt: updatedAtById.get(board.id) || board.updatedAt }));
+  const customBoards = boards
+    .map((board) => {
+      const id = normalizeNoteDirectoryId(board?.id || board?.name || '');
+      if (!id || DEFAULT_NOTE_DIRECTORY_ID_SET.has(id)) return null;
+      const parentId = board?.parentId ? normalizeNoteDirectoryId(board.parentId) : 'personal';
+      return {
+        ...board,
+        id,
+        parentId,
+        name: board?.name || board?.title || id,
+        title: board?.title || board?.name || id,
+        updatedAt: board?.updatedAt || now
+      };
+    })
+    .filter(Boolean);
+  localStorage.setItem(storageKey, JSON.stringify([...nextBoards, ...customBoards]));
+  return storageKey;
+}
+
+function stableStringHash(value) {
+  let hash = 0;
+  const source = `${value || ''}`;
+  for (let index = 0; index < source.length; index += 1) {
+    hash = Math.imul(31, hash) + source.charCodeAt(index);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36);
+}
+
+function slugifyBoardPart(value) {
+  const slug = `${value || ''}`
+    .normalize('NFKD')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48);
+  return slug;
+}
+
+function travelPlanStorageKey(plan) {
+  const explicitId = pickString(plan?.id);
+  if (explicitId) {
+    return slugifyBoardPart(explicitId) || stableStringHash(explicitId);
+  }
+  const basis = [
+    plan?.title,
+    plan?.destinationRegion,
+    plan?.destinationName,
+    plan?.startDate,
+    plan?.days
+  ].filter(Boolean).join('|') || pickString(plan?.key) || 'travel-plan';
+  const slug = slugifyBoardPart(basis);
+  const hash = stableStringHash(basis);
+  return slug ? `${slug}-${hash}` : `plan-${hash}`;
+}
+
+function travelPlanBoardId(plan) {
+  return `travel-plan-board-${travelPlanStorageKey(plan)}`;
+}
+
+function travelPlanBoardName(plan) {
+  const title = pickString(plan?.title);
+  const region = pickString(plan?.destinationRegion, plan?.destinationName);
+  if (title && region && !title.includes(region)) return `${region} · ${title}`;
+  return title || `${region || '여행'} 코스`;
+}
+
+function ensureTravelMemoBoard(plan, session = readStoredAuth()) {
+  const storageKey = ensureMemoFolder(session);
+  const boardId = 'travel';
+  const boardName = '여행';
+  if (localStorage.getItem(AI_NOTE_BOARDS_KEY)) {
+    localStorage.removeItem(AI_NOTE_BOARDS_KEY);
+  }
+  window.dispatchEvent(new CustomEvent('codex:notes-updated', { detail: { storageKey, boardId } }));
+  return { storageKey, boardId, folderId: boardId, boardName };
+}
+
+function isGuestSession(session) {
+  return !session || Boolean(session?.isGuest) || session?.username === 'guestuser';
+}
+
+function pickString(...values) {
+  const value = values.find((item) => item !== undefined && item !== null && `${item}`.trim());
+  return value === undefined ? '' : `${value}`.trim();
+}
+
+function pickNumber(...values) {
+  const value = values.find((item) => item !== undefined && item !== null && item !== '');
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function readArray(payload, keys) {
+  if (Array.isArray(payload)) return payload;
+  for (const key of keys) {
+    if (Array.isArray(payload?.[key])) return payload[key];
+  }
+  return [];
+}
+
+function parseMaybeJson(value) {
+  if (typeof value !== 'string') return value;
+  const trimmed = value.trim();
+  if (!trimmed) return [];
+  if (!trimmed.startsWith('[') && !trimmed.startsWith('{')) return value;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return value;
+  }
+}
+
+function normalizeTags(...values) {
+  const tags = [];
+  for (const value of values) {
+    const parsed = parseMaybeJson(value);
+    if (Array.isArray(parsed)) {
+      tags.push(...parsed.map((tag) => `${tag}`.trim()).filter(Boolean));
+      continue;
+    }
+    if (typeof parsed === 'string' && parsed.trim()) {
+      tags.push(...parsed.split(/[,\n]/).map((tag) => tag.trim()).filter(Boolean));
+    }
+  }
+  return Array.from(new Set(tags)).slice(0, 6);
+}
+
+function regionImage(region, index = 0) {
+  const normalized = `${region || ''}`.toLowerCase();
+  if (normalized.includes('서울') || normalized.includes('seoul')) return DEFAULT_IMAGES[0];
+  if (normalized.includes('부산') || normalized.includes('busan')) return DEFAULT_IMAGES[1];
+  if (normalized.includes('제주') || normalized.includes('jeju')) return DEFAULT_IMAGES[2];
+  if (normalized.includes('경주') || normalized.includes('gyeongju')) return DEFAULT_IMAGES[3];
+  if (normalized.includes('도쿄') || normalized.includes('tokyo')) return DEFAULT_IMAGES[0];
+  if (normalized.includes('오사카') || normalized.includes('osaka')) return DEFAULT_IMAGES[1];
+  if (normalized.includes('교토') || normalized.includes('kyoto')) return DEFAULT_IMAGES[3];
+  if (normalized.includes('후쿠오카') || normalized.includes('fukuoka')) return DEFAULT_IMAGES[2];
+  return DEFAULT_IMAGES[index % DEFAULT_IMAGES.length];
+}
+
+function destinationImage(row, index = 0) {
+  const sourceRef = pickString(row.sourceRef, row.source_ref, row.code);
+  if (sourceRef && DESTINATION_IMAGES[sourceRef]) return DESTINATION_IMAGES[sourceRef];
+  const name = pickString(row.name, row.title, row.destinationName, row.destination_name, row.placeName, row.place_name).replace(/\s/g, '');
+  if (name && DESTINATION_NAME_IMAGES[name]) return DESTINATION_NAME_IMAGES[name];
+  return pickString(row.imageUrl, row.image_url, row.photoUrl, row.thumbnailUrl);
+}
+
+function exactDestinationImage(row) {
+  const explicit = pickString(row.imageUrl, row.image_url, row.photoUrl, row.thumbnailUrl);
+  if (explicit) return explicit;
+  const sourceRef = pickString(row.sourceRef, row.source_ref, row.code);
+  if (sourceRef && DESTINATION_IMAGES[sourceRef]) return DESTINATION_IMAGES[sourceRef];
+  const name = pickString(row.name, row.title, row.destinationName, row.destination_name, row.placeName, row.place_name).replace(/\s/g, '');
+  return name ? DESTINATION_NAME_IMAGES[name] || '' : '';
+}
+
+function imageFallback(event, region, index = 0) {
+  event.currentTarget.closest('.ltDestinationPhoto, .ltHeroImage, .ltMiniDestCard')?.classList.add('noPhoto');
+}
+
+function normalizeDestination(raw, index = 0) {
+  const row = raw || {};
+  const tags = normalizeTags(row.styleTags, row.style_tags, row.primaryStyle, row.primary_style, row.tags, row.tagsJson, row.tags_json, row.keywords);
+  const id = pickString(row.id, row.destinationId, row.destination_id, row.placeId, row.place_id, row.code) || `destination-${index}`;
+  const sourceRef = pickString(row.sourceRef, row.source_ref, row.providerRef, row.provider_ref, row.externalId, row.external_id);
+  return {
+    id,
+    name: pickString(row.name, row.title, row.destinationName, row.destination_name, row.placeName, row.place_name, row.districtName, row.district_name) || 'Untitled destination',
+    region: pickString(row.region, row.regionName, row.region_name, row.area, row.districtName, row.district_name) || 'Local area',
+    summary: pickString(row.summary, row.headline, row.description, row.overview, row.introduction) || 'Curated local stops, timing, and route ideas are ready for this area.',
+    category: pickString(row.category, row.primaryStyle, row.primary_style, row.theme, row.destinationType, row.type) || 'Local',
+    address: pickString(row.address, row.roadAddress, row.road_address),
+    tags: tags.length ? tags : ['local', 'recommended'],
+    occupancyRate: pickNumber(row.occupancyRate, row.congestionRate, row.busyRate),
+    imageUrl: pickString(row.imageUrl, row.image_url, row.photoUrl, row.thumbnailUrl),
+    source: pickString(row.source, row.provider),
+    sourceRef
+  };
+}
+
+function normalizeDestinations(payload) {
+  const rows = readArray(payload, ['destinations', 'items', 'content', 'results', 'places']);
+  const sourceRank = {
+    tourapi: 4,
+    'tour-api': 4,
+    admin1: 3,
+    'admin1-batch': 3,
+    osm: 2,
+    wikimedia: 2,
+    mock: 1
+  };
+  const unique = new Map();
+  rows.map(normalizeDestination).forEach((destination) => {
+    const key = [
+      destination.name,
+      destination.region,
+      destination.address || destination.category
+    ].join('|').replace(/\s+/g, '').toLowerCase();
+    const current = unique.get(key);
+    if (!current) {
+      unique.set(key, destination);
+      return;
+    }
+    const currentRank = sourceRank[`${current.source || ''}`.toLowerCase()] || 0;
+    const nextRank = sourceRank[`${destination.source || ''}`.toLowerCase()] || 0;
+    unique.set(key, nextRank >= currentRank ? { ...current, ...destination, tags: Array.from(new Set([...current.tags, ...destination.tags])).slice(0, 6) } : current);
+  });
+  return Array.from(unique.values());
+}
+
+function destinationAddressSuggestions(destinations, query) {
+  const text = query.trim().toLowerCase();
+  if (!text) return [];
+  return destinations
+    .filter((destination) => `${destination.name} ${destination.region} ${destination.address}`.toLowerCase().includes(text))
+    .slice(0, 6);
+}
+
+function mapSearchUrl(name, address = '') {
+  const query = encodeURIComponent([name, address].filter(Boolean).join(' ').trim());
+  return `https://map.naver.com/v5/search/${query}`;
+}
+
+function AddressSearchInput({ label, value, address, onValue, onAddress, destinations, placeholder }) {
+  const [focused, setFocused] = useState(false);
+  const [mapSuggestions, setMapSuggestions] = useState([]);
+  const [searchingMap, setSearchingMap] = useState(false);
+  const query = `${value} ${address}`.trim();
+  const localSuggestions = useMemo(() => destinationAddressSuggestions(destinations, query), [destinations, query]);
+  const suggestions = useMemo(() => [
+    ...mapSuggestions.map((place, index) => ({
+      id: `map-${place.source || 'map'}-${place.latitude || index}-${place.longitude || index}`,
+      name: place.name,
+      address: place.roadAddress || place.address,
+      region: place.category || place.source || '지도 검색',
+      source: place.source || 'map'
+    })),
+    ...localSuggestions
+  ].slice(0, 8), [localSuggestions, mapSuggestions]);
+
+  useEffect(() => {
+    if (!focused || query.length < 2) {
+      setMapSuggestions([]);
+      return undefined;
+    }
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setSearchingMap(true);
+      try {
+        const places = await localTripRequest(`/api/maps/places?query=${encodeURIComponent(query)}`);
+        if (!controller.signal.aborted) {
+          setMapSuggestions(Array.isArray(places) ? places : []);
+        }
+      } catch {
+        if (!controller.signal.aborted) {
+          setMapSuggestions([]);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setSearchingMap(false);
+        }
+      }
+    }, 280);
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [focused, query]);
+
+  return (
+    <label className="ltAddressSearch">
+      <span>{label}</span>
+      <input aria-label={placeholder || '장소 검색'} value={value} onChange={(event) => onValue(event.target.value)} onFocus={() => setFocused(true)} placeholder={placeholder} />
+      <input aria-label="주소 검색" value={address} onChange={(event) => onAddress(event.target.value)} onFocus={() => setFocused(true)} placeholder="실제 주소 검색 또는 직접 입력" />
+      {focused && (suggestions.length || searchingMap) ? (
+        <div className="ltAutocompleteDropdown ltAddressDropdown">
+      {searchingMap ? <div className="ltAddressSearching">지도에서 검색 중...</div> : null}
+          {suggestions.map((destination) => (
+            <button
+              key={destination.id}
+              type="button"
+              onMouseDown={(event) => {
+                event.preventDefault();
+                onValue(destination.name);
+                onAddress(destination.address || destination.region);
+                setFocused(false);
+              }}
+            >
+              <strong>{destination.name}</strong>
+              <span>{destination.address || destination.region}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {(value || address) ? (
+        <a className="ltMapSearchLink" href={mapSearchUrl(value, address)} target="_blank" rel="noreferrer">
+          지도에서 확인
+        </a>
+      ) : null}
+    </label>
+  );
+}
+
+function PlannerProgressiveCard({ index, title, summary, complete, active, onToggle, children }) {
+  const panelId = `planner-progressive-${index}`;
+
+  return (
+    <section className={`ltProgressiveCard ${active ? 'active' : ''} ${complete ? 'complete' : ''}`}>
+      <button
+        type="button"
+        className="ltProgressiveTrigger"
+        aria-expanded={active}
+        aria-controls={panelId}
+        onClick={onToggle}
+      >
+        <span className="ltProgressiveTitle">
+          <span className="ltProgressiveIndex">{index}</span>
+          <span>
+            <strong>{title}</strong>
+            <small>{summary}</small>
+          </span>
+        </span>
+        <span className="ltProgressiveMeta">
+          <span className={`ltProgressiveState ${complete ? 'complete' : ''}`}>
+            {complete ? '입력됨' : '선택'}
+          </span>
+          <span className="ltProgressiveChevron" aria-hidden="true">
+            <Icon size={18}>
+              <path d="m6 9 6 6 6-6"></path>
+            </Icon>
+          </span>
+        </span>
+      </button>
+      {active ? (
+        <div className="ltProgressivePanel" id={panelId}>
+          {children}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function plannerGenerateErrorMessage(error) {
+  const text = pickString(error?.message, error);
+  if (!text) {
+    return '일정을 만들지 못했습니다. 입력값을 확인한 뒤 다시 시도해 주세요.';
+  }
+  if (/openai|api\s*key|개인 api 키|키가 필요|401|403/i.test(text)) {
+    return '서버 설정을 확인한 뒤 다시 시도해 주세요.';
+  }
+  if (/timeout|timed out|network|failed to fetch|502|503|504/i.test(text)) {
+    return '서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.';
+  }
+  if (text.length > 140) {
+    return `${text.slice(0, 140)}...`;
+  }
+  return text;
+}
+
+function PlannerGenerateStatus({ generating, error }) {
+  if (!generating && !error) return null;
+
+  if (generating) {
+    return (
+      <div className="ltGenerateStatus running" role="status" aria-live="polite">
+        <span className="ltGenerateSpinner" aria-hidden="true" />
+        <div>
+          <strong>여행 코스를 만들고 있습니다</strong>
+          <p>선택한 장소와 취향을 바탕으로 하루 동선, 식당, 카페를 정리합니다.</p>
+          <div className="ltGenerateSteps" aria-label="생성 진행 상태">
+            <span>가고 싶은 곳 확인</span>
+            <span>시간표 구성</span>
+            <span>코스 저장</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="ltGenerateStatus error" role="alert" aria-live="assertive">
+      <span className="ltGenerateErrorIcon" aria-hidden="true">!</span>
+      <div>
+        <strong>일정을 만들지 못했습니다</strong>
+        <p>{error}</p>
+        <small>입력한 장소와 날짜는 유지됩니다. 내용을 줄이거나 잠시 후 다시 생성해 보세요.</small>
+      </div>
+    </div>
+  );
+}
+
+function parseTimeRange(...values) {
+  const text = pickString(...values);
+  const match = text.match(/(\d{1,2}:\d{2})\s*(?:-|~|–|—|to)\s*(\d{1,2}:\d{2})/i);
+  if (match) {
+    return { startTime: match[1], endTime: match[2] };
+  }
+  return { startTime: '', endTime: '' };
+}
+
+function inferScheduleCategory(title, explicitCategory, tags = []) {
+  const text = `${title} ${explicitCategory} ${tags.join(' ')}`.toLowerCase();
+  if (/간식|시장|베이커리|snack/.test(text) && !/카페|커피|cafe|coffee/.test(text)) return explicitCategory || '간식';
+  if (/카페|커피|디저트|빵|브런치|cafe|coffee|dessert|bakery/.test(text)) return explicitCategory || '카페';
+  if (/식당|식사|맛집|아침|점심|저녁|한식|분식|레스토랑|restaurant|breakfast|lunch|dinner|meal/.test(text)) return explicitCategory || '식당';
+  if (/야경|산책|night|walk/.test(text)) return explicitCategory || '야경, 산책';
+  if (/이동|마무리/.test(text)) return explicitCategory || '이동';
+  return explicitCategory || '관광지';
+}
+
+function scheduleTagsFor(category, tags = []) {
+  const next = new Set(tags.filter(Boolean));
+  `${category || ''}`.split(',').map((item) => item.trim()).filter(Boolean).forEach((item) => next.add(item));
+  if (/식당|식사|아침|점심|저녁|한식|분식|브런치/.test(category || '')) next.add('식당');
+  if (/카페|디저트|브런치/.test(category || '')) next.add('카페');
+  if (/간식|시장|베이커리/.test(category || '')) next.add('간식');
+  return Array.from(next).slice(0, 5);
+}
+
+function extractRecommendedMenu(text = '') {
+  const match = String(text).match(/추천\s*메뉴\s*[:：]\s*([^·\n]+)/);
+  return match ? match[1].trim() : '';
+}
+
+function normalizeItineraryItem(raw, index = 0) {
+  if (typeof raw === 'string') {
+    return {
+      time: '',
+      startTime: '',
+      endTime: '',
+      title: raw,
+      place: '',
+      location: '',
+      note: '',
+      description: '',
+      category: '관광지',
+      recommendedMenu: '',
+      travelTimeFromPrevious: '',
+      tags: ['관광지'],
+      imageUrl: regionImage('', index)
+    };
+  }
+  const item = raw || {};
+  const title = pickString(item.title, item.name, item.destinationName, item.destination_name, item.activity) || `Stop ${index + 1}`;
+  const place = pickString(item.place, item.location, item.region, item.address);
+  const parsedTime = parseTimeRange(item.time, item.timeSlot, item.time_slot, item.scheduleTime);
+  const startTime = pickString(item.startTime, item.start_time, parsedTime.startTime);
+  const endTime = pickString(item.endTime, item.end_time, parsedTime.endTime);
+  const baseTags = normalizeTags(item.tags, item.keywords, item.primaryStyle, item.primary_style);
+  const category = inferScheduleCategory(title, pickString(item.category, item.primaryStyle, item.primary_style, item.type, item.kind), baseTags);
+  const description = pickString(item.description, item.summary, item.note, item.notes, item.reason);
+  const recommendedMenu = pickString(item.recommendedMenu, item.recommended_menu, item.menu, item.signatureMenu)
+    || extractRecommendedMenu(description);
+  return {
+    time: startTime && endTime ? `${startTime} - ${endTime}` : pickString(item.time, item.timeSlot, item.time_slot, item.hour, startTime),
+    startTime,
+    endTime,
+    title,
+    place,
+    location: pickString(item.locationHint, item.location_hint, item.location, item.place, item.address, place),
+    note: description,
+    description,
+    category,
+    recommendedMenu,
+    travelTimeFromPrevious: pickString(item.travelTimeFromPrevious, item.travel_time_from_previous, item.transferTime, item.moveTime),
+    tags: scheduleTagsFor(category, baseTags),
+    durationMinutes: pickNumber(item.durationMinutes, item.duration_minutes),
+    sequenceNumber: pickNumber(item.sequenceNumber, item.sequence_number),
+    imageUrl: exactDestinationImage({ ...item, name: title, region: place })
+  };
+}
+
+function readDayRouteChecks() {
+  try {
+    const raw = localStorage.getItem(LOCALTRIP_DAY_CHECK_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function readDayRouteInputs() {
+  try {
+    const raw = localStorage.getItem(LOCALTRIP_DAY_ROUTE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function routeCheckKey(plan, day, type) {
+  return `${plan?.id || plan?.title || 'localtrip-plan'}:${day?.day || 1}:${type}`;
+}
+
+function PlanDayRouteCheck({ plan, day }) {
+  const [checks, setChecks] = useState(readDayRouteChecks);
+  const [routeInputs, setRouteInputs] = useState(readDayRouteInputs);
+  const firstItem = (day.items || []).find((item) => item.startTime || item.time || item.title);
+  const lastItem = (day.items || []).slice().reverse().find((item) => item.endTime || item.time || item.title);
+  if (!firstItem && !lastItem) {
+    return null;
+  }
+
+  const startKey = routeCheckKey(plan, day, 'start');
+  const endKey = routeCheckKey(plan, day, 'end');
+  const inputKey = `${plan?.id || plan?.title || 'localtrip-plan'}:${day?.day || 1}`;
+  const inputValue = routeInputs[inputKey] || {};
+  const updateCheck = (key) => {
+    setChecks((current) => {
+      const next = { ...current, [key]: !current[key] };
+      localStorage.setItem(LOCALTRIP_DAY_CHECK_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+  const updateRouteInput = (field, value) => {
+    setRouteInputs((current) => {
+      const next = { ...current, [inputKey]: { ...(current[inputKey] || {}), [field]: value } };
+      localStorage.setItem(LOCALTRIP_DAY_ROUTE_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+  const startTime = firstItem?.startTime || parseTimeRange(firstItem?.time).startTime || scheduleBlockLabel(firstItem?.time, 0);
+  const endTime = lastItem?.endTime || parseTimeRange(lastItem?.time).endTime || scheduleBlockLabel(lastItem?.time, (day.items || []).length - 1);
+
+  return (
+    <div className="ltDayRouteCheckWrap">
+      <div className="ltDayRouteInputs" aria-label={`${day.day}일차 출발지 도착지`}>
+        <label>
+          <span>출발지</span>
+          <input value={inputValue.startPlace || ''} onChange={(event) => updateRouteInput('startPlace', event.target.value)} placeholder={firstItem?.location || firstItem?.place || firstItem?.title || '숙소 또는 출발지'} />
+        </label>
+        <label>
+          <span>도착지</span>
+          <input value={inputValue.endPlace || ''} onChange={(event) => updateRouteInput('endPlace', event.target.value)} placeholder={lastItem?.location || lastItem?.place || lastItem?.title || '숙소 또는 도착지'} />
+        </label>
+      </div>
+      <div className="ltDayRouteCheck" aria-label={`${day.day}일차 출발 도착 체크`}>
+        <label>
+          <input type="checkbox" checked={Boolean(checks[startKey])} onChange={() => updateCheck(startKey)} />
+          <span>출발 완료</span>
+          <strong>{inputValue.startPlace || firstItem?.location || firstItem?.place || firstItem?.title}</strong>
+          <time>{startTime}</time>
+        </label>
+        <label>
+          <input type="checkbox" checked={Boolean(checks[endKey])} onChange={() => updateCheck(endKey)} />
+          <span>도착 완료</span>
+          <strong>{inputValue.endPlace || lastItem?.location || lastItem?.place || lastItem?.title}</strong>
+          <time>{endTime}</time>
+        </label>
+      </div>
+    </div>
+  );
+}
+
+function cloneFallbackDay(day) {
+  return {
+    ...day,
+    items: day.items.map((item, index) => normalizeItineraryItem({
+      ...item,
+      durationMinutes: item.durationMinutes || 0
+    }, index))
+  };
+}
+
+function isGyeongjuPlan(context) {
+  return /경주|gyeongju/i.test(`${context.title || ''} ${context.destinationName || ''} ${context.destinationRegion || ''}`);
+}
+
+function hasFoodAndCafe(items) {
+  const text = items.map((item) => `${item.category} ${item.title} ${item.tags?.join(' ') || ''}`).join(' ');
+  return /식당|식사|아침|점심|저녁|한식|분식/.test(text) && /카페|디저트|브런치/.test(text);
+}
+
+function applyScheduleFallback(itinerary, context = {}) {
+  if (isGyeongjuPlan(context) && (!itinerary.length || !itinerary.some((day) => hasFoodAndCafe(day.items || [])))) {
+    return GYEONGJU_FALLBACK_ITINERARY.map(cloneFallbackDay);
+  }
+
+  if (!itinerary.length) {
+    return GYEONGJU_FALLBACK_ITINERARY.slice(0, Math.max(1, Math.min(3, Number(context.days || 1)))).map(cloneFallbackDay);
+  }
+
+  return itinerary.map((day, dayIndex) => {
+    const rawItems = (day.items || []).map((item, itemIndex) => normalizeItineraryItem(item, itemIndex));
+    const baseItems = rawItems.length ? rawItems : [];
+    const slots = GENERIC_DAY_SLOTS;
+    const timelineItems = slots.map((slot, index) => {
+      const source = baseItems[index] || {};
+      const slotIsFood = /식당|브런치|카페/.test(slot.category);
+      const sourceIsFood = /식당|브런치|카페/.test(source.category || '');
+      const item = slotIsFood && !sourceIsFood ? slot : { ...slot, ...source };
+      const category = inferScheduleCategory(item.title || slot.title, item.category, item.tags || []);
+      return normalizeItineraryItem({
+        ...item,
+        title: item.title || slot.title || `코스 ${index + 1}`,
+        category,
+        startTime: item.startTime || slot.startTime,
+        endTime: item.endTime || slot.endTime,
+        location: item.location || item.place || (slotIsFood ? '주요 동선 근처' : ''),
+        description: item.description || item.note || (slotIsFood ? '여행 동선 중간에 들르기 좋은 추천 장소입니다.' : '여행 흐름에 맞춰 배치한 방문 코스입니다.'),
+        recommendedMenu: item.recommendedMenu || slot.recommendedMenu || '',
+        travelTimeFromPrevious: item.travelTimeFromPrevious || slot.travelTimeFromPrevious || ''
+      }, index);
+    });
+
+    return {
+      ...day,
+      title: day.title || `${day.day || dayIndex + 1}일차`,
+      summary: day.summary || timelineItems.map((item) => item.title).slice(0, 3).join(' · '),
+      items: timelineItems
+    };
+  });
+}
+
+function normalizeItinerary(raw) {
+  const parsed = parseMaybeJson(raw);
+  const source = Array.isArray(parsed)
+    ? parsed
+    : readArray(parsed, ['items', 'days', 'itinerary', 'dailyPlans', 'daily_itinerary', 'schedule']);
+
+  if (!source || !source.length) {
+    return [];
+  }
+
+  const hasDayContainers = source.some((entry) => entry && typeof entry === 'object' && (entry.items || entry.activities || entry.stops || entry.schedule));
+  if (hasDayContainers) {
+    return source.map((day, index) => ({
+      day: pickNumber(day.day, day.dayNumber, day.day_number) || index + 1,
+      title: pickString(day.title) || `${index + 1}일차`,
+      summary: pickString(day.summary),
+      items: readArray(day, ['items', 'activities', 'stops', 'schedule']).map(normalizeItineraryItem)
+    }));
+  }
+
+  const grouped = new Map();
+  source.forEach((item, index) => {
+    const row = item || {};
+    const day = pickNumber(row.day, row.dayNumber, row.day_number) || 1;
+    if (!grouped.has(day)) {
+      grouped.set(day, []);
+    }
+    grouped.get(day).push(normalizeItineraryItem(row, index));
+  });
+
+  return Array.from(grouped.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([day, items]) => ({
+      day,
+      title: `${day}일차`,
+      summary: items.map((item) => item.title).slice(0, 3).join(' · '),
+      items
+    }));
+}
+
+function normalizePlan(raw, index = 0) {
+  const plan = raw?.plan || raw?.travelPlan || raw || {};
+  const rawItinerary = normalizeItinerary(plan.dayCards || plan.days || plan.dailyPlans || plan.daily_itinerary || plan.itinerary || plan.schedule || plan.items);
+  const id = pickString(plan.id, plan.planId, plan.plan_id);
+  const destinationValue = typeof plan.destination === 'string' ? plan.destination : '';
+  const destinationName = pickString(plan.destinationName, plan.destination_name, plan.destination?.name, destinationValue);
+  const title = pickString(plan.title, plan.name) || (destinationName ? `${destinationName} trip` : `Travel plan ${index + 1}`);
+  const explicitDays = pickNumber(plan.daysCount, plan.durationDays, plan.duration_days, plan.days);
+  const titleDays = extractDayCount(title, plan.summary, plan.description, plan.overview, plan.markdown, plan.markdownContent, plan.content);
+  const plannedDays = explicitDays || titleDays || Math.max(rawItinerary.length, 1);
+  const itinerary = applyScheduleFallback(rawItinerary, {
+    title,
+    destinationName,
+    destinationRegion: pickString(plan.destinationRegion, plan.region, plan.destination?.region),
+    days: plannedDays
+  });
+  const normalized = {
+    id,
+    key: id || `plan-${index}`,
+    title,
+    destinationName: destinationName || 'Selected destination',
+    destinationRegion: pickString(plan.destinationRegion, plan.region, plan.destination?.region),
+    summary: pickString(plan.summary, plan.description, plan.overview) || 'Day-by-day local route generated for the selected travel style.',
+    markdown: pickString(plan.markdown, plan.markdownContent, plan.content),
+    startDate: pickString(plan.startDate, plan.start_date),
+    days: plannedDays,
+    travelers: pickString(plan.travelers, plan.party, plan.travelerType, plan.traveler_type) || 'Flexible',
+    pace: pickString(plan.pace, plan.travelPace) || 'Balanced',
+    startPlace: pickString(plan.startPlace, plan.start_place),
+    startAddress: pickString(plan.startAddress, plan.start_address),
+    endPlace: pickString(plan.endPlace, plan.end_place),
+    endAddress: pickString(plan.endAddress, plan.end_address),
+    departureTime: pickString(plan.departureTime, plan.departure_time),
+    arrivalTime: pickString(plan.arrivalTime, plan.arrival_time),
+    estimatedBudget: pickString(plan.estimatedBudget, plan.estimated_budget),
+    interests: normalizeTags(plan.interests, plan.tags),
+    status: pickString(plan.status) || 'Ready',
+    createdAt: pickString(plan.createdAt, plan.created_at),
+    itinerary
+  };
+  const explicitTripMobilePlan = plan.tripMobilePlan || plan.mobilePlan || raw?.tripMobilePlan || raw?.mobilePlan;
+  if (isOsakaKyotoUsjPlan(normalized)) {
+    return {
+      ...normalized,
+      tripMobilePlan: legacyPlanToTripMobilePlan(normalized)
+    };
+  }
+  return {
+    ...normalized,
+    tripMobilePlan: explicitTripMobilePlan
+      ? cloneTripMobilePlan(explicitTripMobilePlan)
+      : legacyPlanToTripMobilePlan(normalized)
+  };
+}
+
+function normalizePlans(payload) {
+  const rows = readArray(payload, ['plans', 'travelPlans', 'items', 'content', 'results']);
+  return rows.map(normalizePlan);
+}
+
+function dateKeyWithOffset(dateKey, offset = 0) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(`${dateKey || ''}`);
+  if (!match) return '';
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  date.setUTCDate(date.getUTCDate() + offset);
+  return date.toISOString().slice(0, 10);
+}
+
+function travelPlanDayDate(plan, day, index = 0) {
+  const dayNumber = pickNumber(day?.day) || index + 1;
+  return dateKeyWithOffset(plan?.startDate, Math.max(0, dayNumber - 1));
+}
+
+function travelPlanFilePath(boardId, noteId) {
+  return `memo-files/${boardId || 'travel'}/${noteId}.md`;
+}
+
+function travelPlanScheduleForNote(plan) {
+  const firstSlot = plan?.itinerary?.[0]?.items?.[0];
+  return {
+    enabled: true,
+    date: plan?.startDate || new Date().toISOString().slice(0, 10),
+    time: firstSlot?.startTime || '09:00'
+  };
+}
+
+function travelPlanItemChecklistLine(item, index = 0) {
+  const time = item?.startTime && item?.endTime
+    ? `${item.startTime}-${item.endTime}`
+    : item?.startTime || scheduleBlockLabel(item?.time, index);
+  const title = pickString(item?.title, item?.destinationName, '장소');
+  const place = pickString(item?.location, item?.place);
+  const details = [
+    item?.category,
+    place ? `장소: ${place}` : '',
+    item?.travelTimeFromPrevious ? `이동: ${item.travelTimeFromPrevious}` : '',
+    item?.recommendedMenu ? `추천 메뉴: ${item.recommendedMenu}` : '',
+    pickString(item?.description, item?.note)
+  ].filter(Boolean).join(' · ');
+  return `- [ ] ${time} ${title}${details ? ` · ${details}` : ''}`.trim();
+}
+
+function buildTravelPlanOverviewContent(plan, schedule) {
+  const routeLines = (plan?.itinerary || []).flatMap((day, dayIndex) => [
+    `## ${day.title || `${day.day || dayIndex + 1}일차`}`,
+    day.summary || '',
+    ...(day.items || []).map(travelPlanItemChecklistLine)
+  ]);
+  return [
+    `# ${plan?.title || `${plan?.destinationName || '여행'} 코스`}`,
+    '',
+    `- 지역: ${plan?.destinationName || plan?.destinationRegion || '미정'}`,
+    `- 기간: ${formatDaysLabel(plan?.days)}`,
+    `- 시작: ${schedule.date} ${schedule.time}`,
+    plan?.travelers ? `- 동행: ${plan.travelers}` : '',
+    plan?.pace ? `- 속도: ${plan.pace}` : '',
+    plan?.estimatedBudget ? `- 예산: ${plan.estimatedBudget}` : '',
+    plan?.summary ? `- 요약: ${plan.summary}` : '',
+    '',
+    ...routeLines
+  ].filter(Boolean).join('\n');
+}
+
+function buildTravelPlanDayContent(plan, day, index = 0) {
+  const dayNumber = pickNumber(day?.day) || index + 1;
+  const dayDate = travelPlanDayDate(plan, day, index);
+  const items = day?.items || [];
+  const firstItem = items[0];
+  const lastItem = items[items.length - 1];
+  const route = firstItem && lastItem
+    ? `${planRouteEndpoint(firstItem)} -> ${planRouteEndpoint(lastItem)}`
+    : plan?.destinationName || plan?.destinationRegion || '동선 미정';
+  return [
+    `# ${dayNumber}일차 ${day?.title || '여행 일정'}`.trim(),
+    '',
+    dayDate ? `- 날짜: ${dayDate}` : '',
+    `- 동선: ${route}`,
+    day?.summary ? `- 요약: ${day.summary}` : '',
+    '',
+    '## 일정 체크',
+    ...(items.length ? items.map(travelPlanItemChecklistLine) : ['- [ ] 세부 일정을 확인하기']),
+    '',
+    '## 준비 메모',
+    '- [ ] 이동 시간과 예약 시간을 다시 확인하기',
+    '- [ ] 식당/카페 후보와 영업시간 확인하기'
+  ].filter(Boolean).join('\n');
+}
+
+function buildTravelPlanChecklistContent(plan) {
+  const region = pickString(plan?.destinationRegion, plan?.destinationName, '여행지');
+  return [
+    '# 여행 준비 체크리스트',
+    '',
+    `- [ ] ${region} 숙소와 교통 예약 확인`,
+    '- [ ] 신분증, 결제 수단, 충전기 챙기기',
+    '- [ ] 날씨와 이동 동선을 보고 옷차림 정하기',
+    '- [ ] 방문 장소 영업시간과 휴무일 확인',
+    '- [ ] 식당/카페 예약 필요 여부 확인',
+    '- [ ] 비상 연락처와 여행 보험 확인'
+  ].join('\n');
+}
+
+function createTravelPlanNote({ id, title, content, boardId, schedule, now, sortOrder }) {
+  return {
+    id,
+    type: 'text',
+    planType: 'travel',
+    labels: ['travel', '여행'],
+    title,
+    content,
+    folderId: boardId,
+    sector: boardId,
+    boardId,
+    status: 'todo',
+    parentId: '',
+    filePath: travelPlanFilePath(boardId, id),
+    schedule,
+    createdAt: now,
+    updatedAt: now,
+    sortOrder
+  };
+}
+
+function buildTravelPlanMemoNotes(plan, boardId) {
+  const planKey = travelPlanStorageKey(plan);
+  const schedule = travelPlanScheduleForNote(plan);
+  const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
+  const overviewId = `travel-plan-memo-${planKey}`;
+  const notes = [
+    createTravelPlanNote({
+      id: overviewId,
+      title: plan?.title || `${plan?.destinationName || '여행'} 코스`,
+      content: buildTravelPlanOverviewContent(plan, schedule),
+      boardId,
+      schedule,
+      now,
+      sortOrder: 0
+    })
+  ];
+  (plan?.itinerary || []).forEach((day, index) => {
+    const dayNumber = pickNumber(day?.day) || index + 1;
+    notes.push(createTravelPlanNote({
+      id: `travel-plan-day-${planKey}-${dayNumber}`,
+      title: `${dayNumber}일차 ${day?.title || '여행 일정'}`.trim(),
+      content: buildTravelPlanDayContent(plan, day, index),
+      boardId,
+      schedule: { enabled: false, date: travelPlanDayDate(plan, day, index), time: '09:00' },
+      now,
+      sortOrder: index + 1
+    }));
+  });
+  notes.push(createTravelPlanNote({
+    id: `travel-plan-checklist-${planKey}`,
+    title: '여행 준비 체크리스트',
+    content: buildTravelPlanChecklistContent(plan),
+    boardId,
+    schedule: { enabled: false, date: plan?.startDate || '', time: '09:00' },
+    now,
+    sortOrder: notes.length
+  }));
+  return notes;
+}
+
+function mergeTravelPlanNote(existing, desired) {
+  if (!existing) return desired;
+  const keepExistingSchedule = existing.schedule && typeof existing.schedule === 'object' && !desired.schedule?.enabled;
+  return {
+    ...existing,
+    ...desired,
+    title: pickString(existing.title) || desired.title,
+    content: pickString(existing.content) ? existing.content : desired.content,
+    blocks: Array.isArray(existing.blocks) && existing.blocks.length ? existing.blocks : desired.blocks,
+    schedule: keepExistingSchedule ? { ...desired.schedule, ...existing.schedule, enabled: Boolean(existing.schedule.enabled) } : desired.schedule,
+    createdAt: existing.createdAt || desired.createdAt,
+    updatedAt: existing.updatedAt || desired.updatedAt
+  };
+}
+
+function addPlanToScheduler(plan) {
+  if (!plan) return;
+  try {
+    const storageKey = schedulerStorageKey();
+    const items = dedupeSchedulerItems(readSchedulerArray(storageKey));
+    const planKey = travelPlanStorageKey(plan);
+    const id = `travel-plan-${planKey}`;
+    const exists = items.some((item) => item.id === id);
+    if (exists) {
+      localStorage.setItem(storageKey, JSON.stringify(items));
+      if (localStorage.getItem(SCHEDULER_KEY)) {
+        localStorage.removeItem(SCHEDULER_KEY);
+      }
+      window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { items, storageKey } }));
+      return;
+    }
+    const firstSlot = plan.itinerary?.[0]?.items?.[0];
+    const nextItem = {
+      id,
+      title: plan.title || `${plan.destinationName || '여행'} 코스`,
+      date: plan.startDate || new Date().toISOString().slice(0, 10),
+      time: firstSlot?.startTime || '09:00',
+      type: '여행',
+      memo: `${plan.destinationName || plan.destinationRegion || '여행'} · ${formatDaysLabel(plan.days)} · ${plan.summary || '여행 코스에서 생성한 계획'}`,
+      done: false,
+      source: 'travel-plan',
+      planId: plan.id || plan.key || planKey
+    };
+    const nextItems = [...items, nextItem];
+    localStorage.setItem(storageKey, JSON.stringify(nextItems));
+    if (localStorage.getItem(SCHEDULER_KEY)) {
+      localStorage.removeItem(SCHEDULER_KEY);
+    }
+    window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { item: nextItem, items: nextItems, storageKey } }));
+  } catch {
+    // Scheduler sync is a convenience layer; plan creation should not fail because localStorage is unavailable.
+  }
+}
+
+function addPlanToMemoBoard(plan) {
+  if (!plan) return null;
+  try {
+    const session = readStoredAuth();
+    const boardContext = ensureTravelMemoBoard(plan, session);
+    const storageKey = noteBlocksStorageKey(session);
+    const notes = readLocalArray(storageKey);
+    const desiredNotes = buildTravelPlanMemoNotes(plan, boardContext.boardId);
+    const desiredById = new Map(desiredNotes.map((note) => [note.id, note]));
+    const existingById = new Map(notes.map((note) => [note.id, note]));
+    const missingNotes = desiredNotes.filter((note) => !existingById.has(note.id));
+    const mergedExistingNotes = notes.map((note) => (
+      desiredById.has(note.id) ? mergeTravelPlanNote(note, desiredById.get(note.id)) : note
+    ));
+    const nextNotes = missingNotes.length ? [...missingNotes, ...mergedExistingNotes] : mergedExistingNotes;
+    localStorage.setItem(storageKey, JSON.stringify(nextNotes));
+    if (localStorage.getItem(AI_NOTE_KEY)) {
+      localStorage.removeItem(AI_NOTE_KEY);
+    }
+    const primaryNote = nextNotes.find((note) => note.id === desiredNotes[0]?.id) || desiredNotes[0] || null;
+    window.dispatchEvent(new CustomEvent('codex:notes-updated', {
+      detail: { item: primaryNote, items: nextNotes, storageKey, boardId: boardContext.boardId }
+    }));
+    return primaryNote;
+  } catch {
+    // Memo sync is local convenience; travel plan creation should continue if storage is unavailable.
+    return null;
+  }
+}
+
+function savePlanToPersonalWorkspace(plan) {
+  const note = addPlanToMemoBoard(plan);
+  if (!note?.schedule?.enabled) {
+    addPlanToScheduler(plan);
+    return;
+  }
+  try {
+    const storageKey = schedulerStorageKey();
+    const items = dedupeSchedulerItems(readSchedulerArray(storageKey));
+    const planKey = travelPlanStorageKey(plan);
+    const scheduleId = `ai-note-${note.id}`;
+    const legacyScheduleId = `travel-plan-${plan.id || plan.key || ''}`;
+    const withoutExisting = items.filter((item) => (
+      item.id !== scheduleId
+      && item.id !== `travel-plan-${planKey}`
+      && item.id !== legacyScheduleId
+    ));
+    const originBoardId = note.boardId || note.folderId || note.sector || 'travel';
+    const nextItem = {
+      id: scheduleId,
+      title: note.title || plan.title || `${plan.destinationName || '여행'} 코스`,
+      date: note.schedule.date,
+      time: note.schedule.time,
+      type: '여행',
+      memo: plan.summary || note.content || '',
+      recurrence: 'none',
+      recurrenceEnd: '',
+      source: '메모',
+      origin: {
+        kind: 'note',
+        blockId: note.id,
+        boardId: originBoardId,
+        path: `/notes?board=${encodeURIComponent(originBoardId)}&block=${encodeURIComponent(note.id)}`
+      },
+      done: false
+    };
+    const nextItems = [...withoutExisting, nextItem];
+    localStorage.setItem(storageKey, JSON.stringify(nextItems));
+    if (localStorage.getItem(SCHEDULER_KEY)) {
+      localStorage.removeItem(SCHEDULER_KEY);
+    }
+    window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { item: nextItem, items: nextItems, storageKey } }));
+  } catch {
+    addPlanToScheduler(plan);
+  }
+}
+
+function formatDate(value) {
+  if (!value) return '날짜 미정';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+}
+
+function formatLongDate(value) {
+  if (!value) return '날짜 미정';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function formatDaysLabel(value) {
+  const days = Number(value);
+  return Number.isFinite(days) && days > 0 ? `${days}일` : '일정 미정';
+}
+
+function dateInputValue(date) {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function defaultPlannerStartDate() {
+  const date = new Date();
+  date.setDate(date.getDate() + 7);
+  return dateInputValue(date);
+}
+
+function formatPlanStatus(status) {
+  const value = pickString(status);
+  if (!value) return '준비 완료';
+  const normalized = value.toLowerCase();
+  if (normalized === 'ready') return '준비 완료';
+  if (normalized === 'draft') return '작성 중';
+  if (normalized === 'saved') return '저장됨';
+  return value;
+}
+
+function extractDayCount(...values) {
+  for (const value of values) {
+    const text = pickString(value);
+    if (!text) continue;
+    const koreanMatch = text.match(/(\d{1,2})\s*일/);
+    if (koreanMatch) return Number(koreanMatch[1]);
+    const englishMatch = text.match(/(\d{1,2})\s*days?/i);
+    if (englishMatch) return Number(englishMatch[1]);
+  }
+  return 0;
+}
+
+function scheduleBlockLabel(time, index = 0) {
+  const label = pickString(time);
+  if (!label) return `코스 ${index + 1}`;
+  if (label.length <= 12) return label;
+  return `${label.slice(0, 12)}...`;
+}
+
+function planRouteEndpoint(item, fallback = '장소 미정') {
+  return pickString(item?.location, item?.place, item?.title) || fallback;
+}
+
+function planRouteTime(item, index = 0, type = 'start') {
+  if (!item) return '시간 미정';
+  const parsed = parseTimeRange(item.time);
+  if (type === 'end') {
+    return item.endTime || parsed.endTime || scheduleBlockLabel(item.time, index);
+  }
+  return item.startTime || parsed.startTime || scheduleBlockLabel(item.time, index);
+}
+
+function mealStopCount(items = []) {
+  return items.filter((item) => /식당|식사|아침|점심|저녁|한식|분식|브런치/.test(`${item.category} ${item.title} ${item.tags?.join(' ') || ''}`)).length;
+}
+
+function cafeStopCount(items = []) {
+  return items.filter((item) => /카페|디저트/.test(`${item.category} ${item.title} ${item.tags?.join(' ') || ''}`)).length;
+}
+
+function snackStopCount(items = []) {
+  return items.filter((item) => /간식|베이커리/.test(`${item.category} ${item.tags?.join(' ') || ''}`)).length;
+}
+
+function sightStopCount(items = []) {
+  return items.filter((item) => !/식당|식사|아침|점심|저녁|카페|커피|디저트|브런치|간식|이동/.test(`${item.category} ${item.title} ${item.tags?.join(' ') || ''}`)).length;
+}
+
+function planTextFilename(plan) {
+  const base = `${plan?.title || plan?.destinationName || 'travel-plan'}`
+    .replace(/[\\/:*?"<>|]+/g, '')
+    .replace(/\s+/g, '-')
+    .slice(0, 48);
+  return `${base || 'travel-plan'}.txt`;
+}
+
+function buildPlanShareText(plan) {
+  const firstDay = plan?.itinerary?.[0];
+  const firstItem = firstDay?.items?.[0];
+  const lastItem = firstDay?.items?.[firstDay.items.length - 1];
+  const route = firstItem && lastItem
+    ? `${planRouteEndpoint(firstItem)} -> ${planRouteEndpoint(lastItem)}`
+    : plan?.destinationName || plan?.destinationRegion || '여행 코스';
+  return [
+    plan?.title || '여행 코스',
+    `${plan?.destinationRegion || plan?.destinationName || '지역 미정'} · ${formatDaysLabel(plan?.days)} · ${formatLongDate(plan?.startDate)}`,
+    route,
+    plan?.summary || ''
+  ].filter(Boolean).join('\n');
+}
+
+function buildPlanExportText(plan) {
+  const header = [
+    plan?.title || '여행 코스',
+    `지역: ${plan?.destinationRegion || plan?.destinationName || '지역 미정'}`,
+    `기간: ${formatDaysLabel(plan?.days)} · ${formatLongDate(plan?.startDate)}`,
+    `동행/속도: ${plan?.travelers || '미정'} · ${plan?.pace || '미정'}`,
+    plan?.summary || ''
+  ].filter(Boolean).join('\n');
+  const days = (plan?.itinerary || []).map((day) => {
+    const items = (day.items || []).map((item, index) => {
+      const time = item.startTime && item.endTime ? `${item.startTime}-${item.endTime}` : scheduleBlockLabel(item.time, index);
+      return [
+        `- ${time} ${item.title}`,
+        item.location || item.place ? `  장소: ${item.location || item.place}` : '',
+        item.travelTimeFromPrevious ? `  이동: ${item.travelTimeFromPrevious}` : '',
+        item.recommendedMenu ? `  추천 메뉴: ${item.recommendedMenu}` : '',
+        item.description || item.note ? `  메모: ${item.description || item.note}` : ''
+      ].filter(Boolean).join('\n');
+    }).join('\n');
+    return [`\n## ${day.day}일차 ${day.title || ''}`.trim(), day.summary || '', items].filter(Boolean).join('\n');
+  }).join('\n');
+  return `${header}\n${days}`.trim();
+}
+
+function writePlannerDraft(plan, mode = 'edit') {
+  if (!plan) return;
+  const dayRoutes = (plan.itinerary || []).map((day) => {
+    const items = day.items || [];
+    const firstItem = items[0];
+    const lastItem = items[items.length - 1];
+    return {
+      day: Number(day.day) || 1,
+      startPlace: planRouteEndpoint(firstItem, ''),
+      startAddress: firstItem?.location || firstItem?.place || '',
+      endPlace: planRouteEndpoint(lastItem, ''),
+      endAddress: lastItem?.location || lastItem?.place || ''
+    };
+  });
+  const notes = [
+    mode === 'regenerate' ? '이전 코스를 바탕으로 다시 생성합니다.' : '저장된 코스를 바탕으로 수정합니다.',
+    plan.summary || '',
+    ...((plan.itinerary || []).map((day) => `${day.day}일차: ${(day.items || []).map((item) => item.title).join(' -> ')}`))
+  ].filter(Boolean).join('\n');
+  localStorage.setItem(LOCALTRIP_PLANNER_DRAFT_KEY, JSON.stringify({
+    savedAt: Date.now(),
+    mode,
+    country: countryForPlan(plan),
+    destinationName: plan.destinationName,
+    destinationRegion: plan.destinationRegion,
+    startDate: plan.startDate || '',
+    days: plan.days || Math.max(dayRoutes.length, 1),
+    travelers: plan.travelers || '커플',
+    pace: plan.pace || '보통',
+    interests: plan.interests || [],
+    notes,
+    dayRoutes
+  }));
+}
+
+function readPlannerDraft(enabled) {
+  if (!enabled) return null;
+  try {
+    const raw = localStorage.getItem(LOCALTRIP_PLANNER_DRAFT_KEY);
+    if (!raw) return null;
+    const draft = JSON.parse(raw);
+    return draft && typeof draft === 'object' ? draft : null;
+  } catch {
+    return null;
+  }
+}
+
+function destinationMatchesDraft(destination, draft) {
+  const region = `${draft?.destinationRegion || ''}`.trim();
+  const name = `${draft?.destinationName || ''}`.trim();
+  if (!region && !name) return false;
+  return [destination?.name, destination?.region, destination?.summary]
+    .filter(Boolean)
+    .some((value) => (
+      (region && `${value}`.includes(region)) || (name && `${value}`.includes(name))
+    ));
+}
+
+function parseTripRegionInput(value) {
+  const normalized = `${value || ''}`
+    .replace(/[()]/g, ' ')
+    .split(/[,\n·+>\/|]+|->|→/g)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return Array.from(new Set(normalized)).slice(0, 5);
+}
+
+function cleanScheduleTitle(title) {
+  return `${title || ''}`.replace(/^\s*\d{1,2}\s*[~:-]\s*\d{1,2}\s*·\s*/, '').trim() || title;
+}
+
+function visibleScheduleBullets(bullets) {
+  return (bullets || []).filter((bullet) => !/^체류\s*:\s*\d+\s*분/i.test(`${bullet}`.trim()));
+}
+
+function routeClick(event, to, navigate) {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) {
+    return;
+  }
+  event.preventDefault();
+  if (/^https?:\/\//i.test(to)) {
+    window.location.assign(to);
+    return;
+  }
+  navigate(to);
+}
+
+function Icon({ children, size = 18 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {children}
+    </svg>
+  );
+}
+
+function TravelWorkspaceIcon({ type }) {
+  const paths = {
+    home: <path d="M4 11.5 12 5l8 6.5V20H5v-8.5z" />,
+    calendar: (
+      <>
+        <path d="M5 5h14v15H5z" />
+        <path d="M8 3v4M16 3v4M5 10h14" />
+      </>
+    ),
+    board: (
+      <>
+        <path d="M4 5h7v6H4z" />
+        <path d="M13 5h7v14h-7z" />
+        <path d="M4 13h7v6H4z" />
+      </>
+    ),
+    trip: (
+      <>
+        <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z" />
+        <path d="M9 3v15M15 6v15" />
+      </>
+    ),
+    link: (
+      <>
+        <path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" />
+        <path d="M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20.1l1.1-1.1" />
+      </>
+    )
+  };
+
+  return (
+    <span className="memoNavIcon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+        {paths[type] || paths.trip}
+      </svg>
+    </span>
+  );
+}
+
+function TravelWorkspaceNavigator({ navigate, path }) {
+  const session = readStoredAuth();
+  const guest = isGuestSession(session);
+  const accountPath = guest ? loginUrlForRedirect('/travel') : '/mypage';
+  const displayName = guest ? 'Guest' : session?.username || 'Guest';
+  const items = [
+    { label: '여행 홈', to: '/travel' },
+    { label: '장소 찾기', to: '/destinations' },
+    { label: '코스 만들기', to: '/planner' },
+    { label: '저장 코스', to: '/plans' }
+  ];
+
+  return (
+    <nav className="workspaceNavigator travelWorkspaceNavigator" aria-label="workspace navigator">
+      <button type="button" className="workspaceNavigatorBrand" onClick={() => navigate('/app')}>
+        <TravelWorkspaceIcon type="home" />
+        <span>앱 홈</span>
+      </button>
+      <div className="workspaceNavigatorLinks travelWorkspaceLinks" aria-label="여행 메뉴">
+        {items.map((item) => {
+          const active = item.to === '/plans' ? path?.startsWith('/plans') : path === item.to;
+          return (
+            <a
+              key={item.to}
+              href={item.to}
+              className={active ? 'active' : ''}
+              aria-current={active ? 'page' : undefined}
+              onClick={(event) => routeClick(event, item.to, navigate)}
+            >
+              {item.label}
+            </a>
+          );
+        })}
+      </div>
+      <a className="workspaceNavigatorAccount" href={accountPath} onClick={(event) => routeClick(event, accountPath, navigate)}>
+        <span>{displayName.slice(0, 1).toUpperCase()}</span>
+        <strong>{displayName}</strong>
+        <small>{guest ? '로그인' : '내 정보'}</small>
+      </a>
+    </nav>
+  );
+}
+
+function PageHeader({ eyebrow, title, description, actions }) {
+  return (
+    <section className="ltPageTitle">
+      <div>
+        <span className="ltEyebrow">{eyebrow}</span>
+        <h1>{title}</h1>
+        {description ? <p>{description}</p> : null}
+      </div>
+      {actions ? <div className="ltPageActions">{actions}</div> : null}
+    </section>
+  );
+}
+
+function EmptyState({ title, description, action }) {
+  return (
+    <section className="ltEmptyState">
+      <span className="ltEmptyIcon" aria-hidden="true">
+        <Icon size={24}>
+          <path d="M12 3v18"></path>
+          <path d="M5 8h14"></path>
+          <path d="M5 16h14"></path>
+        </Icon>
+      </span>
+      <strong>{title}</strong>
+      {description ? <p>{description}</p> : null}
+      {action || null}
+    </section>
+  );
+}
+
+function StatCard({ label, value, hint }) {
+  return (
+    <div className="ltFactItem">
+      <span>{label}</span>
+      <strong>{value}</strong>
+      {hint ? <small>{hint}</small> : null}
+    </div>
+  );
+}
+
+function useDestinations() {
+  const [destinations, setDestinations] = useState(() => FALLBACK_DESTINATIONS.map(normalizeDestination));
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [usingFallback, setUsingFallback] = useState(true);
+
+  const load = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const rows = [];
+      for (let page = 0; page < DESTINATION_MAX_PAGES; page += 1) {
+        const payload = await localTripRequest(`/api/destinations?page=${page}&size=${DESTINATION_PAGE_SIZE}`);
+        const pageRows = readArray(payload, ['destinations', 'items', 'content', 'results', 'places']);
+        rows.push(...pageRows);
+        if (pageRows.length < DESTINATION_PAGE_SIZE) break;
+      }
+      const normalized = normalizeDestinations(rows);
+      if (normalized.length) {
+        setDestinations(normalized);
+        setUsingFallback(false);
+      } else {
+        setDestinations(FALLBACK_DESTINATIONS.map(normalizeDestination));
+        setUsingFallback(true);
+      }
+    } catch (loadError) {
+      setError(loadError.message);
+      setDestinations(FALLBACK_DESTINATIONS.map(normalizeDestination));
+      setUsingFallback(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load().catch(() => {});
+  }, []);
+
+  return { destinations, loading, error, usingFallback, reload: load };
+}
+
+function usePlans(limit) {
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const load = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const payload = await localTripRequest('/api/travel-plans');
+      const normalized = normalizePlans(payload);
+      setPlans(limit ? normalized.slice(0, limit) : normalized);
+    } catch (loadError) {
+      setError(loadError.message);
+      setPlans([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load().catch(() => {});
+  }, [limit]);
+
+  return { plans, loading, error, reload: load };
+}
+
+function LocalTripNav({ path, navigate }) {
+  const travelItems = [
+    {
+      label: '검색',
+      to: '/destinations',
+      icon: (
+        <>
+          <path d="M20 10c0 5-8 11-8 11s-8-6-8-11a8 8 0 1 1 16 0Z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </>
+      )
+    },
+    {
+      label: '계획 만들기',
+      to: '/planner',
+      icon: (
+        <>
+          <path d="M8 2v4"></path>
+          <path d="M16 2v4"></path>
+          <rect x="3" y="4" width="18" height="18" rx="3"></rect>
+          <path d="M3 10h18"></path>
+          <path d="m9 16 2 2 4-5"></path>
+        </>
+      )
+    },
+    {
+      label: '내 계획',
+      to: '/plans',
+      icon: (
+        <>
+          <path d="M4 4h16v16H4z"></path>
+          <path d="M8 8h8"></path>
+          <path d="M8 12h8"></path>
+          <path d="M8 16h5"></path>
+        </>
+      )
+    }
+  ];
+  const session = readStoredAuth();
+  const guest = isGuestSession(session);
+  const accountPath = guest ? loginUrlForRedirect('/travel') : '/mypage';
+  const accountItems = [
+    {
+      label: guest ? '로그인' : '마이페이지',
+      to: accountPath,
+      icon: (
+        <>
+          <path d="M20 21a8 8 0 0 0-16 0"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </>
+      )
+    }
+  ];
+
+  return (
+    <aside className="ltNav">
+      <div className="ltNavInner">
+        <a className="ltBrand" href="/app" onClick={(event) => routeClick(event, '/app', navigate)}>
+          <strong aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="4" y="7" width="16" height="10" rx="3"></rect>
+              <path d="M9 17v2"></path>
+              <path d="M15 17v2"></path>
+              <path d="M9 10h.01"></path>
+              <path d="M15 10h.01"></path>
+              <path d="M8 7V5"></path>
+              <path d="M16 7V5"></path>
+              <path d="M12 5v2"></path>
+            </svg>
+          </strong>
+          <span>
+            여행 코스
+            <small>장소·동선·저장</small>
+          </span>
+        </a>
+        <div className="ltServiceSwitch" aria-label="서비스 이동">
+          <span className="ltServiceSwitchTitle">서비스 이동</span>
+          <div className="ltServiceSwitchLinks">
+            <a className={path.startsWith('/scheduler') ? 'active' : ''} href="/scheduler" onClick={(event) => routeClick(event, '/scheduler', navigate)}>내 일정</a>
+            <a className={path.startsWith('/notes') ? 'active' : ''} href="/notes" onClick={(event) => routeClick(event, '/notes', navigate)}>메모</a>
+            <a className={path.startsWith('/destinations') || path.startsWith('/travel') || path.startsWith('/planner') || path.startsWith('/plans') ? 'active' : ''} href="/destinations" onClick={(event) => routeClick(event, '/destinations', navigate)}>장소 찾기</a>
+            <a className={path.startsWith('/connect') || path.startsWith('/connections') ? 'active' : ''} href="/connect" onClick={(event) => routeClick(event, '/connect', navigate)}>연결</a>
+          </div>
+        </div>
+        <nav className="ltNavLinks" aria-label="여행 코스 메뉴">
+          <div className="ltNavGroup">
+            <span className="ltNavGroupTitle">여행</span>
+            {travelItems.map((item) => (
+              <a
+                key={item.to}
+                href={item.to}
+                className={path === item.to || (item.to !== '/' && path.startsWith(`${item.to}/`)) ? 'active' : ''}
+                onClick={(event) => routeClick(event, item.to, navigate)}
+              >
+                <span className="ltTabIcon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    {item.icon}
+                  </svg>
+                </span>
+                <span className="ltTabLabel">{item.label}</span>
+              </a>
+            ))}
+          </div>
+          <div className="ltNavGroup">
+            <span className="ltNavGroupTitle">계정</span>
+            {accountItems.map((item) => (
+              <a
+                key={item.to}
+                href={item.to}
+                className={path === item.to || (item.to !== '/' && path.startsWith(`${item.to}/`)) ? 'active' : ''}
+                onClick={(event) => routeClick(event, item.to, navigate)}
+              >
+                <span className="ltTabIcon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    {item.icon}
+                  </svg>
+                </span>
+                <span className="ltTabLabel">{item.label}</span>
+              </a>
+            ))}
+          </div>
+        </nav>
+        <a className="ltNavUserCard" href={accountPath} onClick={(event) => routeClick(event, accountPath, navigate)}>
+          <span>{(session?.username || 'G').slice(0, 1).toUpperCase()}</span>
+          <div>
+            <strong>{guest ? 'Guest' : session?.username || '게스트'}</strong>
+            <small>{guest ? '로그인' : `${session?.role || 'USER'} 계정 · 내 일정 관리`}</small>
+          </div>
+        </a>
+      </div>
+    </aside>
+  );
+}
+
+function destinationConceptLine(destination) {
+  const parts = [
+    destination.region,
+    destination.category,
+    ...(destination.tags || [])
+  ]
+    .map((part) => `${part || ''}`.trim())
+    .filter(Boolean);
+  return Array.from(new Set(parts)).slice(0, 4).join(' · ');
+}
+
+function DestinationCard({ destination, compact = false, navigate }) {
+  const concept = destinationConceptLine(destination);
+  return (
+    <article className={`ltDestinationCard ${compact ? 'compact' : ''}`}>
+      <div className="ltDestinationBody">
+        {concept ? <div className="ltDestinationConcept" title={concept}>{concept}</div> : null}
+        <h3>{destination.name}</h3>
+        <p>{destination.summary}</p>
+        <dl className="ltDestinationFacts">
+          {destination.address ? (
+            <>
+              <dt>주소</dt>
+              <dd>{destination.address}</dd>
+            </>
+          ) : null}
+        </dl>
+        <div className="ltTagRow">
+          {destination.tags.map((tag) => <span key={tag}>{tag}</span>)}
+        </div>
+        {!compact ? (
+          <button type="button" className="ltTextButton ltCardLink" onClick={() => navigate(`/planner?destination=${encodeURIComponent(destination.id)}`)}>
+            일정에 담기
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+function PlanCard({ plan, navigate }) {
+  const previewItems = plan.itinerary?.[0]?.items?.slice(0, 4) || [];
+  const content = (
+    <>
+      <div className="ltPlanBadges">
+        <span>{plan.destinationRegion || plan.destinationName || '지역 미정'}</span>
+        <strong>{formatPlanStatus(plan.status)}</strong>
+      </div>
+      <h3>{plan.title}</h3>
+      <p>{plan.summary}</p>
+      <div className="ltPlanMeta">
+        <span>{formatDaysLabel(plan.days)}</span>
+        <span>{formatDate(plan.startDate)}</span>
+        <span>{plan.pace}</span>
+      </div>
+      {previewItems.length ? (
+        <div className="ltPlanTimelinePreview" aria-label="일정 미리보기">
+          {previewItems.map((item, index) => (
+            <div key={`${item.title}-${item.startTime}-${index}`}>
+              <time>{item.startTime && item.endTime ? `${item.startTime} - ${item.endTime}` : scheduleBlockLabel(item.time, index)}</time>
+              <span>{item.title}</span>
+              <em>{item.category}</em>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {plan.id ? (
+        <span className="ltPlanOpenHint" aria-hidden="true">
+          자세히 보기
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h14"></path>
+            <path d="m12 5 7 7-7 7"></path>
+          </svg>
+        </span>
+      ) : null}
+    </>
+  );
+
+  if (!plan.id) {
+    return <article className="ltPlanCard">{content}</article>;
+  }
+
+  return (
+    <a
+      className="ltPlanCard"
+      href={`/plans/${encodeURIComponent(plan.id)}`}
+      onClick={(event) => routeClick(event, `/plans/${encodeURIComponent(plan.id)}`, navigate)}
+    >
+      {content}
+    </a>
+  );
+}
+
+function InlineNotice({ error, fallback }) {
+  if (!error) return null;
+  return (
+    <div className="ltInlineNotice">
+      <strong>{fallback ? '잠시만요' : '요청 실패'}</strong>
+      <span>{error || '장소 데이터를 불러오고 있어요. 잠시 후 다시 확인해 주세요.'}</span>
+    </div>
+  );
+}
+
+function HomePage({ navigate }) {
+  return <TravelHome navigate={navigate} />;
+}
+
+function DestinationsPage({ path, navigate }) {
+  const { destinations, loading, error, usingFallback, reload } = useDestinations();
+  const params = new URLSearchParams(path.split('?')[1] || '');
+  const initialQuery = params.get('query') || '';
+  const [query, setQuery] = useState(initialQuery);
+  const [region, setRegion] = useState('all');
+  const [tag, setTag] = useState('all');
+  const [visibleCount, setVisibleCount] = useState(DESTINATION_INITIAL_VISIBLE);
+
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
+  useEffect(() => {
+    setVisibleCount(DESTINATION_INITIAL_VISIBLE);
+  }, [query, region, tag]);
+  const regions = useMemo(() => {
+    const unique = new Set();
+    destinations.forEach((destination) => {
+      if (destination.region) unique.add(destination.region);
+    });
+    return ['all', ...Array.from(unique).sort((left, right) => left.localeCompare(right, 'ko'))];
+  }, [destinations]);
+  const tags = useMemo(() => {
+    const counts = new Map();
+    destinations.forEach((destination) => {
+      destination.tags.forEach((item) => counts.set(item, (counts.get(item) || 0) + 1));
+    });
+    return ['all', ...Array.from(counts.entries())
+      .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], 'ko'))
+      .map(([item]) => item)
+      .slice(0, 14)];
+  }, [destinations]);
+  const filtered = useMemo(() => {
+    const keyword = query.trim().toLowerCase();
+    return destinations.filter((destination) => {
+      const matchesQuery = !keyword || [destination.name, destination.region, destination.summary, destination.category, ...destination.tags]
+        .join(' ')
+        .toLowerCase()
+        .includes(keyword);
+      const matchesRegion = region === 'all' || destination.region === region;
+      const matchesTag = tag === 'all' || destination.tags.includes(tag);
+      return matchesQuery && matchesRegion && matchesTag;
+    });
+  }, [destinations, query, region, tag]);
+  const visibleDestinations = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
+  const hasActiveFilter = query.trim() || region !== 'all' || tag !== 'all';
+  const clearFilters = () => {
+    setQuery('');
+    setRegion('all');
+    setTag('all');
+  };
+
+  return (
+    <main className="ltPage ltTravelHomePage">
+      <PageHeader
+        eyebrow="검색"
+        title="장소 찾기"
+        description="지역, 장소, 테마를 바로 검색합니다."
+      />
+
+      <InlineNotice error={error} fallback={usingFallback} />
+
+      <section className="ltFilterBar ltDestinationSearchOnly" aria-label="장소 검색">
+        <label>
+          <span>검색</span>
+          <input aria-label="여행지 검색" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="지역, 장소, 테마 검색" />
+        </label>
+      </section>
+
+      <details className="ltFold ltFilterFold">
+        <summary>
+          <span>필터</span>
+          <strong>{filtered.length.toLocaleString()}곳</strong>
+        </summary>
+        <section className="ltFilterBar">
+          <div className="ltSegmented" aria-label="지역 필터">
+            {regions.map((item) => (
+              <button key={item} type="button" className={region === item ? 'active' : ''} onClick={() => setRegion(item)}>
+                {item === 'all' ? '전체 지역' : item}
+              </button>
+            ))}
+          </div>
+          <div className="ltSegmented">
+            {tags.map((item) => (
+              <button key={item} type="button" className={tag === item ? 'active' : ''} onClick={() => setTag(item)}>
+                {item === 'all' ? '전체 스타일' : item}
+              </button>
+            ))}
+          </div>
+        </section>
+      </details>
+
+      <section className="ltDestinationResultBar" aria-label="검색 결과 요약">
+        <div>
+          <strong>{filtered.length.toLocaleString()}곳</strong>
+          <span>전체 {destinations.length.toLocaleString()}곳 중 {visibleDestinations.length.toLocaleString()}곳 표시</span>
+        </div>
+        {hasActiveFilter ? (
+          <button type="button" onClick={clearFilters}>필터 초기화</button>
+        ) : null}
+      </section>
+
+      {loading ? <EmptyState title="장소를 불러오는 중입니다" description="지역, 테마, 주소 데이터를 정리하고 있어요." /> : null}
+      {!loading && !filtered.length ? <EmptyState title="조건에 맞는 장소가 없습니다" description="검색어를 줄이거나 다른 지역, 테마를 선택해보세요." /> : null}
+      <div className="ltDestinationGrid">
+        {visibleDestinations.map((destination) => (
+          <DestinationCard key={destination.id} destination={destination} navigate={navigate} />
+        ))}
+      </div>
+      {visibleDestinations.length < filtered.length ? (
+        <div className="ltDestinationLoadMore">
+          <button
+            type="button"
+            onClick={() => setVisibleCount((current) => current + DESTINATION_VISIBLE_STEP)}
+          >
+            더 보기
+            <span>{Math.min(DESTINATION_VISIBLE_STEP, filtered.length - visibleDestinations.length).toLocaleString()}곳 더</span>
+          </button>
+        </div>
+      ) : null}
+    </main>
+  );
+}
+
+function PlannerPage({ path, navigate }) {
+  const { destinations, error, usingFallback } = useDestinations();
+  const params = new URLSearchParams(path.split('?')[1] || '');
+  const initialDestination = params.get('destination') || '';
+  const initialQuery = params.get('query') || '';
+  const plannerDraft = useMemo(() => readPlannerDraft(params.get('draft')), [path]);
+  const [country, setCountry] = useState(plannerDraft?.country || 'korea');
+  const [selectedDestinationIds, setSelectedDestinationIds] = useState(
+    initialDestination ? [initialDestination] : []
+  );
+  const [destSearch, setDestSearch] = useState(initialQuery || plannerDraft?.destinationName || plannerDraft?.destinationRegion || '');
+  const [showSuggestions, setShowDestSuggestions] = useState(false);
+  const [startDate, setStartDate] = useState(plannerDraft?.startDate || defaultPlannerStartDate());
+  const [days, setDays] = useState(plannerDraft?.days || 3);
+  const [travelerCount, setTravelerCount] = useState(plannerDraft?.travelerCount || 2);
+  const [mealPreference, setMealPreference] = useState(plannerDraft?.mealPreference || '지역 맛집');
+  const [dayStartTime, setDayStartTime] = useState(plannerDraft?.dayStartTime || '09:30');
+  const [dayEndTime, setDayEndTime] = useState(plannerDraft?.dayEndTime || '21:00');
+  const [mustVisit, setMustVisit] = useState(plannerDraft?.mustVisit || '');
+  const [avoid, setAvoid] = useState(plannerDraft?.avoid || '');
+  const [selectedInterests, setSelectedInterests] = useState(plannerDraft?.interests?.length ? plannerDraft.interests : ['맛집', '역사']);
+  const [notes, setNotes] = useState(plannerDraft?.notes || '');
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState('');
+  const [generatedPlan, setGeneratedPlan] = useState(null);
+  const submitInFlightRef = useRef(false);
+  const [activeStep, setActiveStep] = useState(1);
+  const [activeRouteField, setActiveRouteField] = useState('dates');
+  const [dayRoutes, setDayRoutes] = useState(plannerDraft?.dayRoutes?.length ? plannerDraft.dayRoutes : [{ day: 1, startPlace: '', startAddress: '', endPlace: '', endAddress: '' }]);
+  const validDayCount = Number.isFinite(Number(days)) && Number(days) >= 1 && Number(days) <= 7;
+  const routeInfoComplete = Boolean(startDate) && validDayCount;
+  const dailyRouteCount = dayRoutes.filter((route) => (
+    route.startPlace.trim() || route.endPlace.trim() || route.startAddress.trim() || route.endAddress.trim()
+  )).length;
+
+  const countryDestinations = useMemo(
+    () => destinations.filter((destination) => countryForDestination(destination) === country),
+    [country, destinations]
+  );
+
+  useEffect(() => {
+    if (!initialDestination || !destinations.length) return;
+    const initial = destinations.find((destination) => destination.id === initialDestination);
+    if (initial) {
+      setCountry(countryForDestination(initial));
+    }
+  }, [destinations, initialDestination]);
+
+  useEffect(() => {
+    if (initialDestination && !selectedDestinationIds.includes(initialDestination)) {
+      setSelectedDestinationIds((current) => [...new Set([...current, initialDestination])]);
+    }
+  }, [initialDestination]);
+
+  useEffect(() => {
+    if (!plannerDraft || initialDestination || !destinations.length) return;
+    const matches = destinations.filter((destination) => destinationMatchesDraft(destination, plannerDraft)).slice(0, 3);
+    if (!matches.length) return;
+    setCountry(countryForDestination(matches[0]));
+    setSelectedDestinationIds(matches.map((destination) => destination.id));
+  }, [destinations, initialDestination, plannerDraft]);
+
+  useEffect(() => {
+    setSelectedDestinationIds((current) => {
+      const allowedIds = new Set(countryDestinations.map((destination) => destination.id));
+      const next = current.filter((id) => allowedIds.has(id));
+      return next;
+    });
+  }, [countryDestinations]);
+
+  useEffect(() => {
+    const count = Math.max(1, Math.min(7, Number(days) || 1));
+    setDayRoutes((current) => Array.from({ length: count }, (_, index) => {
+      const existing = current[index] || {};
+      return {
+        day: index + 1,
+        startPlace: existing.startPlace || '',
+        startAddress: existing.startAddress || '',
+        departureTime: existing.departureTime || dayStartTime,
+        endPlace: existing.endPlace || '',
+        endAddress: existing.endAddress || '',
+        arrivalTime: existing.arrivalTime || dayEndTime
+      };
+    }));
+  }, [days, dayEndTime, dayStartTime]);
+
+  const toggleDestination = (id) => {
+    setSelectedDestinationIds((current) => (
+      current.includes(id)
+        ? current.filter((item) => item !== id)
+        : [...current, id]
+    ));
+  };
+
+  const filteredSuggestions = useMemo(() => {
+    const query = destSearch.trim().toLowerCase();
+    if (!query) return [];
+    return countryDestinations.filter(d =>
+      (d.name.toLowerCase().includes(query) || d.region.toLowerCase().includes(query)) &&
+      !selectedDestinationIds.includes(d.id)
+    ).slice(0, 8);
+  }, [countryDestinations, destSearch, selectedDestinationIds]);
+
+  const selectedDestinations = useMemo(
+    () => {
+      const matches = countryDestinations.filter((destination) => selectedDestinationIds.includes(destination.id));
+      if (matches.length) return matches;
+      return selectedDestinationIds.length && countryDestinations[0] ? [countryDestinations[0]] : [];
+    },
+    [countryDestinations, selectedDestinationIds]
+  );
+
+  const suggestedDestinations = useMemo(() => {
+    const query = destSearch.trim().toLowerCase();
+    const pool = query
+      ? countryDestinations.filter((destination) => (
+          [destination.name, destination.region, destination.summary, destination.category, ...(destination.tags || [])]
+            .join(' ')
+            .toLowerCase()
+            .includes(query)
+        ))
+      : countryDestinations;
+    return pool.filter((destination) => !selectedDestinationIds.includes(destination.id)).slice(0, 6);
+  }, [countryDestinations, destSearch, selectedDestinationIds]);
+
+  const toggleInterest = (interest) => {
+    setSelectedInterests((current) => (
+      current.includes(interest)
+        ? current.filter((item) => item !== interest)
+        : [...current, interest]
+    ));
+  };
+
+  const updateDayRoute = (dayIndex, field, value) => {
+    setDayRoutes((current) => current.map((route, index) => (
+      index === dayIndex ? { ...route, [field]: value } : route
+    )));
+  };
+
+  const routeDateSummary = routeInfoComplete ? `${formatDate(startDate)} · ${formatDaysLabel(days)}` : '출발일과 여행 일수';
+  const dailyRouteSummary = dailyRouteCount ? `${dailyRouteCount}일차 세부 동선 입력` : '일자별 동선은 선택 입력';
+  const travelerCountNumber = Math.max(1, Math.min(12, Number(travelerCount) || 1));
+  const travelerType = `${travelerCountNumber}명`;
+  const mealPlanRule = '하루 아침·점심·저녁 3끼, 카페 1곳, 관광지 중심으로 구성';
+  const travelOptionSummary = `${travelerCountNumber}명 · ${mealPreference} · 3끼+카페 1곳`;
+  const tripRegionInput = destSearch.trim();
+  const regionInputs = parseTripRegionInput(tripRegionInput);
+  const canGenerate = Boolean(tripRegionInput || selectedDestinationIds.length) && validDayCount && !generating;
+  const selectedSummary = selectedDestinations.length
+    ? selectedDestinations.map((destination) => destination.name).slice(0, 3).join(' · ')
+    : (tripRegionInput || '지역을 입력해 주세요');
+
+  const submit = async (event) => {
+    event.preventDefault();
+    if (submitInFlightRef.current) return;
+    submitInFlightRef.current = true;
+    setGenerating(true);
+    setGenerateError('');
+    setGeneratedPlan(null);
+
+    const regions = [
+      ...new Set([
+        ...regionInputs,
+        ...selectedDestinations.map(d => d.region)
+      ].filter(Boolean))
+    ];
+    const destinationIds = selectedDestinations
+      .map((destination) => Number(destination.id))
+      .filter((id) => Number.isFinite(id));
+    const routeMemoLines = [
+      tripRegionInput ? `사용자 입력 지역/일정: ${tripRegionInput}` : '',
+      notes,
+      mealPlanRule,
+      dailyRouteCount ? '일자별 출발/도착:' : '',
+      ...dayRoutes
+        .filter((route) => route.startPlace || route.startAddress || route.endPlace || route.endAddress)
+        .map((route) => `${route.day}일차 출발=${route.startPlace || '미정'} ${route.departureTime || dayStartTime}${route.startAddress ? ` (${route.startAddress})` : ''}, 도착=${route.endPlace || '미정'} ${route.arrivalTime || dayEndTime}${route.endAddress ? ` (${route.endAddress})` : ''}`)
+    ].filter(Boolean);
+    const firstRoute = dayRoutes[0] || {};
+    const lastRoute = dayRoutes[dayRoutes.length - 1] || {};
+
+    const payload = {
+      region: tripRegionInput || selectedSummary,
+      regions,
+      destinationIds,
+      travelStyle: selectedInterests,
+      styles: selectedInterests,
+      startDate: startDate || null,
+      days: Number(days),
+      transportType: DEFAULT_TRANSPORT_TYPE,
+      travelerCount: travelerCountNumber,
+      travelerType,
+      pace: DEFAULT_TRAVEL_PACE,
+      budgetLevel: DEFAULT_BUDGET_LEVEL,
+      mealPreference,
+      restPreference: DEFAULT_REST_PREFERENCE,
+      mustVisit,
+      avoid,
+      dayStartTime,
+      dayEndTime,
+      startPlace: firstRoute.startPlace || '',
+      startAddress: firstRoute.startAddress || '',
+      endPlace: lastRoute.endPlace || '',
+      endAddress: lastRoute.endAddress || '',
+      departureTime: firstRoute.departureTime || dayStartTime,
+      arrivalTime: lastRoute.arrivalTime || dayEndTime,
+      dailyRoutes: dayRoutes,
+      memo: routeMemoLines.join('\n')
+    };
+    try {
+      const response = await localTripRequest('/api/travel-plans/generate', { method: 'POST', body: payload });
+      const plan = normalizePlan(response);
+      setGeneratedPlan(plan);
+      savePlanToPersonalWorkspace(plan);
+      if (plan.id) {
+        navigate(`/plans/${encodeURIComponent(plan.id)}`);
+      }
+    } catch (submitError) {
+      setGenerateError(plannerGenerateErrorMessage(submitError));
+    } finally {
+      submitInFlightRef.current = false;
+      setGenerating(false);
+    }
+  };
+
+  return (
+    <TravelPlannerPage
+      error={error}
+      usingFallback={usingFallback}
+      country={country}
+      setCountry={setCountry}
+      countryOptions={COUNTRY_OPTIONS}
+      destSearch={destSearch}
+      setDestSearch={setDestSearch}
+      showSuggestions={showSuggestions}
+      setShowDestSuggestions={setShowDestSuggestions}
+      filteredSuggestions={filteredSuggestions}
+      suggestedDestinations={suggestedDestinations}
+      selectedDestinations={selectedDestinations}
+      selectedDestinationIds={selectedDestinationIds}
+      toggleDestination={toggleDestination}
+      startDate={startDate}
+      setStartDate={setStartDate}
+      days={days}
+      setDays={setDays}
+      travelerCount={travelerCount}
+      setTravelerCount={setTravelerCount}
+      mealPreference={mealPreference}
+      setMealPreference={setMealPreference}
+      dayStartTime={dayStartTime}
+      setDayStartTime={setDayStartTime}
+      dayEndTime={dayEndTime}
+      setDayEndTime={setDayEndTime}
+      dayRoutes={dayRoutes}
+      updateDayRoute={updateDayRoute}
+      selectedInterests={selectedInterests}
+      toggleInterest={toggleInterest}
+      interests={INTERESTS}
+      mustVisit={mustVisit}
+      setMustVisit={setMustVisit}
+      avoid={avoid}
+      setAvoid={setAvoid}
+      notes={notes}
+      setNotes={setNotes}
+      generating={generating}
+      generateError={generateError}
+      generatedPlan={generatedPlan}
+      canGenerate={canGenerate}
+      selectedSummary={selectedSummary}
+      submit={submit}
+      PlanRouteFacts={PlanRouteFacts}
+      PlanDayCards={PlanDayCards}
+    />
+  );
+}
+
+function PlansPage({ navigate }) {
+  const { plans, loading, error, reload } = usePlans();
+  const sortedPlans = useMemo(
+    () => plans.slice().sort((left, right) => new Date(right.createdAt || 0) - new Date(left.createdAt || 0)),
+    [plans]
+  );
+
+  return (
+    <main className="ltPage">
+      <PageHeader
+        eyebrow="내 여행"
+        title="저장한 여행 코스"
+        description="만든 코스를 다시 열고 일자별 동선을 확인합니다."
+        actions={(
+          <button type="button" className="ltIconButton" onClick={reload} aria-label="여행 코스 새로고침">
+            <Icon size={18}>
+              <path d="M21 12a9 9 0 0 1-15.3 6.4"></path>
+              <path d="M3 12A9 9 0 0 1 18.3 5.6"></path>
+              <path d="M3 18v-5h5"></path>
+              <path d="M21 6v5h-5"></path>
+            </Icon>
+          </button>
+        )}
+      />
+
+      {error ? <div className="ltInlineNotice error"><strong>요청 실패</strong><span>{error}</span></div> : null}
+      {loading ? <EmptyState title="여행 코스를 불러오는 중입니다" description="저장된 코스를 정리하고 있어요." /> : null}
+      {!loading && !plans.length ? (
+        <EmptyState
+          title="아직 저장한 코스가 없어요"
+          description="가고 싶은 곳을 하나 골라 첫 여행 흐름을 만들어보세요."
+          action={<button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>새 코스 만들기</button>}
+        />
+      ) : null}
+      <div className="ltPlansGrid">
+        {sortedPlans.map((plan) => <PlanCard key={plan.key} plan={plan} navigate={navigate} />)}
+      </div>
+    </main>
+  );
+}
+
+function PartnerPage({ navigate }) {
+  const { destinations, loading } = useDestinations();
+  const { plans } = usePlans();
+  const promotedDestinations = destinations.slice(0, 4);
+  const regionCount = new Set(destinations.map((destination) => destination.region).filter(Boolean)).size;
+
+  return (
+    <main className="ltPage">
+      <section className="ltPartnerHero">
+        <div>
+          <span className="ltEyebrow">Partner Center</span>
+          <h1>내 일정 데이터 운영 화면</h1>
+          <p>관광지 노출, 사진·태그 품질, 생성 일정 데이터를 관리하는 운영자용 대시보드입니다.</p>
+        </div>
+        <div className="ltPartnerHeroActions">
+          <button type="button" className="ltPrimaryButton" onClick={() => navigate('/destinations')}>
+            노출 현황 보기
+          </button>
+          <button type="button" className="ltSecondaryButton" onClick={() => navigate('/planner')}>
+            내 일정 테스트
+          </button>
+        </div>
+      </section>
+
+      <section className="ltPartnerStats" aria-label="내 일정 운영 지표">
+        <div className="ltFactItem">
+          <span>등록 장소</span>
+          <strong>{loading ? '-' : `${destinations.length}곳`}</strong>
+        </div>
+        <div className="ltFactItem">
+          <span>관리 지역</span>
+          <strong>{loading ? '-' : `${regionCount}곳`}</strong>
+        </div>
+        <div className="ltFactItem">
+          <span>저장 코스</span>
+          <strong>{plans.length}개</strong>
+        </div>
+        <div className="ltFactItem">
+          <span>관리 기능</span>
+          <strong>활성</strong>
+        </div>
+      </section>
+
+      <section className="ltPartnerGrid">
+        <div className="ltPartnerPanel">
+          <div className="ltSectionHeader compact">
+            <div>
+              <h2>운영 할 일</h2>
+              <p>예약 전환에 영향이 큰 항목부터 정리했습니다.</p>
+            </div>
+          </div>
+          <div className="ltTaskList">
+            {PARTNER_TASKS.map((task) => (
+              <article key={task.title} className={`ltTaskCard ${task.tone}`}>
+                <span aria-hidden="true">
+                  <Icon size={20}>
+                    <path d="M9 11l3 3L22 4"></path>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                  </Icon>
+                </span>
+                <div>
+                  <strong>{task.title}</strong>
+                  <p>{task.detail}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <div className="ltPartnerPanel">
+          <div className="ltSectionHeader compact">
+            <div>
+              <h2>대표 노출 장소</h2>
+              <p>여행자에게 먼저 보여주기 좋은 장소를 골라보세요.</p>
+            </div>
+          </div>
+          <div className="ltPartnerDestList">
+            {promotedDestinations.map((destination) => (
+              <DestinationCard key={destination.id} destination={destination} compact navigate={navigate} />
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function parseMarkdownPlan(markdown) {
+  const lines = `${markdown || ''}`.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const days = [];
+  let currentDay = null;
+  let currentItem = null;
+
+  for (const line of lines) {
+    if (line.startsWith('# ') || line.startsWith('>')) {
+      continue;
+    }
+    if (line.startsWith('- 지역:') || line.startsWith('- 기간:') || line.startsWith('- 동행:') || line.startsWith('- 속도:') || line.startsWith('- 취향:')) {
+      continue;
+    }
+    if (line.startsWith('## ')) {
+      currentDay = { day: line.slice(3).trim(), items: [] };
+      days.push(currentDay);
+      currentItem = null;
+      continue;
+    }
+    if (line.startsWith('### ')) {
+      if (!currentDay) {
+        currentDay = { day: 'Day 1', items: [] };
+        days.push(currentDay);
+      }
+      currentItem = { title: line.slice(4).trim(), bullets: [], paragraphs: [] };
+      currentDay.items.push(currentItem);
+      continue;
+    }
+    if (line.startsWith('- ')) {
+      if (currentItem) {
+        currentItem.bullets.push(line.slice(2).trim());
+      }
+      continue;
+    }
+    if (currentItem) {
+      currentItem.paragraphs.push(line);
+    }
+  }
+
+  return days;
+}
+
+function markdownBlocksFromItinerary(itinerary) {
+  return itinerary.map((day) => ({
+    day: `Day ${day.day}`,
+    items: day.items.map((item) => ({
+      title: `${item.time || '유동적'} · ${item.title}`,
+      paragraphs: item.note ? [item.note] : [],
+      bullets: [
+        item.place ? `장소: ${item.place}` : '',
+        item.tags && item.tags.length ? `테마: ${item.tags.join(', ')}` : ''
+      ].filter(Boolean)
+    }))
+  }));
+}
+
+function MarkdownPlanBlocks({ plan }) {
+  const itinerary = plan?.itinerary || [];
+  const markdownDays = parseMarkdownPlan(plan?.markdown);
+  const dayBlocks = markdownDays.length ? markdownDays : markdownBlocksFromItinerary(itinerary);
+  if (!dayBlocks.length) {
+    return (
+      <div className="ltEmptyState" style={{ marginTop: '24px', padding: '60px' }}>
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '16px' }}>
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p>아직 보여드릴 일정이 없어요. 다시 한 번 코스를 만들어보세요.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="ltMarkdownPlan" aria-label="여행 코스">
+      {dayBlocks.map((day) => (
+        <section className="ltMarkdownDayBlock" key={day.day}>
+          <div className="ltMarkdownDayHeader">
+            <span>##</span>
+            <h2>{day.day}</h2>
+          </div>
+          <div className="ltMarkdownItems">
+            {day.items.map((item, index) => (
+              <article className="ltMarkdownBlock" key={`${day.day}-${item.title}-${index}`}>
+                <div className="ltMarkdownHeading">
+                  <span>{index + 1}</span>
+                  <h3>{cleanScheduleTitle(item.title)}</h3>
+                </div>
+                {item.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+                <ul>
+                  {visibleScheduleBullets(item.bullets).map((bullet) => {
+                    const [label, ...rest] = bullet.split(':');
+                    const value = rest.join(':').trim();
+                    return (
+                      <li key={bullet}>
+                        {value ? <><strong>{label.trim()}</strong> {value}</> : bullet}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function categoryIcon(category = '') {
+  if (/간식|시장|베이커리/.test(category)) return '간';
+  if (/식당|식사|아침|점심|저녁|한식|분식|브런치/.test(category)) return '식';
+  if (/카페|디저트/.test(category)) return '카';
+  if (/야경|산책/.test(category)) return '길';
+  if (/이동/.test(category)) return '이';
+  return '관';
+}
+
+function PlanDayCards({ plan }) {
+  const itinerary = plan?.itinerary || [];
+  if (!itinerary.length) {
+    return <MarkdownPlanBlocks plan={plan} />;
+  }
+
+  return (
+    <div className="ltDayCards" aria-label="일자별 여행 코스">
+      {itinerary.map((day) => (
+        <section className="ltDayCard" key={day.day}>
+          <div className="ltDayCardHeader">
+            {day.items.find((item) => item.imageUrl)?.imageUrl ? (
+              <img
+                className="ltDayCover"
+                src={day.items.find((item) => item.imageUrl).imageUrl}
+                alt={day.title || `${day.day}일차`}
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <div className="ltDayCover placeholder" aria-hidden="true">{day.day}일차</div>
+            )}
+            <div>
+              <span>{day.day}일차</span>
+              <h2>{day.title || `${day.day}일차`}</h2>
+              {day.summary ? <p>{day.summary}</p> : null}
+            </div>
+          </div>
+          <PlanDayRouteCheck plan={plan} day={day} />
+          <div className="ltDayTimeline">
+            {day.items.map((item, index) => (
+              <article className={`ltDaySlot ${/식당|식사|아침|점심|저녁|카페|디저트|브런치|한식|분식|간식/.test(item.category) ? 'food' : ''}`} key={`${day.day}-${item.startTime || item.time}-${item.title}-${index}`}>
+                <div className="ltTimelineRail">
+                  <time>
+                    <span>{item.startTime && item.endTime ? `${item.startTime} - ${item.endTime}` : scheduleBlockLabel(item.time, index)}</span>
+                  </time>
+                  <i aria-hidden="true">{categoryIcon(item.category)}</i>
+                </div>
+                <div className="ltDaySlotBody">
+                  <div>
+                    <div className="ltSlotTitleRow">
+                      <h3>{item.title}</h3>
+                      <span>{item.category}</span>
+                    </div>
+                    <div className="ltDaySlotMeta">
+                      {item.location || item.place ? <span>위치: {item.location || item.place}</span> : null}
+                      {item.durationMinutes ? <span>{item.durationMinutes}분</span> : null}
+                      {item.travelTimeFromPrevious ? <span>{item.travelTimeFromPrevious}</span> : null}
+                    </div>
+                  </div>
+                  {item.description || item.note ? <p>{item.description || item.note}</p> : null}
+                  {item.recommendedMenu ? (
+                    <div className="ltRecommendedMenu">
+                      <strong>추천 메뉴</strong>
+                      <span>{item.recommendedMenu}</span>
+                    </div>
+                  ) : null}
+                  <div className="ltTagRow small">
+                    {item.tags.map((tag) => <span key={tag}>{tag}</span>)}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function PlanRouteFacts({ plan }) {
+  const itinerary = plan?.itinerary || [];
+  if (!itinerary.length) {
+    return null;
+  }
+
+  return (
+    <section className="ltRouteOverview" aria-label="일자별 동선 요약">
+      <div className="ltRouteOverviewHeader">
+        <div>
+          <span className="ltEyebrow">Route</span>
+          <h2>하루 흐름</h2>
+        </div>
+        <p>출발, 도착, 식사와 카페 포인트를 먼저 확인합니다.</p>
+      </div>
+      <div className="ltRouteSummaryGrid">
+        {itinerary.map((day) => {
+          const items = day.items || [];
+          const firstItem = items[0];
+          const lastItem = items[items.length - 1];
+          const moveTips = items.map((item) => item.travelTimeFromPrevious).filter(Boolean).slice(0, 2);
+          return (
+            <article className="ltRouteSummaryCard" key={`route-${day.day}`}>
+              <div className="ltRouteSummaryTop">
+                <span>{day.day}일차</span>
+                <strong>{items.length}곳</strong>
+              </div>
+              <div className="ltRouteEndpoints">
+                <div>
+                  <small>{planRouteTime(firstItem, 0, 'start')}</small>
+                  <b>{planRouteEndpoint(firstItem, '출발지 미정')}</b>
+                </div>
+                <Icon size={17}>
+                  <path d="M5 12h14"></path>
+                  <path d="m12 5 7 7-7 7"></path>
+                </Icon>
+                <div>
+                  <small>{planRouteTime(lastItem, Math.max(items.length - 1, 0), 'end')}</small>
+                  <b>{planRouteEndpoint(lastItem, '도착지 미정')}</b>
+                </div>
+              </div>
+              <div className="ltRoutePills">
+                <span>식사 {mealStopCount(items)}회</span>
+                <span>카페 {cafeStopCount(items)}회</span>
+                <span>간식 {snackStopCount(items)}회</span>
+                <span>관광 {sightStopCount(items)}곳</span>
+                {moveTips.length ? <span>{moveTips.join(' · ')}</span> : null}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function PlanDetailActions({ plan, navigate, onDeleted }) {
+  const [status, setStatus] = useState('');
+  const [busyAction, setBusyAction] = useState('');
+
+  const openPlannerDraft = (mode) => {
+    writePlannerDraft(plan, mode);
+    navigate(`/planner?draft=plan${mode === 'regenerate' ? '&mode=regenerate' : ''}`);
+  };
+
+  const saveToScheduler = () => {
+    savePlanToPersonalWorkspace(plan);
+    setStatus('메모와 일정에 저장했습니다.');
+  };
+
+  const exportText = () => {
+    const blob = new Blob([buildPlanExportText(plan)], { type: 'text/plain;charset=utf-8' });
+    const href = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = href;
+    anchor.download = planTextFilename(plan);
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(href);
+    setStatus('텍스트 파일로 내보냈습니다.');
+  };
+
+  const sharePlan = async () => {
+    const text = buildPlanShareText(plan);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: plan.title, text });
+        setStatus('공유 화면을 열었습니다.');
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      setStatus('공유할 내용을 클립보드에 복사했습니다.');
+    } catch (shareError) {
+      setStatus(shareError?.name === 'AbortError' ? '' : '공유를 완료하지 못했습니다.');
+    }
+  };
+
+  const deletePlan = async () => {
+    if (!plan?.id || !window.confirm('이 여행 코스를 삭제할까요?')) return;
+    setBusyAction('delete');
+    setStatus('');
+    try {
+      await localTripRequest(`/api/travel-plans/${encodeURIComponent(plan.id)}`, { method: 'DELETE' });
+      setStatus('여행 코스를 삭제했습니다.');
+      onDeleted?.();
+    } catch (deleteError) {
+      setStatus(deleteError.message || '삭제하지 못했습니다.');
+    } finally {
+      setBusyAction('');
+    }
+  };
+
+  return (
+    <section className="ltPlanActionBar" aria-label="여행 코스 액션">
+      <button type="button" className="ltSecondaryButton" onClick={() => openPlannerDraft('edit')}>
+        <Icon size={17}>
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+        </Icon>
+        수정
+      </button>
+      <button type="button" className="ltSecondaryButton" onClick={() => openPlannerDraft('regenerate')}>
+        <Icon size={17}>
+          <path d="M21 12a9 9 0 0 1-15.3 6.4"></path>
+          <path d="M3 12A9 9 0 0 1 18.3 5.6"></path>
+          <path d="M3 18v-5h5"></path>
+          <path d="M21 6v5h-5"></path>
+        </Icon>
+        다시 만들기
+      </button>
+      <button type="button" className="ltSecondaryButton" onClick={saveToScheduler}>
+        <Icon size={17}>
+          <path d="M5 5h14v15H5z"></path>
+          <path d="M8 3v4M16 3v4M5 10h14"></path>
+        </Icon>
+        스케줄 저장
+      </button>
+      <button type="button" className="ltSecondaryButton" onClick={exportText}>
+        <Icon size={17}>
+          <path d="M12 3v12"></path>
+          <path d="m7 10 5 5 5-5"></path>
+          <path d="M5 21h14"></path>
+        </Icon>
+        내보내기
+      </button>
+      <button type="button" className="ltSecondaryButton" onClick={sharePlan}>
+        <Icon size={17}>
+          <circle cx="18" cy="5" r="3"></circle>
+          <circle cx="6" cy="12" r="3"></circle>
+          <circle cx="18" cy="19" r="3"></circle>
+          <path d="m8.6 13.5 6.8 4"></path>
+          <path d="m15.4 6.5-6.8 4"></path>
+        </Icon>
+        공유
+      </button>
+      <button type="button" className="ltSecondaryButton danger" onClick={deletePlan} disabled={busyAction === 'delete'}>
+        <Icon size={17}>
+          <path d="M3 6h18"></path>
+          <path d="M8 6V4h8v2"></path>
+          <path d="M19 6 18 20H6L5 6"></path>
+        </Icon>
+        {busyAction === 'delete' ? '삭제 중' : '삭제'}
+      </button>
+      {status ? <p>{status}</p> : null}
+    </section>
+  );
+}
+
+function PlanDetailPage({ planId, navigate }) {
+  const [plan, setPlan] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const payload = await localTripRequest(`/api/travel-plans/${encodeURIComponent(planId)}`);
+        if (!cancelled) {
+          setPlan(normalizePlan(payload));
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(loadError.message);
+          setPlan(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+    load().catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [planId]);
+
+  return (
+    <main className="ltPage ltTripMobileDetailPage">
+      <div className="ltPageHeader">
+        <button type="button" className="ltBackButton" onClick={() => navigate('/plans')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          목록으로 돌아가기
+        </button>
+      </div>
+
+      {loading ? <div className="ltEmptyState" style={{ padding: '100px' }}>일정을 불러오고 있어요...</div> : null}
+      {error ? <div className="ltInlineNotice error"><strong>로드 실패</strong><span>{error}</span></div> : null}
+      
+      {plan ? (
+        <div className="ltTripMobileFrame">
+          <TripMobilePage
+            plan={plan}
+            actions={<PlanDetailActions plan={plan} navigate={navigate} onDeleted={() => navigate('/plans')} />}
+          />
+        </div>
+      ) : null}
+    </main>
+  );
+}
+
+function NotFoundPage({ navigate }) {
+  return (
+    <main className="ltPage">
+      <section className="ltEmptyState large">
+        <h1>앗, 길을 찾지 못했어요</h1>
+        <button type="button" className="ltPrimaryButton" onClick={() => navigate('/app')}>홈으로 이동</button>
+      </section>
+    </main>
+  );
+}
+
+function MyPage({ navigate }) {
+  const [session, setSession] = useState(readStoredAuth());
+  const guest = isGuestSession(session);
+  const { destinations, loading: destinationsLoading } = useDestinations();
+  const { plans, loading: plansLoading } = usePlans();
+  const recentPlans = plans.slice(0, 3);
+
+  const logout = () => {
+    localStorage.removeItem(AUTH_KEY);
+    setSession(null);
+    navigate('/app');
+  };
+
+  return (
+    <main className="ltPage">
+      <section className="ltMyHero">
+        <div className="ltMyAvatar" aria-hidden="true">
+          {(session?.username || 'U').slice(0, 1).toUpperCase()}
+        </div>
+        <div className="ltMyHeroText">
+          <span className="ltEyebrow">My Space</span>
+          <h1>{guest ? 'Guest 공간' : `${session?.username || '사용자'}님의 비서`}</h1>
+          <p>{guest ? '샘플 코스와 추천 장소를 둘러봅니다.' : '저장한 일정, 메모, 여행 코스를 한곳에서 확인합니다.'}</p>
+          <div className="ltMyHeroMeta">
+            <span>{guest ? 'GUEST' : session?.role || 'USER'}</span>
+            <span>{guest ? '샘플 모드' : 'ID/PW 로그인'}</span>
+          </div>
+        </div>
+        <div className="ltMyActions">
+          <button type="button" className="ltPrimaryButton" onClick={() => navigate('/planner')}>새 코스 만들기</button>
+          {guest ? (
+            <button type="button" className="ltGhostButton" onClick={() => redirectToLogin('/mypage')}>회원 로그인</button>
+          ) : (
+            <button type="button" className="ltGhostButton" onClick={logout}>로그아웃</button>
+          )}
+        </div>
+      </section>
+
+      <section className="ltMyStats" aria-label="내 공간 요약">
+        <StatCard label="계정 등급" value={guest ? 'GUEST' : session?.role || 'USER'} hint="내 공간 권한" />
+        <StatCard label="저장 코스" value={plansLoading ? '-' : `${plans.length}개`} hint="여행 보관함" />
+        <StatCard label="추천 장소" value={destinationsLoading ? '-' : `${destinations.length}곳`} hint="현재 노출 가능" />
+        <StatCard label="로그인 방식" value={guest ? 'Guest' : 'ID/PW'} hint={guest ? '샘플 공간' : '로컬 계정'} />
+      </section>
+
+      <section className="ltMyGrid">
+        <details className="ltMyPanel ltFold" open>
+          <summary>
+            <span>최근 일정</span>
+            <button type="button" className="ltTextButton" onClick={(event) => {
+              event.preventDefault();
+              navigate('/plans');
+            }}>전체 보기</button>
+          </summary>
+          <div className="ltMyPlanList">
+            {recentPlans.length ? recentPlans.map((plan) => (
+              <PlanCard key={plan.key} plan={plan} navigate={navigate} />
+            )) : (
+              <EmptyState title="최근 코스가 없어요" description="새 코스 만들기로 첫 여행을 가볍게 시작해보세요." />
+            )}
+          </div>
+        </details>
+
+        <details className="ltMyPanel ltFold" open>
+          <summary>
+            <span>계정 정보</span>
+          </summary>
+          <dl className="ltProfileList">
+            <div>
+              <dt>아이디</dt>
+              <dd>{guest ? 'Guest' : session?.username || '-'}</dd>
+            </div>
+            <div>
+              <dt>권한</dt>
+              <dd>{guest ? 'GUEST' : session?.role || '-'}</dd>
+            </div>
+            <div>
+              <dt>분석 워크스페이스</dt>
+              <dd>
+                <span>비공개</span>
+              </dd>
+            </div>
+          </dl>
+          {guest ? (
+            <button type="button" className="ltPrimaryButton" onClick={() => redirectToLogin('/mypage')}>로그인 페이지로 이동</button>
+          ) : null}
+          <div className="ltMyShortcutList">
+            <button type="button" onClick={() => navigate('/destinations')}>장소 둘러보기</button>
+            <button type="button" onClick={() => navigate('/planner')}>새 코스 만들기</button>
+            <button type="button" onClick={() => navigate('/plans')}>저장한 여행 보기</button>
+          </div>
+        </details>
+      </section>
+    </main>
+  );
+}
+
+function LoginPage({ navigate }) {
+  const [authMode, setAuthMode] = useState('login');
+  const [authUsername, setAuthUsername] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
+
+  const submitAuth = async (event) => {
+    event.preventDefault();
+    if (authLoading) return;
+    const username = authUsername.trim();
+    if (!username || !authPassword.trim()) {
+      setAuthError('아이디와 비밀번호를 입력하세요.');
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const response = await fetch(authMode === 'signup' ? '/api/auth/signup' : '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ username, password: authPassword })
+      });
+      if (!response.ok) {
+        throw new Error((await response.text()) || `HTTP ${response.status}`);
+      }
+      const nextSession = await response.json();
+      localStorage.setItem(AUTH_KEY, JSON.stringify(nextSession));
+      navigate('/mypage');
+    } catch (error) {
+      setAuthError(error.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  return (
+    <main className="ltPage ltLoginPage">
+      <section className="ltLoginPanel">
+        <div className="ltSectionHeader">
+          <span className="ltEyebrow">My Assistant</span>
+          <h1>{authMode === 'signup' ? '내 공간 만들기' : '내 비서에 로그인'}</h1>
+          <p>메모, 일정, 여행 코스를 이어서 보려면 로그인하세요.</p>
+        </div>
+        <form className="ltMemberLoginForm" onSubmit={submitAuth}>
+          <label>
+            <span>이메일/아이디</span>
+            <input value={authUsername} onChange={(event) => setAuthUsername(event.target.value)} placeholder="my-id" autoComplete="username" />
+          </label>
+          <label>
+            <span>비밀번호</span>
+            <input type="password" value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} placeholder="password" autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'} />
+          </label>
+          <button type="submit" className="ltPrimaryButton" disabled={authLoading}>
+            {authLoading ? '처리 중...' : authMode === 'signup' ? '계정 만들기' : '로그인'}
+          </button>
+          {authError ? <p className="ltAuthError">{authError}</p> : null}
+          <button
+            type="button"
+            className="ltTextButton"
+            onClick={() => {
+              setAuthMode((current) => (current === 'signup' ? 'login' : 'signup'));
+              setAuthError('');
+            }}
+          >
+            {authMode === 'signup' ? '로그인으로 돌아가기' : '회원가입'}
+          </button>
+        </form>
+      </section>
+    </main>
+  );
+}
+
+function AppShell({ navigate, children, travelHome = false, path = '' }) {
+  const plannerMode = path.startsWith('/planner');
+  if (travelHome || plannerMode) {
+    const session = readStoredAuth();
+    const guest = isGuestSession(session);
+    const displayName = guest ? 'Guest' : session?.username || 'Guest';
+    const currentRoute = plannerMode ? '/planner' : '/travel';
+    const accountPath = guest ? loginUrlForRedirect(currentRoute) : '/mypage';
+
+    return (
+      <MobilePageShell
+        activeTab="more"
+        className="ltShell ltShellTravelStart"
+        icon="trip"
+        navigate={navigate}
+        profile={{
+          name: displayName,
+          label: guest ? '로그인' : '내 정보',
+          onClick: () => {
+            if (/^https?:\/\//i.test(accountPath)) {
+              window.location.assign(accountPath);
+              return;
+            }
+            navigate(accountPath);
+          }
+        }}
+        subtitle={plannerMode ? '기본정보 · 취향선택 · 계획확인' : '계획 만들기'}
+        title={plannerMode ? 'AI 여행' : '여행'}
+      >
+        {children}
+      </MobilePageShell>
+    );
+  }
+
+  return (
+    <div className="ltShell">
+      <TravelWorkspaceNavigator navigate={navigate} path={path} />
+      {children}
+      <footer className="ltFooter">
+        <span>여행 코스</span>
+        <span>장소 · 동선 · 저장</span>
+      </footer>
+    </div>
+  );
+}
+
+export default function LocalTripApp({ path, navigate }) {
+  useEffect(() => {
+    document.title = '여행 코스';
+  }, [path]);
+
+  const normalizedPath = path || '/';
+  const cleanPath = normalizedPath.split('?')[0];
+  const isTravelHome = cleanPath === '/' || cleanPath === '/travel';
+  let page;
+  if (isTravelHome) {
+    page = <HomePage navigate={navigate} />;
+  } else if (cleanPath === '/destinations') {
+    page = <DestinationsPage path={normalizedPath} navigate={navigate} />;
+  } else if (cleanPath === '/planner') {
+    page = <PlannerPage path={normalizedPath} navigate={navigate} />;
+  } else if (cleanPath === '/plans') {
+    page = <PlansPage navigate={navigate} />;
+  } else if (cleanPath === '/partners') {
+    page = <PartnerPage navigate={navigate} />;
+  } else if (cleanPath === '/login') {
+    page = <LoginPage navigate={navigate} />;
+  } else if (cleanPath === '/mypage') {
+    page = <MyPage navigate={navigate} />;
+  } else if (cleanPath.startsWith('/plans/')) {
+    page = <PlanDetailPage planId={decodeURIComponent(cleanPath.replace('/plans/', ''))} navigate={navigate} />;
+  } else {
+    page = <NotFoundPage navigate={navigate} />;
+  }
+
+  return <AppShell navigate={navigate} travelHome={isTravelHome} path={cleanPath}>{page}</AppShell>;
+}

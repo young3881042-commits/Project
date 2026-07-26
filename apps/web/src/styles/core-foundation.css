@@ -1,0 +1,282 @@
+:root {
+  --bg: #0e1116;
+  --panel: #161b22;
+  --panel-soft: #1b2230;
+  --panel-strong: #202938;
+  --line: rgba(255, 255, 255, 0.08);
+  --ink: #ebf1f7;
+  --muted: #96a4b8;
+  --accent: #7cc6ff;
+  --accent-strong: #4aa3f0;
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  --radius-lg: 24px;
+  --radius-md: 18px;
+  --radius-sm: 14px;
+}
+
+.ltStepBar button {
+  min-height: 40px;
+  padding: 10px 14px;
+  border: 1px solid var(--lt-border, #e5e7eb);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--lt-muted, #64748b);
+  font-size: 0.79rem;
+  font-weight: 800;
+}
+
+.ltStepBar button.active,
+.ltStepBar button.done {
+  border-color: rgba(16, 185, 129, 0.34);
+  background: var(--lt-primary-soft, #dff8ee);
+  color: var(--lt-primary-dark, #047857);
+}
+
+.ltStepBar button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ltDataSyncPanel,
+.ltDailyRouteBuilder fieldset,
+.ltDayRouteCheckWrap {
+  border: 1px solid var(--lt-border, #e5e7eb);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.ltDataSyncPanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+}
+
+.ltDataSyncPanel p,
+.ltDataSyncPanel small {
+  display: block;
+  margin-top: 6px;
+  color: var(--lt-muted, #64748b);
+  line-height: 1.5;
+}
+
+.ltDataSyncPanel button,
+.ltStepActions button {
+  padding: 11px 14px;
+  border-radius: 999px;
+  background: var(--lt-primary, #10b981);
+  color: #fff;
+  font-weight: 800;
+}
+
+.ltStepActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.ltStepActions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ltDailyRouteBuilder {
+  display: grid;
+  gap: 12px;
+}
+
+.ltDailyRouteBuilder fieldset {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+  margin: 0;
+  padding: 14px;
+}
+
+.ltDailyRouteBuilder legend {
+  padding: 0 6px;
+  color: var(--lt-muted, #64748b);
+}
+
+.ltDayRouteCheckWrap {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.ltDayRouteInputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ltDayRouteInputs label {
+  display: grid;
+  gap: 6px;
+}
+
+.ltDayRouteInputs span {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.82rem;
+}
+
+.ltDayRouteInputs input {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  color: #fff;
+}
+
+.aiNoteBlock.section {
+  background: rgba(124, 198, 255, 0.07);
+}
+
+.aiNoteNestedBlocks {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px dashed rgba(124, 198, 255, 0.24);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.aiNoteNestedActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.aiNoteNestedActions button {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+
+.memoBoardSummary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.memoBoardSummary article,
+.memoBoardSummary p,
+.memoFileBlock {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.memoBoardSummary article {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+}
+
+.memoBoardSummary span {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.82rem;
+}
+
+.memoBoardSummary strong {
+  color: #fff;
+  font-size: 1.35rem;
+}
+
+.memoBoardSummary p {
+  grid-column: 1 / -1;
+  padding: 12px 14px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.memoBoardWorkspace {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.memoFileBlock {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+}
+
+.memoFileBlock label {
+  display: grid;
+  gap: 6px;
+}
+
+.memoFileBlock span {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.82rem;
+}
+
+.memoFileBlock input {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  color: #fff;
+}
+
+.memoFileBlock button {
+  justify-self: start;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(124, 198, 255, 0.16);
+  color: #fff;
+}
+
+@media (max-width: 720px) {
+  .ltDataSyncPanel,
+  .ltDailyRouteBuilder fieldset,
+  .ltDayRouteInputs,
+  .memoBoardSummary {
+    grid-template-columns: 1fr;
+  }
+
+  .ltDataSyncPanel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(124, 198, 255, 0.08), transparent 24%),
+    radial-gradient(circle at right top, rgba(74, 163, 240, 0.08), transparent 20%),
+    linear-gradient(180deg, #0d1016 0%, var(--bg) 100%);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", "Pretendard Variable", "SUIT", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+p,
+pre {
+  margin: 0;
+}

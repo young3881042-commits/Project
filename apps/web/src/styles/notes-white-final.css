@@ -1,0 +1,639 @@
+/* Final /notes mobile override loaded after notes-notion.css. */
+@media (max-width: 680px) {
+  html:has(.notesShell),
+  body:has(.notesShell),
+  body:has(.notesShell) #root,
+  .notesShell.aiNoteShell,
+  .notesShell.aiNoteShell .notesWorkspace,
+  .notesShell.aiNoteShell .notesMobileWorkspace,
+  .notesShell.aiNoteShell .notesMobileWorkspace.view-folders,
+  .notesShell.aiNoteShell .notesMobileFolders,
+  .notesShell.aiNoteShell .notesMobileHomeTop {
+    background: #f7f8fb !important;
+    background-color: #f7f8fb !important;
+    background-image: none !important;
+    color: #102033 !important;
+  }
+
+  .notesMobileFolders {
+    gap: 12px !important;
+    padding: 14px 14px calc(104px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .notesMobileAppBar {
+    min-height: 44px !important;
+    grid-template-columns: 42px minmax(0, 1fr) auto !important;
+    gap: 10px !important;
+  }
+
+  .notesMobileAppBar > strong,
+  .notesMobileTitleBlock strong,
+  .notesMobileFileSection .notesMobileContentHeader strong,
+  .notesMobileFolderOpen span,
+  .notesMobileFileOpen strong,
+  .notesMobileList .notesListItemMain strong,
+  .notesMobileDetail .notesTitleHeaderInput,
+  .notesMobileDetail .notionBlockPreview,
+  .notesMobileDetail .notionChecklist {
+    color: #102033 !important;
+  }
+
+  .notesMobileAppBar > strong {
+    font-size: 1.28rem !important;
+  }
+
+  .notesMobileTitleBlock {
+    gap: 4px !important;
+  }
+
+  .notesMobileTitleBlock span,
+  .notesMobileFolderOpen small,
+  .notesMobileFileOpen small,
+  .notesMobileList .notesListItemMain span,
+  .notesMobileList .notesListItemMain small,
+  .notesMobileDetail .notesDetailCrumbs span {
+    color: #64748b !important;
+  }
+
+  .notesMobileTitleBlock span {
+    font-size: 0.8rem !important;
+    line-height: 1.25 !important;
+    font-weight: 850 !important;
+  }
+
+  .notesMobileTitleBlock strong {
+    font-size: 1.34rem !important;
+    line-height: 1.2 !important;
+    font-weight: 950 !important;
+  }
+
+  .notesMobileAppIconButton {
+    width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    border: 1px solid #dbe7ef !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #2563eb !important;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  .notesMobileAccountButton {
+    min-width: 132px !important;
+    max-width: 150px !important;
+    min-height: 46px !important;
+    display: grid !important;
+    grid-template-columns: 34px minmax(0, 1fr) !important;
+    grid-template-areas:
+      "avatar name"
+      "avatar meta" !important;
+    align-items: center !important;
+    column-gap: 9px !important;
+    padding: 6px 9px !important;
+    border: 1px solid #dbe7ef !important;
+    border-radius: 14px !important;
+    background: #ffffff !important;
+    color: #102033 !important;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05) !important;
+    text-align: left !important;
+    font: inherit !important;
+  }
+
+  .notesMobileAccountButton > span {
+    grid-area: avatar !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: 10px !important;
+    background: #0f766e !important;
+    color: #ffffff !important;
+    font-size: 0.84rem !important;
+    line-height: 1 !important;
+    font-weight: 950 !important;
+  }
+
+  .notesMobileAccountButton strong,
+  .notesMobileAccountButton small {
+    min-width: 0 !important;
+    display: block !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .notesMobileAccountButton strong {
+    grid-area: name !important;
+    color: #102033 !important;
+    font-size: 0.84rem !important;
+    line-height: 1.1 !important;
+    font-weight: 950 !important;
+  }
+
+  .notesMobileAccountButton small {
+    grid-area: meta !important;
+    color: #64748b !important;
+    font-size: 0.72rem !important;
+    line-height: 1.15 !important;
+    font-weight: 850 !important;
+  }
+
+  .notesMobileFileSection {
+    gap: 10px !important;
+    padding: 14px !important;
+    border: 1px solid #dbe7ef !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .notesMobileFileSection .notesMobileContentHeader {
+    min-height: 38px !important;
+    padding: 0 0 10px !important;
+    border-bottom: 1px solid #e6edf5 !important;
+  }
+
+  .notesMobileFileSection .notesMobileContentHeader button {
+    min-height: 34px !important;
+    border: 1px solid #bfdbfe !important;
+    border-radius: 8px !important;
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+    padding: 0 10px !important;
+    font-size: 0.78rem !important;
+    font-weight: 900 !important;
+  }
+
+  .notesMobileFileSection .notesMobileFolderList.full {
+    gap: 6px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+
+  .notesMobileFolderRow {
+    grid-template-columns: 28px minmax(0, 1fr) !important;
+    gap: 7px !important;
+    padding-left: calc(var(--mobile-folder-depth, 0) * 14px) !important;
+  }
+
+  .notesMobileFolderOpen,
+  .notesMobileFolderAction,
+  .notesMobileFileOpen {
+    border: 1px solid #e6edf5 !important;
+    border-radius: 8px !important;
+    background: #fbfdff !important;
+    color: #334155 !important;
+    box-shadow: none !important;
+  }
+
+  .notesMobileFolderOpen {
+    min-height: 44px !important;
+    grid-template-columns: 24px minmax(0, 1fr) auto auto !important;
+    gap: 8px !important;
+  }
+
+  .notesMobileFolderRow.active .notesMobileFolderOpen {
+    border-color: #93c5fd !important;
+    background: #eff6ff !important;
+    box-shadow: inset 4px 0 0 #2563eb !important;
+  }
+
+  .notesMobileFolderToggle {
+    color: #64748b !important;
+  }
+
+  .notesMobileFolderChildren {
+    gap: 6px !important;
+    margin: 6px 0 0 18px !important;
+    padding-left: 8px !important;
+    border-left: 1px solid #e6edf5 !important;
+  }
+
+  .notesMobileRowActions,
+  .notesMobileFileActions {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .notesMobileRowActions {
+    padding: 4px 0 8px calc(28px + 7px + (var(--mobile-folder-depth, 0) * 14px)) !important;
+  }
+
+  .notesMobileRowActions button,
+  .notesMobileFileActions button {
+    min-height: 34px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    border: 1px solid #dbe7ef !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #334155 !important;
+    padding: 0 9px !important;
+    font: inherit !important;
+    font-size: 0.75rem !important;
+    line-height: 1 !important;
+    font-weight: 900 !important;
+    white-space: nowrap !important;
+  }
+
+  .notesMobileRowActions button .memoNavIcon,
+  .notesMobileFileActions button .memoNavIcon {
+    width: 15px !important;
+    height: 15px !important;
+    min-width: 15px !important;
+    background: transparent !important;
+    color: currentColor !important;
+  }
+
+  .notesMobileRowActions button:hover,
+  .notesMobileFileActions button:hover,
+  .notesMobileRowActions button:focus-visible,
+  .notesMobileFileActions button:focus-visible {
+    border-color: #bfdbfe !important;
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+  }
+
+  .notesMobileRowActions button.danger,
+  .notesMobileFileActions button.danger {
+    border-color: #fecaca !important;
+    background: #fff1f2 !important;
+    color: #be123c !important;
+  }
+
+  .notesMobileSelectionBadge {
+    min-height: 22px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 999px !important;
+    background: #2563eb !important;
+    color: #ffffff !important;
+    padding: 0 8px !important;
+    font-size: 0.68rem !important;
+    line-height: 1 !important;
+    font-weight: 950 !important;
+    white-space: nowrap !important;
+  }
+
+  .notesMobileSelectionBadge.file {
+    background: #0f766e !important;
+  }
+
+  .notesMobileFileRow {
+    position: relative !important;
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+    padding-left: calc(var(--mobile-folder-depth, 0) * 6px) !important;
+  }
+
+  .notesMobileFileRow.active::before {
+    content: "" !important;
+    position: absolute !important;
+    top: 4px !important;
+    bottom: 4px !important;
+    left: calc((var(--mobile-folder-depth, 0) * 6px) - 2px) !important;
+    width: 4px !important;
+    border-radius: 999px !important;
+    background: #0f766e !important;
+  }
+
+  .notesMobileFileOpen {
+    width: 100% !important;
+    min-height: 46px !important;
+    grid-template-columns: 24px minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+  }
+
+  .notesMobileFileOpen.active,
+  .notesMobileFileOpen:hover,
+  .notesMobileFolderOpen:hover,
+  .notesMobileFolderOpen:focus-visible {
+    border-color: #bfdbfe !important;
+    background: #eff6ff !important;
+  }
+
+  .notesMobileFileOpen.active {
+    border-color: #5eead4 !important;
+    background: #ecfdf5 !important;
+    box-shadow: inset 4px 0 0 #0f766e !important;
+  }
+
+  .notesMobileFileOpen .memoNavIcon {
+    color: #2563eb !important;
+  }
+
+  .notesMobileFileOpen.active .memoNavIcon {
+    color: #0f766e !important;
+  }
+
+  .notesMobileFileActions {
+    flex-wrap: nowrap !important;
+  }
+
+  .notesMobileFileActions button {
+    min-width: 50px !important;
+    min-height: 46px !important;
+    padding: 0 8px !important;
+  }
+
+  .notesMobilePathBar {
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 0 0 10px !important;
+    border-bottom: 1px solid #e6edf5 !important;
+  }
+
+  .notesMobilePathBack {
+    min-height: 34px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    border: 1px solid #dbe7ef !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #334155 !important;
+    padding: 0 9px !important;
+    font: inherit !important;
+    font-size: 0.76rem !important;
+    font-weight: 900 !important;
+    white-space: nowrap !important;
+  }
+
+  .notesMobilePathText {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    color: #334155 !important;
+    font-size: 0.83rem !important;
+    font-weight: 950 !important;
+    line-height: 1.25 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .notesMobileCurrentActions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    padding: 0 0 4px !important;
+  }
+
+  .notesMobileCurrentActions button,
+  .notesMobileExplorerMenu button {
+    min-height: 34px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    border: 1px solid #dbe7ef !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #334155 !important;
+    padding: 0 9px !important;
+    font: inherit !important;
+    font-size: 0.75rem !important;
+    line-height: 1 !important;
+    font-weight: 900 !important;
+    white-space: nowrap !important;
+  }
+
+  .notesMobileCurrentActions button:hover,
+  .notesMobileCurrentActions button:focus-visible,
+  .notesMobileExplorerMenu button:hover,
+  .notesMobileExplorerMenu button:focus-visible,
+  .notesMobilePathBack:hover,
+  .notesMobilePathBack:focus-visible {
+    border-color: #bfdbfe !important;
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+  }
+
+  .notesMobileCurrentActions button.danger,
+  .notesMobileExplorerMenu button.danger {
+    border-color: #fecaca !important;
+    background: #fff1f2 !important;
+    color: #be123c !important;
+  }
+
+  .notesMobileCurrentActions button .memoNavIcon,
+  .notesMobileExplorerMenu button .memoNavIcon,
+  .notesMobilePathBack .memoNavIcon {
+    width: 15px !important;
+    height: 15px !important;
+    min-width: 15px !important;
+    background: transparent !important;
+    color: currentColor !important;
+  }
+
+  .notesMobileExplorerList {
+    min-width: 0 !important;
+    display: grid !important;
+    gap: 8px !important;
+  }
+
+  .notesMobileExplorerRow {
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 40px !important;
+    align-items: center !important;
+    gap: 7px !important;
+    border: 1px solid #e6edf5 !important;
+    border-radius: 8px !important;
+    background: #fbfdff !important;
+    padding: 8px !important;
+  }
+
+  .notesMobileExplorerRow.active {
+    border-color: #5eead4 !important;
+    background: #ecfdf5 !important;
+    box-shadow: inset 4px 0 0 #0f766e !important;
+  }
+
+  .notesMobileExplorerRow.menuOpen {
+    border-color: #bfdbfe !important;
+    background: #ffffff !important;
+  }
+
+  .notesMobileExplorerOpen {
+    width: 100% !important;
+    min-height: 42px !important;
+    display: grid !important;
+    grid-column: 1 !important;
+    grid-template-columns: 24px minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: transparent !important;
+    color: #334155 !important;
+    padding: 4px !important;
+    text-align: left !important;
+  }
+
+  .notesMobileExplorerOpen:hover,
+  .notesMobileExplorerOpen:focus-visible {
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+  }
+
+  .notesMobileExplorerOpen.active {
+    background: transparent !important;
+    color: #0f766e !important;
+  }
+
+  .notesMobileExplorerOpen > span {
+    min-width: 0 !important;
+    display: grid !important;
+    gap: 2px !important;
+  }
+
+  .notesMobileExplorerOpen strong,
+  .notesMobileExplorerOpen small {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .notesMobileExplorerOpen strong {
+    color: #102033 !important;
+    font-size: 0.9rem !important;
+    font-weight: 950 !important;
+    line-height: 1.2 !important;
+  }
+
+  .notesMobileExplorerOpen small {
+    color: #64748b !important;
+    font-size: 0.72rem !important;
+    font-weight: 850 !important;
+    line-height: 1.2 !important;
+  }
+
+  .notesMobileExplorerOpen .memoNavIcon {
+    color: #2563eb !important;
+  }
+
+  .notesMobileExplorerOpen.file .memoNavIcon,
+  .notesMobileExplorerOpen.file.active .memoNavIcon {
+    color: #0f766e !important;
+  }
+
+  .notesMobileExplorerGear {
+    width: 40px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    display: inline-flex !important;
+    grid-column: 2 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid #dbe7ef !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #64748b !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .notesMobileExplorerGear:hover,
+  .notesMobileExplorerGear:focus-visible,
+  .notesMobileExplorerGear[aria-expanded="true"] {
+    border-color: #bfdbfe !important;
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+  }
+
+  .notesMobileExplorerGear .memoNavIcon {
+    width: 17px !important;
+    height: 17px !important;
+    min-width: 17px !important;
+    background: transparent !important;
+    color: currentColor !important;
+  }
+
+  .notesMobileExplorerMenu {
+    display: flex !important;
+    grid-column: 1 / -1 !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    padding: 7px 0 0 32px !important;
+    border-top: 1px solid #edf2f7 !important;
+  }
+
+  .notesMobileInlineAction {
+    min-height: 36px !important;
+    border-color: #bbf7d0 !important;
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+  }
+
+  .notesShell .mobileWorkspaceTabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    border-color: #e2e8f0 !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    box-shadow: 0 -16px 36px rgba(15, 23, 42, 0.12) !important;
+  }
+
+  .notesShell .mobileWorkspaceTabButton {
+    color: #64748b !important;
+  }
+
+  .notesShell .mobileWorkspaceTabButton.active {
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+  }
+
+  .notesMobileHeader,
+  .notesMobileList .notesListPanel,
+  .notesMobileDetail .notesDetailPanel,
+  .notesMobileDetail .notesDetailCrumbs,
+  .notesMobileDetail .notesDetailTopbar {
+    border-color: #dbe7ef !important;
+    background: #ffffff !important;
+    color: #102033 !important;
+    box-shadow: none !important;
+  }
+
+  .notesMobileList .notesListItem,
+  .notesMobileDetail .notesMarkdownEditor {
+    border-color: #e6edf5 !important;
+    background: #fbfdff !important;
+    color: #102033 !important;
+  }
+
+  .notesMobileDetail .notesEditorModeTabs {
+    border-color: #dbe7ef !important;
+    background: #f8fcff !important;
+  }
+
+  .notesMobileDetail .notesEditorModeTabs button {
+    color: #64748b !important;
+  }
+
+  .notesMobileDetail .notesEditorModeTabs button.active {
+    background: #ffffff !important;
+    color: #1d4ed8 !important;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .notesMobileDetail .notesDocument {
+    background: #ffffff !important;
+    color: #102033 !important;
+    padding: 20px 14px 120px !important;
+  }
+}

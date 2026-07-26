@@ -1,0 +1,462 @@
+/* Simple travel entry and planner flow. */
+.ltTravelStartPage {
+  display: grid;
+  gap: 12px;
+}
+
+.ltTravelPrimaryActions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.ltTravelPrimaryActions button {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 8px;
+  padding: 0 16px;
+  line-height: 1;
+}
+
+.ltTravelSearchPanel .ltHeroSearch {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ltTravelSearchPanel .ltHeroSearchInput {
+  min-height: 52px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 6px;
+}
+
+.ltTravelSearchPanel .ltHeroSearchInput input {
+  min-height: 40px;
+}
+
+.ltTravelSearchPanel .ltHeroSearchInput button {
+  min-height: 40px;
+  border-radius: 8px;
+}
+
+.ltTravelSearchPanel .ltHeroFilters button,
+.ltTravelSearchPanel .ltHeroFilters button:last-child {
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+  font-weight: 850;
+  box-shadow: none !important;
+}
+
+.ltTravelSearchPanel .ltHeroFilters button:hover,
+.ltTravelSearchPanel .ltHeroFilters button:focus-visible {
+  border-color: #0f766e !important;
+  background: #f0fdfa !important;
+  color: #0f766e !important;
+}
+
+.ltDestinationResultBar {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px 12px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.ltDestinationResultBar div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.ltDestinationResultBar strong {
+  color: #0f172a;
+  font-size: 1rem;
+  line-height: 1.2;
+  font-weight: 950;
+}
+
+.ltDestinationResultBar span {
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.25;
+  font-weight: 800;
+}
+
+.ltDestinationResultBar button,
+.ltDestinationLoadMore button {
+  min-height: 38px;
+  border: 1px solid #99f6e4;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #0f766e;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.ltDestinationLoadMore {
+  display: grid;
+  place-items: center;
+  padding: 8px 0 4px;
+}
+
+.ltDestinationLoadMore button {
+  width: min(100%, 320px);
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ltDestinationLoadMore button span {
+  color: #115e59;
+  font-size: 0.76rem;
+}
+
+.ltPlannerSimplePage {
+  display: grid;
+  gap: 14px;
+}
+
+.ltPlannerSimplePage .ltPageTitle {
+  margin-bottom: 0;
+}
+
+.ltPlannerSimplePage .ltPageTitle h1 {
+  max-width: 100%;
+  font-size: clamp(1.55rem, 5.8vw, 2.2rem) !important;
+  line-height: 1.08 !important;
+  white-space: normal !important;
+  overflow-wrap: keep-all;
+}
+
+.ltPlannerSimplePage .ltPageTitle p {
+  max-width: 32rem;
+  color: #64748b;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  font-weight: 750;
+  opacity: 0.86;
+}
+
+.ltPlannerSimpleLayout {
+  align-items: start;
+}
+
+.ltPlannerSimpleForm,
+.ltPlannerSimpleCard,
+.ltPlannerOptionalPanel {
+  min-width: 0;
+}
+
+.ltPlannerSimpleForm {
+  display: grid;
+  gap: 12px;
+}
+
+.ltPlannerSimpleCard,
+.ltPlannerOptionalPanel {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 14px;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.05);
+}
+
+.ltPlannerSimpleTop {
+  display: grid;
+  gap: 4px;
+}
+
+.ltPlannerSimpleTop span {
+  color: #0f766e;
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.ltPlannerSimpleTop strong {
+  color: #0f172a;
+  font-size: 1rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.ltPlannerSelectionBlock {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 10px;
+}
+
+.ltCountrySwitch.compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ltPlannerSearchLabel {
+  position: relative;
+  display: grid;
+  gap: 7px;
+}
+
+.ltPlannerSearchBox {
+  min-width: 0;
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 0 12px;
+}
+
+.ltPlannerSearchBox svg {
+  color: #0f766e;
+}
+
+.ltPlannerSearchBox input {
+  width: 100%;
+  border: 0 !important;
+  background: transparent !important;
+  padding-inline: 0 !important;
+  box-shadow: none !important;
+}
+
+.ltPlannerSuggestions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ltPlannerSuggestions button,
+.ltPlannerSearchLabel .ltAutocompleteDropdown button {
+  min-width: 0;
+  min-height: 48px;
+  display: grid;
+  gap: 3px;
+  justify-items: start;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #102033;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.ltPlannerSuggestions button:hover,
+.ltPlannerSearchLabel .ltAutocompleteDropdown button:hover {
+  border-color: #99f6e4;
+  background: #ecfdf5;
+}
+
+.ltPlannerSuggestions strong,
+.ltPlannerSuggestions span,
+.ltPlannerSearchLabel .ltAutocompleteDropdown strong,
+.ltPlannerSearchLabel .ltAutocompleteDropdown span {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ltPlannerSuggestions strong,
+.ltPlannerSearchLabel .ltAutocompleteDropdown strong {
+  font-size: 0.86rem;
+}
+
+.ltPlannerSuggestions span,
+.ltPlannerSearchLabel .ltAutocompleteDropdown span {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.ltAutocompleteHint {
+  margin: 0;
+  padding: 8px 10px 2px;
+  color: #0f766e;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.ltPlannerEmptySelection {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.ltPlannerEssentialGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 10px;
+}
+
+.ltPlannerSimpleCard > .ltPlannerEssentialGrid {
+  grid-template-columns: minmax(0, 1.15fr) minmax(104px, 0.8fr) minmax(104px, 0.8fr);
+}
+
+.ltPlannerOptionalPanel summary,
+.ltPlannerNestedDetails summary {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #0f172a;
+  cursor: pointer;
+  font-weight: 950;
+}
+
+.ltPlannerOptionalPanel summary strong {
+  color: #0f766e;
+  font-size: 0.78rem;
+}
+
+.ltPlannerOptionalBody {
+  display: grid;
+  gap: 12px;
+  border-top: 1px solid #edf2f7;
+  padding-top: 12px;
+}
+
+.ltPlannerNestedDetails {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0 12px;
+}
+
+.ltPlannerNestedDetails[open] {
+  padding-bottom: 12px;
+}
+
+.ltPlannerCreateButton {
+  width: 100%;
+  min-height: 52px;
+  gap: 8px;
+  border-radius: 8px;
+}
+
+@media (max-width: 760px) {
+  .ltShell .travelWorkspaceNavigator {
+    grid-template-columns: minmax(0, 1fr) minmax(106px, auto) !important;
+  }
+
+  .ltShell .travelWorkspaceLinks {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    justify-self: stretch;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    overflow: visible;
+    padding: 4px;
+    border-radius: 12px;
+  }
+
+  .ltShell .travelWorkspaceLinks a {
+    min-width: 0;
+    min-height: 40px;
+    justify-content: center;
+    padding: 0 6px;
+    font-size: 0.72rem;
+  }
+
+  .ltShellTravelStart .ltTravelSearchPanel {
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+
+  .ltTravelSearchPanel .ltHeroSearchInput {
+    grid-template-columns: 28px minmax(0, 1fr) !important;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .ltTravelSearchPanel .ltHeroSearchInput button {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .ltDestinationResultBar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ltDestinationResultBar button {
+    width: 100%;
+  }
+
+  .ltTravelPrimaryActions,
+  .ltPlannerSuggestions {
+    grid-template-columns: 1fr;
+  }
+
+  .ltPlannerEssentialGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ltPlannerSimpleCard > .ltPlannerEssentialGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ltPlannerSimpleCard > .ltPlannerEssentialGrid label:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .ltPlannerSimpleCard,
+  .ltPlannerOptionalPanel {
+    padding: 12px;
+  }
+
+  .ltPlannerSearchBox {
+    min-height: 56px;
+  }
+
+  .ltPlannerSuggestions button,
+  .ltPlannerSearchLabel .ltAutocompleteDropdown button {
+    min-height: 52px;
+  }
+
+  .ltPlannerCreateButton.ltStickyCta {
+    position: static !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    z-index: 220 !important;
+    width: 100% !important;
+    min-height: 54px !important;
+    margin: 0 !important;
+    transform: none !important;
+    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.25);
+  }
+
+  .ltPlannerSimpleForm {
+    padding-bottom: 16px;
+  }
+}
