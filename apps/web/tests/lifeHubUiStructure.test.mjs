@@ -344,7 +344,7 @@ test('홈과 더보기는 아침·저녁 브리핑 카드·설정과 예약 알�
   assert.match(lifeHub, /window\.addEventListener\('focus', resyncNotifications\)/);
 });
 
-test('v26 경량 캐시는 새 데이터 모듈·스타일·테스트 경계를 포함하고 6탭을 바꾸지 않는다', async () => {
+test('v27 경량 캐시는 새 데이터 모듈·스타일·테스트 경계를 포함하고 6탭을 바꾸지 않는다', async () => {
   const [serviceWorker, packageJson, entryCss, shell, home] = await Promise.all([
     source('public/sw.js'),
     source('package.json'),
@@ -353,11 +353,12 @@ test('v26 경량 캐시는 새 데이터 모듈·스타일·테스트 경계를 
     source('src/features/home/HomePage.jsx')
   ]);
 
-  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v26'/);
-  assert.match(packageJson, /"test:lifehub-data": "node --test src\/features\/automation\/\*\.test\.js src\/features\/backup\/\*\.test\.js src\/features\/life-records\/\*\.test\.js"/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v27'/);
+  assert.match(packageJson, /"test:lifehub-data": "node --test src\/features\/automation\/\*\.test\.js src\/features\/backup\/\*\.test\.js src\/features\/finance\/\*\.test\.js src\/features\/life-records\/\*\.test\.js"/);
   assert.match(packageJson, /"test": "npm run test:lifehub-ai && npm run test:lifehub-data/);
   assert.match(entryCss, /@import '\.\/styles\/lifehub-automation\.css'/);
   assert.match(entryCss, /@import '\.\/styles\/lifehub-backup\.css'/);
+  assert.match(entryCss, /@import '\.\/styles\/lifehub-finance\.css'/);
   assert.match(shell, /PRIMARY_TABS = \['home', 'schedule', 'memo', 'workout', 'diet', 'finance'\]/);
   assert.doesNotMatch(home, /빠른 기록|lifeHubHomeQuickActions/);
 });
@@ -531,17 +532,17 @@ test('Android WebView는 Orbit 이름·중앙 O 아이콘과 내장 웹 버전 �
     assert.equal(strings.includes(`<string name="${removedString}">`), false, `${removedString} 문자열이 남아 있습니다.`);
   }
   assert.doesNotMatch(strings, /사용 모드 선택|서버에 연결|서버 주소/);
-  assert.match(manifest, /android:versionCode="18"/);
+  assert.match(manifest, /android:versionCode="19"/);
   assert.match(manifest, /android\.permission\.POST_NOTIFICATIONS/);
   assert.match(manifest, /android\.permission\.RECEIVE_BOOT_COMPLETED/);
   assert.match(manifest, /android\.permission\.SCHEDULE_EXACT_ALARM/);
   assert.match(manifest, /android\.permission\.VIBRATE/);
   assert.match(manifest, /SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED/);
-  assert.match(manifest, /android:versionName="0\.5\.2-debug"/);
-  assert.doesNotMatch(manifest, /CardNotificationListenerService/);
-  assert.doesNotMatch(manifest, /BIND_NOTIFICATION_LISTENER_SERVICE/);
-  assert.doesNotMatch(manifest, /android\.service\.notification\.NotificationListenerService/);
-  assert.doesNotMatch(strings, /card_notification_listener/);
+  assert.match(manifest, /android:versionName="0\.5\.3-debug"/);
+  assert.match(manifest, /android:name="\.FinanceNotificationListenerService"/);
+  assert.match(manifest, /android:permission="android\.permission\.BIND_NOTIFICATION_LISTENER_SERVICE"/);
+  assert.match(manifest, /android:name="android\.service\.notification\.NotificationListenerService"/);
+  assert.match(strings, /<string name="card_notification_listener_name">Orbit 삼성월렛 결제 자동 기록<\/string>/);
   assert.match(manifest, /android:roundIcon="@drawable\/ic_launcher"/);
   assert.match(strings, /<string name="app_name">Orbit<\/string>/);
   assert.match(launcherIcon, /#12172B/);
@@ -822,9 +823,13 @@ test('가계부 빈 상태 버튼은 지출 카테고리를 정리하고 금액 
   assert.match(finance, /<input ref=\{amountInputRef\}/);
 });
 
-test('가계부는 민감한 알림 접근 없이 삼성월렛 알림의 수동 기록만 안내한다', async () => {
-  const [lifeHub, android, manifest, strings] = await Promise.all([
+test('삼성월렛 결제 승인은 앱 전체 foreground에서 민감정보 없이 중복 안전하게 자동 기록한다', async () => {
+  const [lifeHub, panel, hook, batch, adapter, android, manifest, strings] = await Promise.all([
     source('src/LifeHubApp.jsx'),
+    source('src/features/finance/CardTransactionImportPanel.jsx'),
+    source('src/features/finance/useCardTransactionImport.js'),
+    source('src/features/finance/cardTransactionImport.js'),
+    source('src/features/finance/nativeCardTransactions.js'),
     source('../mobile/android/src/com/platform/aiassitant/MainActivity.java'),
     source('../mobile/android/AndroidManifest.xml'),
     source('../mobile/android/res/values/strings.xml')
@@ -832,19 +837,53 @@ test('가계부는 민감한 알림 접근 없이 삼성월렛 알림의 수동 
   const finance = sectionBetween(lifeHub, 'function FinancePage(', 'function TravelPage(');
   const appRoot = lifeHub.slice(lifeHub.indexOf('export default function LifeHubApp('));
 
-  assert.match(finance, /삼성월렛 알림 확인 후 기록/);
-  assert.match(finance, /Orbit은 다른 앱의 알림이나 사용내역을 읽지 않아요/);
-  assert.match(finance, /onClick=\{\(\) => selectEntryType\('withdraw', \{ focusAmount: true \}\)\}/);
-  assert.doesNotMatch(finance, /권한 허용|제한된 설정|자동 기록 켜짐/);
-  assert.doesNotMatch(appRoot, /CardNotification|cardNotification|importPendingCardTransactions|NATIVE_CARD_TRANSACTIONS_EVENT/);
-  assert.doesNotMatch(android, /CardNotification|CardTransaction|BIND_NOTIFICATION_LISTENER_SERVICE/);
-  assert.match(android, /LEGACY_CARD_IMPORT_PREFERENCES/);
-  assert.match(android, /"ai-assitant-card-import-v1"/);
-  assert.match(android, /deleteSharedPreferences\(LEGACY_CARD_IMPORT_PREFERENCES\)/);
-  assert.match(android, /Build\.VERSION\.SDK_INT >= Build\.VERSION_CODES\.N[\s\S]*deleteSharedPreferences[\s\S]*else \{[\s\S]*\.edit\(\)\.clear\(\)\.commit\(\)/);
-  assert.match(android, /if \(cleared\) \{[\s\S]*putBoolean\(LEGACY_CARD_IMPORT_CLEARED_KEY, true\)/);
-  assert.doesNotMatch(manifest, /CardNotification|BIND_NOTIFICATION_LISTENER_SERVICE|NotificationListenerService/);
-  assert.doesNotMatch(strings, /card_notification_listener/);
+  assert.equal((lifeHub.match(/useCardTransactionImport\(/g) || []).length, 1);
+  assert.match(appRoot, /const cardImport = useCardTransactionImport\(\{/);
+  assert.match(appRoot, /<FinancePage[\s\S]*cardImport=\{cardImport\}/);
+  assert.match(finance, /<CardTransactionImportPanel[\s\S]*cardImport=\{cardImport\}/);
+  assert.match(panel, /삼성월렛 결제 자동 가져오기/);
+  assert.match(panel, /실제 결제 승인만 보수적으로 가져오며 송금·이체·입출금은 대상이 아닙니다/);
+  assert.match(panel, /알림 원문·잔액·계좌·카드번호는 표시하거나 저장하지 않고/);
+  assert.match(panel, /알림 접근은 모든 앱의 알림을 볼 수 있는 넓은 특수 권한/);
+  assert.match(panel, /Orbit은 삼성월렛 알림만 기기 안에서 확인/);
+  assert.match(panel, /권한을 허용하기 전의 과거 결제 내역은 가져올 수 없어요/);
+  assert.match(panel, /알림 접근 설정/);
+  assert.match(panel, /‘제한된 설정’으로 막힐 때/);
+  assert.match(panel, /오늘 자동 가져오기/);
+  assert.match(panel, /누적 자동 가져오기/);
+  assert.match(panel, /지금 가져오기/);
+  assert.match(panel, /잘못 인식된 결제는 아래 최근 거래에서 바로 삭제/);
+  assert.match(panel, /이 브라우저에서는 다른 앱의 알림을 읽지 않아요/);
+  assert.match(panel, /onClick=\{onManualEntry\}>지출 입력/);
+
+  assert.match(hook, /requestPendingCardTransactions\(\{/);
+  assert.match(hook, /importCardTransactionBatch\(peek\.items/);
+  assert.match(hook, /target\.addEventListener\('focus', syncOnForeground\)/);
+  assert.match(hook, /document\?\.addEventListener\?\.\('visibilitychange', syncOnForeground\)/);
+  assert.match(hook, /const inFlightRef = useRef\(null\)/);
+  assert.match(hook, /const SAMSUNG_WALLET_SOURCE = 'samsung-wallet'/);
+  assert.doesNotMatch(hook, /toss|shinhan|신한|토스/i);
+
+  const saveIndex = batch.indexOf('saveResult = saveBudget([...entries, ...current])');
+  const savedAckIndex = batch.indexOf('const savedAck = await acknowledge(');
+  assert.ok(saveIndex > -1 && savedAckIndex > saveIndex, '새 거래는 저장 성공 뒤에만 ack해야 합니다.');
+  assert.match(batch, /existingEventIds\.has\(candidate\.eventId\)[\s\S]*acknowledge\(acknowledgeDecisions, duplicateIds, 'duplicate'\)/);
+  assert.match(batch, /if \(saveResult\?\.saved !== true\) \{[\s\S]*status: 'failed'/);
+  assert.match(batch, /memo: normalized\.merchant/);
+  assert.doesNotMatch(batch, /rawText|balance|accountNumber|cardNumber/);
+
+  assert.match(adapter, /const keys = \['eventId', 'source', 'amount', 'merchant', 'occurredAt'\]/);
+  assert.match(adapter, /hasExactKeys\(value, keys\)/);
+  assert.match(adapter, /CARD_IMPORT_SOURCES = Object\.freeze\(\[[\s\S]*id: 'samsung-wallet'/);
+  assert.doesNotMatch(adapter, /toss|shinhan|신한|토스/i);
+  assert.match(android, /getCardImportCapabilities\(\)/);
+  assert.match(android, /configureCardImport\(String owner, String sourcesJson\)/);
+  assert.match(android, /requestPendingCardTransactions\(/);
+  assert.match(android, /resolvePendingCardTransactions\(/);
+  assert.match(manifest, /android:name="\.FinanceNotificationListenerService"/);
+  assert.match(manifest, /android\.permission\.BIND_NOTIFICATION_LISTENER_SERVICE/);
+  assert.match(manifest, /android\.service\.notification\.NotificationListenerService/);
+  assert.match(strings, /card_notification_listener_name/);
 });
 
 test('Android 뒤로가기는 일정·메모 편집 history만 닫고 일정 초안을 복구한다', async () => {

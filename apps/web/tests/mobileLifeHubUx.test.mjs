@@ -25,9 +25,10 @@ test('사진 선택 문구는 APK가 제공하는 파일 선택 기능과 일치
 });
 
 test('모바일 피드백과 AI 작업 버튼은 충분한 터치 높이를 갖는다', async () => {
-  const [lifeHubCss, aiCss] = await Promise.all([
+  const [lifeHubCss, aiCss, financeCss] = await Promise.all([
     source('src/styles/lifehub.css'),
-    source('src/styles/lifehub-ai.css')
+    source('src/styles/lifehub-ai.css'),
+    source('src/styles/lifehub-finance.css')
   ]);
 
   assert.match(lifeHubCss, /\.lifeHubToast button \{[\s\S]*?width: 44px;[\s\S]*?height: 44px;/);
@@ -35,4 +36,7 @@ test('모바일 피드백과 AI 작업 버튼은 충분한 터치 높이를 갖�
   assert.match(aiCss, /\.lifeHubAiMessage > footer button \{[\s\S]*?min-height: 44px;/);
   assert.match(aiCss, /\.lifeHubAiError button \{ min-height: 44px;/);
   assert.match(aiCss, /\.lifeHubAiApprovalActions button \{ min-height: 48px;/);
+  assert.match(financeCss, /\.lifeHubCardImportPanel \.cardImportSwitch \{[\s\S]*?min-height: 44px;/);
+  assert.match(financeCss, /\.lifeHubCardImportPermission button,[\s\S]*?\.lifeHubCardImportStatus > button \{[\s\S]*?min-height: 44px;/);
+  assert.match(financeCss, /@media \(max-width: 360px\)[\s\S]*?\.lifeHubCardImportPermission > div,[\s\S]*?\.lifeHubCardImportStatus \{[\s\S]*?grid-template-columns: 1fr;/);
 });

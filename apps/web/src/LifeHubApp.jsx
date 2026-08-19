@@ -29,6 +29,8 @@ import {
 } from './features/automation/dailyBriefing.js';
 import { prepareAssistantScheduleChange } from './features/lifehub-ai/assistantScheduleChange.js';
 import { saveLifeRecordAction } from './features/life-records/saveLifeRecordAction.js';
+import CardTransactionImportPanel from './features/finance/CardTransactionImportPanel.jsx';
+import { useCardTransactionImport } from './features/finance/useCardTransactionImport.js';
 import { LIFEHUB_APP_ICON } from './components/lifehub/LifeHubPackIcon.jsx';
 import LifeHubShell, { routeTitle } from './components/lifehub/LifeHubShell.jsx';
 import {
@@ -1579,7 +1581,7 @@ function WorkoutPage({ model, onBodyProfileChange, onSaveBodyProfile, path, sess
   );
 }
 
-function FinancePage({ model, path, session, refresh }) {
+function FinancePage({ model, path, session, refresh, cardImport }) {
   const requestedFinanceDate = scheduleParamsForPath(path).get('date');
   const focusedFinanceDate = isDateKey(requestedFinanceDate) ? requestedFinanceDate : '';
   const [draft, setDraft] = useState({ type: 'withdraw', amount: '', category: '식비', memo: '', date: focusedFinanceDate || model.today });
@@ -1641,14 +1643,10 @@ function FinancePage({ model, path, session, refresh }) {
         usage={progressPercent(model.budget.usage)}
         message={model.budget.usage >= 80 ? '이번 달 지출이 비교 기준보다 빠르게 늘고 있어요.' : '이번 달 지출 흐름은 안정적이에요.'}
       />
-      <section className="lifeHubNotificationNotice granted" aria-label="삼성월렛 결제 기록 안내">
-        <MemoNavIcon type="chart" />
-        <div>
-          <strong>삼성월렛 알림 확인 후 기록</strong>
-          <span>Orbit은 다른 앱의 알림이나 사용내역을 읽지 않아요. 삼성월렛 결제 알림에서 금액과 사용처를 확인한 뒤 아래에 직접 입력하세요.</span>
-        </div>
-        <button type="button" onClick={() => selectEntryType('withdraw', { focusAmount: true })}>지출 입력</button>
-      </section>
+      <CardTransactionImportPanel
+        cardImport={cardImport}
+        onManualEntry={() => selectEntryType('withdraw', { focusAmount: true })}
+      />
       {model.budget.usage >= 80 ? (
         <article className="lifeHubInsightCard finance-insight-card">
           <strong>지출 속도가 빨라요</strong>
@@ -1957,6 +1955,15 @@ export default function LifeHubApp({ path, navigate }) {
   }), [storedModel, bodyProfile]);
 
   const refresh = () => setRefreshSeed((current) => current + 1);
+  const cardImport = useCardTransactionImport({
+    owner: session?.username,
+    budgetEntries: model.budgetEntries,
+    today: model.today,
+    readBudget: () => readBudget(session),
+    normalizeBudget,
+    saveBudget: (items) => saveBudget(session, items),
+    onSaved: refresh
+  });
   const createScheduleFromAssistant = (draft, requestId) => {
     const current = readSchedules(session);
     const change = prepareAssistantScheduleChange(current, draft, requestId, { normalize: normalizeSchedule });
@@ -2195,7 +2202,15 @@ export default function LifeHubApp({ path, navigate }) {
       session={session}
     />
   );
-  else if (route === 'finance') content = <FinancePage model={model} path={path} session={session} refresh={refresh} />;
+  else if (route === 'finance') content = (
+    <FinancePage
+      model={model}
+      path={path}
+      session={session}
+      refresh={refresh}
+      cardImport={cardImport}
+    />
+  );
   else if (route === 'more') content = (
     <MorePage
       model={model}

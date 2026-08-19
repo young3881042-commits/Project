@@ -127,6 +127,12 @@ run_android_security_tests() {
   java \
     -classpath "${test_classes_dir}:${BUILD_DIR}/classes:${platform_dir}/android.jar" \
     com.platform.aiassitant.LifeHubBackupDocumentPolicyStaticTest
+  java \
+    -classpath "${test_classes_dir}:${BUILD_DIR}/classes:${platform_dir}/android.jar" \
+    com.platform.aiassitant.FinanceNotificationParserStaticTest
+  java \
+    -classpath "${test_classes_dir}:${BUILD_DIR}/classes:${platform_dir}/android.jar" \
+    com.platform.aiassitant.FinanceNotificationPolicyStaticTest
 }
 
 scan_apk_credentials() {
@@ -151,20 +157,40 @@ scan_apk_credentials() {
   fi
 }
 
-scan_apk_sensitive_capabilities() {
+verify_apk_finance_notification_capability() {
   local aapt2_bin="$1"
   local apk_path="$2"
-  local forbidden='CardNotificationListenerService|CardTransactionCoordinator|NotificationListenerService|BIND_NOTIFICATION_LISTENER_SERVICE'
-  log "Checking APK for retired notification-listener capabilities."
-  if "${aapt2_bin}" dump xmltree "${apk_path}" --file AndroidManifest.xml \
-      | LC_ALL=C grep -E "${forbidden}" >/dev/null; then
-    echo "APK manifest contains the retired notification-listener capability." >&2
+  local manifest_dump listener_block listener_count dex_listener_count
+  log "Checking the approved Samsung Wallet notification-listener capability."
+  manifest_dump="$("${aapt2_bin}" dump xmltree "${apk_path}" --file AndroidManifest.xml)"
+  listener_block="$(printf '%s\n' "${manifest_dump}" | awk '
+    /^          E: service/ { capture = 1; block = $0 ORS; next }
+    capture && /^          E: (activity|service|receiver|provider)/ { capture = 0 }
+    capture { block = block $0 ORS }
+    END { printf "%s", block }
+  ')"
+  listener_count="$(printf '%s\n' "${manifest_dump}" \
+    | LC_ALL=C grep -c 'E: service' || true)"
+  if [[ "${listener_count}" != "1" ]] \
+      || ! printf '%s\n' "${listener_block}" \
+          | LC_ALL=C grep -F '=".FinanceNotificationListenerService"' >/dev/null \
+      || ! printf '%s\n' "${listener_block}" \
+          | LC_ALL=C grep -F ':exported(0x01010010)=false' >/dev/null \
+      || ! printf '%s\n' "${listener_block}" \
+          | LC_ALL=C grep -F '="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"' >/dev/null \
+      || ! printf '%s\n' "${listener_block}" \
+          | LC_ALL=C grep -F '="android.service.notification.NotificationListenerService"' >/dev/null; then
+    echo "APK manifest does not contain exactly one protected, non-exported finance notification listener." >&2
     exit 2
   fi
-  if unzip -p "${apk_path}" classes.dex \
-      | strings -a -n 8 \
-      | LC_ALL=C grep -E "${forbidden}" >/dev/null; then
-    echo "APK DEX contains the retired notification-listener or card-import code." >&2
+  dex_listener_count="$(unzip -p "${apk_path}" classes.dex \
+    | strings -a -n 8 \
+    | LC_ALL=C grep -c 'FinanceNotificationListenerService' || true)"
+  if [[ "${dex_listener_count}" -lt 1 ]] \
+      || ! unzip -p "${apk_path}" classes.dex \
+          | strings -a -n 8 \
+          | LC_ALL=C grep -c 'com.samsung.android.spay' >/dev/null; then
+    echo "APK DEX is missing the approved Samsung Wallet listener implementation." >&2
     exit 2
   fi
 }
@@ -172,7 +198,11 @@ scan_apk_sensitive_capabilities() {
 audit_android_source_security() {
   local java_dir="${APP_DIR}/src"
   local forbidden='public[[:space:]]+(String|boolean)[[:space:]]+(getSecureValue|setSecureValue|setBridgeToken)[[:space:]]*\(|setWebContentsDebuggingEnabled[[:space:]]*\([[:space:]]*true[[:space:]]*\)|\.proceed[[:space:]]*\([[:space:]]*\)|setHostnameVerifier|setSSLSocketFactory'
-  local forbidden_listener='CardNotificationListenerService|CardTransactionCoordinator|NotificationListenerService|BIND_NOTIFICATION_LISTENER_SERVICE'
+  local listener_source="${java_dir}/com/platform/aiassitant/FinanceNotificationListenerService.java"
+  local finance_queue_source="${java_dir}/com/platform/aiassitant/FinanceTransactionQueue.java"
+  local listener_block listener_source_count listener_permission_count listener_action_count
+  local forbidden_finance_logging='android\.util\.Log|System\.(out|err)|printStackTrace'
+  local forbidden_finance_storage_fields='"(raw|rawText|title|text|bigText|cardNumber|account|accountNumber|balance)"'
   local forbidden_storage='READ_EXTERNAL_STORAGE|WRITE_EXTERNAL_STORAGE|MANAGE_EXTERNAL_STORAGE|MANAGE_DOCUMENTS|READ_MEDIA_(IMAGES|VIDEO|AUDIO)'
   local backup_source="${java_dir}/com/platform/aiassitant/LifeHubBackupDocumentCoordinator.java"
   local forbidden_backup_logging='android\.util\.Log|System\.(out|err)|printStackTrace'
@@ -181,9 +211,56 @@ audit_android_source_security() {
     echo "Android source security audit found a token-export, TLS-bypass, or debug-enabling API." >&2
     exit 2
   fi
-  if LC_ALL=C grep -R -E "${forbidden_listener}" \
-      "${java_dir}" "${APP_DIR}/AndroidManifest.xml" >/dev/null; then
-    echo "Android source security audit found the retired notification-listener capability." >&2
+  listener_source_count="$(LC_ALL=C grep -R -E -c \
+    'extends[[:space:]]+NotificationListenerService' "${java_dir}" \
+    | awk -F: '{ total += $2 } END { print total + 0 }' || true)"
+  listener_permission_count="$(LC_ALL=C grep -c \
+    'android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"' \
+    "${APP_DIR}/AndroidManifest.xml" || true)"
+  listener_action_count="$(LC_ALL=C grep -c \
+    'android:name="android.service.notification.NotificationListenerService"' \
+    "${APP_DIR}/AndroidManifest.xml" || true)"
+  listener_block="$(awk '
+    /<service/ { capture = 1; block = $0 ORS; next }
+    capture { block = block $0 ORS }
+    capture && /<\/service>/ {
+      if (block ~ /FinanceNotificationListenerService/) printf "%s", block
+      capture = 0
+      block = ""
+    }
+  ' "${APP_DIR}/AndroidManifest.xml")"
+  if [[ ! -f "${listener_source}" ]] \
+      || [[ "${listener_source_count}" != "1" ]] \
+      || [[ "${listener_permission_count}" != "1" ]] \
+      || [[ "${listener_action_count}" != "1" ]] \
+      || ! printf '%s\n' "${listener_block}" \
+          | LC_ALL=C grep -F 'android:name=".FinanceNotificationListenerService"' >/dev/null \
+      || ! printf '%s\n' "${listener_block}" \
+          | LC_ALL=C grep -F 'android:exported="false"' >/dev/null \
+      || ! printf '%s\n' "${listener_block}" \
+          | LC_ALL=C grep -F 'android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"' >/dev/null; then
+    echo "Android source audit requires exactly one protected, non-exported finance notification listener." >&2
+    exit 2
+  fi
+  if ! LC_ALL=C grep -F \
+      'return SAMSUNG_WALLET_PACKAGE.equals(packageName);' \
+      "${java_dir}/com/platform/aiassitant/FinanceNotificationParser.java" >/dev/null; then
+    echo "Android source audit requires an exact Samsung Wallet package allowlist." >&2
+    exit 2
+  fi
+  if LC_ALL=C grep -E "${forbidden_finance_logging}" \
+      "${java_dir}/com/platform/aiassitant/FinanceNotification"*.java \
+      "${finance_queue_source}" >/dev/null; then
+    echo "Android source audit found logging in the finance notification path." >&2
+    exit 2
+  fi
+  if LC_ALL=C grep -E "${forbidden_finance_storage_fields}" \
+      "${finance_queue_source}" >/dev/null \
+      || ! LC_ALL=C grep -F 'Context.MODE_PRIVATE' "${finance_queue_source}" >/dev/null \
+      || ! LC_ALL=C grep -F 'orbit-finance-notification-v2' "${finance_queue_source}" >/dev/null \
+      || ! LC_ALL=C grep -F 'return publicItems(candidates).toString();' \
+          "${finance_queue_source}" >/dev/null; then
+    echo "Android source audit found an unsafe finance notification queue contract." >&2
     exit 2
   fi
   if LC_ALL=C grep -E "${forbidden_storage}" "${APP_DIR}/AndroidManifest.xml" >/dev/null; then
@@ -381,7 +458,7 @@ build_raw_apk() {
     --out "${BUILD_DIR}/ai-assitant-debug.apk" \
     "${BUILD_DIR}/ai-assitant-aligned.apk"
   "${build_tools_dir}/apksigner" verify --verbose "${BUILD_DIR}/ai-assitant-debug.apk"
-  scan_apk_sensitive_capabilities \
+  verify_apk_finance_notification_capability \
     "${build_tools_dir}/aapt2" \
     "${BUILD_DIR}/ai-assitant-debug.apk"
   scan_apk_credentials "${BUILD_DIR}/ai-assitant-debug.apk"

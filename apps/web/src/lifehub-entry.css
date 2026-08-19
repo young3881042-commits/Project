@@ -11,6 +11,7 @@
 @import './styles/lifehub-home-calendar.css';
 @import './styles/lifehub-automation.css';
 @import './styles/lifehub-backup.css';
+@import './styles/lifehub-finance.css';
 
 :root {
   color-scheme: light;

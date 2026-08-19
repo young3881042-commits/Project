@@ -8,7 +8,7 @@
     "build": "node node_modules/vite/bin/vite.js build",
     "test": "npm run test:lifehub-ai && npm run test:lifehub-data && npm run test:lifehub-ui && npm run test:routine-notifications && npm run test:daily-memo && npm run test:diet && npm run test:body-profile && npm run test:home-calendar",
     "test:lifehub-ai": "node --test src/features/lifehub-ai/*.test.js",
-    "test:lifehub-data": "node --test src/features/automation/*.test.js src/features/backup/*.test.js src/features/life-records/*.test.js",
+    "test:lifehub-data": "node --test src/features/automation/*.test.js src/features/backup/*.test.js src/features/finance/*.test.js src/features/life-records/*.test.js",
     "test:lifehub-ui": "node --test tests/lifeHubUiStructure.test.mjs tests/mobileLifeHubUx.test.mjs tests/webBrandAccessibility.test.mjs",
     "test:routine-notifications": "node --test tests/routineNotificationModel.test.mjs tests/scheduleRecurrenceModel.test.mjs",
     "test:daily-memo": "node tests/dailyMemoModel.test.mjs",

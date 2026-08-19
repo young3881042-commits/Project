@@ -242,9 +242,11 @@ Tapping a notification opens its validated embedded `/schedule`, `/ai`, or `/ai/
 
 ### Samsung Wallet payment entry
 
-Orbit does not declare a notification-listener service and cannot read Samsung Wallet or any other app's notifications or private transaction history. This keeps the sideloaded APK away from Android's broad **Notification access** capability.
+Orbit can import new Samsung Wallet purchase approvals after the user explicitly enables the Android **Notification access** special permission. This is a broad system permission, so the finance screen discloses its scope before opening Settings. Sideloaded Android 13+ builds may also require the user to allow restricted settings from Orbit's app-info screen. Orbit cannot grant or bypass either setting itself.
 
-The finance screen instead provides a one-tap path to the amount field. The user checks the amount and merchant in the Samsung Wallet payment notification, then records the transaction in Orbit. Existing ledger rows imported by an older Orbit build remain user-owned finance data. On the first launch after updating, only the retired native pending-import queue in `ai-assitant-card-import-v1` is deleted.
+The listener accepts only the exact Samsung Wallet package (`com.samsung.android.spay`) and conservatively recognizes purchase/approval wording. Transfers, deposits, ordinary withdrawals, cancellations, refunds, declines, failures, and promotional notifications are rejected. Notifications received before access is enabled and private transaction history inside Samsung Wallet cannot be recovered.
+
+Parsing happens in native memory. Only an opaque event ID, amount, sanitized merchant, source ID, and timestamp enter an owner-hashed private queue; notification text, card/account numbers, and balances are never persisted or sent to the WebView or network. LifeHub imports queued purchases in a batch when the app opens or regains focus, saves the ledger first, and acknowledges native items only after a successful save. Exact notification redelivery and repeated imports are therefore safe without losing failed writes. Existing ledger rows and the retired `ai-assitant-card-import-v1` cleanup remain compatible.
 
 The legacy JavaScript-interface mechanism is available to every frame in a top-level document. The Android asset responder therefore injects a restrictive CSP into embedded HTML: scripts are local-only, frames and objects are disabled, and framing the app is denied. Privileged calls additionally require the committed local-app origin. Main-frame navigation to any other origin is blocked.
 
@@ -258,5 +260,5 @@ The configured HTTPS Orbit Bridge address is compiled into the embedded web app.
 - The only configured AI backend is the Bridge selected at build time; unrelated account sync, RAG, live travel, and general server APIs are not enabled by a mode switch.
 - Remote images, the configured HTTPS Bridge, and external links still require network access even though the app UI is bundled in the APK.
 - Scheduled notifications retain only the upcoming native synchronization window; reopening the app refreshes it. Exact timing requires Android's “Alarms & reminders” special access, otherwise the wrapper uses an inexact fallback.
-- Samsung Wallet payment entries are manual. Orbit has no public Samsung Wallet API for reading consumer transaction history and does not request Notification access as a workaround.
+- Orbit has no public Samsung Wallet API for consumer transaction history. Its optional import covers only new, parseable Samsung Wallet purchase notifications received after the user grants Notification access; wording changes or Android sensitive-content redaction can leave some purchases for manual entry.
 - The output is debug-signed for direct testing and email/download installation. A store release needs a protected release keystore, version management, store assets, and a release review.

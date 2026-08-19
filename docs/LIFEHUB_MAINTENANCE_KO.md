@@ -1,6 +1,6 @@
 # Orbit LifeHub 유지보수 기준
 
-마지막 갱신: 2026-07-16
+마지막 갱신: 2026-08-19
 
 이 문서는 같은 요구를 다시 해석하거나 이미 끝난 UI를 되돌리는 일을 막기 위한 현행 기준서다. 작업 전 `AGENTS.md`, 이 문서, `docs/WEB_UI_UX_AUDIT_KO.md`, `git diff` 순서로 읽는다. 오래된 화면 인수인계 문서보다 이 문서의 현재 기준을 우선한다.
 
@@ -59,6 +59,15 @@
 - `LifeHubApp.jsx`: `onCreateLifeRecord(action, requestId)` prop을 통해 현재 session의 저장 함수를 주입
 
 생활 기록 인식과 저장은 Bridge 연결 여부와 무관하다. 앱 수정 모드와 Codex 모드에서는 생활 기록 파서를 실행하지 않으며, 실패하면 같은 request ID로 다시 `저장`할 수 있도록 미리보기 상태를 유지한다.
+
+### 삼성월렛 결제 가져오기
+
+- Android `NotificationListenerService`는 사용자가 시스템의 알림 접근을 직접 허용한 뒤에만 동작한다. 이 권한은 전체 알림을 볼 수 있는 넓은 특수 접근임을 가계부 화면에서 먼저 고지한다.
+- 허용 소스는 `com.samsung.android.spay` 하나로 고정한다. 토스·은행·문자 등 다른 앱의 알림은 본문을 해석하기 전에 버린다.
+- 결제·승인 문구와 명확한 원화 금액이 있는 새 알림만 후보로 만들고, 입금·출금·송금·이체·취소·환불·거절·실패·광고는 제외한다.
+- native private queue에는 owner hash, opaque event ID, 금액, 정제한 사용처, 시각만 보관한다. 알림 원문, 카드·계좌번호, 잔액은 저장·로그·WebView 전달·네트워크 전송하지 않는다.
+- `features/finance/nativeCardTransactions.js`는 native 응답을 fail-closed로 검증하고, `cardTransactionImport.js`는 앱 실행·foreground 복귀 때 `peek → 가계부 저장 성공 → ack` 순서를 지킨다. 저장 실패 시 ack하지 않고, 이미 저장한 event ID는 재저장 없이 ack한다.
+- 알림 접근을 허용하기 전 과거 내역은 가져오지 못한다. 삼성월렛 문구 변경이나 Android의 민감 정보 가림 때문에 파싱하지 못한 결제는 기존 수동 입력으로 보완한다.
 
 ### 버전형 백업과 복원
 

@@ -25,7 +25,7 @@ test('HTML metadata consistently exposes the Orbit product name', async () => {
 test('service worker cache revision is advanced for the lightweight local release', async () => {
   const serviceWorker = await readWebFile('public/sw.js');
 
-  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v26';/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v27';/);
   assert.doesNotMatch(serviceWorker, /web-v22/);
 });
 
@@ -49,6 +49,7 @@ test('local app entry excludes legacy workspace bundles and keeps only LifeHub s
   assert.doesNotMatch(main, /import '\.\/styles\.css'/);
   assert.match(entry, /@import '\.\/styles\/lifehub\.css'/);
   assert.match(entry, /@import '\.\/styles\/daily-memo\.css'/);
+  assert.match(entry, /@import '\.\/styles\/lifehub-finance\.css'/);
   assert.doesNotMatch(entry, /@import[^;]*(BlockNote|portfolio|localtrip|workspace)/);
   assert.doesNotMatch(router, /AppRuntime|CodeEditor|BlockNote|NotesPage|SchedulerPage/);
   assert.match(router, /const LEGACY_ROUTE_ROOTS = new Set/);

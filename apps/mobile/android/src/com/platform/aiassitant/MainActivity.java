@@ -50,9 +50,12 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -77,6 +80,8 @@ public final class MainActivity extends Activity {
             "lifehub:native-notification-permission";
     private static final String EXACT_ALARM_PERMISSION_EVENT =
             "lifehub:native-exact-alarm-permission";
+    private static final String CARD_IMPORT_RESULT_EVENT =
+            "lifehub:native-card-import-result";
 
     private WebView webView;
     private SharedPreferences preferences;
@@ -411,6 +416,33 @@ public final class MainActivity extends Activity {
         } catch (RuntimeException unavailablePage) {
             return false;
         }
+    }
+
+    private void dispatchCardImportResult(
+            final String expectedOrigin,
+            final JSONObject detail
+    ) {
+        if (webView == null
+                || expectedOrigin == null
+                || !expectedOrigin.equals(trustedTopLevelOrigin)
+                || detail == null) {
+            return;
+        }
+        final String detailJson = detail.toString();
+        webView.post(new Runnable() {
+            @Override
+            public void run() {
+                if (webView == null || !expectedOrigin.equals(trustedTopLevelOrigin)) {
+                    return;
+                }
+                String script = "window.dispatchEvent(new CustomEvent("
+                        + JSONObject.quote(CARD_IMPORT_RESULT_EVENT)
+                        + ",{detail:"
+                        + detailJson
+                        + "}));";
+                webView.evaluateJavascript(script, null);
+            }
+        });
     }
 
     private void dispatchNotificationPermission(
@@ -922,6 +954,180 @@ public final class MainActivity extends Activity {
             } catch (JSONException impossible) {
                 return null;
             }
+        }
+
+        @JavascriptInterface
+        public String getCardImportCapabilities() {
+            return isTrustedBridgeCaller()
+                    ? FinanceNotificationAccess.capabilities(MainActivity.this).toString()
+                    : null;
+        }
+
+        @JavascriptInterface
+        public boolean configureCardImport(String owner, String sourcesJson) {
+            return isTrustedBridgeCaller()
+                    && FinanceTransactionQueue.configure(
+                            MainActivity.this,
+                            owner,
+                            sourcesJson
+                    );
+        }
+
+        @JavascriptInterface
+        public boolean openCardNotificationAccessSettings() {
+            if (!isTrustedBridgeCaller()
+                    || !FinanceNotificationAccess.isSupported(MainActivity.this)) {
+                return false;
+            }
+            final String expectedOrigin = trustedTopLevelOrigin;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (!expectedOrigin.equals(trustedTopLevelOrigin)) {
+                        return;
+                    }
+                    try {
+                        startActivity(
+                                FinanceNotificationAccess.listenerSettingsIntent(
+                                        MainActivity.this
+                                )
+                        );
+                    } catch (ActivityNotFoundException | SecurityException unavailableDetailPage) {
+                        try {
+                            startActivity(
+                                    FinanceNotificationAccess.generalListenerSettingsIntent()
+                            );
+                        } catch (ActivityNotFoundException | SecurityException unavailableSettings) {
+                            Toast.makeText(
+                                    MainActivity.this,
+                                    R.string.card_notification_settings_unavailable,
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        }
+                    }
+                }
+            });
+            return true;
+        }
+
+        @JavascriptInterface
+        public boolean openAppDetailsSettings() {
+            if (!isTrustedBridgeCaller()) {
+                return false;
+            }
+            final String expectedOrigin = trustedTopLevelOrigin;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (!expectedOrigin.equals(trustedTopLevelOrigin)) {
+                        return;
+                    }
+                    try {
+                        startActivity(
+                                FinanceNotificationAccess.applicationDetailsIntent(
+                                        MainActivity.this
+                                )
+                        );
+                    } catch (ActivityNotFoundException | SecurityException unavailableSettings) {
+                        Toast.makeText(
+                                MainActivity.this,
+                                R.string.card_notification_settings_unavailable,
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                }
+            });
+            return true;
+        }
+
+        @JavascriptInterface
+        public boolean requestPendingCardTransactions(
+                String requestId,
+                String owner,
+                String sourcesJson
+        ) {
+            if (!isTrustedBridgeCaller()
+                    || !FinanceNotificationPolicy.isValidRequestId(requestId)
+                    || FinanceNotificationPolicy.selectedSourceEnabled(sourcesJson) == null) {
+                return false;
+            }
+            List<FinanceNotificationParser.Candidate> pending =
+                    FinanceTransactionQueue.peek(
+                            MainActivity.this,
+                            owner,
+                            sourcesJson
+                    );
+            if (pending == null) {
+                return false;
+            }
+            JSONObject detail = cardImportResultBase(requestId, "peek");
+            try {
+                detail.put("items", FinanceTransactionQueue.publicItems(pending));
+            } catch (JSONException impossible) {
+                return false;
+            }
+            dispatchCardImportResult(trustedTopLevelOrigin, detail);
+            return true;
+        }
+
+        @JavascriptInterface
+        public boolean resolvePendingCardTransactions(
+                String requestId,
+                String owner,
+                String decisionsJson
+        ) {
+            if (!isTrustedBridgeCaller()
+                    || !FinanceNotificationPolicy.isValidRequestId(requestId)) {
+                return false;
+            }
+            Set<String> eventIds = FinanceNotificationAccess.resolvedEventIds(
+                    decisionsJson
+            );
+            if (eventIds == null) {
+                return false;
+            }
+            List<String> resolved = FinanceTransactionQueue.resolve(
+                    MainActivity.this,
+                    owner,
+                    eventIds
+            );
+            if (resolved == null) {
+                return false;
+            }
+            JSONArray resolvedIds = new JSONArray();
+            for (String eventId : resolved) {
+                resolvedIds.put(eventId);
+            }
+            JSONObject detail = cardImportResultBase(requestId, "resolve");
+            try {
+                detail.put("resolvedEventIds", resolvedIds);
+            } catch (JSONException impossible) {
+                return false;
+            }
+            dispatchCardImportResult(trustedTopLevelOrigin, detail);
+            return true;
+        }
+
+        private JSONObject cardImportResultBase(String requestId, String operation) {
+            JSONObject detail = new JSONObject();
+            try {
+                detail.put("schemaVersion", 1);
+                detail.put("requestId", requestId);
+                detail.put("operation", operation);
+                detail.put("ok", true);
+                detail.put(
+                        "access",
+                        FinanceNotificationAccess.accessState(MainActivity.this)
+                );
+                detail.put(
+                        "pendingCount",
+                        FinanceTransactionQueue.pendingCount(MainActivity.this)
+                );
+                detail.put("error", JSONObject.NULL);
+            } catch (JSONException impossible) {
+                return new JSONObject();
+            }
+            return detail;
         }
 
         @JavascriptInterface
