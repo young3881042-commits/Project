@@ -5,27 +5,17 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.BroadcastReceiver;
 import android.content.ClipData;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.view.View;
 import android.view.ViewGroup;
@@ -74,7 +64,6 @@ public final class MainActivity extends Activity {
     private static final String LOCAL_START_URL = LOCAL_ORIGIN + "/app";
 
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 4107;
-    private static final int IMAGE_FILE_CHOOSER_REQUEST_CODE = 4108;
     private static final int JSON_FILE_CHOOSER_REQUEST_CODE = 4111;
     private static final String NOTIFICATION_PERMISSION_EVENT =
             "lifehub:native-notification-permission";
@@ -86,11 +75,7 @@ public final class MainActivity extends Activity {
     private WebView webView;
     private SharedPreferences preferences;
     private LocalAssetResponder localAssetResponder;
-    private SecureTokenStore secureTokenStore;
-    private BridgeHttpProxy bridgeHttpProxy;
     private volatile String trustedTopLevelOrigin;
-    private ConnectivityManager connectivityManager;
-    private boolean networkMonitorRegistered;
     private String pendingNotificationPath;
     private String notificationPermissionRequestId;
     private String notificationPermissionRequestOrigin;
@@ -100,31 +85,6 @@ public final class MainActivity extends Activity {
     private int pendingWebFileRequestCode;
     private final Object documentPickerLock = new Object();
     private volatile LifeHubBackupDocumentCoordinator backupDocumentCoordinator;
-
-    private final BroadcastReceiver networkReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            dispatchNetworkStatus();
-        }
-    };
-
-    private final ConnectivityManager.NetworkCallback networkCallback =
-            new ConnectivityManager.NetworkCallback() {
-                @Override
-                public void onAvailable(Network network) {
-                    dispatchNetworkStatus();
-                }
-
-                @Override
-                public void onLost(Network network) {
-                    dispatchNetworkStatus();
-                }
-
-                @Override
-                public void onCapabilitiesChanged(Network network, NetworkCapabilities capabilities) {
-                    dispatchNetworkStatus();
-                }
-            };
 
     @Override
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
@@ -136,7 +96,7 @@ public final class MainActivity extends Activity {
                 new LifeHubBackupDocumentCoordinator.Host() {
                     @Override
                     public String trustedOriginForBackupCall() {
-                        return isTrustedBridgeCaller() ? trustedTopLevelOrigin : null;
+                        return isTrustedNativeCaller() ? trustedTopLevelOrigin : null;
                     }
 
                     @Override
@@ -164,14 +124,6 @@ public final class MainActivity extends Activity {
         pendingNotificationPath = AppNotificationCoordinator.pathFromIntent(getIntent());
         preferences.edit().remove(LEGACY_MODE_KEY).remove(LEGACY_SERVER_URL_KEY).apply();
         localAssetResponder = new LocalAssetResponder(getAssets());
-        secureTokenStore = new SecureTokenStore(getApplicationContext());
-        bridgeHttpProxy = new BridgeHttpProxy(secureTokenStore, new BridgeHttpProxy.EventSink() {
-            @Override
-            public void dispatch(String eventName, String trustedOrigin, JSONObject detail) {
-                dispatchBridgeEvent(eventName, trustedOrigin, detail);
-            }
-        });
-        connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
         webView = new WebView(this);
         WebView.setWebContentsDebuggingEnabled(false);
@@ -282,117 +234,6 @@ public final class MainActivity extends Activity {
         }
         webView.clearCache(true);
         preferences.edit().putString(KEY_EMBEDDED_WEB_BUILD, EmbeddedWebBuild.ID).apply();
-    }
-
-    @Override
-    @SuppressLint("UnspecifiedRegisterReceiverFlag")
-    protected void onStart() {
-        super.onStart();
-        if (!networkMonitorRegistered && connectivityManager != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                connectivityManager.registerDefaultNetworkCallback(networkCallback);
-            } else {
-                registerReceiver(
-                        networkReceiver,
-                        new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-                );
-            }
-            networkMonitorRegistered = true;
-        }
-        dispatchNetworkStatus();
-    }
-
-    @Override
-    protected void onStop() {
-        if (networkMonitorRegistered) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && connectivityManager != null) {
-                connectivityManager.unregisterNetworkCallback(networkCallback);
-            } else {
-                unregisterReceiver(networkReceiver);
-            }
-            networkMonitorRegistered = false;
-        }
-        super.onStop();
-    }
-
-    private String currentNetworkStatusJson() {
-        Network activeNetwork = connectivityManager == null ? null : connectivityManager.getActiveNetwork();
-        NetworkCapabilities capabilities = activeNetwork == null || connectivityManager == null
-                ? null
-                : connectivityManager.getNetworkCapabilities(activeNetwork);
-        boolean connected = capabilities != null;
-        String type = "none";
-        if (capabilities != null) {
-            if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
-                type = "vpn";
-            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                type = "wifi";
-            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-                type = "mobile";
-            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-                type = "ethernet";
-            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH)) {
-                type = "bluetooth";
-            } else {
-                type = "other";
-            }
-        }
-        JSONObject detail = new JSONObject();
-        try {
-            detail.put("connected", connected);
-            detail.put("type", type);
-            return detail.toString();
-        } catch (JSONException impossible) {
-            return "{\"connected\":false,\"type\":\"unknown\"}";
-        }
-    }
-
-    private void dispatchNetworkStatus() {
-        if (webView == null || !isTrustedPage()) {
-            return;
-        }
-        final String detailJson = currentNetworkStatusJson();
-        webView.post(new Runnable() {
-            @Override
-            public void run() {
-                if (webView == null || !isTrustedPage()) {
-                    return;
-                }
-                String script = "window.dispatchEvent(new CustomEvent('lifehub:native-network-status',"
-                        + "{detail:" + detailJson + "}));";
-                webView.evaluateJavascript(script, null);
-            }
-        });
-    }
-
-    private void dispatchBridgeEvent(
-            final String eventName,
-            final String expectedOrigin,
-            final JSONObject detail
-    ) {
-        if (webView == null
-                || expectedOrigin == null
-                || !expectedOrigin.equals(trustedTopLevelOrigin)
-                || !(BridgeHttpProxy.RESPONSE_EVENT.equals(eventName)
-                || BridgeHttpProxy.STREAM_EVENT.equals(eventName))) {
-            return;
-        }
-        final String eventLiteral = JSONObject.quote(eventName);
-        final String detailJson = detail == null ? "{}" : detail.toString();
-        webView.post(new Runnable() {
-            @Override
-            public void run() {
-                if (webView == null || !expectedOrigin.equals(trustedTopLevelOrigin)) {
-                    return;
-                }
-                String script = "window.dispatchEvent(new CustomEvent("
-                        + eventLiteral
-                        + ",{detail:"
-                        + detailJson
-                        + "}));";
-                webView.evaluateJavascript(script, null);
-            }
-        });
     }
 
     private boolean dispatchBackupDocumentResult(
@@ -522,7 +363,7 @@ public final class MainActivity extends Activity {
         return trustedTopLevelOrigin != null;
     }
 
-    private boolean isTrustedBridgeCaller() {
+    private boolean isTrustedNativeCaller() {
         String localOrigin = originKey(Uri.parse(LOCAL_ORIGIN));
         return localOrigin != null && localOrigin.equals(trustedTopLevelOrigin);
     }
@@ -618,8 +459,7 @@ public final class MainActivity extends Activity {
             backupDocumentCoordinator.handleActivityResult(requestCode, resultCode, data);
             return;
         }
-        if (requestCode != IMAGE_FILE_CHOOSER_REQUEST_CODE
-                && requestCode != JSON_FILE_CHOOSER_REQUEST_CODE) {
+        if (requestCode != JSON_FILE_CHOOSER_REQUEST_CODE) {
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }
@@ -637,9 +477,7 @@ public final class MainActivity extends Activity {
             return;
         }
         Uri selected = resultCode == Activity.RESULT_OK ? singleSelectedUri(data) : null;
-        boolean allowed = requestCode == IMAGE_FILE_CHOOSER_REQUEST_CODE
-                ? isAllowedSelectedImage(selected)
-                : backupDocumentCoordinator != null
+        boolean allowed = backupDocumentCoordinator != null
                 && backupDocumentCoordinator.isAllowedImportDocument(selected);
         if (!allowed) {
             callback.onReceiveValue(null);
@@ -659,81 +497,6 @@ public final class MainActivity extends Activity {
         return data.getData();
     }
 
-    private boolean isAllowedSelectedImage(Uri uri) {
-        if (uri == null || !ContentResolver.SCHEME_CONTENT.equalsIgnoreCase(uri.getScheme())) {
-            return false;
-        }
-        try {
-            String mimeType = getContentResolver().getType(uri);
-            if (!ImageFileChooserPolicy.isSupportedMimeType(mimeType)) {
-                return false;
-            }
-            if (!ImageFileChooserPolicy.isAllowedFileSize(selectedContentLength(uri))) {
-                return false;
-            }
-            byte[] header = new byte[12];
-            int size = 0;
-            try (InputStream input = getContentResolver().openInputStream(uri)) {
-                if (input == null) {
-                    return false;
-                }
-                while (size < header.length) {
-                    int read = input.read(header, size, header.length - size);
-                    if (read <= 0) {
-                        break;
-                    }
-                    size += read;
-                }
-            }
-            return ImageFileChooserPolicy.matchesSignature(mimeType, header, size)
-                    && hasAllowedImageBounds(uri);
-        } catch (IOException | RuntimeException unavailableImage) {
-            return false;
-        }
-    }
-
-    private long selectedContentLength(Uri uri) {
-        ContentResolver resolver = getContentResolver();
-        try (Cursor cursor = resolver.query(
-                uri,
-                new String[]{OpenableColumns.SIZE},
-                null,
-                null,
-                null
-        )) {
-            if (cursor != null && cursor.moveToFirst() && !cursor.isNull(0)) {
-                long size = cursor.getLong(0);
-                if (size >= 0) {
-                    return size;
-                }
-            }
-        } catch (RuntimeException unavailableMetadata) {
-            // Some providers do not expose OpenableColumns metadata.
-        }
-        try (AssetFileDescriptor descriptor = resolver.openAssetFileDescriptor(uri, "r")) {
-            return descriptor == null ? -1L : descriptor.getLength();
-        } catch (IOException | RuntimeException unavailableDescriptor) {
-            return -1L;
-        }
-    }
-
-    private boolean hasAllowedImageBounds(Uri uri) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        try (InputStream input = getContentResolver().openInputStream(uri)) {
-            if (input == null) {
-                return false;
-            }
-            BitmapFactory.decodeStream(input, null, options);
-            return ImageFileChooserPolicy.isAllowedDimensions(
-                    options.outWidth,
-                    options.outHeight
-            );
-        } catch (IOException | RuntimeException invalidImage) {
-            return false;
-        }
-    }
-
     private void clearPendingWebFileCallback() {
         ValueCallback<Uri[]> callback;
         synchronized (documentPickerLock) {
@@ -743,25 +506,6 @@ public final class MainActivity extends Activity {
         }
         if (callback != null) {
             callback.onReceiveValue(null);
-        }
-    }
-
-    private boolean launchImageFilePicker(String action) {
-        if (backupDocumentCoordinator != null
-                && backupDocumentCoordinator.hasPendingOperation()) {
-            return false;
-        }
-        Intent picker = new Intent(action);
-        picker.addCategory(Intent.CATEGORY_OPENABLE);
-        picker.setType("image/*");
-        picker.putExtra(Intent.EXTRA_MIME_TYPES, ImageFileChooserPolicy.allowedMimeTypes());
-        picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
-        picker.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        try {
-            startActivityForResult(picker, IMAGE_FILE_CHOOSER_REQUEST_CODE);
-            return true;
-        } catch (ActivityNotFoundException | SecurityException unavailablePicker) {
-            return false;
         }
     }
 
@@ -789,10 +533,6 @@ public final class MainActivity extends Activity {
         if (backupDocumentCoordinator != null) {
             backupDocumentCoordinator.destroy(isFinishing() && !isChangingConfigurations());
             backupDocumentCoordinator = null;
-        }
-        if (bridgeHttpProxy != null) {
-            bridgeHttpProxy.shutdown();
-            bridgeHttpProxy = null;
         }
         if (webView != null) {
             webView.removeJavascriptInterface("AiAssistantNative");
@@ -823,37 +563,30 @@ public final class MainActivity extends Activity {
             String[] acceptTypes = fileChooserParams == null
                     ? null
                     : fileChooserParams.getAcceptTypes();
-            boolean imageRequest = ImageFileChooserPolicy.acceptsRequestedTypes(acceptTypes);
             boolean jsonRequest = LifeHubBackupDocumentPolicy.acceptsRequestedTypes(acceptTypes);
             if (requestingWebView != MainActivity.this.webView
                     || !isTrustedPage()
                     || !singleOpenRequest
-                    || !(imageRequest || jsonRequest)
-                    || (jsonRequest && captureRequested)) {
+                    || !jsonRequest
+                    || captureRequested) {
                 filePathCallback.onReceiveValue(null);
                 return true;
             }
 
-            int pickerRequestCode = jsonRequest
-                    ? JSON_FILE_CHOOSER_REQUEST_CODE
-                    : IMAGE_FILE_CHOOSER_REQUEST_CODE;
             boolean backupBusy;
             synchronized (documentPickerLock) {
                 backupBusy = backupDocumentCoordinator != null
                         && backupDocumentCoordinator.hasPendingOperation();
                 if (!backupBusy) {
                     pendingWebFileCallback = filePathCallback;
-                    pendingWebFileRequestCode = pickerRequestCode;
+                    pendingWebFileRequestCode = JSON_FILE_CHOOSER_REQUEST_CODE;
                 }
             }
             if (backupBusy) {
                 filePathCallback.onReceiveValue(null);
                 return true;
             }
-            boolean launched = jsonRequest
-                    ? launchJsonFilePicker()
-                    : launchImageFilePicker(Intent.ACTION_OPEN_DOCUMENT)
-                    || launchImageFilePicker(Intent.ACTION_GET_CONTENT);
+            boolean launched = launchJsonFilePicker();
             if (!launched) {
                 clearPendingWebFileCallback();
             }
@@ -880,61 +613,8 @@ public final class MainActivity extends Activity {
         }
 
         @JavascriptInterface
-        public boolean hasSecureValue(String key) {
-            return isTrustedBridgeCaller() && secureTokenStore.contains(key);
-        }
-
-        @JavascriptInterface
-        public boolean removeSecureValue(String key) {
-            return isTrustedBridgeCaller() && secureTokenStore.remove(key);
-        }
-
-        @JavascriptInterface
-        public String getSecureValueMetadata(String key) {
-            if (!isTrustedBridgeCaller() || !SecureTokenStore.isAllowedTokenKey(key)) {
-                return null;
-            }
-            JSONObject metadata = new JSONObject();
-            try {
-                metadata.put("exists", secureTokenStore.contains(key));
-                metadata.put("createdAt", secureTokenStore.createdAt(key));
-                metadata.put("storage", "android-keystore");
-                metadata.put("bridgeOrigin", secureTokenStore.origin(key));
-                metadata.put("exportable", false);
-                return metadata.toString();
-            } catch (JSONException impossible) {
-                return null;
-            }
-        }
-
-        @JavascriptInterface
-        public String getBridgeCapabilities() {
-            if (!isTrustedBridgeCaller()) {
-                return null;
-            }
-            JSONObject capabilities = new JSONObject();
-            try {
-                capabilities.put("nativeTransport", true);
-                capabilities.put("http", true);
-                capabilities.put("https", true);
-                capabilities.put("secureTokenStorage", "android-keystore");
-                capabilities.put("tokenExport", false);
-                capabilities.put("nativeNotifications", true);
-                capabilities.put("scheduledNotifications", true);
-                return capabilities.toString();
-            } catch (JSONException impossible) {
-                return null;
-            }
-        }
-
-        @JavascriptInterface
-        public String getNetworkStatus() {
-            return isTrustedBridgeCaller() ? currentNetworkStatusJson() : null;
-        }
-
-        @JavascriptInterface
         public String getNotificationCapabilities() {
-            if (!isTrustedBridgeCaller()) {
+            if (!isTrustedNativeCaller()) {
                 return null;
             }
             JSONObject capabilities = new JSONObject();
@@ -958,14 +638,14 @@ public final class MainActivity extends Activity {
 
         @JavascriptInterface
         public String getCardImportCapabilities() {
-            return isTrustedBridgeCaller()
+            return isTrustedNativeCaller()
                     ? FinanceNotificationAccess.capabilities(MainActivity.this).toString()
                     : null;
         }
 
         @JavascriptInterface
         public boolean configureCardImport(String owner, String sourcesJson) {
-            return isTrustedBridgeCaller()
+            return isTrustedNativeCaller()
                     && FinanceTransactionQueue.configure(
                             MainActivity.this,
                             owner,
@@ -975,7 +655,7 @@ public final class MainActivity extends Activity {
 
         @JavascriptInterface
         public boolean openCardNotificationAccessSettings() {
-            if (!isTrustedBridgeCaller()
+            if (!isTrustedNativeCaller()
                     || !FinanceNotificationAccess.isSupported(MainActivity.this)) {
                 return false;
             }
@@ -1012,7 +692,7 @@ public final class MainActivity extends Activity {
 
         @JavascriptInterface
         public boolean openAppDetailsSettings() {
-            if (!isTrustedBridgeCaller()) {
+            if (!isTrustedNativeCaller()) {
                 return false;
             }
             final String expectedOrigin = trustedTopLevelOrigin;
@@ -1046,9 +726,11 @@ public final class MainActivity extends Activity {
                 String owner,
                 String sourcesJson
         ) {
-            if (!isTrustedBridgeCaller()
+            final String expectedOrigin = trustedTopLevelOrigin;
+            if (!isTrustedNativeCaller()
+                    || expectedOrigin == null
                     || !FinanceNotificationPolicy.isValidRequestId(requestId)
-                    || FinanceNotificationPolicy.selectedSourceEnabled(sourcesJson) == null) {
+                    || FinanceNotificationPolicy.selectedSources(sourcesJson) == null) {
                 return false;
             }
             List<FinanceNotificationParser.Candidate> pending =
@@ -1061,12 +743,15 @@ public final class MainActivity extends Activity {
                 return false;
             }
             JSONObject detail = cardImportResultBase(requestId, "peek");
+            if (detail == null) {
+                return false;
+            }
             try {
                 detail.put("items", FinanceTransactionQueue.publicItems(pending));
             } catch (JSONException impossible) {
                 return false;
             }
-            dispatchCardImportResult(trustedTopLevelOrigin, detail);
+            dispatchCardImportResult(expectedOrigin, detail);
             return true;
         }
 
@@ -1076,7 +761,9 @@ public final class MainActivity extends Activity {
                 String owner,
                 String decisionsJson
         ) {
-            if (!isTrustedBridgeCaller()
+            final String expectedOrigin = trustedTopLevelOrigin;
+            if (!isTrustedNativeCaller()
+                    || expectedOrigin == null
                     || !FinanceNotificationPolicy.isValidRequestId(requestId)) {
                 return false;
             }
@@ -1094,17 +781,23 @@ public final class MainActivity extends Activity {
             if (resolved == null) {
                 return false;
             }
+            if (resolved.size() != eventIds.size()) {
+                return false;
+            }
             JSONArray resolvedIds = new JSONArray();
             for (String eventId : resolved) {
                 resolvedIds.put(eventId);
             }
             JSONObject detail = cardImportResultBase(requestId, "resolve");
+            if (detail == null) {
+                return false;
+            }
             try {
                 detail.put("resolvedEventIds", resolvedIds);
             } catch (JSONException impossible) {
                 return false;
             }
-            dispatchCardImportResult(trustedTopLevelOrigin, detail);
+            dispatchCardImportResult(expectedOrigin, detail);
             return true;
         }
 
@@ -1125,28 +818,28 @@ public final class MainActivity extends Activity {
                 );
                 detail.put("error", JSONObject.NULL);
             } catch (JSONException impossible) {
-                return new JSONObject();
+                return null;
             }
             return detail;
         }
 
         @JavascriptInterface
         public String getNotificationPermission() {
-            return isTrustedBridgeCaller()
+            return isTrustedNativeCaller()
                     ? AppNotificationCoordinator.permissionState(MainActivity.this)
                     : null;
         }
 
         @JavascriptInterface
         public String getExactAlarmPermission() {
-            return isTrustedBridgeCaller()
+            return isTrustedNativeCaller()
                     ? AppNotificationCoordinator.exactAlarmPermissionState(MainActivity.this)
                     : null;
         }
 
         @JavascriptInterface
         public boolean requestNotificationPermission(final String requestId) {
-            if (!isTrustedBridgeCaller()
+            if (!isTrustedNativeCaller()
                     || !AppNotificationCoordinator.isValidRequestId(requestId)) {
                 return false;
             }
@@ -1179,7 +872,7 @@ public final class MainActivity extends Activity {
 
         @JavascriptInterface
         public boolean requestExactAlarmPermission(final String requestId) {
-            if (!isTrustedBridgeCaller()
+            if (!isTrustedNativeCaller()
                     || !AppNotificationCoordinator.isValidRequestId(requestId)) {
                 return false;
             }
@@ -1223,50 +916,16 @@ public final class MainActivity extends Activity {
 
         @JavascriptInterface
         public boolean replaceScheduledNotifications(String payload) {
-            return isTrustedBridgeCaller()
+            return isTrustedNativeCaller()
                     && AppNotificationCoordinator.replaceScheduled(MainActivity.this, payload);
         }
 
         @JavascriptInterface
         public boolean showNotification(String id, String title, String body, String path) {
-            return isTrustedBridgeCaller()
+            return isTrustedNativeCaller()
                     && AppNotificationCoordinator.showNow(MainActivity.this, id, title, body, path);
         }
 
-        @JavascriptInterface
-        public boolean bridgeRequest(
-                String requestId,
-                String url,
-                String method,
-                String body,
-                String tokenKey
-        ) {
-            String callerOrigin = isTrustedBridgeCaller() ? trustedTopLevelOrigin : null;
-            return callerOrigin != null
-                    && bridgeHttpProxy != null
-                    && bridgeHttpProxy.request(callerOrigin, requestId, url, method, body, tokenKey);
-        }
-
-        @JavascriptInterface
-        public boolean bridgeStream(
-                String requestId,
-                String url,
-                String tokenKey,
-                String lastEventId
-        ) {
-            String callerOrigin = isTrustedBridgeCaller() ? trustedTopLevelOrigin : null;
-            return callerOrigin != null
-                    && bridgeHttpProxy != null
-                    && bridgeHttpProxy.stream(callerOrigin, requestId, url, tokenKey, lastEventId);
-        }
-
-        @JavascriptInterface
-        public boolean bridgeCancel(String requestId) {
-            String callerOrigin = isTrustedBridgeCaller() ? trustedTopLevelOrigin : null;
-            return callerOrigin != null
-                    && bridgeHttpProxy != null
-                    && bridgeHttpProxy.cancel(callerOrigin, requestId);
-        }
     }
 
     private final class AppWebViewClient extends WebViewClient {
@@ -1274,9 +933,6 @@ public final class MainActivity extends Activity {
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             clearPendingWebFileCallback();
             trustedTopLevelOrigin = null;
-            if (bridgeHttpProxy != null) {
-                bridgeHttpProxy.cancelAll(false);
-            }
             super.onPageStarted(view, url, favicon);
         }
 
@@ -1299,7 +955,6 @@ public final class MainActivity extends Activity {
                     && isAllowedTopLevelUri(currentUri)
                     ? currentOrigin
                     : null;
-            dispatchNetworkStatus();
             if (backupDocumentCoordinator != null) {
                 backupDocumentCoordinator.onTrustedPageReady();
             }
@@ -1357,9 +1012,6 @@ public final class MainActivity extends Activity {
         @Override
         public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
             trustedTopLevelOrigin = null;
-            if (bridgeHttpProxy != null) {
-                bridgeHttpProxy.cancelAll(false);
-            }
             handler.cancel();
             Toast.makeText(MainActivity.this, R.string.page_load_failed, Toast.LENGTH_LONG).show();
         }

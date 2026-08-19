@@ -11,6 +11,23 @@ function nativeApi(target) {
   return target?.AiAssistantNative || null;
 }
 
+function isAllowedInternalPath(value) {
+  if (typeof value !== 'string'
+      || value.length < 1
+      || value.length > 512
+      || !value.startsWith('/')
+      || value.startsWith('//')
+      || value.includes('\\')
+      || value.includes('#')
+      || value.includes('://')
+      || value.includes('..')
+      || /[\u0000-\u001f\u007f]/.test(value)) {
+    return false;
+  }
+  const route = value.split('?', 1)[0];
+  return route === '/app' || route === '/schedule';
+}
+
 function parsedValue(raw) {
   if (raw && typeof raw === 'object') return raw;
   if (typeof raw !== 'string' || !raw.trim()) return null;
@@ -177,7 +194,11 @@ export function requestNativeExactAlarmPermission({
 
 export function replaceNativeScheduledNotifications(notifications, target = defaultTarget()) {
   if (!hasNativeNotificationApi(target)) return null;
-  if (!Array.isArray(notifications) || notifications.length > 128) return false;
+  if (!Array.isArray(notifications)
+      || notifications.length > 128
+      || notifications.some((notification) => !isAllowedInternalPath(notification?.path))) {
+    return false;
+  }
   try {
     return nativeApi(target).replaceScheduledNotifications(JSON.stringify(notifications)) === true;
   } catch {
@@ -191,7 +212,7 @@ export function showNativeNotification(notification, target = defaultTarget()) {
   const title = String(notification?.title || '');
   const body = String(notification?.body || '');
   const path = String(notification?.path || '');
-  if (!id || !title || !path) return false;
+  if (!id || !title || !isAllowedInternalPath(path)) return false;
   try {
     return nativeApi(target).showNotification(id, title, body, path) === true;
   } catch {

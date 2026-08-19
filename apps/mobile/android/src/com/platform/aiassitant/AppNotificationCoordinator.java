@@ -242,10 +242,7 @@ final class AppNotificationCoordinator {
         int queryIndex = value.indexOf('?');
         String route = queryIndex >= 0 ? value.substring(0, queryIndex) : value;
         return "/app".equals(route)
-                || "/schedule".equals(route)
-                || "/ai".equals(route)
-                || "/ai/edit".equals(route)
-                || "/ai/settings".equals(route);
+                || "/schedule".equals(route);
     }
 
     private static List<ScheduledNotification> parseReplacementPayload(String payload, long now) {

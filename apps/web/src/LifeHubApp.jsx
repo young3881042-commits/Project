@@ -27,8 +27,6 @@ import {
   readDailyBriefingSettings,
   saveDailyBriefingSettings
 } from './features/automation/dailyBriefing.js';
-import { prepareAssistantScheduleChange } from './features/lifehub-ai/assistantScheduleChange.js';
-import { saveLifeRecordAction } from './features/life-records/saveLifeRecordAction.js';
 import CardTransactionImportPanel from './features/finance/CardTransactionImportPanel.jsx';
 import { useCardTransactionImport } from './features/finance/useCardTransactionImport.js';
 import { LIFEHUB_APP_ICON } from './components/lifehub/LifeHubPackIcon.jsx';
@@ -102,9 +100,6 @@ import {
 
 const DailyMemoPage = lazy(() => import('./components/notes/daily/DailyMemoPage.jsx'));
 const DietPage = lazy(() => import('./components/diet/DietPage.jsx'));
-const AiAssistantPage = lazy(() => import('./features/lifehub-ai/AiAssistantPage.jsx'));
-const AppEditorPage = lazy(() => import('./features/lifehub-ai/AppEditorPage.jsx'));
-const AiPairingPage = lazy(() => import('./features/lifehub-ai/AiPairingPage.jsx'));
 
 const AUTH_KEY = 'codex-workspace-auth';
 const LIFEHUB_OWNER_KEY = 'ai-assistant-lifehub-local-owner';
@@ -124,10 +119,7 @@ const ROUTE_ALIASES = {
   '/workout': 'workout',
   '/diet': 'diet',
   '/finance': 'finance',
-  '/more': 'more',
-  '/ai': 'ai',
-  '/ai/edit': 'ai-editor',
-  '/ai/settings': 'ai-settings'
+  '/more': 'more'
 };
 
 const SCHEDULE_FILTERS = [
@@ -1853,7 +1845,7 @@ function backupDataForModel(model, dailyBriefingSettings) {
   };
 }
 
-function MorePage({ model, session, navigate, refresh, onRestoreBackup }) {
+function MorePage({ model, session, refresh, onRestoreBackup }) {
   const [installPrompt, setInstallPrompt] = useState(null);
   const [standalone, setStandalone] = useState(() => (
     window.matchMedia?.('(display-mode: standalone)').matches
@@ -1918,12 +1910,6 @@ function MorePage({ model, session, navigate, refresh, onRestoreBackup }) {
       <Section title="더보기 메뉴" className="more-control-section more-settings-section">
         <div className="more-settings-list">
           <MoreSettingsRow
-            icon="edit"
-            label="앱 수정하기"
-            detail="대화로 앱·웹 수정 요청"
-            onClick={() => navigate('/ai/edit')}
-          />
-          <MoreSettingsRow
             icon="home"
             label="앱 설치"
             detail={standalone ? '설치됨' : installPrompt ? '설치 가능' : '홈 화면에서 앱처럼 실행'}
@@ -1964,28 +1950,6 @@ export default function LifeHubApp({ path, navigate }) {
     saveBudget: (items) => saveBudget(session, items),
     onSaved: refresh
   });
-  const createScheduleFromAssistant = (draft, requestId) => {
-    const current = readSchedules(session);
-    const change = prepareAssistantScheduleChange(current, draft, requestId, { normalize: normalizeSchedule });
-    if (change.status !== 'created') return change;
-    const saved = saveSchedules(session, change.items);
-    return saved.saved ? { status: 'created', item: change.item } : { status: 'failed' };
-  };
-  const createLifeRecordFromAssistant = (action, requestId) => {
-    return saveLifeRecordAction(action, requestId, {
-      readNotes: () => readDailyMemos(session),
-      saveNotes: (items) => saveDailyMemos(session, items),
-      readBudget: () => readBudget(session),
-      normalizeBudget,
-      saveBudget: (items) => saveBudget(session, items),
-      readWorkouts: () => readWorkouts(session),
-      normalizeWorkout,
-      saveWorkouts: (items) => saveWorkouts(session, items),
-      readDietEntries: () => readDietEntries(session),
-      saveDietEntries: (items) => saveDietEntries(session, items),
-      bodyProfile: bodyProfileRef.current
-    });
-  };
   const restoreLifeHubBackup = (plan) => {
     return applyLifeHubBackupPlan(plan, {
       readCurrent: () => ({
@@ -2162,16 +2126,7 @@ export default function LifeHubApp({ path, navigate }) {
   }, [session?.username]);
 
   let content = null;
-  if (route === 'ai') content = (
-    <AiAssistantPage
-      navigate={go}
-      onCreateSchedule={createScheduleFromAssistant}
-      onCreateLifeRecord={createLifeRecordFromAssistant}
-    />
-  );
-  else if (route === 'ai-editor') content = <AppEditorPage navigate={go} onCreateSchedule={createScheduleFromAssistant} />;
-  else if (route === 'ai-settings') content = <AiPairingPage navigate={go} />;
-  else if (route === 'memo') content = (
+  if (route === 'memo') content = (
     <DailyMemoPage
       key={storageUsername(session)}
       navigate={go}
@@ -2195,7 +2150,6 @@ export default function LifeHubApp({ path, navigate }) {
   else if (route === 'diet') content = (
     <DietPage
       model={model}
-      navigate={go}
       onBodyProfileChange={updateBodyProfile}
       onSaveBodyProfile={persistBodyProfile}
       refresh={refresh}
@@ -2215,7 +2169,6 @@ export default function LifeHubApp({ path, navigate }) {
     <MorePage
       model={model}
       session={session}
-      navigate={go}
       refresh={refresh}
       onRestoreBackup={restoreLifeHubBackup}
     />

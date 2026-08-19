@@ -16,6 +16,7 @@ final class FinanceTransactionQueue {
     private static final String PREFERENCES_NAME = "orbit-finance-notification-v2";
     private static final String KEY_ACTIVE_OWNER_HASH = "active-owner-hash";
     private static final String KEY_COLLECTION_ENABLED = "collection-enabled";
+    private static final String KEY_SELECTED_SOURCES = "selected-sources";
     private static final String QUEUE_KEY_PREFIX = "pending:";
     private static final String SEEN_KEY_PREFIX = "seen:";
 
@@ -27,13 +28,23 @@ final class FinanceTransactionQueue {
             String sourcesJson
     ) {
         String ownerHash = FinanceNotificationPolicy.ownerHash(owner);
-        Boolean enabled = FinanceNotificationPolicy.selectedSourceEnabled(sourcesJson);
-        if (context == null || ownerHash == null || enabled == null) {
+        LinkedHashSet<String> selectedSources = FinanceNotificationPolicy.selectedSources(
+                sourcesJson
+        );
+        if (context == null || ownerHash == null || selectedSources == null) {
             return false;
         }
-        return preferences(context).edit()
+        SharedPreferences preferences = preferences(context);
+        List<FinanceNotificationParser.Candidate> kept = candidatesForSources(
+                readPending(preferences, ownerHash),
+                selectedSources,
+                FinanceNotificationPolicy.MAX_PENDING_TRANSACTIONS
+        );
+        return preferences.edit()
                 .putString(KEY_ACTIVE_OWNER_HASH, ownerHash)
-                .putBoolean(KEY_COLLECTION_ENABLED, enabled)
+                .putString(KEY_SELECTED_SOURCES, encodeStrings(selectedSources))
+                .putString(queueKey(ownerHash), encodePending(kept))
+                .remove(KEY_COLLECTION_ENABLED)
                 .commit();
     }
 
@@ -42,9 +53,31 @@ final class FinanceTransactionQueue {
             return false;
         }
         SharedPreferences preferences = preferences(context);
-        String ownerHash = preferences.getString(KEY_ACTIVE_OWNER_HASH, "");
+        String ownerHash = activeOwnerHash(preferences);
         return isOwnerHash(ownerHash)
-                && preferences.getBoolean(KEY_COLLECTION_ENABLED, false);
+                && !configuredSources(preferences).isEmpty();
+    }
+
+    static synchronized boolean isSourceSelected(Context context, String source) {
+        if (context == null || !FinanceNotificationParser.isSupportedSource(source)) {
+            return false;
+        }
+        SharedPreferences preferences = preferences(context);
+        String ownerHash = activeOwnerHash(preferences);
+        return isOwnerHash(ownerHash) && configuredSources(preferences).contains(source);
+    }
+
+    static synchronized Set<String> selectedSources(Context context) {
+        LinkedHashSet<String> selected = new LinkedHashSet<>();
+        if (context == null) {
+            return selected;
+        }
+        SharedPreferences preferences = preferences(context);
+        String ownerHash = activeOwnerHash(preferences);
+        if (isOwnerHash(ownerHash)) {
+            selected.addAll(configuredSources(preferences));
+        }
+        return selected;
     }
 
     static synchronized boolean enqueue(
@@ -55,9 +88,9 @@ final class FinanceTransactionQueue {
             return false;
         }
         SharedPreferences preferences = preferences(context);
-        String ownerHash = preferences.getString(KEY_ACTIVE_OWNER_HASH, "");
+        String ownerHash = activeOwnerHash(preferences);
         if (!isOwnerHash(ownerHash)
-                || !preferences.getBoolean(KEY_COLLECTION_ENABLED, false)) {
+                || !configuredSources(preferences).contains(candidate.source)) {
             return false;
         }
 
@@ -84,28 +117,25 @@ final class FinanceTransactionQueue {
             String sourcesJson
     ) {
         String ownerHash = FinanceNotificationPolicy.ownerHash(owner);
-        Boolean sourceEnabled = FinanceNotificationPolicy.selectedSourceEnabled(sourcesJson);
-        if (context == null || ownerHash == null || sourceEnabled == null) {
+        LinkedHashSet<String> requestedSources = FinanceNotificationPolicy.selectedSources(
+                sourcesJson
+        );
+        if (context == null || ownerHash == null || requestedSources == null) {
             return null;
         }
         SharedPreferences preferences = preferences(context);
-        if (!ownerHash.equals(preferences.getString(KEY_ACTIVE_OWNER_HASH, ""))) {
+        if (!ownerHash.equals(activeOwnerHash(preferences))) {
             return null;
         }
-        if (!sourceEnabled) {
+        requestedSources.retainAll(configuredSources(preferences));
+        if (requestedSources.isEmpty()) {
             return new ArrayList<>();
         }
-        List<FinanceNotificationParser.Candidate> pending = readPending(
-                preferences,
-                ownerHash
+        return candidatesForSources(
+                readPending(preferences, ownerHash),
+                requestedSources,
+                FinanceNotificationPolicy.MAX_IMPORT_BATCH
         );
-        if (pending.size() <= FinanceNotificationPolicy.MAX_BRIDGE_BATCH) {
-            return pending;
-        }
-        return new ArrayList<>(pending.subList(
-                0,
-                FinanceNotificationPolicy.MAX_BRIDGE_BATCH
-        ));
     }
 
     static synchronized List<String> resolve(
@@ -117,11 +147,20 @@ final class FinanceTransactionQueue {
         if (context == null
                 || ownerHash == null
                 || eventIds == null
-                || eventIds.size() > FinanceNotificationPolicy.MAX_BRIDGE_BATCH) {
+                || eventIds.size() > FinanceNotificationPolicy.MAX_IMPORT_BATCH) {
             return null;
         }
+        for (String eventId : eventIds) {
+            if (!FinanceNotificationPolicy.isValidEventId(eventId)) {
+                return null;
+            }
+        }
         SharedPreferences preferences = preferences(context);
-        if (!ownerHash.equals(preferences.getString(KEY_ACTIVE_OWNER_HASH, ""))) {
+        if (!ownerHash.equals(activeOwnerHash(preferences))) {
+            return null;
+        }
+        LinkedHashSet<String> configured = configuredSources(preferences);
+        if (configured.isEmpty() && !eventIds.isEmpty()) {
             return null;
         }
 
@@ -129,10 +168,19 @@ final class FinanceTransactionQueue {
                 preferences,
                 ownerHash
         );
+        LinkedHashSet<String> resolvable = new LinkedHashSet<>();
+        for (FinanceNotificationParser.Candidate candidate : pending) {
+            if (configured.contains(candidate.source) && eventIds.contains(candidate.eventId)) {
+                resolvable.add(candidate.eventId);
+            }
+        }
+        if (!resolvable.equals(eventIds)) {
+            return null;
+        }
         List<FinanceNotificationParser.Candidate> kept = new ArrayList<>();
         List<String> resolved = new ArrayList<>();
         for (FinanceNotificationParser.Candidate candidate : pending) {
-            if (eventIds.contains(candidate.eventId)) {
+            if (resolvable.contains(candidate.eventId)) {
                 resolved.add(candidate.eventId);
             } else {
                 kept.add(candidate);
@@ -154,8 +202,15 @@ final class FinanceTransactionQueue {
             return 0;
         }
         SharedPreferences preferences = preferences(context);
-        String ownerHash = preferences.getString(KEY_ACTIVE_OWNER_HASH, "");
-        return isOwnerHash(ownerHash) ? readPending(preferences, ownerHash).size() : 0;
+        String ownerHash = activeOwnerHash(preferences);
+        if (!isOwnerHash(ownerHash)) {
+            return 0;
+        }
+        return candidatesForSources(
+                readPending(preferences, ownerHash),
+                configuredSources(preferences),
+                FinanceNotificationPolicy.MAX_PENDING_TRANSACTIONS
+        ).size();
     }
 
     static synchronized boolean isSelectedForOwner(Context context, String owner) {
@@ -164,8 +219,8 @@ final class FinanceTransactionQueue {
             return false;
         }
         SharedPreferences preferences = preferences(context);
-        return ownerHash.equals(preferences.getString(KEY_ACTIVE_OWNER_HASH, ""))
-                && preferences.getBoolean(KEY_COLLECTION_ENABLED, false);
+        return ownerHash.equals(activeOwnerHash(preferences))
+                && !configuredSources(preferences).isEmpty();
     }
 
     static JSONArray publicItems(List<FinanceNotificationParser.Candidate> candidates) {
@@ -204,7 +259,12 @@ final class FinanceTransactionQueue {
             String ownerHash
     ) {
         List<FinanceNotificationParser.Candidate> result = new ArrayList<>();
-        String encoded = preferences.getString(queueKey(ownerHash), "[]");
+        String encoded;
+        try {
+            encoded = preferences.getString(queueKey(ownerHash), "[]");
+        } catch (ClassCastException invalidQueueType) {
+            return result;
+        }
         try {
             JSONArray array = new JSONArray(encoded == null ? "[]" : encoded);
             int length = Math.min(array.length(), FinanceNotificationPolicy.MAX_PENDING_TRANSACTIONS);
@@ -241,8 +301,80 @@ final class FinanceTransactionQueue {
                 amount,
                 merchant,
                 occurredAt,
-                FinanceNotificationParser.SAMSUNG_WALLET_FALLBACK_MERCHANT.equals(merchant)
+                isFallbackMerchant(source, merchant)
         );
+    }
+
+    private static List<FinanceNotificationParser.Candidate> candidatesForSources(
+            List<FinanceNotificationParser.Candidate> candidates,
+            Set<String> sources,
+            int limit
+    ) {
+        List<FinanceNotificationParser.Candidate> result = new ArrayList<>();
+        if (candidates == null || sources == null || sources.isEmpty() || limit <= 0) {
+            return result;
+        }
+        for (FinanceNotificationParser.Candidate candidate : candidates) {
+            if (candidate != null && sources.contains(candidate.source)) {
+                result.add(candidate);
+                if (result.size() >= limit) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    private static LinkedHashSet<String> configuredSources(
+            SharedPreferences preferences
+    ) {
+        if (preferences.contains(KEY_SELECTED_SOURCES)) {
+            String encoded;
+            try {
+                encoded = preferences.getString(KEY_SELECTED_SOURCES, "[]");
+            } catch (ClassCastException invalidSelectionType) {
+                return new LinkedHashSet<>();
+            }
+            LinkedHashSet<String> parsed = FinanceNotificationPolicy.selectedSources(encoded);
+            return parsed == null ? new LinkedHashSet<String>() : parsed;
+        }
+
+        LinkedHashSet<String> migrated = new LinkedHashSet<>();
+        boolean legacyEnabled = false;
+        try {
+            legacyEnabled = preferences.getBoolean(KEY_COLLECTION_ENABLED, false);
+        } catch (ClassCastException invalidLegacyValue) {
+            legacyEnabled = false;
+        }
+        if (legacyEnabled) {
+            migrated.add(FinanceNotificationParser.SAMSUNG_WALLET_SOURCE);
+        }
+        SharedPreferences.Editor editor = preferences.edit()
+                .putString(KEY_SELECTED_SOURCES, encodeStrings(migrated))
+                .remove(KEY_COLLECTION_ENABLED);
+        String ownerHash = activeOwnerHash(preferences);
+        if (isOwnerHash(ownerHash)) {
+            editor.putString(
+                    queueKey(ownerHash),
+                    encodePending(candidatesForSources(
+                            readPending(preferences, ownerHash),
+                            migrated,
+                            FinanceNotificationPolicy.MAX_PENDING_TRANSACTIONS
+                    ))
+            );
+        }
+        editor.commit();
+        return migrated;
+    }
+
+    private static boolean isFallbackMerchant(String source, String merchant) {
+        if (FinanceNotificationParser.SAMSUNG_WALLET_SOURCE.equals(source)) {
+            return FinanceNotificationParser.SAMSUNG_WALLET_FALLBACK_MERCHANT.equals(merchant);
+        }
+        if (FinanceNotificationParser.KAKAO_PAY_SOURCE.equals(source)) {
+            return FinanceNotificationParser.KAKAO_PAY_FALLBACK_MERCHANT.equals(merchant);
+        }
+        return false;
     }
 
     private static String encodePending(
@@ -256,7 +388,12 @@ final class FinanceTransactionQueue {
             String ownerHash
     ) {
         LinkedHashSet<String> result = new LinkedHashSet<>();
-        String encoded = preferences.getString(seenKey(ownerHash), "[]");
+        String encoded;
+        try {
+            encoded = preferences.getString(seenKey(ownerHash), "[]");
+        } catch (ClassCastException invalidSeenType) {
+            return result;
+        }
         try {
             JSONArray array = new JSONArray(encoded == null ? "[]" : encoded);
             for (int index = 0; index < array.length(); index += 1) {
@@ -293,6 +430,14 @@ final class FinanceTransactionQueue {
 
     private static String seenKey(String ownerHash) {
         return SEEN_KEY_PREFIX + ownerHash;
+    }
+
+    private static String activeOwnerHash(SharedPreferences preferences) {
+        try {
+            return preferences.getString(KEY_ACTIVE_OWNER_HASH, "");
+        } catch (ClassCastException invalidOwnerType) {
+            return "";
+        }
     }
 
     private static boolean isOwnerHash(String value) {

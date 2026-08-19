@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  CARD_IMPORT_SOURCE_IDS,
+  CARD_IMPORT_SOURCES,
   acknowledgePendingCardTransactions,
   configureNativeCardImport,
   hasNativeCardImportApi,
   nativeCardImportCapabilities,
+  normalizeCardImportSources,
   normalizeCardImportOwner,
   openNativeCardImportAppSettings,
   openNativeCardNotificationAccessSettings,
@@ -16,7 +19,6 @@ import {
   saveCardImportSources
 } from './cardTransactionImport.js';
 
-const SAMSUNG_WALLET_SOURCE = 'samsung-wallet';
 const AUTOMATIC_PULL_THROTTLE_MS = 30 * 1000;
 
 function currentTarget() {
@@ -54,8 +56,8 @@ export function useCardTransactionImport({
 }) {
   const target = currentTarget();
   const normalizedOwner = normalizeCardImportOwner(owner);
-  const [enabled, setEnabled] = useState(() => (
-    readCardImportSources(normalizedOwner).includes(SAMSUNG_WALLET_SOURCE)
+  const [selectedSources, setSelectedSources] = useState(() => (
+    readCardImportSources(normalizedOwner)
   ));
   const [capabilities, setCapabilities] = useState(() => nativeCardImportCapabilities(target));
   const [syncing, setSyncing] = useState(false);
@@ -67,6 +69,7 @@ export function useCardTransactionImport({
   const lastAutomaticPullRef = useRef(0);
   const servicesRef = useRef(null);
   servicesRef.current = { readBudget, normalizeBudget, saveBudget, onSaved };
+  const enabled = selectedSources.length > 0;
 
   const summary = useMemo(
     () => cardImportSummary(budgetEntries, today),
@@ -81,8 +84,13 @@ export function useCardTransactionImport({
     return next;
   }, [target]);
 
-  const pull = useCallback(({ manual = false, forceEnabled = false } = {}) => {
-    if ((!enabled && !forceEnabled) || !hasNativeCardImportApi(target)) {
+  const pull = useCallback(({
+    manual = false,
+    forceEnabled = false,
+    sourceSelection = selectedSources
+  } = {}) => {
+    const requestSources = normalizeCardImportSources(sourceSelection);
+    if ((!requestSources.length && !forceEnabled) || !hasNativeCardImportApi(target)) {
       return Promise.resolve({ status: 'disabled', imported: 0, duplicates: 0 });
     }
     if (inFlightRef.current) return inFlightRef.current;
@@ -103,7 +111,7 @@ export function useCardTransactionImport({
     if (mountedRef.current) setSyncing(true);
     const operation = requestPendingCardTransactions({
       owner: normalizedOwner,
-      sources: [SAMSUNG_WALLET_SOURCE],
+      sources: requestSources,
       target
     }).then(async (peek) => {
       if (mountedRef.current) {
@@ -115,7 +123,7 @@ export function useCardTransactionImport({
       }
       const services = servicesRef.current;
       const result = await importCardTransactionBatch(peek.items, {
-        selectedSources: [SAMSUNG_WALLET_SOURCE],
+        selectedSources: requestSources,
         readBudget: services.readBudget,
         normalizeBudget: services.normalizeBudget,
         saveBudget: services.saveBudget,
@@ -146,39 +154,62 @@ export function useCardTransactionImport({
     });
     inFlightRef.current = operation;
     return operation;
-  }, [enabled, normalizedOwner, refreshCapabilities, target]);
+  }, [normalizedOwner, refreshCapabilities, selectedSources, target]);
 
-  const toggleEnabled = useCallback(() => {
-    if (!hasNativeCardImportApi(target)) return false;
-    const nextEnabled = !enabled;
-    const nextSources = nextEnabled ? [SAMSUNG_WALLET_SOURCE] : [];
-    if (!configureNativeCardImport({ owner: normalizedOwner, sources: nextSources, target })) {
-      setMessage('삼성월렛 자동 가져오기 설정을 변경하지 못했어요.');
-      setMessageTone('error');
-      return false;
-    }
+  const persistSources = useCallback((sources) => {
+    if (!hasNativeCardImportApi(target)) return null;
+    const nextSources = normalizeCardImportSources(sources);
     const stored = saveCardImportSources(normalizedOwner, nextSources);
     if (!stored.saved) {
-      configureNativeCardImport({
-        owner: normalizedOwner,
-        sources: enabled ? [SAMSUNG_WALLET_SOURCE] : [],
-        target
-      });
       setMessage('이 기기에 자동 가져오기 설정을 저장하지 못했어요.');
       setMessageTone('error');
-      return false;
+      return null;
     }
-    setEnabled(nextEnabled);
+    if (!configureNativeCardImport({ owner: normalizedOwner, sources: stored.sources, target })) {
+      saveCardImportSources(normalizedOwner, selectedSources);
+      setMessage('결제 알림 자동 가져오기 설정을 변경하지 못했어요.');
+      setMessageTone('error');
+      return null;
+    }
+    setSelectedSources(stored.sources);
+    return stored.sources;
+  }, [normalizedOwner, selectedSources, target]);
+
+  const toggleEnabled = useCallback(() => {
+    const nextSources = enabled ? [] : [CARD_IMPORT_SOURCE_IDS[0]];
+    const storedSources = persistSources(nextSources);
+    if (!storedSources) return false;
+    const nextEnabled = storedSources.length > 0;
     setMessage(nextEnabled
-      ? '삼성월렛 결제 자동 가져오기를 켰어요.'
-      : '삼성월렛 결제 자동 가져오기를 껐어요.');
+      ? '결제 알림 자동 가져오기를 켰어요. 필요한 결제 앱을 선택해주세요.'
+      : '결제 알림 자동 가져오기를 껐어요.');
     setMessageTone('success');
     const nextCapabilities = refreshCapabilities();
     if (nextEnabled && nextCapabilities?.access === 'enabled') {
-      void pull({ manual: true, forceEnabled: true });
+      void pull({ manual: true, forceEnabled: true, sourceSelection: storedSources });
     }
     return true;
-  }, [enabled, normalizedOwner, pull, refreshCapabilities, target]);
+  }, [enabled, persistSources, pull, refreshCapabilities]);
+
+  const toggleSource = useCallback((sourceId) => {
+    const normalized = normalizeCardImportSources([sourceId]);
+    if (normalized.length !== 1) return false;
+    const id = normalized[0];
+    const wasSelected = selectedSources.includes(id);
+    const nextSources = wasSelected
+      ? selectedSources.filter((source) => source !== id)
+      : normalizeCardImportSources([...selectedSources, id]);
+    const storedSources = persistSources(nextSources);
+    if (!storedSources) return false;
+    const label = CARD_IMPORT_SOURCES.find((source) => source.id === id)?.label || '결제 앱';
+    setMessage(`${label} 자동 가져오기를 ${wasSelected ? '껐어요.' : '켰어요.'}`);
+    setMessageTone('success');
+    const nextCapabilities = refreshCapabilities();
+    if (!wasSelected && nextCapabilities?.access === 'enabled') {
+      void pull({ manual: true, forceEnabled: true, sourceSelection: storedSources });
+    }
+    return true;
+  }, [persistSources, pull, refreshCapabilities, selectedSources]);
 
   const openAccessSettings = useCallback(() => {
     const opened = openNativeCardNotificationAccessSettings(target);
@@ -200,14 +231,18 @@ export function useCardTransactionImport({
 
   useEffect(() => {
     mountedRef.current = true;
+    const storedSources = readCardImportSources(normalizedOwner);
+    setSelectedSources(storedSources);
     const current = refreshCapabilities();
     if (current) {
       configureNativeCardImport({
         owner: normalizedOwner,
-        sources: enabled ? [SAMSUNG_WALLET_SOURCE] : [],
+        sources: storedSources,
         target
       });
-      if (enabled && current.access === 'enabled') void pull({ forceEnabled: true });
+      if (storedSources.length && current.access === 'enabled') {
+        void pull({ forceEnabled: true, sourceSelection: storedSources });
+      }
     }
     return () => {
       mountedRef.current = false;
@@ -240,8 +275,11 @@ export function useCardTransactionImport({
     openAccessSettings,
     openAppSettings,
     pull: () => pull({ manual: true }),
+    selectedSources,
+    sources: CARD_IMPORT_SOURCES,
     summary,
     syncing,
-    toggleEnabled
+    toggleEnabled,
+    toggleSource
   };
 }

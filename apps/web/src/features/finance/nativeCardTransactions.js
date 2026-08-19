@@ -2,8 +2,13 @@ export const NATIVE_CARD_IMPORT_RESULT_EVENT = 'lifehub:native-card-import-resul
 export const CARD_IMPORT_SCHEMA_VERSION = 1;
 
 export const CARD_IMPORT_SOURCES = Object.freeze([
-  Object.freeze({ id: 'samsung-wallet', label: '삼성월렛' })
+  Object.freeze({ id: 'samsung-wallet', label: '삼성월렛' }),
+  Object.freeze({ id: 'kakao-pay', label: '카카오페이 앱' })
 ]);
+
+export const CARD_IMPORT_SOURCE_IDS = Object.freeze(
+  CARD_IMPORT_SOURCES.map((source) => source.id)
+);
 
 const SOURCE_IDS = new Set(CARD_IMPORT_SOURCES.map((source) => source.id));
 const ACCESS_STATES = new Set(['enabled', 'disabled', 'unsupported']);
@@ -85,6 +90,30 @@ export function normalizeCardImportSources(value) {
     if (SOURCE_IDS.has(source) && !unique.includes(source)) unique.push(source);
   });
   return CARD_IMPORT_SOURCES.map((source) => source.id).filter((source) => unique.includes(source));
+}
+
+function exactNativeSourceIds(value, { requireAll = false } = {}) {
+  if (!Array.isArray(value)
+      || value.some((source) => typeof source !== 'string' || !SOURCE_IDS.has(source))
+      || new Set(value).size !== value.length) {
+    return null;
+  }
+  const normalized = normalizeCardImportSources(value);
+  if (normalized.length !== value.length
+      || normalized.some((source, index) => source !== value[index])
+      || (requireAll && normalized.length !== CARD_IMPORT_SOURCE_IDS.length)) {
+    return null;
+  }
+  return normalized;
+}
+
+function hasExactNativeSources(value) {
+  if (!Array.isArray(value) || value.length !== CARD_IMPORT_SOURCES.length) return false;
+  return value.every((source, index) => (
+    hasExactKeys(source, ['id', 'label'])
+    && source.id === CARD_IMPORT_SOURCES[index].id
+    && source.label === CARD_IMPORT_SOURCES[index].label
+  ));
 }
 
 function normalizedMerchant(value) {
@@ -237,20 +266,28 @@ export function nativeCardImportCapabilities(target = defaultTarget()) {
   } catch {
     return null;
   }
-  if (!value) return null;
+  const capabilityKeys = [
+    'schemaVersion',
+    'nativeCardImport',
+    'supported',
+    'access',
+    'supportedSources',
+    'availableSources',
+    'selectedSources',
+    'pendingCount'
+  ];
+  if (!hasExactKeys(value, capabilityKeys)) return null;
   const access = normalizedAccess(value.access);
-  const availableSources = Array.isArray(value.availableSources)
-    ? value.availableSources
-      .filter((source) => isPlainRecord(source))
-      .map((source) => String(source.id || ''))
-    : [];
-  const supportedSources = normalizeCardImportSources(availableSources);
-  const selectedSources = normalizeCardImportSources(value.selectedSources);
+  const supportedSources = exactNativeSourceIds(value.supportedSources, { requireAll: true });
+  const selectedSources = exactNativeSourceIds(value.selectedSources);
   const pendingCount = value.pendingCount;
   if (value.schemaVersion !== 1
+      || value.nativeCardImport !== true
       || value.supported !== true
       || !access
-      || supportedSources.length !== 1
+      || !supportedSources
+      || !hasExactNativeSources(value.availableSources)
+      || !selectedSources
       || !Number.isSafeInteger(pendingCount)
       || pendingCount < 0
       || pendingCount > 1000) {

@@ -778,6 +778,27 @@
   color: #be123c;
 }
 
+.budgetLogRow strong {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.budgetOriginBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  padding: 1px 6px;
+  border: 1px solid #b7ddd7;
+  border-radius: 999px;
+  background: #edfaf7;
+  color: #0f766e;
+  font-size: 0.58rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
 .utilityStat.balance strong {
   color: #0369a1;
 }

@@ -11,9 +11,16 @@ import java.util.List;
 public final class FinanceNotificationListenerService extends NotificationListenerService {
     @Override
     public void onNotificationPosted(StatusBarNotification posted) {
-        if (posted == null
-                || !FinanceNotificationParser.isSupportedPackage(posted.getPackageName())
-                || !FinanceTransactionQueue.isCollectionEnabled(getApplicationContext())) {
+        if (posted == null) {
+            return;
+        }
+        String packageName = posted.getPackageName();
+        String source = FinanceNotificationParser.sourceForPackage(packageName);
+        if (!FinanceNotificationParser.isSupportedSource(source)
+                || !FinanceTransactionQueue.isSourceSelected(
+                        getApplicationContext(),
+                        source
+                )) {
             return;
         }
         Notification notification = posted.getNotification();
@@ -22,7 +29,7 @@ public final class FinanceNotificationListenerService extends NotificationListen
             return;
         }
         FinanceNotificationParser.Candidate candidate = FinanceNotificationParser.parse(
-                posted.getPackageName(),
+                packageName,
                 posted.getKey(),
                 posted.getPostTime() > 0L
                         ? posted.getPostTime()

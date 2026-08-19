@@ -344,6 +344,68 @@
   color: #be123c;
 }
 
+.homeMonthFinanceList {
+  display: grid;
+  gap: 6px;
+}
+
+.homeMonthFinanceRow {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.homeMonthFinanceType {
+  font-size: 0.65rem;
+  font-weight: 900;
+}
+
+.homeMonthFinanceType.deposit,
+.homeMonthFinanceRow em.deposit {
+  color: #047857;
+}
+
+.homeMonthFinanceType.withdraw,
+.homeMonthFinanceRow em.withdraw {
+  color: #be123c;
+}
+
+.homeMonthFinanceCopy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.homeMonthFinanceCopy strong,
+.homeMonthFinanceCopy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.homeMonthFinanceCopy strong {
+  color: #1e293b;
+  font-size: 0.72rem;
+}
+
+.homeMonthFinanceCopy small {
+  color: #64748b;
+  font-size: 0.64rem;
+}
+
+.homeMonthFinanceRow em {
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
 .homeMonthActivityList {
   display: grid;
   gap: 6px;

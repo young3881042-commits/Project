@@ -3,6 +3,7 @@ package com.platform.aiassitant;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -10,7 +11,7 @@ import java.util.regex.Pattern;
 final class FinanceNotificationPolicy {
     static final int MAX_PENDING_TRANSACTIONS = 256;
     static final int MAX_SEEN_EVENT_IDS = 512;
-    static final int MAX_BRIDGE_BATCH = 128;
+    static final int MAX_IMPORT_BATCH = 128;
 
     private static final Pattern OWNER_PATTERN = Pattern.compile("[a-z0-9._-]{1,128}");
     private static final Pattern REQUEST_ID_PATTERN = Pattern.compile("[A-Za-z0-9._:-]{1,128}");
@@ -35,21 +36,25 @@ final class FinanceNotificationPolicy {
                 || "duplicate".equals(status);
     }
 
-    static Boolean selectedSourceEnabled(String sourcesJson) {
+    static LinkedHashSet<String> selectedSources(String sourcesJson) {
         if (sourcesJson == null || sourcesJson.length() > 128) {
             return null;
         }
-        if (sourcesJson.matches("\\[\\s*\\]")) {
-            return Boolean.FALSE;
+        LinkedHashSet<String> parsed = new JsonStringArrayParser(sourcesJson).parse();
+        if (parsed == null || parsed.size() > 2) {
+            return null;
         }
-        if (sourcesJson.matches(
-                "\\[\\s*\""
-                        + FinanceNotificationParser.SAMSUNG_WALLET_SOURCE
-                        + "\"\\s*\\]"
-        )) {
-            return Boolean.TRUE;
+        LinkedHashSet<String> canonical = FinanceNotificationParser.supportedSources();
+        canonical.retainAll(parsed);
+        return canonical.size() == parsed.size() ? canonical : null;
+    }
+
+    static Boolean selectedSourceEnabled(String sourcesJson) {
+        LinkedHashSet<String> selected = selectedSources(sourcesJson);
+        if (selected == null) {
+            return null;
         }
-        return null;
+        return !selected.isEmpty();
     }
 
     static String ownerHash(String owner) {
@@ -106,7 +111,7 @@ final class FinanceNotificationPolicy {
     static boolean isValidCandidate(FinanceNotificationParser.Candidate candidate) {
         return candidate != null
                 && isValidEventId(candidate.eventId)
-                && FinanceNotificationParser.SAMSUNG_WALLET_SOURCE.equals(candidate.source)
+                && FinanceNotificationParser.isSupportedSource(candidate.source)
                 && candidate.amount > 0L
                 && candidate.amount <= 999_999_999L
                 && candidate.merchant != null
@@ -117,6 +122,143 @@ final class FinanceNotificationPolicy {
                 )
                 && !hasSensitiveMerchantNumber(candidate.merchant)
                 && candidate.occurredAt > 0L;
+    }
+
+    private static final class JsonStringArrayParser {
+        private final String value;
+        private int index;
+
+        JsonStringArrayParser(String value) {
+            this.value = value;
+        }
+
+        LinkedHashSet<String> parse() {
+            LinkedHashSet<String> values = new LinkedHashSet<>();
+            skipWhitespace();
+            if (!consume('[')) {
+                return null;
+            }
+            skipWhitespace();
+            if (consume(']')) {
+                skipWhitespace();
+                return index == value.length() ? values : null;
+            }
+            while (index < value.length()) {
+                String item = stringValue();
+                if (item == null
+                        || !FinanceNotificationParser.isSupportedSource(item)
+                        || !values.add(item)
+                        || values.size() > 2) {
+                    return null;
+                }
+                skipWhitespace();
+                if (consume(']')) {
+                    skipWhitespace();
+                    return index == value.length() ? values : null;
+                }
+                if (!consume(',')) {
+                    return null;
+                }
+                skipWhitespace();
+                if (index >= value.length() || value.charAt(index) == ']') {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        private String stringValue() {
+            if (!consume('\"')) {
+                return null;
+            }
+            StringBuilder decoded = new StringBuilder();
+            while (index < value.length()) {
+                char character = value.charAt(index++);
+                if (character == '\"') {
+                    return decoded.toString();
+                }
+                if (character < 0x20) {
+                    return null;
+                }
+                if (character != '\\') {
+                    decoded.append(character);
+                    continue;
+                }
+                if (index >= value.length()) {
+                    return null;
+                }
+                char escaped = value.charAt(index++);
+                switch (escaped) {
+                    case '\"':
+                    case '\\':
+                    case '/':
+                        decoded.append(escaped);
+                        break;
+                    case 'b':
+                        decoded.append('\b');
+                        break;
+                    case 'f':
+                        decoded.append('\f');
+                        break;
+                    case 'n':
+                        decoded.append('\n');
+                        break;
+                    case 'r':
+                        decoded.append('\r');
+                        break;
+                    case 't':
+                        decoded.append('\t');
+                        break;
+                    case 'u':
+                        Character unicode = unicodeCharacter();
+                        if (unicode == null) {
+                            return null;
+                        }
+                        decoded.append(unicode);
+                        break;
+                    default:
+                        return null;
+                }
+            }
+            return null;
+        }
+
+        private Character unicodeCharacter() {
+            if (index + 4 > value.length()) {
+                return null;
+            }
+            int decoded = 0;
+            for (int offset = 0; offset < 4; offset += 1) {
+                int digit = Character.digit(value.charAt(index + offset), 16);
+                if (digit < 0) {
+                    return null;
+                }
+                decoded = decoded * 16 + digit;
+            }
+            index += 4;
+            return (char) decoded;
+        }
+
+        private boolean consume(char expected) {
+            if (index >= value.length() || value.charAt(index) != expected) {
+                return false;
+            }
+            index += 1;
+            return true;
+        }
+
+        private void skipWhitespace() {
+            while (index < value.length()) {
+                char character = value.charAt(index);
+                if (character != ' '
+                        && character != '\t'
+                        && character != '\n'
+                        && character != '\r') {
+                    return;
+                }
+                index += 1;
+            }
+        }
     }
 
     private static boolean hasSensitiveMerchantNumber(String value) {

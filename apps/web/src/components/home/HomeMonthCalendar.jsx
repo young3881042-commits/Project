@@ -39,8 +39,18 @@ function CalendarMarkers({ summary }) {
   );
 }
 
-function SelectedDateDetail({ date, detailRef, summary, navigate, today }) {
+function financeSourceLabel(entry) {
+  if (entry?.origin?.kind !== 'card-notification') return '';
+  if (entry.origin.source === 'kakao-pay') return '카카오페이';
+  if (entry.origin.source === 'samsung-wallet') return '삼성페이';
+  return '결제 알림';
+}
+
+function SelectedDateDetail({ budgetEntries, date, detailRef, summary, navigate, today }) {
   const activities = summary.activities.slice(0, 8);
+  const financeEntries = (Array.isArray(budgetEntries) ? budgetEntries : [])
+    .filter((entry) => entry?.date === date)
+    .sort((left, right) => String(right.createdAt || '').localeCompare(String(left.createdAt || '')));
   const remainingActivities = summary.activities.slice(8);
   const hasRemainingSchedules = remainingActivities.some((activity) => activity.kind === 'schedule');
   const hasRemainingWorkouts = remainingActivities.some((activity) => activity.kind.startsWith('workout'));
@@ -72,6 +82,31 @@ function SelectedDateDetail({ date, detailRef, summary, navigate, today }) {
           <strong>−{formatNumber(summary.expense)}원</strong>
         </button>
       </div>
+
+      {financeEntries.length ? (
+        <div className="homeMonthFinanceList" aria-label={`${date} 수입과 지출 내역`}>
+          {financeEntries.map((entry) => {
+            const sourceLabel = financeSourceLabel(entry);
+            return (
+              <div className="homeMonthFinanceRow" key={entry.id}>
+                <span className={`homeMonthFinanceType ${entry.type}`}>
+                  {entry.type === 'deposit' ? '수입' : '지출'}
+                </span>
+                <span className="homeMonthFinanceCopy">
+                  <strong>{entry.category || '기타'}</strong>
+                  <small>
+                    {entry.memo || '기록 없음'}
+                    {sourceLabel ? ` · ${sourceLabel}` : ''}
+                  </small>
+                </span>
+                <em className={entry.type}>
+                  {entry.type === 'deposit' ? '+' : '−'}{formatNumber(entry.amount)}원
+                </em>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
 
       {activities.length ? (
         <div className="homeMonthActivityList">
@@ -108,6 +143,7 @@ function SelectedDateDetail({ date, detailRef, summary, navigate, today }) {
 
 export default function HomeMonthCalendar({
   calendar,
+  budgetEntries = [],
   monthFinances = { income: 0, expense: 0, incomeCount: 0, expenseCount: 0 },
   navigate,
   onChangeMonth,
@@ -232,7 +268,7 @@ export default function HomeMonthCalendar({
         ))}
       </div>
 
-      <SelectedDateDetail date={selectedDate} detailRef={detailRef} summary={selectedSummary} navigate={navigate} today={today} />
+      <SelectedDateDetail budgetEntries={budgetEntries} date={selectedDate} detailRef={detailRef} summary={selectedSummary} navigate={navigate} today={today} />
     </section>
   );
 }

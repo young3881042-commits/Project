@@ -19,10 +19,10 @@ export default function CardTransactionImportPanel({
 }) {
   if (!cardImport.nativeAvailable) {
     return (
-      <section className="lifeHubNotificationNotice granted" aria-label="삼성월렛 결제 수동 기록 안내">
+      <section className="lifeHubNotificationNotice granted" aria-label="결제 앱 사용 내역 수동 기록 안내">
         <MemoNavIcon type="chart" />
         <div>
-          <strong>삼성월렛 알림 확인 후 기록</strong>
+          <strong>결제 앱 알림 확인 후 기록</strong>
           <span>이 브라우저에서는 다른 앱의 알림을 읽지 않아요. 결제 금액과 사용처를 확인한 뒤 직접 입력해주세요.</span>
         </div>
         <button type="button" onClick={onManualEntry}>지출 입력</button>
@@ -36,15 +36,16 @@ export default function CardTransactionImportPanel({
       <header>
         <span className="lifeHubCardImportIcon"><MemoNavIcon type="chart" /></span>
         <div>
-          <strong id="cardImportTitle">삼성월렛 결제 자동 가져오기</strong>
+          <strong id="cardImportTitle">결제 알림 자동 가져오기</strong>
           <p>실제 결제 승인만 보수적으로 가져오며 송금·이체·입출금은 대상이 아닙니다.</p>
         </div>
         <button
           type="button"
           role="switch"
           aria-checked={cardImport.enabled}
-          aria-label="삼성월렛 결제 자동 가져오기"
+          aria-label="결제 알림 자동 가져오기"
           className={cardImport.enabled ? 'cardImportSwitch active' : 'cardImportSwitch'}
+          disabled={cardImport.syncing}
           onClick={cardImport.toggleEnabled}
         >
           {cardImport.enabled ? '켜짐' : '꺼짐'}
@@ -52,13 +53,31 @@ export default function CardTransactionImportPanel({
       </header>
 
       <p className="lifeHubCardImportPrivacy">
-        알림 원문·잔액·계좌·카드번호는 표시하거나 저장하지 않고, 검증된 금액·사용처·시각만 이 기기의 가계부에 저장해요.
+        선택한 앱의 알림은 기기 안에서만 확인해요. 알림 원문·잔액·계좌·카드번호는 표시하거나 저장하지 않고, 검증된 금액·사용처·시각만 이 기기의 가계부에 저장합니다.
       </p>
+
+      <div className="lifeHubCardImportPermission lifeHubCardImportSources" role="group" aria-labelledby="cardImportSourcesTitle">
+        <strong id="cardImportSourcesTitle">가져올 결제 앱</strong>
+        <p>삼성월렛과 카카오페이 앱 중 사용할 앱만 선택하세요. 카카오톡 알림톡은 읽지 않아요.</p>
+        <div>
+          {cardImport.sources.map((source) => (
+            <label key={source.id}>
+              <input
+                type="checkbox"
+                checked={cardImport.selectedSources.includes(source.id)}
+                disabled={cardImport.syncing}
+                onChange={() => cardImport.toggleSource(source.id)}
+              />
+              {' '}{source.label}
+            </label>
+          ))}
+        </div>
+      </div>
 
       {cardImport.enabled && !accessEnabled ? (
         <div className="lifeHubCardImportPermission">
           <strong>Android 알림 접근이 필요해요</strong>
-          <p>알림 접근은 모든 앱의 알림을 볼 수 있는 넓은 특수 권한입니다. Orbit은 삼성월렛 알림만 기기 안에서 확인해 실제 결제 승인만 가져옵니다.</p>
+          <p>알림 접근은 모든 앱의 알림을 볼 수 있는 넓은 특수 권한입니다. Orbit은 선택한 삼성월렛·카카오페이 알림만 기기 안에서 확인해 실제 결제 승인만 가져옵니다.</p>
           <p>권한을 허용하기 전의 과거 결제 내역은 가져올 수 없어요.</p>
           <div>
             <button type="button" className="primary" onClick={cardImport.openAccessSettings}>알림 접근 설정</button>

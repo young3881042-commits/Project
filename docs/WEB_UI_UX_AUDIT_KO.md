@@ -9,22 +9,22 @@
 - 목표: 일정, 메모, 운동, 식단, 가계부를 매일 부담 없이 기록하는 생활 앱
 - 유지할 큰 틀: 홈 월간 캘린더, 기능별 화면, 하단 6개 탭, 로컬 저장 중심 구조
 - 우선순위: 빠른 입력, 명확한 저장 상태, 모바일 한 손 사용, 데이터 신뢰
-- 비목표: 정보 구조 전면 개편, 브랜드 컬러 교체, 핵심 기능 삭제
+- 비목표: 정보 구조 전면 개편, 브랜드 컬러 교체, 6개 생활 기록 탭이나 기존 로컬 데이터 삭제
 
 ## 분야별 점수
 
 | 분야 | 초기 | 현재 | 현재 판단 |
 | --- | ---: | ---: | --- |
-| 핵심 기능 완성도 | 8.0 | 8.4 | 핵심 생활 기록, 버전형 복원, 브리핑과 로컬 Bridge 앱 수정 흐름을 실제 연결했다. |
-| 일상 입력 속도 | 6.8 | 7.5 | 6개 기능 탭을 유지하면서 AI의 명시적인 한 줄 기록 경로를 더했다. |
-| 정보 구조·탐색 | 7.6 | 8.6 | 6개 핵심 탭은 유지하고 앱 수정·설치·백업은 설정으로 분리했다. |
+| 핵심 기능 완성도 | 8.0 | 8.4 | 핵심 생활 기록, 버전형 복원, 브리핑과 결제 알림 가져오기를 실제 연결했다. |
+| 일상 입력 속도 | 6.8 | 7.5 | 6개 기능 탭과 직접 입력 흐름을 짧게 유지했다. |
+| 정보 구조·탐색 | 7.6 | 8.6 | 6개 핵심 탭은 유지하고 설치·백업은 설정으로 분리했다. |
 | 모바일 조작성 | 7.5 | 8.2 | 하단 아이콘과 행간, 활동 요약 기간 선택의 터치 영역을 보강했다. |
 | 시각 일관성 | 7.3 | 8.1 | 배포 CSS를 LifeHub 전용으로 좁혀 구형 화면 규칙의 충돌 가능성을 줄였다. |
 | 접근성 | 8.3 | 8.6 | 전역 포커스, ARIA, 키보드 달력, 모션 감소, 로딩 상태를 유지·추가했다. |
-| 피드백·오류 복구 | 7.2 | 8.3 | 저장 실패 복구와 함께 AI 승인·명령·파일·결과 상태를 실시간으로 확인할 수 있다. |
+| 피드백·오류 복구 | 7.2 | 8.3 | 저장 실패 복구와 백업 복원 결과, 결제 가져오기 상태를 확인할 수 있다. |
 | 데이터 신뢰·개인정보 | 7.8 | 8.4 | 버전형 JSON 백업, 복원 미리보기, 합치기·교체와 실패 rollback을 실제 연결했다. |
 | 성능·안정성 | 7.7 | 9.2 | 레거시 번들을 제외하고 무거운 기능을 지연 로딩해 초기 JS와 전체 자산을 크게 줄였다. |
-| PWA·로컬 APK 준비 | 7.5 | 8.7 | 경량 공개 자산, v26 캐시, manifest, 오프라인 셸과 Android SAF 백업 경계가 있다. |
+| PWA·로컬 APK 준비 | 7.5 | 8.7 | 경량 공개 자산, v28 캐시, manifest, 오프라인 셸과 Android SAF 백업 경계가 있다. |
 | 종합 | **7.6** | **8.7** | 개인용 로컬 앱으로 충분히 사용 가능. 실제 기기 회귀 테스트 후 고정 권장. |
 
 현재 점수는 코드와 자동검증 기준이다. 실제 기기 점검을 통과하면 최종 점수로 확정한다.
@@ -58,41 +58,21 @@
 - 복원 중 일부 저장이 실패하면 작업 전 스냅샷으로 자동 rollback하고, Android는 Storage Access Framework 문서 선택기를 사용
 - 하단 6개 핵심 기록 탭은 유지해 기존 사용 습관을 바꾸지 않음
 
-### 로컬 Bridge 개발 연결
+### AI·Bridge·음식 사진 기능 비활성화
 
-- Vite 개발 화면은 별도 설정 없이 `http://127.0.0.1:4317` Bridge를 사용
-- 같은 PC의 loopback 웹에서는 `로컬 Bridge 바로 사용` 버튼 한 번으로 코드·관리자 승인 없이 연결
-- 로컬 자동 연결은 socket·Host·Origin이 모두 loopback이고 proxy header가 없는 경우로 제한
-- 연결 기기에는 전체 권한을 부여하고 `/ai/edit` 일반 작업은 승인 대기를 생략하되, 선택 프로젝트 경계는 유지하고 삭제·위험 작업만 마지막 확인
-- 관리자 화면과 원격 접속은 기존 인증·6자리 페어링을 유지
-- APK 프로덕션 빌드는 기존 고정 HTTPS Bridge를 유지
-- 필요하면 `VITE_LIFEHUB_BRIDGE_ADDRESS`와 `VITE_LIFEHUB_BRIDGE_PORT`로 개발 주소를 명시 가능
+- 홈의 AI 카드, 더보기의 앱 수정 행, 식단의 음식 사진 분석 카드를 제거하고 직접 입력 흐름은 유지
+- `/ai`, `/ai/edit`, `/ai/settings`는 `/app`으로 이동하며 해당 지연 로딩 청크를 production bundle에 포함하지 않음
+- APK의 Bridge HTTP/SSE transport, Android Keystore token store, network-status API와 이미지 chooser를 제거하고 JSON 백업 chooser만 유지
+- `ACCESS_NETWORK_STATE`와 cleartext 예외를 제거해 Android cleartext traffic을 명시적으로 차단
+- 보관된 과거 AI 모듈은 현행 앱에서 import하지 않으며 사용자 명시 요청 없이 다시 노출하지 않음
 
-### 대화형 앱 수정 작업 화면
+### 결제 앱 알림 일괄 가져오기
 
-- 설정의 첫 행에 `앱 수정하기`를 추가하고 `/ai/edit` 전용 화면으로 연결
-- 기존 Codex SSE·승인·이어받기 로직을 그대로 공유해 새 채팅 구현을 복제하지 않음
-- 데스크톱은 채팅과 실시간 진행·결과 보드를 2열로, 좁은 화면은 1열로 표시
-- Bridge의 `todo.updated`가 있으면 실제 완료 개수로 퍼센트를 계산하고, 없으면 추정 퍼센트 대신 현재 단계만 표시
-- 승인 대기, 실행 중 명령, 변경 파일, 명령 성공·실패 수, 최종 결과를 같은 보드에서 갱신
-- 앱 수정 모드는 선택 프로젝트 전체와 기본 테스트·빌드 범위를 미리 채운다. 로컬 일반 작업은 승인 대기를 생략하고 경로 검사는 유지하며, 삭제·초기화 같은 위험 작업만 마지막 1회 확인한다.
-- 답변과 작업 이벤트는 실시간이며, 실행 도중 추가 메시지는 작성만 해두고 현재 turn 완료 후 순서대로 전송
-
-### AI 한 줄 생활 기록
-
-- 일반 AI에 `메모: ...`, 지출, 수입, 운동 시간, 식사 열량처럼 의도가 명확한 한 줄 입력을 추가
-- 일정 생성 파서를 먼저 실행하고 생활 기록은 Bridge 연결 확인보다 먼저 처리해 오프라인에서도 동작
-- 첫 입력에서는 메모·가계부·운동·식단 미리보기만 보여주고 후속 `저장` 또는 `취소`를 받아 2단계로 확정
-- 같은 request ID의 재실행만 중복 차단하고 정규화 fingerprint는 origin 추적에 남겨, 새 요청의 동일한 실제 지출·운동·식사는 각각 보존. 저장 실패 때 pending 초안을 유지해 같은 요청을 안전하게 재시도
-- 앱 수정/Codex 대화와 모호한 문장은 로컬 기록으로 오인하지 않음
-
-### 삼성월렛 결제 일괄 가져오기
-
-- 가계부 상단에서 삼성월렛 결제 가져오기를 명시적으로 켜고 Android 알림 접근 설정으로 이동
+- 가계부 상단에서 결제 알림 가져오기를 명시적으로 켜고 삼성월렛·카카오페이를 개별 선택한 뒤 Android 알림 접근 설정으로 이동
 - 넓은 시스템 권한이라는 점과 사이드로드 앱의 제한된 설정 절차를 숨기지 않고 안내
-- 삼성월렛의 새 결제 승인만 기기 내부 대기열에 모은 뒤 Orbit 실행·foreground 복귀 때 가계부에 일괄 반영
-- 자동 반영 건은 사용처·금액·`삼성월렛 자동` 출처를 구분해 표시하고 기존 삭제 동작으로 오인식을 정리 가능
-- 원문, 카드·계좌번호, 잔액은 화면·저장소·네트워크에 남기지 않고, 취소·환불·입출금·송금·이체·광고는 대상에서 제외
+- 선택한 결제 앱의 새 승인만 기기 내부 대기열에 모은 뒤 Orbit 실행·foreground 복귀 때 가계부에 일괄 반영
+- 자동 반영 건은 사용처·금액·소스별 자동 출처를 구분해 표시하고 기존 삭제 동작으로 오인식을 정리 가능
+- 원문, 카드·계좌번호, 잔액은 화면·저장소·네트워크에 남기지 않고, 취소·환불·입출금·송금·이체·충전·적립·광고는 대상에서 제외
 
 ### 아침·저녁 브리핑과 알림
 
@@ -115,11 +95,10 @@
 ### 유지보수 구조 분리
 
 - 홈 화면과 기간 통계 계산을 `features/home`의 화면·순수 모델로 분리
-- AI 연결 화면을 표시 컴포넌트, 상태 훅, 설정/오류 모델, 저장 변환으로 분리
-- Bridge의 로컬 신뢰 판정을 `local-request-policy.ts`로 분리해 일반 관리자 인증과 섞이지 않게 함
-- 생활 기록의 파싱과 실제 저장을 `features/life-records`로 분리하고 AI 화면에는 2단계 대화 상태만 유지
 - 백업 codec·복원 transaction·native document adapter·패널을 `features/backup`으로 분리
 - 브리핑 계산·설정·카드를 `features/automation`으로 분리하고 일정 알림 예약과 조립
+- 결제 알림 source catalog·native adapter·batch import·React 상태를 `features/finance`로 분리
+- 과거 AI 모듈은 보관 코드로만 두고 `LifeHubApp`·홈·식단·라우터에서 import하지 않음
 - 새 데이터 모듈 단위 테스트는 `test:lifehub-data`, 화면·prop·SAF·6탭 회귀는 `lifeHubUiStructure.test.mjs`에서 검증
 - 다음 작업 기준과 검증 순서를 `LIFEHUB_MAINTENANCE_KO.md`에 기록
 
@@ -127,18 +106,15 @@
 
 - `apps/web/src/features/home/HomePage.jsx`: 홈 활동 요약 기간 전환 UI
 - `apps/web/src/features/home/homeActivitySummary.js`: 주·월·연·전체 통계 계산
-- `apps/web/src/features/lifehub-ai/*Pairing*`, `useAiPairing.js`: 연결 UI와 상태 흐름 분리
-- `apps/web/src/features/lifehub-ai/AppEditorPage.jsx`, `appEditorExperience.js`: 앱 수정 전용 진입과 반복 승인 범위 기본값
-- `apps/web/src/features/lifehub-ai/appEditorProgress.js`, `AppEditorProgressPanel.jsx`: 실시간 진행 계산과 결과 보드
-- `apps/web/src/features/life-records/lifeRecordAction.js`, `saveLifeRecordAction.js`: 한 줄 기록 파싱, 종류별 저장과 중복 방지
+- `apps/web/src/components/diet/DietPage.jsx`: 음식 사진·Bridge 의존성을 제거한 직접 식단 입력
+- `apps/web/src/features/finance/*`: 삼성월렛·카카오페이 선택, native 검증과 일괄 저장
 - `apps/web/src/features/backup/*`: 버전형 codec, merge/replace 계획, rollback 복원, 웹·Android 문서 adapter와 패널
 - `apps/web/src/features/automation/*`: 아침·저녁 브리핑 모델, 홈 카드와 설정
 - `apps/mobile/android/src/com/platform/aiassitant/LifeHubBackupDocumentCoordinator.java`, `LifeHubBackupDocumentPolicy.java`: Android SAF 백업 경계
-- `tools/lifehub-bridge/src/local-request-policy.ts`: 로컬 원클릭 연결 신뢰 경계
+- `apps/mobile/android/src/com/platform/aiassitant/FinanceNotification*.java`, `FinanceTransactionQueue.java`: exact package 파싱·선택·private queue
 - `apps/web/src/styles/lifehub-reference.css`: 하단 탭 보정
-- `apps/web/src/styles/lifehub-ai.css`: 상단 데이터 관리 버튼이 마지막 CSS에서도 2열을 유지하도록 보정
-- `apps/web/src/routes/AppRouter.jsx`: `/more` 접근 복구
-- `apps/web/tests/lifeHubUiStructure.test.mjs`: 6개 핵심 탭·빠른 기록 미복귀, 새 prop·패널·브리핑·SAF·v26 경계를 함께 검증
+- `apps/web/src/routes/AppRouter.jsx`: `/more` 접근과 구형 AI 경로의 `/app` 이동
+- `apps/web/tests/lifeHubUiStructure.test.mjs`: 6개 핵심 탭, AI 진입점 부재, 결제 패널, 브리핑·SAF·v28 경계를 함께 검증
 - `docs/WEB_UI_UX_AUDIT_KO.md`: 분야별 평가, 변경, 검증, 후속 기준
 
 ## 다음 작업 전 확인 순서

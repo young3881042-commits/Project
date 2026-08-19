@@ -79,13 +79,24 @@ final class FinanceNotificationAccess {
         JSONArray supportedSourceIds = new JSONArray();
         JSONArray selected = new JSONArray();
         try {
-            JSONObject samsungWallet = new JSONObject();
-            samsungWallet.put("id", FinanceNotificationParser.SAMSUNG_WALLET_SOURCE);
-            samsungWallet.put("label", "삼성월렛");
-            sources.put(samsungWallet);
-            supportedSourceIds.put(FinanceNotificationParser.SAMSUNG_WALLET_SOURCE);
-            if (FinanceTransactionQueue.isCollectionEnabled(context)) {
-                selected.put(FinanceNotificationParser.SAMSUNG_WALLET_SOURCE);
+            String[] sourceIds = {
+                    FinanceNotificationParser.SAMSUNG_WALLET_SOURCE,
+                    FinanceNotificationParser.KAKAO_PAY_SOURCE
+            };
+            String[] sourceLabels = {
+                    "삼성월렛",
+                    "카카오페이 앱"
+            };
+            Set<String> selectedSourceIds = FinanceTransactionQueue.selectedSources(context);
+            for (int index = 0; index < sourceIds.length; index += 1) {
+                JSONObject source = new JSONObject();
+                source.put("id", sourceIds[index]);
+                source.put("label", sourceLabels[index]);
+                sources.put(source);
+                supportedSourceIds.put(sourceIds[index]);
+                if (selectedSourceIds.contains(sourceIds[index])) {
+                    selected.put(sourceIds[index]);
+                }
             }
             result.put("schemaVersion", 1);
             result.put("nativeCardImport", true);
@@ -131,7 +142,8 @@ final class FinanceNotificationAccess {
         LinkedHashSet<String> eventIds = new LinkedHashSet<>();
         try {
             JSONArray decisions = new JSONArray(decisionsJson);
-            if (decisions.length() > FinanceNotificationPolicy.MAX_BRIDGE_BATCH) {
+            if (decisions.length() == 0
+                    || decisions.length() > FinanceNotificationPolicy.MAX_IMPORT_BATCH) {
                 return null;
             }
             for (int index = 0; index < decisions.length(); index += 1) {

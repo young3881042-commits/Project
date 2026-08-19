@@ -120,9 +120,6 @@ run_android_security_tests() {
     "${test_sources[@]}"
   java \
     -classpath "${test_classes_dir}:${BUILD_DIR}/classes:${platform_dir}/android.jar" \
-    com.platform.aiassitant.BridgeHttpProxyStaticTest
-  java \
-    -classpath "${test_classes_dir}:${BUILD_DIR}/classes:${platform_dir}/android.jar" \
     com.platform.aiassitant.AppNotificationCoordinatorStaticTest
   java \
     -classpath "${test_classes_dir}:${BUILD_DIR}/classes:${platform_dir}/android.jar" \
@@ -160,8 +157,8 @@ scan_apk_credentials() {
 verify_apk_finance_notification_capability() {
   local aapt2_bin="$1"
   local apk_path="$2"
-  local manifest_dump listener_block listener_count dex_listener_count
-  log "Checking the approved Samsung Wallet notification-listener capability."
+  local manifest_dump listener_block listener_count dex_listener_count approved_package
+  log "Checking the approved finance notification-listener capability."
   manifest_dump="$("${aapt2_bin}" dump xmltree "${apk_path}" --file AndroidManifest.xml)"
   listener_block="$(printf '%s\n' "${manifest_dump}" | awk '
     /^          E: service/ { capture = 1; block = $0 ORS; next }
@@ -186,18 +183,33 @@ verify_apk_finance_notification_capability() {
   dex_listener_count="$(unzip -p "${apk_path}" classes.dex \
     | strings -a -n 8 \
     | LC_ALL=C grep -c 'FinanceNotificationListenerService' || true)"
-  if [[ "${dex_listener_count}" -lt 1 ]] \
-      || ! unzip -p "${apk_path}" classes.dex \
-          | strings -a -n 8 \
-          | LC_ALL=C grep -c 'com.samsung.android.spay' >/dev/null; then
-    echo "APK DEX is missing the approved Samsung Wallet listener implementation." >&2
+  if [[ "${dex_listener_count}" -lt 1 ]]; then
+    echo "APK DEX is missing the approved finance notification listener implementation." >&2
+    exit 2
+  fi
+  for approved_package in \
+      'com.samsung.android.spay' \
+      'com.kakaopay.app'; do
+    if ! unzip -p "${apk_path}" classes.dex \
+        | strings -a -n 8 \
+        | LC_ALL=C grep -c "${approved_package}" >/dev/null; then
+      echo "APK DEX is missing an approved finance notification source." >&2
+      exit 2
+    fi
+  done
+  if unzip -p "${apk_path}" \
+      | strings -a -n 8 \
+      | LC_ALL=C grep -E \
+          'BridgeHttpProxy|SecureTokenStore|lifehub:native-bridge-(response|stream)|/api/food/analyze|음식 사진 분석|AI 연결 설정' \
+          >/dev/null; then
+    echo "APK still contains a removed AI Bridge or food-photo capability." >&2
     exit 2
   fi
 }
 
 audit_android_source_security() {
   local java_dir="${APP_DIR}/src"
-  local forbidden='public[[:space:]]+(String|boolean)[[:space:]]+(getSecureValue|setSecureValue|setBridgeToken)[[:space:]]*\(|setWebContentsDebuggingEnabled[[:space:]]*\([[:space:]]*true[[:space:]]*\)|\.proceed[[:space:]]*\([[:space:]]*\)|setHostnameVerifier|setSSLSocketFactory'
+  local forbidden='public[[:space:]]+(String|boolean)[[:space:]]+(getSecureValue|setSecureValue|setBridgeToken|getBridgeCapabilities|bridgeRequest|bridgeStream|bridgeCancel)[[:space:]]*\(|BridgeHttpProxy|SecureTokenStore|ImageFileChooserPolicy|setWebContentsDebuggingEnabled[[:space:]]*\([[:space:]]*true[[:space:]]*\)|\.proceed[[:space:]]*\([[:space:]]*\)|setHostnameVerifier|setSSLSocketFactory'
   local listener_source="${java_dir}/com/platform/aiassitant/FinanceNotificationListenerService.java"
   local finance_queue_source="${java_dir}/com/platform/aiassitant/FinanceTransactionQueue.java"
   local listener_block listener_source_count listener_permission_count listener_action_count
@@ -242,10 +254,18 @@ audit_android_source_security() {
     echo "Android source audit requires exactly one protected, non-exported finance notification listener." >&2
     exit 2
   fi
-  if ! LC_ALL=C grep -F \
-      'return SAMSUNG_WALLET_PACKAGE.equals(packageName);' \
+  for approved_package in \
+      'com.samsung.android.spay' \
+      'com.kakaopay.app'; do
+    if ! LC_ALL=C grep -F "${approved_package}" \
+        "${java_dir}/com/platform/aiassitant/FinanceNotificationParser.java" >/dev/null; then
+      echo "Android source audit requires every approved finance package in the exact allowlist." >&2
+      exit 2
+    fi
+  done
+  if ! LC_ALL=C grep -F 'sourceForPackage' \
       "${java_dir}/com/platform/aiassitant/FinanceNotificationParser.java" >/dev/null; then
-    echo "Android source audit requires an exact Samsung Wallet package allowlist." >&2
+    echo "Android source audit requires package-to-source resolution before notification parsing." >&2
     exit 2
   fi
   if LC_ALL=C grep -E "${forbidden_finance_logging}" \
@@ -265,6 +285,14 @@ audit_android_source_security() {
   fi
   if LC_ALL=C grep -E "${forbidden_storage}" "${APP_DIR}/AndroidManifest.xml" >/dev/null; then
     echo "Android source security audit found a broad storage or media permission." >&2
+    exit 2
+  fi
+  if LC_ALL=C grep -E \
+      'ACCESS_NETWORK_STATE|android:networkSecurityConfig|android:usesCleartextTraffic="true"' \
+      "${APP_DIR}/AndroidManifest.xml" >/dev/null \
+      || ! LC_ALL=C grep -F 'android:usesCleartextTraffic="false"' \
+          "${APP_DIR}/AndroidManifest.xml" >/dev/null; then
+    echo "Android source security audit requires the Bridge-free cleartext-disabled manifest." >&2
     exit 2
   fi
   if [[ -f "${backup_source}" ]] \
@@ -324,9 +352,14 @@ build_raw_apk() {
 
   local keytool_bin
   keytool_bin="$(command -v keytool || true)"
+  local d8_bin="${ANDROID_D8_BIN:-${build_tools_dir}/d8}"
   for tool in aapt2 d8 zipalign apksigner; do
-    if [[ ! -x "${build_tools_dir}/${tool}" ]]; then
-      echo "Missing Android build tool: ${build_tools_dir}/${tool}" >&2
+    local tool_path="${build_tools_dir}/${tool}"
+    if [[ "${tool}" == "d8" ]]; then
+      tool_path="${d8_bin}"
+    fi
+    if [[ ! -x "${tool_path}" ]]; then
+      echo "Missing Android build tool: ${tool_path}" >&2
       exit 2
     fi
   done
@@ -415,7 +448,7 @@ build_raw_apk() {
   local class_file_list="${BUILD_DIR}/class-files.txt"
   find "${BUILD_DIR}/classes" -type f -name '*.class' -print | sort > "${class_file_list}"
   mapfile -t class_files < "${class_file_list}"
-  "${build_tools_dir}/d8" \
+  "${d8_bin}" \
     --min-api "${MIN_API}" \
     --lib "${platform_dir}/android.jar" \
     --output "${BUILD_DIR}/dex" \

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  CARD_IMPORT_SOURCE_IDS,
+  CARD_IMPORT_SOURCES,
   NATIVE_CARD_IMPORT_RESULT_EVENT,
   NativeCardImportError,
   acknowledgePendingCardTransactions,
@@ -14,6 +16,7 @@ import {
 } from './nativeCardTransactions.js';
 
 const occurredAt = Date.parse('2026-08-19T01:23:45.000Z');
+const allSources = [...CARD_IMPORT_SOURCE_IDS];
 
 function candidate(overrides = {}) {
   return {
@@ -40,9 +43,11 @@ function nativeTarget(overrides = {}) {
     getCardImportCapabilities() {
       return JSON.stringify({
         schemaVersion: 1,
+        nativeCardImport: true,
         supported: true,
         access: 'enabled',
-        availableSources: [{ id: 'samsung-wallet', label: '삼성월렛' }],
+        supportedSources: allSources,
+        availableSources: CARD_IMPORT_SOURCES,
         selectedSources: ['samsung-wallet'],
         pendingCount: 2
       });
@@ -64,7 +69,7 @@ test('native 카드 capability와 설정 API는 정확한 메서드 집합에서
     schemaVersion: 1,
     nativeCardImport: true,
     access: 'enabled',
-    supportedSources: ['samsung-wallet'],
+    supportedSources: allSources,
     selectedSources: ['samsung-wallet'],
     pendingCount: 2
   });
@@ -74,8 +79,57 @@ test('native 카드 capability와 설정 API는 정확한 메서드 집합에서
   assert.equal(hasNativeCardImportApi({ AiAssistantNative: {} }), false);
 });
 
+test('native capability는 두 source의 정확한 ID, 순서, label 외에는 fail-closed 한다', () => {
+  const capabilities = {
+    schemaVersion: 1,
+    nativeCardImport: true,
+    supported: true,
+    access: 'enabled',
+    supportedSources: allSources,
+    availableSources: CARD_IMPORT_SOURCES,
+    selectedSources: allSources,
+    pendingCount: 0
+  };
+  const withCapabilities = (overrides) => nativeTarget({
+    getCardImportCapabilities() {
+      return JSON.stringify({ ...capabilities, ...overrides });
+    }
+  });
+
+  assert.deepEqual(
+    nativeCardImportCapabilities(withCapabilities({})).selectedSources,
+    allSources
+  );
+  assert.equal(nativeCardImportCapabilities(withCapabilities({
+    supportedSources: ['samsung-wallet']
+  })), null);
+  assert.equal(nativeCardImportCapabilities(withCapabilities({
+    supportedSources: [...allSources, 'unknown-pay']
+  })), null);
+  assert.equal(nativeCardImportCapabilities(withCapabilities({
+    availableSources: CARD_IMPORT_SOURCES.map((source) => (
+      source.id === 'kakao-pay' ? { ...source, label: '카카오' } : source
+    ))
+  })), null);
+  assert.equal(nativeCardImportCapabilities(withCapabilities({
+    selectedSources: ['kakao-pay', 'samsung-wallet']
+  })), null);
+  assert.equal(nativeCardImportCapabilities(withCapabilities({
+    selectedSources: ['samsung-wallet', 'unknown-pay']
+  })), null);
+  assert.equal(nativeCardImportCapabilities(nativeTarget({
+    getCardImportCapabilities() {
+      return JSON.stringify({ ...capabilities, unexpected: true });
+    }
+  })), null);
+});
+
 test('candidate는 허용된 최소 필드만 받고 원문·잔액·계좌처럼 보이는 값을 거부한다', () => {
   assert.deepEqual(normalizeNativeCardCandidate(candidate()), candidate());
+  assert.deepEqual(
+    normalizeNativeCardCandidate(candidate({ source: 'kakao-pay' })).source,
+    'kakao-pay'
+  );
   assert.equal(normalizeNativeCardCandidate({ ...candidate(), rawText: '원문' }), null);
   assert.equal(normalizeNativeCardCandidate(candidate({ merchant: '잔액 12,000원' })), null);
   assert.equal(normalizeNativeCardCandidate(candidate({ merchant: '계좌 110-123-456789' })), null);
@@ -118,13 +172,13 @@ test('peek은 matching requestId의 strict batch만 반환한다', async () => {
   });
   const result = await requestPendingCardTransactions({
     owner: 'GuestUser',
-    sources: ['samsung-wallet'],
+    sources: ['kakao-pay', 'samsung-wallet'],
     target,
     timeoutMs: 1000
   });
   assert.match(requested.requestId, /^card-import-peek-/);
   assert.equal(requested.owner, 'guestuser');
-  assert.deepEqual(requested.sources, ['samsung-wallet']);
+  assert.deepEqual(requested.sources, allSources);
   assert.deepEqual(result.items, [candidate()]);
 });
 

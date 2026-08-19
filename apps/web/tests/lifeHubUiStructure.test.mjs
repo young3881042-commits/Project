@@ -17,17 +17,16 @@ function sectionBetween(value, start, end) {
   return value.slice(from, to);
 }
 
-test('LifeHub 홈은 생활 요약 뒤에 Bridge 진입점을 렌더링한다', async () => {
-  const [lifeHub, home, activitySummary, shell, aiCss] = await Promise.all([
+test('LifeHub 홈은 생활 요약을 유지하고 AI 진입점을 렌더링하지 않는다', async () => {
+  const [lifeHub, home, activitySummary, shell] = await Promise.all([
     source('src/LifeHubApp.jsx'),
     source('src/features/home/HomePage.jsx'),
     source('src/features/home/homeActivitySummary.js'),
-    source('src/components/lifehub/LifeHubShell.jsx'),
-    source('src/styles/lifehub-ai.css')
+    source('src/components/lifehub/LifeHubShell.jsx')
   ]);
   const homeComponent = home.slice(home.indexOf('export default function HomePage('));
   const renderedHome = homeComponent.slice(homeComponent.indexOf('  return ('));
-  const expected = ['lifeHubHomeGreeting', 'HomeMonthCalendar', 'lifeHubWeeklySummary', 'AiHomeCard'];
+  const expected = ['lifeHubHomeGreeting', 'HomeMonthCalendar', 'lifeHubWeeklySummary'];
   let cursor = -1;
   for (const marker of expected) {
     const next = renderedHome.indexOf(marker);
@@ -38,11 +37,7 @@ test('LifeHub 홈은 생활 요약 뒤에 Bridge 진입점을 렌더링한다', 
     assert.equal(home.includes(removed), false, `${removed} 영역이 홈에 남아 있습니다.`);
   }
   assert.doesNotMatch(home, /displayName|Guest님/);
-  assert.match(aiCss, /\.lifeHubHomeSimplePage \{[\s\S]*grid-template-columns: minmax\(0, 1fr\)/);
-  assert.match(aiCss, /\.lifeHubHomeGreeting \{[\s\S]*display: block/);
-  assert.match(aiCss, /@media \(max-width: 480px\)[\s\S]*\.lifeHubHomeGreeting > \.lifeHubPackIcon \{ display: none; \}/);
-  assert.match(home, /<AiHomeCard navigate=\{navigate\}/);
-  assert.doesNotMatch(home, /빠른 기록|lifeHubHomeQuickActions/);
+  assert.doesNotMatch(home, /AiHomeCard|lifehub-ai|빠른 기록|lifeHubHomeQuickActions/);
   assert.match(home, /HOME_ACTIVITY_PERIODS\.map/);
   assert.match(home, /buildHomeActivitySummary/);
   assert.match(home, /role="tablist" aria-label="활동 요약 기간"/);
@@ -96,11 +91,10 @@ test('홈 월 캘린더는 날짜별 금액과 운동·일정 예정/완료를 �
 });
 
 test('식단 중심 6탭을 유지하고 데이터 관리 화면은 상단에서 연다', async () => {
-  const [lifeHub, home, shell, aiCss, router, mobileTabs, mobileShell, memoPage, memoCard] = await Promise.all([
+  const [lifeHub, home, shell, router, mobileTabs, mobileShell, memoPage, memoCard] = await Promise.all([
     source('src/LifeHubApp.jsx'),
     source('src/features/home/HomePage.jsx'),
     source('src/components/lifehub/LifeHubShell.jsx'),
-    source('src/styles/lifehub-ai.css'),
     source('src/routes/AppRouter.jsx'),
     source('src/components/MobileWorkspaceTabs.jsx'),
     source('src/components/MobilePageShell.jsx'),
@@ -117,110 +111,44 @@ test('식단 중심 6탭을 유지하고 데이터 관리 화면은 상단에서
   assert.match(shell, /className="lifeHubTopAction"[\s\S]*go\('\/more'\)[\s\S]*앱 설정과 데이터 관리 열기/);
   assert.doesNotMatch(`${mobileTabs}\n${mobileShell}`, /더보기|\/more/);
   assert.match(shell, /aria-current=\{active \? 'page'/);
-  assert.match(home, /import AiHomeCard from '\.\.\/lifehub-ai\/AiHomeCard\.jsx'/);
-  assert.match(lifeHub, /const AiAssistantPage = lazy\(\(\) => import\('\.\/features\/lifehub-ai\/AiAssistantPage\.jsx'\)\)/);
-  assert.match(lifeHub, /const AiPairingPage = lazy\(\(\) => import\('\.\/features\/lifehub-ai\/AiPairingPage\.jsx'\)\)/);
+  assert.doesNotMatch(home, /AiHomeCard|lifehub-ai/);
+  assert.doesNotMatch(lifeHub, /AiAssistantPage|AiPairingPage|AppEditorPage/);
   assert.match(shell, /<Suspense fallback=/);
-  assert.match(lifeHub, /'\/ai': 'ai'/);
-  assert.match(lifeHub, /'\/ai\/settings': 'ai-settings'/);
-  assert.match(shell, /ai: \{ title: 'AI', path: '\/ai', icon: 'message' \}/);
-  assert.match(lifeHub, /route === 'ai'[\s\S]*?<AiAssistantPage[\s\S]*?navigate=\{go\}[\s\S]*?onCreateLifeRecord=\{createLifeRecordFromAssistant\}/);
-  assert.match(lifeHub, /route === 'ai-settings'[\s\S]*<AiPairingPage navigate=\{go\}/);
+  assert.doesNotMatch(lifeHub, /'\/ai(?:\/[^']*)?':|route === 'ai/);
+  assert.doesNotMatch(shell, /path: '\/ai|ai-editor|ai-settings/);
   assert.doesNotMatch(lifeHub, /title: 'AI여행'/);
-  assert.doesNotMatch(router, /routePath === '\/ai'[\s\S]*return '\/app'/);
-  assert.match(router, /LIFEHUB_PATHS = new Set\([\s\S]*'\/ai'/);
-  assert.match(aiCss, /\.lifeHubRoute-ai \.lifeHubBottomNav \{[\s\S]*grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)/);
+  assert.match(router, /LEGACY_ROUTE_ROOTS = new Set\(\[[\s\S]*'ai'/);
+  assert.doesNotMatch(router, /'\/ai(?:\/[^']*)?'/);
   assert.match(router, /LIFEHUB_PATHS = new Set\([\s\S]*'\/more'/);
   assert.doesNotMatch(router, /routePath === '\/more'[\s\S]*return DEFAULT_APP_PATH/);
   assert.doesNotMatch(router, /lazy\(\(\) => import\('\.\.\/pages\/travel\/TravelPage\.jsx'\)\)/);
   assert.doesNotMatch(router, /ConnectionsPage/);
-  assert.match(aiCss, /grid-template-columns: repeat\(6, minmax\(44px, 1fr\)\)/);
-  assert.match(aiCss, /overflow-x: auto/);
   assert.match(`${memoPage}\n${memoCard}`, /중요 기록/);
   assert.doesNotMatch(`${memoPage}\n${memoCard}`, /소중한 기록/);
 });
 
-test('더보기 첫 행에서 앱 수정 전용 AI 화면으로 이동한다', async () => {
-  const [lifeHub, router, shell, appEditor] = await Promise.all([
+test('AI·Bridge 화면과 음식 사진 분석은 앱에서 제거되고 이전 주소는 홈으로 이동한다', async () => {
+  const [lifeHub, home, router, shell, diet, dietForm] = await Promise.all([
     source('src/LifeHubApp.jsx'),
+    source('src/features/home/HomePage.jsx'),
     source('src/routes/AppRouter.jsx'),
     source('src/components/lifehub/LifeHubShell.jsx'),
-    source('src/features/lifehub-ai/AppEditorPage.jsx')
+    source('src/components/diet/DietPage.jsx'),
+    source('src/components/diet/DietEntryForm.jsx')
   ]);
   const more = sectionBetween(lifeHub, 'function MorePage(', 'export default function LifeHubApp(');
-  const editShortcut = more.indexOf('label="앱 수정하기"');
-  const installShortcut = more.indexOf('label="앱 설치"');
 
-  assert.ok(editShortcut >= 0, '앱 수정하기 바로가기가 필요합니다.');
-  assert.ok(editShortcut < installShortcut, '앱 수정하기가 더보기 메뉴 첫 행이어야 합니다.');
-  assert.match(more, /label="앱 수정하기"[\s\S]*detail="대화로 앱·웹 수정 요청"[\s\S]*navigate\('\/ai\/edit'\)/);
-  assert.match(lifeHub, /const AppEditorPage = lazy\(\(\) => import\('\.\/features\/lifehub-ai\/AppEditorPage\.jsx'\)\)/);
-  assert.match(lifeHub, /'\/ai\/edit': 'ai-editor'/);
-  assert.match(lifeHub, /route === 'ai-editor'[\s\S]*<AppEditorPage navigate=\{go\}/);
-  assert.match(router, /LIFEHUB_PATHS = new Set\([\s\S]*'\/ai\/edit'/);
-  assert.match(shell, /'ai-editor': \{ title: '앱 수정하기', path: '\/ai\/edit', icon: 'edit' \}/);
-  assert.match(appEditor, /<AiAssistantPage navigate=\{navigate\} experience="app-edit" onCreateSchedule=\{onCreateSchedule\} \/>/);
-});
-
-test('앱 수정 화면은 Bridge todo를 실시간 진행 체크와 결과 요약으로 표시한다', async () => {
-  const [assistant, progressPanel, experience, aiCss] = await Promise.all([
-    source('src/features/lifehub-ai/AiAssistantPage.jsx'),
-    source('src/features/lifehub-ai/AppEditorProgressPanel.jsx'),
-    source('src/features/lifehub-ai/appEditorExperience.js'),
-    source('src/styles/lifehub-ai.css')
-  ]);
-
-  assert.match(assistant, /experience === APP_EDITOR_EXPERIENCE/);
-  assert.match(assistant, /if \(type === 'todo\.updated'\) setTodos\(normalizeAppEditorTodos\(frame\)\)/);
-  assert.match(assistant, /deriveAppEditorProgress\(\{/);
-  assert.match(assistant, /<AppEditorProgressPanel progress=\{appEditorProgress\} \/>/);
-  assert.match(assistant, /lifeHubAiWorkArea \$\{appEditor \? 'app-editor' : 'standard'\}/);
-  assert.match(assistant, /작업 중에는 다음 요청을 미리 작성할 수 있어요/);
-  assert.match(progressPanel, /실시간 진행 체크/);
-  assert.match(progressPanel, /progress\.percent !== null/);
-  assert.match(progressPanel, /현재 작업 결과 요약/);
-  for (const permission of ['file:write', 'command:execute', 'build:execute', 'git']) {
-    assert.match(experience, new RegExp(`'${permission.replace(':', '\\:')}'`));
-  }
-  assert.match(assistant, /localWorkspaceAccess/);
-  assert.match(assistant, /로컬 대화 전체 권한 사용 중/);
-  assert.match(assistant, /disabled=\{!granted \|\| streaming \|\| !connected \|\| localWorkspaceAccess\}/);
-  assert.match(assistant, /readOnly=\{localWorkspaceAccess\}/);
-  assert.match(assistant, /approval\.risk === 'critical' \? '위험 작업 1회 허용'/);
-  assert.match(experience, /APP_EDITOR_DEFAULT_FILES = \[\s*'\.'\s*\]/);
-  assert.match(aiCss, /\.lifeHubAiWorkArea\.app-editor \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) minmax\(340px, 390px\)/);
-  assert.match(aiCss, /@media \(max-width: 1100px\)[\s\S]*\.lifeHubAiWorkArea\.app-editor \{ grid-template-columns: minmax\(0, 1fr\); \}/);
-});
-
-test('AI 일정 요청은 Bridge 답변이 아니라 현재 사용자 일정 저장소에 실제 반영한다', async () => {
-  const [lifeHub, assistant, action, change, localConversation, storage] = await Promise.all([
-    source('src/LifeHubApp.jsx'),
-    source('src/features/lifehub-ai/AiAssistantPage.jsx'),
-    source('src/features/lifehub-ai/scheduleChatAction.js'),
-    source('src/features/lifehub-ai/assistantScheduleChange.js'),
-    source('src/features/lifehub-ai/localScheduleConversation.js'),
-    source('src/features/lifehub-ai/bridgeStorage.js')
-  ]);
-
-  assert.match(lifeHub, /const createScheduleFromAssistant = \(draft, requestId\) =>/);
-  assert.match(lifeHub, /prepareAssistantScheduleChange\(current, draft, requestId/);
-  assert.match(lifeHub, /saveSchedules\(session, change\.items\)/);
-  assert.match(lifeHub, /onCreateSchedule=\{createScheduleFromAssistant\}/);
-  assert.match(assistant, /parseScheduleCreateRequest\(text\)/);
-  assert.match(assistant, /await handleScheduleRequest\(text\)/);
-  assert.match(assistant, /onCreateSchedule\(action\.draft, requestId\)/);
-  assert.match(action, /scheduleConfirmationText/);
-  assert.match(change, /source: 'ai-chat'/);
-  assert.match(change, /items: \[\.\.\.current, item\]/);
-  assert.doesNotMatch(change, /current\.length\s*>=\s*300|status:\s*'capacity'/);
-  assert.match(localConversation, /localOnly: true/);
-  assert.match(storage, /localOnly: thread\.localOnly === true/);
-  assert.match(storage, /pendingScheduleRequest: thread\.localOnly === true/);
-  assert.match(assistant, /setPendingScheduleRequest\(thread\.localOnly && thread\.pendingScheduleRequest/);
-  assert.match(assistant, /일정과 생활 기록은 연결 없이도 사용할 수 있어요/);
-  assert.match(assistant, /예: 메모: 여행 준비 · 커피 4500원 지출/);
-  assert.match(assistant, /예: 러닝 30분 · 점심 김밥 650kcal/);
-  assert.match(assistant, /연결 없이 기록 가능 · 예: 러닝 30분/);
+  assert.doesNotMatch(lifeHub, /AiAssistantPage|AiPairingPage|AppEditorPage|createScheduleFromAssistant|createLifeRecordFromAssistant/);
+  assert.doesNotMatch(home, /AiHomeCard|lifehub-ai/);
+  assert.doesNotMatch(more, /앱 수정하기|\/ai\/edit|PC Bridge/);
+  assert.doesNotMatch(shell, /path: '\/ai|ai-editor|ai-settings/);
+  assert.match(router, /const DEFAULT_APP_PATH = '\/app'/);
+  assert.match(router, /LEGACY_ROUTE_ROOTS = new Set\(\[[\s\S]*'ai'/);
+  assert.doesNotMatch(router, /'\/ai(?:\/[^']*)?'/);
+  assert.doesNotMatch(diet, /FoodPhotoAnalyzerCard|useFoodPhotoAnalyzer|useBridgeConnection|foodPhotoAnalysis|\/ai\/settings/);
+  assert.doesNotMatch(dietForm, /AI 사진 분석|lifeHubDietAiDraft|onClearAiNutrition/);
+  assert.match(dietForm, /먹은 칼로리 기록/);
+  assert.match(dietForm, /LifeHubButton type="submit"[\s\S]*식단 저장/);
 });
 
 test('생활 기록 저장소는 예전 고정 collection 개수로 기존 데이터를 잘라내지 않는다', async () => {
@@ -235,51 +163,6 @@ test('생활 기록 저장소는 예전 고정 collection 개수로 기존 데�
   assert.doesNotMatch(lifeHub, /trips\.slice\(0,\s*80\)/);
   assert.doesNotMatch(diet, /entries\.slice\(0,\s*300\)/);
   assert.match(lifeHub, /저장공간이 부족하면 기존 데이터를 유지한 채 알려드려요/);
-});
-
-test('AI 한 줄 생활 기록은 일정 다음에 종류별 저장소로 2단계 확인 저장한다', async () => {
-  const [lifeHub, assistant, action, saver, storage] = await Promise.all([
-    source('src/LifeHubApp.jsx'),
-    source('src/features/lifehub-ai/AiAssistantPage.jsx'),
-    source('src/features/life-records/lifeRecordAction.js'),
-    source('src/features/life-records/saveLifeRecordAction.js'),
-    source('src/features/lifehub-ai/bridgeStorage.js')
-  ]);
-  const sendFlow = sectionBetween(assistant, 'const send = useCallback', 'const stop = async');
-  const scheduleCheck = sendFlow.indexOf('await handleScheduleRequest(text)');
-  const recordCheck = sendFlow.indexOf('await handleLifeRecordRequest(text)');
-  const bridgeCheck = sendFlow.indexOf('if (!connected || !client)');
-
-  assert.match(assistant, /import \{ parseLifeRecordAction \} from '\.\.\/life-records\/lifeRecordAction\.js'/);
-  assert.match(assistant, /onCreateLifeRecord/);
-  assert.match(lifeHub, /import \{ saveLifeRecordAction \} from '\.\/features\/life-records\/saveLifeRecordAction\.js'/);
-  assert.match(lifeHub, /const createLifeRecordFromAssistant = \(action, requestId\) =>/);
-  assert.match(lifeHub, /onCreateLifeRecord=\{createLifeRecordFromAssistant\}/);
-  assert.ok(scheduleCheck >= 0 && scheduleCheck < recordCheck, '일정 파서가 생활 기록보다 먼저 실행되어야 합니다.');
-  assert.ok(recordCheck < bridgeCheck, '생활 기록은 Bridge 연결 확인 전에 처리되어야 합니다.');
-  assert.match(assistant, /if \(appEditor \|\| mode !== 'assistant'\) return false/);
-  assert.match(assistant, /저장 전 \$\{copy\.noun\} 미리보기예요/);
-  assert.match(assistant, /내용이 맞으면 \*\*저장\*\*, 그만두려면 \*\*취소\*\*/);
-  assert.match(assistant, /onCreateLifeRecord\(activePending\.action, activePending\.requestId\)/);
-  assert.match(assistant, /\['created', 'saved', 'duplicate'\]\.includes/);
-  for (const message of ['메모를 저장했어요.', '지출을 기록했어요.', '수입을 기록했어요.', '운동을 기록했어요.', '식단을 기록했어요.']) {
-    assert.ok(assistant.includes(message), `${message} 종류별 성공 문구가 필요합니다.`);
-  }
-  assert.match(assistant, /중복 저장하지 않았어요/);
-  assert.match(assistant, /입력한 내용은 저장되지 않았습니다/);
-  assert.match(assistant, /setPendingLifeRecordRequest\(thread\.localOnly && thread\.pendingLifeRecordRequest/);
-  assert.match(assistant, /setPendingLifeRecordRequest\(null\)/);
-  assert.match(storage, /function cleanPendingLifeRecordRequest/);
-  assert.match(storage, /pendingLifeRecordRequest: thread\.localOnly === true/);
-  assert.match(storage, /pendingLifeRecordRequest: thread\?\.localOnly === true/);
-  assert.match(action, /export function parseLifeRecordAction/);
-  for (const example of ['메모: ...', '커피 4500원 지출', '월급 300만원 수입', '러닝 30분', '점심 김밥 650kcal']) {
-    assert.ok(action.includes(example), `${example} 한 줄 형식을 문서화해야 합니다.`);
-  }
-  assert.match(saver, /LIFE_RECORD_KINDS = new Set\(\['memo', 'expense', 'income', 'workout', 'diet'\]\)/);
-  assert.match(saver, /item\.origin\.requestId === origin\.requestId/);
-  assert.doesNotMatch(saver, /item\.origin\.requestId === origin\.requestId\s*\|\|\s*item\.origin\.fingerprint/);
-  assert.match(assistant, /일정과 생활 기록은 연결 없이도 사용할 수 있어요/);
 });
 
 test('버전형 백업은 합치기·전체 교체 미리보기와 실패 rollback, Android SAF를 연결한다', async () => {
@@ -344,7 +227,7 @@ test('홈과 더보기는 아침·저녁 브리핑 카드·설정과 예약 알�
   assert.match(lifeHub, /window\.addEventListener\('focus', resyncNotifications\)/);
 });
 
-test('v27 경량 캐시는 새 데이터 모듈·스타일·테스트 경계를 포함하고 6탭을 바꾸지 않는다', async () => {
+test('v28 경량 캐시는 새 데이터 모듈·스타일·테스트 경계를 포함하고 6탭을 바꾸지 않는다', async () => {
   const [serviceWorker, packageJson, entryCss, shell, home] = await Promise.all([
     source('public/sw.js'),
     source('package.json'),
@@ -353,7 +236,7 @@ test('v27 경량 캐시는 새 데이터 모듈·스타일·테스트 경계를 
     source('src/features/home/HomePage.jsx')
   ]);
 
-  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v27'/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v28'/);
   assert.match(packageJson, /"test:lifehub-data": "node --test src\/features\/automation\/\*\.test\.js src\/features\/backup\/\*\.test\.js src\/features\/finance\/\*\.test\.js src\/features\/life-records\/\*\.test\.js"/);
   assert.match(packageJson, /"test": "npm run test:lifehub-ai && npm run test:lifehub-data/);
   assert.match(entryCss, /@import '\.\/styles\/lifehub-automation\.css'/);
@@ -379,13 +262,12 @@ test('앱은 로그인 유도 없이 고정된 기기 저장소를 사용한다'
 });
 
 test('운동·식단·가계부는 모듈 목록 대신 하단 탭으로 이동한다', async () => {
-  const [lifeHub, shell, dietPage, dietForm, dietEnergy, dietPhoto, dietCss, bodyProfileCard] = await Promise.all([
+  const [lifeHub, shell, dietPage, dietForm, dietEnergy, dietCss, bodyProfileCard] = await Promise.all([
     source('src/LifeHubApp.jsx'),
     source('src/components/lifehub/LifeHubShell.jsx'),
     source('src/components/diet/DietPage.jsx'),
     source('src/components/diet/DietEntryForm.jsx'),
     source('src/components/diet/DietEnergySummaryCard.jsx'),
-    source('src/components/diet/food-photo/FoodPhotoAnalyzerCard.jsx'),
     source('src/styles/lifehub-diet.css'),
     source('src/components/body/BodyProfileCard.jsx')
   ]);
@@ -394,13 +276,12 @@ test('운동·식단·가계부는 모듈 목록 대신 하단 탭으로 이동�
   assert.match(shell, /diet: \{ title: '식단', path: '\/diet', icon: 'meal' \}/);
   assert.match(lifeHub, /else if \(route === 'diet'\) content = \(/);
   assert.match(dietForm, /aria-label="먹은 칼로리"/);
+  assert.match(dietForm, /먹은 음식 <small>선택<\/small>/);
+  assert.match(dietForm, /LifeHubButton type="submit"[\s\S]*식단 저장/);
   assert.match(dietEnergy, /오늘 에너지 참고/);
   assert.match(dietEnergy, /오늘 먹은 내용이 모두 기록됐다고 가정/);
-  assert.match(dietPage, /calculateCalorieTargetPercent/);
-  assert.match(dietPhoto, /BMR \+ 오늘 운동 참고 기준/);
-  assert.match(dietPhoto, /추천 섭취 목표가 아닌 단순 비교/);
-  assert.match(dietCss, /\.lifeHubDietPhotoCalorieShare/);
-  assert.doesNotMatch(`${dietPage}\n${dietPhoto}`, /내 하루 기준|내 하루 탄단지 기준|lifeHubDietMacroDistribution/);
+  assert.doesNotMatch(dietPage, /FoodPhotoAnalyzerCard|useFoodPhotoAnalyzer|useBridgeConnection|calculateCalorieTargetPercent/);
+  assert.doesNotMatch(dietForm, /AI 사진 분석|lifeHubDietAiDraft/);
   assert.match(dietPage, /<BodyProfileCard/);
   assert.match(bodyProfileCard, /const \[open, setOpen\] = useState/);
   assert.match(bodyProfileCard, /open=\{open\}/);
@@ -532,17 +413,17 @@ test('Android WebView는 Orbit 이름·중앙 O 아이콘과 내장 웹 버전 �
     assert.equal(strings.includes(`<string name="${removedString}">`), false, `${removedString} 문자열이 남아 있습니다.`);
   }
   assert.doesNotMatch(strings, /사용 모드 선택|서버에 연결|서버 주소/);
-  assert.match(manifest, /android:versionCode="19"/);
+  assert.match(manifest, /android:versionCode="20"/);
   assert.match(manifest, /android\.permission\.POST_NOTIFICATIONS/);
   assert.match(manifest, /android\.permission\.RECEIVE_BOOT_COMPLETED/);
   assert.match(manifest, /android\.permission\.SCHEDULE_EXACT_ALARM/);
   assert.match(manifest, /android\.permission\.VIBRATE/);
   assert.match(manifest, /SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED/);
-  assert.match(manifest, /android:versionName="0\.5\.3-debug"/);
+  assert.match(manifest, /android:versionName="0\.5\.4-debug"/);
   assert.match(manifest, /android:name="\.FinanceNotificationListenerService"/);
   assert.match(manifest, /android:permission="android\.permission\.BIND_NOTIFICATION_LISTENER_SERVICE"/);
   assert.match(manifest, /android:name="android\.service\.notification\.NotificationListenerService"/);
-  assert.match(strings, /<string name="card_notification_listener_name">Orbit 삼성월렛 결제 자동 기록<\/string>/);
+  assert.match(strings, /<string name="card_notification_listener_name">Orbit 결제 알림 자동 기록<\/string>/);
   assert.match(manifest, /android:roundIcon="@drawable\/ic_launcher"/);
   assert.match(strings, /<string name="app_name">Orbit<\/string>/);
   assert.match(launcherIcon, /#12172B/);
@@ -565,7 +446,8 @@ test('Android WebView는 Orbit 이름·중앙 O 아이콘과 내장 웹 버전 �
   assert.match(coordinator, /manager\.setExactAndAllowWhileIdle\(/);
   assert.match(coordinator, /manager\.setAndAllowWhileIdle\(/);
   assert.match(coordinator, /notification\.triggerAt >= now - MAX_LATE_DELIVERY_MS/);
-  assert.match(coordinator, /"\/ai\/edit"\.equals\(route\)/);
+  assert.match(coordinator, /return "\/app"\.equals\(route\)[\s\S]*\|\| "\/schedule"\.equals\(route\)/);
+  assert.doesNotMatch(coordinator, /"\/ai(?:\/edit|\/settings)?"/);
   const replaceScheduled = sectionBetween(
     coordinator,
     'static synchronized boolean replaceScheduled(',
@@ -608,162 +490,15 @@ test('레거시 홈의 최근 메모 데이터와 전용 스타일도 제거됐�
   assert.doesNotMatch(`${lifeHubCss}\n${referenceCss}`, /lifeHubRoute-assistant|lifeHubAssistantCommand|assistant-hero-actions|assistant-status-grid/);
 });
 
-test('AI 화면은 최소 turn 권한과 SSE 이어받기 경로를 제공한다', async () => {
-  const assistant = await source('src/features/lifehub-ai/AiAssistantPage.jsx');
-  const terminal = sectionBetween(assistant, 'function isTerminalEvent(', 'function approvalFromEvent(');
-  assert.match(terminal, /message\.completed/);
-  assert.doesNotMatch(terminal, /turn\.completed/);
-  assert.match(assistant, /requestedPermissions: permissionsForTurn/);
-  assert.doesNotMatch(assistant, /grantedPermissions\.filter\(\(permission\) => permission !== 'chat'\)/);
-  assert.match(assistant, /after: thread\.eventCursor \|\| 0/);
-  assert.match(assistant, /응답 이어받기/);
-  assert.match(assistant, /message\.status === 'error' \|\| message\.status === 'failed'/);
-  assert.match(assistant, /lifeHubAiMarkdownBody/);
-  assert.match(assistant, /긴 응답 펼치기/);
-});
-
-test('AI 응답 중지는 선택 화면과 무관하게 실제 실행 thread를 대상으로 한다', async () => {
-  const assistant = await source('src/features/lifehub-ai/AiAssistantPage.jsx');
-  const openThread = sectionBetween(assistant, 'const openThread = async', 'const newConversation =');
-  const stop = sectionBetween(assistant, 'const stop = async', 'const decideApproval =');
-  assert.match(assistant, /const activeThreadIdRef = useRef\(''\)/);
-  assert.match(assistant, /activeThreadIdRef\.current = thread\.id/);
-  assert.match(assistant, /activeThreadIdRef\.current = threadId/);
-  assert.match(openThread, /if \(streaming \|\| remoteCommandBusy\) return/);
-  assert.match(stop, /const threadId = activeThreadIdRef\.current/);
-  assert.match(stop, /client\.cancel\(threadId\)/);
-  assert.doesNotMatch(stop, /client\.cancel\(selectedThreadId\)/);
-  assert.match(assistant, /disabled=\{streaming \|\| remoteCommandBusy\} onClick=\{\(\) => openThread\(thread\)\}/);
-});
-
-test('AI 채팅 필수 동작과 Codex 작업/승인 정보가 빠짐없이 렌더링된다', async () => {
-  const assistant = await source('src/features/lifehub-ai/AiAssistantPage.jsx');
-  const chatMarkers = [
-    '일반 도우미', 'Codex 개발 모드', '이전 대화', '새 대화', '응답 중지',
-    '재전송', '다시 시도', '코드 복사', 'ReactMarkdown', 'remarkGfm',
-    '네트워크 연결이 끊겼습니다', '연결 설정으로 이동'
-  ];
-  for (const marker of chatMarkers) assert.match(assistant, new RegExp(marker));
-  const codexMarkers = [
-    '선택한 프로젝트', '현재 작업 디렉터리', '수정된 파일', '실행 중인 명령',
-    '작업 승인 요청', '변경 예정 파일', '실행 예정 명령', '예상 권한',
-    '이번만 허용', '이 작업 동안 허용', '거부', '최종 결과', 'Git diff 보기'
-  ];
-  for (const marker of codexMarkers) assert.match(assistant, new RegExp(marker));
-  assert.match(assistant, /approvalContext: mode === 'codex' \? approvalPlan\.context/);
-  assert.match(assistant, /승인 범위 계획/);
-});
-
-test('Codex 개발 모드는 capability 기반 원격 명령 준비·확인·실행 패널을 제공한다', async () => {
-  const [assistant, client, connection, aiCss] = await Promise.all([
-    source('src/features/lifehub-ai/AiAssistantPage.jsx'),
-    source('src/features/lifehub-ai/bridgeClient.js'),
-    source('src/features/lifehub-ai/useBridgeConnection.js'),
-    source('src/styles/lifehub-ai.css')
-  ]);
-  const remotePanel = sectionBetween(assistant, 'function RemoteCommandPanel(', 'export default function AiAssistantPage(');
-
-  assert.match(connection, /capabilities: device\?\.capabilities \|\| health\?\.capabilities \|\| \{\}/);
-  assert.match(assistant, /status\.capabilities\?\.remoteCommands === true/);
-  assert.match(client, /prepareRemoteCommand\(projectId,[\s\S]*commands\/prepare/);
-  assert.match(client, /executeRemoteCommand\(projectId,[\s\S]*commands\/execute[\s\S]*timeoutMs: options\.timeoutMs \|\| 190000/);
-  for (const preset of ['git status', 'git diff --stat', 'git push']) assert.match(assistant, new RegExp(preset));
-  for (const marker of [
-    '원격 명령', '명령 준비',
-    '실행 전 최종 확인', '확인 후 실행', '실행 중지', 'stdout', 'stderr', '비활성화되었거나 현재 Bridge가 지원하지 않습니다'
-  ]) assert.match(remotePanel, new RegExp(marker));
-  assert.match(remotePanel, /client\.prepareRemoteCommand\(project\.id, \{ command: nextCommand \}/);
-  assert.match(remotePanel, /client\.executeRemoteCommand\(project\.id, \{ approvalId: approval\.id \}/);
-  assert.match(remotePanel, /type="checkbox" checked=\{confirmed\}/);
-  assert.match(remotePanel, /disabled=\{!confirmed \|\| Boolean\(busy\)\}/);
-  assert.match(remotePanel, /requestRef\.current\?\.abort\('user-cancelled'\)/);
-  assert.match(remotePanel, /!permissions\.includes\('git'\)/);
-  assert.match(remotePanel, /maxLength=\{2000\}/);
-  assert.match(aiCss, /\.lifeHubAiRemoteTerminal \{/);
-  assert.match(aiCss, /@media \(max-width: 480px\)[\s\S]*\.lifeHubAiRemotePresets button \{ width: 100%; min-height: 44px;/);
-});
-
-test('모바일 키보드/오프라인 대응과 일반·Codex 저장 분리가 선언됐다', async () => {
-  const [assistant, aiCss, storage] = await Promise.all([
-    source('src/features/lifehub-ai/AiAssistantPage.jsx'),
-    source('src/styles/lifehub-ai.css'),
-    source('src/features/lifehub-ai/bridgeStorage.js')
-  ]);
-  assert.match(assistant, /window\.visualViewport/);
-  assert.match(assistant, /after: thread\.eventCursor \|\| 0/);
-  assert.match(aiCss, /@media \(max-width: 760px\)[\s\S]*\.lifeHubAiComposer \{[\s\S]*position: fixed/);
-  assert.match(aiCss, /bottom: calc\(78px \+ env\(safe-area-inset-bottom\)\)/);
-  assert.match(storage, /const key = `\$\{pcId\}:\$\{mode\}`/);
-  assert.match(storage, /codexThreadId/);
-  assert.match(storage, /messages:/);
-});
-
-test('대화 전용 기기는 프로젝트 API 없이 스레드 목록을 불러온다', async () => {
-  const assistant = await source('src/features/lifehub-ai/AiAssistantPage.jsx');
-  assert.match(assistant, /const projectRequest = projectReadAllowed[\s\S]*\? client\.projects\(\)[\s\S]*: Promise\.resolve\(null\)/);
-  assert.match(assistant, /Promise\.all\(\[projectRequest, client\.threads\(\)\]\)/);
-  assert.match(assistant, /const nextProjects = projectReadAllowed[\s\S]*: \[\]/);
-  assert.match(assistant, /\[client, connected, mode, pc\?\.id, projectReadAllowed\]/);
-});
-
-test('Android token은 JS readback/직접 fetch 없이 native receipt로만 연결된다', async () => {
-  const [pairing, pairingModel, pairingHook, pairingConnection, storage, client, router, lifeHub, diet, dietPhoto] = await Promise.all([
-    source('src/features/lifehub-ai/AiPairingPage.jsx'),
-    source('src/features/lifehub-ai/pairingModel.js'),
-    source('src/features/lifehub-ai/useAiPairing.js'),
-    source('src/features/lifehub-ai/pairingConnection.js'),
-    source('src/features/lifehub-ai/bridgeStorage.js'),
-    source('src/features/lifehub-ai/bridgeClient.js'),
+test('사용하지 않는 AI 주소는 앱 홈으로 이동하고 iframe 차단 정책을 유지한다', async () => {
+  const [router, html, nginx] = await Promise.all([
     source('src/routes/AppRouter.jsx'),
-    source('src/LifeHubApp.jsx'),
-    source('src/components/diet/DietPage.jsx'),
-    source('src/components/diet/food-photo/FoodPhotoAnalyzerCard.jsx')
-  ]);
-  assert.match(pairingModel, /const LOCAL_BRIDGE_ADDRESS = 'http:\/\/127\.0\.0\.1'/);
-  assert.match(pairingModel, /const LOCAL_BRIDGE_PORT = '4317'/);
-  assert.match(pairingModel, /if \(env\.DEV\)/);
-  assert.match(pairingModel, /return \{ address: LOCAL_BRIDGE_ADDRESS, port: LOCAL_BRIDGE_PORT \}/);
-  assert.match(pairingModel, /const ORBIT_BRIDGE_ADDRESS = 'https:\/\/bridge\.example\.invalid'/);
-  assert.match(pairing, /로컬 Bridge 바로 사용 · 전체 권한/);
-  assert.match(pairingHook, /requestLocalBridgeConnection/);
-  assert.match(client, /'\/api\/local\/connect'/);
-  assert.doesNotMatch(pairing, /value=\{form\.address\} readOnly/);
-  assert.doesNotMatch(pairing, /value=\{form\.port\} readOnly/);
-  assert.match(pairing, /음식 사진 분석/);
-  assert.match(pairing, /className="lifeHubAiPairSteps"/);
-  assert.match(pairing, /PC에서 승인하면[\s\S]*자동 연결/);
-  assert.match(pairing, /className="lifeHubAiRequiredPermission"[\s\S]*필수/);
-  assert.match(pairing, /고급 권한 \(선택\)/);
-  assert.match(pairing, /aria-busy=\{pairingLocked\}/);
-  assert.match(pairing, /disabled=\{pairingLocked\}/);
-  assert.match(pairing, /연결 완료 · 음식 사진 분석 시작/);
-  assert.doesNotMatch(pairing, /npm run bridge:pair/);
-  assert.match(router, /LIFEHUB_PATHS = new Set\([\s\S]*'\/ai\/settings'/);
-  assert.match(lifeHub, /route === 'ai-settings'[\s\S]*<AiPairingPage navigate=\{go\}/);
-  assert.match(diet, /navigate\('\/ai\/settings'\)/);
-  assert.match(dietPhoto, /Orbit 서버 연결하기/);
-  assert.match(pairingHook, /data\.tokenStored === true/);
-  assert.match(pairingConnection, /tokenStored: true/);
-  assert.match(pairingConnection, /tokenKey: String\(data\.tokenKey/);
-  assert.match(pairingHook, /pollPairingClaim\(\{/);
-  assert.match(pairingHook, /pendingExpiresAtRef/);
-  assert.match(pairingHook, /pairingRequestRef\.current\?\.abort\(\)/);
-  assert.doesNotMatch(storage, /\.getSecureValue\(/);
-  assert.doesNotMatch(storage, /\.setBridgeToken\(/);
-  assert.match(storage, /metadata\.bridgeOrigin !== expectedOrigin/);
-  assert.match(client, /hasNativeBridgeApi\(\) && !canUseNativeHttpTransport/);
-  assert.match(client, /NATIVE_BRIDGE_UNAVAILABLE/);
-  assert.match(client, /addEventListener\('online'/);
-  assert.match(client, /addEventListener\('visibilitychange'/);
-});
-
-test('/ai 직접 진입 fallback과 iframe 차단 정책이 선언됐다', async () => {
-  const [vite, html, nginx] = await Promise.all([
-    source('vite.config.js'),
     source('index.html'),
     source('nginx.conf.template')
   ]);
-  assert.match(vite, /'ai'/);
+  assert.match(router, /LEGACY_ROUTE_ROOTS = new Set\(\[[\s\S]*'ai'/);
+  assert.match(router, /if \(LEGACY_ROUTE_ROOTS\.has\(root\)\) return DEFAULT_APP_PATH/);
+  assert.doesNotMatch(router, /'\/ai(?:\/[^']*)?'/);
   assert.match(html, /script-src 'self'/);
   assert.match(nginx, /script-src 'self'/);
   assert.match(html, /frame-src 'none'/);
@@ -823,7 +558,7 @@ test('가계부 빈 상태 버튼은 지출 카테고리를 정리하고 금액 
   assert.match(finance, /<input ref=\{amountInputRef\}/);
 });
 
-test('삼성월렛 결제 승인은 앱 전체 foreground에서 민감정보 없이 중복 안전하게 자동 기록한다', async () => {
+test('허용한 결제 앱의 승인은 앱 전체 foreground에서 민감정보 없이 중복 안전하게 자동 기록한다', async () => {
   const [lifeHub, panel, hook, batch, adapter, android, manifest, strings] = await Promise.all([
     source('src/LifeHubApp.jsx'),
     source('src/features/finance/CardTransactionImportPanel.jsx'),
@@ -841,11 +576,16 @@ test('삼성월렛 결제 승인은 앱 전체 foreground에서 민감정보 없
   assert.match(appRoot, /const cardImport = useCardTransactionImport\(\{/);
   assert.match(appRoot, /<FinancePage[\s\S]*cardImport=\{cardImport\}/);
   assert.match(finance, /<CardTransactionImportPanel[\s\S]*cardImport=\{cardImport\}/);
-  assert.match(panel, /삼성월렛 결제 자동 가져오기/);
+  assert.match(panel, /결제 알림 자동 가져오기/);
+  assert.match(panel, /삼성월렛과 카카오페이 앱 중 사용할 앱만 선택하세요/);
+  assert.match(panel, /카카오톡 알림톡은 읽지 않아요/);
+  assert.match(panel, /cardImport\.selectedSources\.includes\(source\.id\)/);
+  assert.match(panel, /cardImport\.toggleSource\(source\.id\)/);
+  assert.doesNotMatch(panel, /cardImport\.enabled \? \([\s\S]{0,120}lifeHubCardImportSources/);
   assert.match(panel, /실제 결제 승인만 보수적으로 가져오며 송금·이체·입출금은 대상이 아닙니다/);
   assert.match(panel, /알림 원문·잔액·계좌·카드번호는 표시하거나 저장하지 않고/);
   assert.match(panel, /알림 접근은 모든 앱의 알림을 볼 수 있는 넓은 특수 권한/);
-  assert.match(panel, /Orbit은 삼성월렛 알림만 기기 안에서 확인/);
+  assert.match(panel, /Orbit은 선택한 삼성월렛·카카오페이 알림만 기기 안에서 확인/);
   assert.match(panel, /권한을 허용하기 전의 과거 결제 내역은 가져올 수 없어요/);
   assert.match(panel, /알림 접근 설정/);
   assert.match(panel, /‘제한된 설정’으로 막힐 때/);
@@ -861,8 +601,16 @@ test('삼성월렛 결제 승인은 앱 전체 foreground에서 민감정보 없
   assert.match(hook, /target\.addEventListener\('focus', syncOnForeground\)/);
   assert.match(hook, /document\?\.addEventListener\?\.\('visibilitychange', syncOnForeground\)/);
   assert.match(hook, /const inFlightRef = useRef\(null\)/);
-  assert.match(hook, /const SAMSUNG_WALLET_SOURCE = 'samsung-wallet'/);
-  assert.doesNotMatch(hook, /toss|shinhan|신한|토스/i);
+  assert.match(hook, /CARD_IMPORT_SOURCE_IDS/);
+  assert.match(hook, /enabled \? \[\] : \[CARD_IMPORT_SOURCE_IDS\[0\]\]/);
+  assert.match(hook, /toggleSource/);
+  assert.doesNotMatch(hook, /tmoney|티머니|toss|shinhan|신한|토스/i);
+  const preferenceSaveIndex = hook.indexOf('const stored = saveCardImportSources(');
+  const nativeConfigureIndex = hook.indexOf('if (!configureNativeCardImport(', preferenceSaveIndex);
+  assert.ok(
+    preferenceSaveIndex > -1 && nativeConfigureIndex > preferenceSaveIndex,
+    'native purge 전에 local source 선택을 먼저 저장해야 합니다.'
+  );
 
   const saveIndex = batch.indexOf('saveResult = saveBudget([...entries, ...current])');
   const savedAckIndex = batch.indexOf('const savedAck = await acknowledge(');
@@ -874,8 +622,8 @@ test('삼성월렛 결제 승인은 앱 전체 foreground에서 민감정보 없
 
   assert.match(adapter, /const keys = \['eventId', 'source', 'amount', 'merchant', 'occurredAt'\]/);
   assert.match(adapter, /hasExactKeys\(value, keys\)/);
-  assert.match(adapter, /CARD_IMPORT_SOURCES = Object\.freeze\(\[[\s\S]*id: 'samsung-wallet'/);
-  assert.doesNotMatch(adapter, /toss|shinhan|신한|토스/i);
+  assert.match(adapter, /CARD_IMPORT_SOURCES = Object\.freeze\(\[[\s\S]*id: 'samsung-wallet'[\s\S]*id: 'kakao-pay'/);
+  assert.doesNotMatch(adapter, /tmoney|티머니|toss|shinhan|신한|토스/i);
   assert.match(android, /getCardImportCapabilities\(\)/);
   assert.match(android, /configureCardImport\(String owner, String sourcesJson\)/);
   assert.match(android, /requestPendingCardTransactions\(/);

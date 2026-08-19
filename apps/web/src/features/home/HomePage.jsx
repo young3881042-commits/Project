@@ -12,7 +12,6 @@ import {
 import LifeHubPackIcon from '../../components/lifehub/LifeHubPackIcon.jsx';
 import { Section } from '../../components/lifehub/LifeHubUi.jsx';
 import { fullDateLabel } from '../../utils/lifeHubFormatters.js';
-import AiHomeCard from '../lifehub-ai/AiHomeCard.jsx';
 import DailyBriefingCard from '../automation/DailyBriefingCard.jsx';
 import {
   HOME_ACTIVITY_PERIODS,
@@ -90,6 +89,7 @@ export default function HomePage({ model, navigate }) {
 
       <HomeMonthCalendar
         calendar={calendar}
+        budgetEntries={model.budgetEntries}
         navigate={navigate}
         monthFinances={monthFinances}
         onChangeMonth={changeCalendarMonth}
@@ -129,8 +129,6 @@ export default function HomePage({ model, navigate }) {
           ))}
         </div>
       </Section>
-
-      <AiHomeCard navigate={navigate} />
     </div>
   );
 }

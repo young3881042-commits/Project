@@ -111,6 +111,27 @@
   gap: 7px;
 }
 
+.lifeHubCardImportSources label {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #d7e2e8;
+  border-radius: 8px;
+  color: #334155;
+  font-size: 0.74rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.lifeHubCardImportSources input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--lh-green);
+}
+
 .lifeHubCardImportPermission button,
 .lifeHubCardImportStatus > button {
   min-height: 44px;
