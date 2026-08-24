@@ -1,16 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FeedbackToast, useLifeHubFeedback } from '../../lifehub/LifeHubUi.jsx';
 import DailyMemoCard from './DailyMemoCard.jsx';
 import DailyMemoComposer from './DailyMemoComposer.jsx';
-import DailyMemoIcon, { DailyMemoMark } from './DailyMemoIcon.jsx';
+import DailyMemoFolders from './DailyMemoFolders.jsx';
+import DailyMemoIcon from './DailyMemoIcon.jsx';
+import DailyMemoReader from './DailyMemoReader.jsx';
 import {
   DAILY_MEMO_ALL_TAG,
+  DAILY_MEMO_ALL_FOLDER,
   DAILY_MEMO_QUICK_TAGS,
   buildDailyMemo,
   clearDailyMemoDraft,
   createDailyMemoDraft,
   dailyMemoBody,
-  dailyMemoRhythm,
+  dailyMemoFolderId,
   dailyMemoSearch,
   dailyMemoTags,
   dailyMemoTitle,
@@ -18,17 +21,14 @@ import {
   formatDailyMemoTime,
   isRichDailyMemo,
   readDailyMemoDraft,
+  readDailyMemoFolders,
   readDailyMemos,
   removeDailyMemoById,
   saveDailyMemoDraft,
+  saveDailyMemoFolders,
   saveDailyMemos
 } from './dailyMemoModel.js';
 
-const DATE_FORMATTER = new Intl.DateTimeFormat('ko-KR', {
-  month: 'long',
-  day: 'numeric',
-  weekday: 'long'
-});
 const MEMO_EDITOR_HISTORY_KEY = 'lifehubMemoEditor';
 
 function paramsForPath(path) {
@@ -83,16 +83,9 @@ function closeMemoEditorPath() {
 }
 
 function uiDraft(note = null, recovered = null) {
-  let source = recovered && typeof recovered === 'object'
+  const source = recovered && typeof recovered === 'object'
     ? { ...createDailyMemoDraft(), ...recovered }
     : createDailyMemoDraft(note);
-  if (note?.titleDerived && !recovered) {
-    source = {
-      ...source,
-      title: '',
-      body: [dailyMemoTitle(note), dailyMemoBody(note)].filter(Boolean).join('\n')
-    };
-  }
   const tags = Array.isArray(source.tags) ? source.tags : [];
   const quickTags = tags.filter((tag) => DAILY_MEMO_QUICK_TAGS.includes(tag));
   const customTags = typeof source.customTags === 'string'
@@ -102,8 +95,14 @@ function uiDraft(note = null, recovered = null) {
     title: String(source.title || ''),
     body: String(source.body || ''),
     tags: quickTags,
-    customTags
+    customTags,
+    folderId: String(source.folderId || source.boardId || source.sector || 'personal')
   };
+}
+
+function newFolderId() {
+  const randomId = globalThis.crypto?.randomUUID?.() || Math.random().toString(16).slice(2);
+  return `folder-${Date.now()}-${randomId}`;
 }
 
 function tagsForSave(draft) {
@@ -118,22 +117,7 @@ function hasDraftContent(draft) {
   return Boolean(draft.body.trim() || draft.title.trim() || draft.customTags.trim() || draft.tags.length);
 }
 
-function greetingForHour(hour) {
-  if (hour < 6) return '고요한 밤이에요';
-  if (hour < 12) return '좋은 아침이에요';
-  if (hour < 18) return '오늘도 잘 보내고 있나요?';
-  return '오늘 하루도 수고했어요';
-}
-
-function richEditorPath(note) {
-  const params = new URLSearchParams({
-    board: note.folderId || note.boardId || 'personal',
-    block: note.id
-  });
-  return `/notes?${params.toString()}`;
-}
-
-function requiresFullEditor(note) {
+function isLegacyRichMemo(note) {
   return Boolean(isRichDailyMemo(note) || note?.schedule?.enabled || note?.scheduleEnabled);
 }
 
@@ -141,61 +125,96 @@ function DailyMemoEmpty({ filtered, onReset, onWrite }) {
   return (
     <div className="dailyMemoEmpty">
       <span><DailyMemoIcon name={filtered ? 'search' : 'leaf'} size={27} /></span>
-      <strong>{filtered ? '조건에 맞는 기록이 없어요' : '첫 번째 한 줄을 기다리고 있어요'}</strong>
-      <p>{filtered ? '검색어나 분류를 바꾸면 다른 기록을 찾을 수 있어요.' : '대단한 이야기가 아니어도 괜찮아요. 오늘의 기분부터 가볍게 남겨보세요.'}</p>
+      <strong>{filtered ? '조건에 맞는 메모가 없어요' : '아직 저장된 메모가 없어요'}</strong>
+      <p>{filtered ? '검색어나 분류를 바꾸면 다른 메모를 찾을 수 있어요.' : '위 작성란에 내용을 입력해 첫 메모를 저장해보세요.'}</p>
       <button type="button" onClick={filtered ? onReset : onWrite}>
-        {filtered ? '필터 모두 지우기' : '첫 기록 쓰기'}
+        {filtered ? '필터 모두 지우기' : '첫 메모 쓰기'}
       </button>
     </div>
   );
 }
 
-export default function DailyMemoPage({ navigate, notes = [], path, refresh, session }) {
+export default function DailyMemoPage({ notes = [], path, refresh, session }) {
   const initialEditId = paramsForPath(path).get('edit') || '';
   const initialEditNote = notes.find((note) => note.id === initialEditId) || null;
-  const initialEditableNote = initialEditNote && !requiresFullEditor(initialEditNote) ? initialEditNote : null;
+  const initialEditableNote = initialEditNote && !isLegacyRichMemo(initialEditNote) ? initialEditNote : null;
   const recoveredDraft = readDailyMemoDraft(session, initialEditableNote?.id || '');
   const [draft, setDraft] = useState(() => uiDraft(initialEditableNote, recoveredDraft));
   const [editingId, setEditingId] = useState(initialEditableNote?.id || '');
   const [query, setQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState(DAILY_MEMO_ALL_TAG);
   const [view, setView] = useState('all');
+  const [folders, setFolders] = useState(() => readDailyMemoFolders(session, notes));
+  const [activeFolderId, setActiveFolderId] = useState(DAILY_MEMO_ALL_FOLDER);
+  const [folderDrawerOpen, setFolderDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [draftRecoveryStatus, setDraftRecoveryStatus] = useState('idle');
+  const [readerNote, setReaderNote] = useState(() => (
+    initialEditNote && isLegacyRichMemo(initialEditNote) ? initialEditNote : null
+  ));
   const composerRef = useRef(null);
   const searchInputRef = useRef(null);
   const historyClosePendingRef = useRef(false);
   const { feedback, notify, clearFeedback } = useLifeHubFeedback();
+  const closeReader = useCallback(() => setReaderNote(null), []);
+  const closeFolderDrawer = useCallback(() => setFolderDrawerOpen(false), []);
 
-  const rhythm = useMemo(() => dailyMemoRhythm(notes), [notes]);
+  const folderCounts = useMemo(() => notes.reduce((counts, note) => {
+    const folderId = dailyMemoFolderId(note);
+    counts[folderId] = (counts[folderId] || 0) + 1;
+    return counts;
+  }, {}), [notes]);
+  const activeFolder = folders.find((folder) => folder.id === activeFolderId) || null;
+  const activeFolderName = activeFolderId === DAILY_MEMO_ALL_FOLDER
+    ? '전체 메모'
+    : String(activeFolder?.name || activeFolder?.title || '폴더');
+  const folderNotes = useMemo(() => (
+    activeFolderId === DAILY_MEMO_ALL_FOLDER
+      ? notes
+      : notes.filter((note) => dailyMemoFolderId(note) === activeFolderId)
+  ), [activeFolderId, notes]);
+
   const availableTags = useMemo(() => {
-    const noteTags = notes.flatMap(dailyMemoTags);
-    return [...new Set([...DAILY_MEMO_QUICK_TAGS, ...noteTags])].slice(0, 12);
-  }, [notes]);
-  const visibleNotes = useMemo(() => dailyMemoSearch(notes, {
+    const noteTags = folderNotes.flatMap(dailyMemoTags);
+    return [...new Set(noteTags)].slice(0, 12);
+  }, [folderNotes]);
+  const visibleNotes = useMemo(() => dailyMemoSearch(folderNotes, {
     query,
     tag: selectedTag,
     view
-  }), [notes, query, selectedTag, view]);
+  }), [folderNotes, query, selectedTag, view]);
   const filtering = Boolean(query.trim() || selectedTag !== DAILY_MEMO_ALL_TAG || view !== 'all');
-  const today = new Date();
-  const greeting = greetingForHour(today.getHours());
+  const pinnedCount = useMemo(() => folderNotes.filter((note) => note.pinned).length, [folderNotes]);
+  const hasFilterChoices = Boolean(pinnedCount || availableTags.length || view !== 'all' || selectedTag !== DAILY_MEMO_ALL_TAG);
 
   const focusComposer = () => {
     composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    window.requestAnimationFrame(() => composerRef.current?.querySelector('textarea')?.focus({ preventScroll: true }));
+    composerRef.current?.focusEditor?.();
   };
 
   const persistDraft = (memoId = editingId, currentDraft = draft) => {
-    if (hasDraftContent(currentDraft)) saveDailyMemoDraft(session, currentDraft, memoId);
-    else clearDailyMemoDraft(session, memoId);
+    if (hasDraftContent(currentDraft)) {
+      const saved = saveDailyMemoDraft(session, currentDraft, memoId);
+      setDraftRecoveryStatus(saved ? 'saved' : 'error');
+      return saved;
+    }
+    clearDailyMemoDraft(session, memoId);
+    setDraftRecoveryStatus('idle');
+    return true;
   };
 
   const resetComposer = ({ focus = false } = {}) => {
     if (historyClosePendingRef.current) return;
     const previousEditingId = editingId;
     clearDailyMemoDraft(session, previousEditingId);
+    setDraftRecoveryStatus('idle');
     setEditingId('');
-    setDraft(uiDraft(null, previousEditingId ? readDailyMemoDraft(session) : null));
+    const nextDraft = uiDraft(null, previousEditingId ? readDailyMemoDraft(session) : null);
+    if (!hasDraftContent(nextDraft) && activeFolderId !== DAILY_MEMO_ALL_FOLDER) {
+      nextDraft.folderId = activeFolderId;
+    }
+    setDraft(nextDraft);
     if (window.location.pathname === '/memo' && paramsForPath(window.location.search).has('edit')) {
       historyClosePendingRef.current = true;
       closeMemoEditorPath();
@@ -206,17 +225,18 @@ export default function DailyMemoPage({ navigate, notes = [], path, refresh, ses
   const leaveEditing = () => {
     persistDraft();
     setEditingId('');
-    setDraft(uiDraft(null, readDailyMemoDraft(session)));
+    const nextDraft = uiDraft(null, readDailyMemoDraft(session));
+    if (!hasDraftContent(nextDraft) && activeFolderId !== DAILY_MEMO_ALL_FOLDER) nextDraft.folderId = activeFolderId;
+    setDraft(nextDraft);
   };
 
   const openRichNote = (note) => {
     persistDraft();
-    notify('서식이나 일정이 연결된 메모는 자세히 편집할 수 있는 화면에서 열었어요.');
-    navigate(richEditorPath(note));
+    setReaderNote(note);
   };
 
   const startEditing = (note) => {
-    if (requiresFullEditor(note)) {
+    if (isLegacyRichMemo(note)) {
       openRichNote(note);
       return;
     }
@@ -230,7 +250,13 @@ export default function DailyMemoPage({ navigate, notes = [], path, refresh, ses
 
   useEffect(() => {
     ensureDailyMemoBoards(session);
-  }, [session?.username, session?.isGuest]);
+    setFolders(readDailyMemoFolders(session, notes));
+  }, [notes, session?.username, session?.isGuest]);
+
+  useEffect(() => {
+    if (activeFolderId === DAILY_MEMO_ALL_FOLDER) return;
+    if (!folders.some((folder) => folder.id === activeFolderId)) setActiveFolderId(DAILY_MEMO_ALL_FOLDER);
+  }, [activeFolderId, folders]);
 
   useEffect(() => {
     const targetId = paramsForPath(path).get('edit');
@@ -241,10 +267,15 @@ export default function DailyMemoPage({ navigate, notes = [], path, refresh, ses
     }
     if (historyClosePendingRef.current) return;
     const target = notes.find((note) => note.id === targetId);
-    if (!target) return;
-    if (requiresFullEditor(target)) {
+    if (!target) {
+      notify('열려던 메모를 찾지 못해 목록으로 돌아왔어요.', 'error');
+      replaceMemoPath('/memo');
+      return;
+    }
+    if (isLegacyRichMemo(target)) {
       persistDraft();
-      navigate(richEditorPath(target));
+      setReaderNote(target);
+      replaceMemoPath('/memo');
       return;
     }
     ensureMemoEditorHistory();
@@ -273,7 +304,7 @@ export default function DailyMemoPage({ navigate, notes = [], path, refresh, ses
 
     const storedNotes = readDailyMemos(session);
     const previous = editingId ? storedNotes.find((note) => note.id === editingId) : null;
-    if (editingId && (!previous || requiresFullEditor(previous))) {
+    if (editingId && (!previous || isLegacyRichMemo(previous))) {
       notify('이 메모는 간편 편집으로 바꿀 수 없어 안전한 편집 화면으로 이동할게요.', 'error');
       if (previous) openRichNote(previous);
       else resetComposer();
@@ -293,7 +324,7 @@ export default function DailyMemoPage({ navigate, notes = [], path, refresh, ses
     const wasEditing = Boolean(editingId);
     resetComposer();
     refresh();
-    notify(wasEditing ? '기록을 새 내용으로 다듬었어요.' : '오늘의 기록을 소중히 남겼어요.');
+    notify(wasEditing ? '메모를 수정했어요.' : '메모를 저장했어요.');
   };
 
   const togglePinned = (note) => {
@@ -307,6 +338,38 @@ export default function DailyMemoPage({ navigate, notes = [], path, refresh, ses
     notify(result.saved
       ? (note.pinned ? '중요 기록에서 내렸어요.' : '언제든 먼저 볼 수 있게 고정했어요.')
       : '고정 상태를 저장하지 못했어요.', result.saved ? 'success' : 'error');
+  };
+
+  const copyRichMemoToText = () => {
+    if (!readerNote) return;
+    const original = readDailyMemos(session).find((note) => note.id === readerNote.id) || readerNote;
+    const body = dailyMemoBody(original);
+    if (!body) {
+      notify('안전하게 변환할 텍스트 본문이 없어 원본을 그대로 유지했어요.', 'error');
+      return;
+    }
+
+    const copy = buildDailyMemo({
+      title: `${dailyMemoTitle(original)} · 사본`,
+      body,
+      tags: dailyMemoTags(original),
+      folderId: dailyMemoFolderId(original)
+    });
+    const result = saveDailyMemos(session, [copy, ...readDailyMemos(session)]);
+    if (!result.saved) {
+      notify('텍스트 사본을 저장하지 못했어요. 원본은 그대로 유지돼요.', 'error');
+      return;
+    }
+
+    setReaderNote(null);
+    setEditingId(copy.id);
+    setDraft(uiDraft(copy));
+    setDraftRecoveryStatus('idle');
+    historyClosePendingRef.current = false;
+    refresh();
+    pushMemoEditorPath(`/memo?edit=${encodeURIComponent(copy.id)}`);
+    window.requestAnimationFrame(focusComposer);
+    notify('원본은 보존하고 텍스트 사본을 만들었어요.');
   };
 
   const deleteMemo = (note) => {
@@ -331,82 +394,240 @@ export default function DailyMemoPage({ navigate, notes = [], path, refresh, ses
     setSelectedTag(DAILY_MEMO_ALL_TAG);
     setView('all');
     setSearchOpen(false);
+    setFiltersOpen(false);
+  };
+
+  const selectFolder = (folderId) => {
+    const nextFolderId = folderId === DAILY_MEMO_ALL_FOLDER || folders.some((folder) => folder.id === folderId)
+      ? folderId
+      : DAILY_MEMO_ALL_FOLDER;
+    setActiveFolderId(nextFolderId);
+    setQuery('');
+    setSelectedTag(DAILY_MEMO_ALL_TAG);
+    setView('all');
+    setSearchOpen(false);
+    setFiltersOpen(false);
+    if (!editingId && nextFolderId !== DAILY_MEMO_ALL_FOLDER) {
+      setDraft((current) => ({ ...current, folderId: nextFolderId }));
+    }
+  };
+
+  const createFolder = (name) => {
+    const normalizedName = String(name || '').trim();
+    if (!normalizedName) return false;
+    if (folders.some((folder) => String(folder.name || folder.title || '').trim().toLocaleLowerCase('ko-KR') === normalizedName.toLocaleLowerCase('ko-KR'))) {
+      notify('같은 이름의 폴더가 이미 있어요.', 'error');
+      return false;
+    }
+    const timestamp = new Date().toISOString();
+    const folder = {
+      id: newFolderId(),
+      parentId: null,
+      name: normalizedName,
+      title: normalizedName,
+      sortOrder: folders.length,
+      createdAt: timestamp,
+      updatedAt: timestamp
+    };
+    const result = saveDailyMemoFolders(session, [...folders, folder], notes);
+    if (!result.saved) {
+      notify('폴더를 저장하지 못했어요.', 'error');
+      return false;
+    }
+    setFolders(result.items);
+    setActiveFolderId(folder.id);
+    setQuery('');
+    setSelectedTag(DAILY_MEMO_ALL_TAG);
+    setView('all');
+    setSearchOpen(false);
+    setFiltersOpen(false);
+    if (!editingId) setDraft((current) => ({ ...current, folderId: folder.id }));
+    notify(`${normalizedName} 폴더를 만들었어요.`);
+    return true;
+  };
+
+  const renameFolder = (folderId, name) => {
+    const normalizedName = String(name || '').trim();
+    const target = folders.find((folder) => folder.id === folderId);
+    if (!target || ['personal', 'travel'].includes(folderId) || !normalizedName) return false;
+    if (folders.some((folder) => folder.id !== folderId
+      && String(folder.name || folder.title || '').trim().toLocaleLowerCase('ko-KR') === normalizedName.toLocaleLowerCase('ko-KR'))) {
+      notify('같은 이름의 폴더가 이미 있어요.', 'error');
+      return false;
+    }
+    const result = saveDailyMemoFolders(session, folders.map((folder) => (
+      folder.id === folderId
+        ? { ...folder, name: normalizedName, title: normalizedName, updatedAt: new Date().toISOString() }
+        : folder
+    )), notes);
+    if (!result.saved) {
+      notify('폴더 이름을 저장하지 못했어요.', 'error');
+      return false;
+    }
+    setFolders(result.items);
+    notify('폴더 이름을 바꿨어요.');
+    return true;
+  };
+
+  const deleteFolder = (folderId) => {
+    const target = folders.find((folder) => folder.id === folderId);
+    if (!target || ['personal', 'travel'].includes(folderId)) return;
+    const targetName = String(target.name || target.title || '선택한');
+    if (!window.confirm(`${targetName} 폴더를 삭제할까요? 안의 메모는 개인 폴더로 이동해요.`)) return;
+
+    const storedNotes = readDailyMemos(session);
+    const movedNotes = storedNotes.map((note) => (
+      dailyMemoFolderId(note) === folderId
+        ? { ...note, folderId: 'personal', boardId: 'personal', sector: 'personal', updatedAt: new Date().toISOString() }
+        : note
+    ));
+    const movedCount = storedNotes.filter((note) => dailyMemoFolderId(note) === folderId).length;
+    const notesResult = movedCount ? saveDailyMemos(session, movedNotes) : { items: storedNotes, saved: true };
+    if (!notesResult.saved) {
+      notify('메모를 안전하게 옮기지 못해 폴더를 삭제하지 않았어요.', 'error');
+      return;
+    }
+    const fallbackParentId = target.parentId && target.parentId !== folderId ? target.parentId : null;
+    const nextFolders = folders
+      .filter((folder) => folder.id !== folderId)
+      .map((folder) => (folder.parentId === folderId ? { ...folder, parentId: fallbackParentId } : folder));
+    const folderResult = saveDailyMemoFolders(session, nextFolders, notesResult.items);
+    if (!folderResult.saved) {
+      notify('메모는 개인 폴더로 옮겼지만 폴더 삭제를 저장하지 못했어요.', 'error');
+      refresh();
+      return;
+    }
+    setFolders(folderResult.items);
+    if (activeFolderId === folderId) setActiveFolderId('personal');
+    setDraft((current) => (current.folderId === folderId ? { ...current, folderId: 'personal' } : current));
+    refresh();
+    notify(movedCount ? `폴더를 삭제하고 메모 ${movedCount}개를 개인으로 옮겼어요.` : '빈 폴더를 삭제했어요.');
+  };
+
+  const moveMemo = (note, folderId) => {
+    if (!folders.some((folder) => folder.id === folderId) || dailyMemoFolderId(note) === folderId) return;
+    const storedNotes = readDailyMemos(session);
+    const nextNotes = storedNotes.map((item) => (
+      item.id === note.id
+        ? { ...item, folderId, boardId: folderId, sector: folderId, updatedAt: new Date().toISOString() }
+        : item
+    ));
+    const result = saveDailyMemos(session, nextNotes);
+    if (!result.saved) {
+      notify('메모를 다른 폴더로 옮기지 못했어요.', 'error');
+      return;
+    }
+    if (editingId === note.id) setDraft((current) => ({ ...current, folderId }));
+    refresh();
+    const destination = folders.find((folder) => folder.id === folderId);
+    notify(`${String(destination?.name || destination?.title || '선택한')} 폴더로 옮겼어요.`);
   };
 
   return (
     <div className="dailyMemo lifeHubPage">
       <FeedbackToast feedback={feedback} onClose={clearFeedback} />
+      {readerNote ? (
+        <DailyMemoReader
+          body={dailyMemoBody(readerNote)}
+          dateLabel={formatDailyMemoTime(readerNote.updatedAt || readerNote.createdAt)}
+          onClose={closeReader}
+          onCopy={copyRichMemoToText}
+          tags={dailyMemoTags(readerNote)}
+          title={dailyMemoTitle(readerNote)}
+        />
+      ) : null}
 
-      <section className={`dailyMemoWelcome${notes.length ? ' hasRecords' : ''}`} aria-labelledby="dailyMemoWelcomeTitle">
-        <div className="dailyMemoWelcomeCopy">
-          <DailyMemoMark />
-          <div>
-            <span>{DATE_FORMATTER.format(today)}</span>
-            <h2 id="dailyMemoWelcomeTitle">{greeting}</h2>
-            <p>{rhythm.todayCount
-              ? `오늘 ${rhythm.todayCount}개의 생각을 잘 남겨두었어요.`
-              : '완벽하지 않아도 괜찮아요. 지금의 한 줄이면 충분해요.'}</p>
-          </div>
-        </div>
-        <div className="dailyMemoRhythm" aria-label="기록 리듬">
-          <article>
-            <span><DailyMemoIcon name="note" size={18} /> 오늘</span>
-            <strong>{rhythm.todayCount}<small>개</small></strong>
-          </article>
-          <article>
-            <span><DailyMemoIcon name="calendar" size={18} /> 이번 주</span>
-            <strong>{rhythm.weekDays}<small>일</small></strong>
-          </article>
-          <article className={rhythm.streak ? 'isWarm' : ''}>
-            <span><DailyMemoIcon name="flame" size={18} /> 이어쓰기</span>
-            <strong>{rhythm.streak}<small>일</small></strong>
-          </article>
-        </div>
-      </section>
+      <button
+        type="button"
+        className="dailyMemoMobileFolderButton"
+        onClick={() => setFolderDrawerOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={folderDrawerOpen}
+      >
+        <DailyMemoIcon name="folder" size={19} />
+        <span>{activeFolderName}</span>
+        <small>{folderNotes.length}</small>
+        <DailyMemoIcon name="chevronRight" size={18} />
+      </button>
 
-      <DailyMemoComposer
-        ref={composerRef}
-        draft={draft}
-        editing={Boolean(editingId)}
-        quickTags={DAILY_MEMO_QUICK_TAGS}
-        onCancel={() => resetComposer({ focus: true })}
-        onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
-        onSubmit={submitMemo}
-        onToggleTag={(tag) => setDraft((current) => ({
-          ...current,
-          tags: current.tags.includes(tag)
-            ? current.tags.filter((item) => item !== tag)
-            : [...current.tags, tag]
-        }))}
-      />
+      <div className="dailyMemoWorkspace">
+        <DailyMemoFolders
+          activeFolderId={activeFolderId}
+          counts={folderCounts}
+          folders={folders}
+          mobileOpen={folderDrawerOpen}
+          onClose={closeFolderDrawer}
+          onCreate={createFolder}
+          onDelete={deleteFolder}
+          onRename={renameFolder}
+          onSelect={selectFolder}
+          totalCount={notes.length}
+        />
 
-      <section className="dailyMemoArchive" aria-labelledby="dailyMemoArchiveTitle">
+        <div className="dailyMemoMain">
+          <DailyMemoComposer
+            ref={composerRef}
+            draft={draft}
+            draftRecoveryStatus={draftRecoveryStatus}
+            editing={Boolean(editingId)}
+            folders={folders}
+            quickTags={DAILY_MEMO_QUICK_TAGS}
+            onCancel={() => resetComposer({ focus: true })}
+            onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
+            onSubmit={submitMemo}
+            onToggleTag={(tag) => setDraft((current) => ({
+              ...current,
+              tags: current.tags.includes(tag)
+                ? current.tags.filter((item) => item !== tag)
+                : [...current.tags, tag]
+            }))}
+          />
+
+          <section className="dailyMemoArchive" aria-labelledby="dailyMemoArchiveTitle">
         <header className="dailyMemoArchiveHeader">
-          <div>
-            <span className="dailyMemoEyebrow">차곡차곡 모인 마음</span>
-            <h2 id="dailyMemoArchiveTitle">나의 기록</h2>
-            <p>{notes.length ? `지금까지 ${notes.length}개의 순간을 간직했어요.` : '첫 기록부터 여기에 차곡차곡 모아둘게요.'}</p>
+          <div className="dailyMemoArchiveTitle">
+            <h2 id="dailyMemoArchiveTitle">{activeFolderName}</h2>
+            <span>{folderNotes.length}</span>
           </div>
           <div>
             <button
               type="button"
               onClick={() => setSearchOpen((open) => {
                 if (open) setQuery('');
+                else setFiltersOpen(false);
                 return !open;
               })}
+              className={searchOpen ? 'isActive' : ''}
               aria-label={searchOpen ? '기록 검색 닫기' : '기록 검색'}
               aria-expanded={searchOpen}
+              aria-controls="dailyMemoFilters"
+              title={searchOpen ? '검색 닫기' : '메모 검색'}
             >
               <DailyMemoIcon name="search" size={20} />
             </button>
-            <button type="button" className="isPrimary" onClick={focusComposer} aria-label="새 메모 작성">
-              <DailyMemoIcon name="edit" size={19} />
-              <span>새 메모</span>
-            </button>
+            {hasFilterChoices ? (
+              <button
+                type="button"
+                onClick={() => setFiltersOpen((open) => {
+                  if (!open) {
+                    setSearchOpen(false);
+                    setQuery('');
+                  }
+                  return !open;
+                })}
+                className={filtersOpen || selectedTag !== DAILY_MEMO_ALL_TAG || view !== 'all' ? 'isActive' : ''}
+                aria-label={filtersOpen ? '메모 필터 닫기' : '메모 필터 열기'}
+                aria-expanded={filtersOpen}
+                aria-controls="dailyMemoFilterChoices"
+                title="메모 필터"
+              >
+                <DailyMemoIcon name="tag" size={19} />
+              </button>
+            ) : null}
           </div>
         </header>
 
-        <div className="dailyMemoFilters">
+        <div id="dailyMemoFilters" className="dailyMemoFilters">
           {searchOpen ? (
             <label className="dailyMemoSearch">
               <DailyMemoIcon name="search" size={19} />
@@ -426,40 +647,54 @@ export default function DailyMemoPage({ navigate, notes = [], path, refresh, ses
             </label>
           ) : null}
 
-          <div className="dailyMemoViewTabs" role="group" aria-label="기록 보기 방식">
-            <button type="button" className={view === 'all' ? 'isActive' : ''} aria-pressed={view === 'all'} onClick={() => setView('all')}>모든 기록</button>
-            <button type="button" className={view === 'pinned' ? 'isActive' : ''} aria-pressed={view === 'pinned'} onClick={() => setView('pinned')}>
-              <DailyMemoIcon name="pin" size={15} /> 중요 기록
-            </button>
-          </div>
+          {filtersOpen ? (
+            <div id="dailyMemoFilterChoices" className="dailyMemoFilterChoices">
+              {pinnedCount || view === 'pinned' ? (
+                <div className="dailyMemoViewTabs" role="group" aria-label="메모 보기 방식">
+                  <button type="button" className={view === 'all' ? 'isActive' : ''} aria-pressed={view === 'all'} onClick={() => setView('all')}>
+                    전체 {folderNotes.length}
+                  </button>
+                  <button type="button" className={view === 'pinned' ? 'isActive' : ''} aria-pressed={view === 'pinned'} onClick={() => setView('pinned')}>
+                    <DailyMemoIcon name="pin" size={15} /> 중요 {pinnedCount}
+                  </button>
+                </div>
+              ) : null}
+              {availableTags.length ? (
+                <div className="dailyMemoTagFilters" aria-label="태그 필터">
+                  <button
+                    type="button"
+                    className={selectedTag === DAILY_MEMO_ALL_TAG ? 'isActive' : ''}
+                    aria-pressed={selectedTag === DAILY_MEMO_ALL_TAG}
+                    onClick={() => setSelectedTag(DAILY_MEMO_ALL_TAG)}
+                  >
+                    모든 태그
+                  </button>
+                  {availableTags.map((tag) => (
+                    <button
+                      type="button"
+                      key={tag}
+                      className={selectedTag === tag ? 'isActive' : ''}
+                      aria-pressed={selectedTag === tag}
+                      onClick={() => setSelectedTag(tag)}
+                    >
+                      #{tag}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
-          {notes.length ? (
-            <div className="dailyMemoTagFilters" aria-label="태그 필터">
-              <button
-                type="button"
-                className={selectedTag === DAILY_MEMO_ALL_TAG ? 'isActive' : ''}
-                aria-pressed={selectedTag === DAILY_MEMO_ALL_TAG}
-                onClick={() => setSelectedTag(DAILY_MEMO_ALL_TAG)}
-              >
-                전체
-              </button>
-              {availableTags.map((tag) => (
-                <button
-                  type="button"
-                  key={tag}
-                  className={selectedTag === tag ? 'isActive' : ''}
-                  aria-pressed={selectedTag === tag}
-                  onClick={() => setSelectedTag(tag)}
-                >
-                  #{tag}
-                </button>
-              ))}
+          {filtering ? (
+            <div className="dailyMemoFilterStatus" role="status">
+              <span>메모 {visibleNotes.length}개</span>
+              <button type="button" onClick={resetFilters}>초기화</button>
             </div>
           ) : null}
         </div>
 
         {visibleNotes.length ? (
-          <div className="dailyMemoGrid">
+          <div id="dailyMemoList" className="dailyMemoGrid">
             {visibleNotes.map((note) => (
               <DailyMemoCard
                 key={note.id}
@@ -468,9 +703,12 @@ export default function DailyMemoPage({ navigate, notes = [], path, refresh, ses
                 dateLabel={formatDailyMemoTime(note.updatedAt || note.createdAt)}
                 tags={dailyMemoTags(note)}
                 pinned={note.pinned}
-                isRich={requiresFullEditor(note)}
+                isRich={isLegacyRichMemo(note)}
+                folderId={dailyMemoFolderId(note)}
+                folders={folders}
                 onEdit={() => startEditing(note)}
                 onPin={() => togglePinned(note)}
+                onMove={(folderId) => moveMemo(note, folderId)}
                 onDelete={() => deleteMemo(note)}
               />
             ))}
@@ -478,7 +716,9 @@ export default function DailyMemoPage({ navigate, notes = [], path, refresh, ses
         ) : (
           <DailyMemoEmpty filtered={filtering} onReset={resetFilters} onWrite={focusComposer} />
         )}
-      </section>
+          </section>
+        </div>
+      </div>
     </div>
   );
 }

@@ -20,6 +20,7 @@ function emptyData(overrides = {}) {
     dietEntries: [],
     budgetEntries: [],
     trips: [],
+    recurringPayments: [],
     bodyProfile: null,
     ...overrides
   };
@@ -68,7 +69,8 @@ test('버전형 백업은 고정 메타데이터와 실제 collection counts를 
     workouts: 0,
     dietEntries: 0,
     budgetEntries: 0,
-    trips: 0
+    trips: 0,
+    recurringPayments: 0
   });
   assert.equal('workoutProfile' in snapshot.data, false);
   assert.equal('expandedSchedules' in snapshot.data, false);
@@ -135,6 +137,21 @@ test('현재 legacy exportedAt/account/workoutProfile snapshot을 canonical 형�
     planLifeHubBackupImport(current, legacy, { mode: 'replace' }).data.dailyBriefingSettings,
     current.dailyBriefingSettings
   );
+});
+
+test('canonical v1 백업은 정기 결제 빈 목록을 보완해 v2로 승격한다', () => {
+  const versionOne = backup({
+    data: emptyData({ schedules: [{ id: 'old-schedule', title: '예전 일정' }] })
+  });
+  versionOne.formatVersion = 1;
+  delete versionOne.data.recurringPayments;
+  delete versionOne.counts.recurringPayments;
+
+  const parsed = parseLifeHubBackup(versionOne);
+  assert.equal(parsed.formatVersion, 2);
+  assert.deepEqual(parsed.data.recurringPayments, []);
+  assert.equal(parsed.counts.recurringPayments, 0);
+  assert.equal(parsed.data.schedules[0].id, 'old-schedule');
 });
 
 test('미래 formatVersion은 다른 shape 검사보다 먼저 명확히 거부한다', () => {
@@ -224,6 +241,9 @@ test('Bridge 토큰과 대화 상태 필드는 백업 생성과 읽기에서 거
 
 test('dailyBriefingSettings가 없는 canonical v1 백업은 현재 설정을 보존한다', () => {
   const canonicalWithoutSettings = backup();
+  canonicalWithoutSettings.formatVersion = 1;
+  delete canonicalWithoutSettings.data.recurringPayments;
+  delete canonicalWithoutSettings.counts.recurringPayments;
   delete canonicalWithoutSettings.data.dailyBriefingSettings;
   const parsed = parseLifeHubBackup(canonicalWithoutSettings);
   assert.equal(parsed.data.dailyBriefingSettings, null);

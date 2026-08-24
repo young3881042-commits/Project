@@ -123,26 +123,31 @@ export function MemoStickyCard({ title, body, dateLabel, tags = [], pinned = fal
   );
 }
 
-export function ScheduleTimelineItem({ item, timeLabel, meta, statusLabel, onToggle, onDelete, onOpen }) {
+export function ScheduleTimelineItem({ item, dateLabel = '', timeLabel, meta, statusLabel, onToggle, onDelete, onOpen }) {
+  const displayStatus = statusLabel || (item.done ? '완료' : '예정');
   const className = [
     'schedule-timeline-item',
     item.done ? 'schedule-completed-row done' : '',
+    displayStatus === '미완료' ? 'schedule-incomplete-row incomplete' : '',
+    dateLabel ? 'has-date-time' : '',
     item.priority === '높음' ? 'urgent' : ''
   ].filter(Boolean).join(' ');
 
   return (
     <article className={className}>
-      <time>{timeLabel}</time>
+      <time>
+        {dateLabel ? <><span>{dateLabel}</span><b>{timeLabel}</b></> : timeLabel}
+      </time>
       <span className="schedule-time-rail" aria-hidden="true" />
       <div>
         <header>
           <strong>{item.title}</strong>
-          <em>{statusLabel || (item.done ? '완료' : '예정')}</em>
+          <em>{displayStatus}</em>
         </header>
         <p>{meta}</p>
         <footer>
           <button type="button" onClick={() => onToggle(item)}>
-            {item.done ? '대기로' : '완료'}
+            {item.done ? '완료 취소' : '완료'}
           </button>
           {onOpen ? (
             <button type="button" onClick={() => onOpen(item)}>
@@ -157,16 +162,6 @@ export function ScheduleTimelineItem({ item, timeLabel, meta, statusLabel, onTog
         </footer>
       </div>
     </article>
-  );
-}
-
-export function WorkoutSessionPanel({ done, badge, title, text }) {
-  return (
-    <section className={`workout-session-panel ${done ? 'done' : ''}`}>
-      <span className="workout-status-badge">{badge}</span>
-      <h2>{title}</h2>
-      <p>{text}</p>
-    </section>
   );
 }
 

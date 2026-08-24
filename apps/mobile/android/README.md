@@ -20,9 +20,9 @@ The script:
 
 1. runs `npm --prefix apps/web run build` (and `npm ci` first when dependencies are missing);
 2. embeds the resulting `apps/web/dist` files under the APK assets;
-3. compiles Java, runs Android Lint and native notification, finance-parser, and backup-document smoke tests;
+3. compiles Java, runs Android Lint and native notification, finance-parser, finance-share, and backup-document smoke tests;
 4. uses a local Android SDK 35 when available, otherwise runs the raw SDK build in the pinned Android container;
-5. verifies the debug signature, finance-listener boundary, and absence of credential-shaped APK content;
+5. verifies the debug signature, finance-listener boundary, grant-only finance share provider, and absence of credential-shaped APK content;
 6. writes the APK and SHA-256 sidecar under `apps/mobile/android/release/`.
 
 Verify and install the generated build:
@@ -37,9 +37,17 @@ The generated `.debug/` keystore is reused locally so later debug APKs can updat
 
 ## Embedded app mode
 
-The APK immediately opens the bundled `/app`; there is no first-launch mode dialog or user-editable server address. Memo, schedule, workout, diet, and finance data remain scoped to the embedded origin.
+The APK immediately opens the bundled `/app`; there is no first-launch mode dialog or user-editable server address. Memo, schedule, finance, and recurring-payment data remain scoped to the embedded origin. Removed workout and diet records are left untouched in local storage for compatibility.
 
-The current product does not expose food-photo AI analysis, AI chat, app editing, pairing, or an Orbit Bridge connection. Legacy `/ai`, `/ai/edit`, and `/ai/settings` navigation returns to `/app`. The Android wrapper contains no Bridge HTTP/SSE transport, token store, network-status bridge, or image chooser. Manual diet entry and JSON backup remain available.
+The memo screen uses a persistent folder sidebar on wider displays and a focus-trapped folder drawer on mobile. The editor is a single plain-text field; folder, title, tags, archive filters, and per-card actions appear only on demand. `Ctrl/Command+Enter` saves the draft. Legacy rich notes open in a protected reader and can be copied to a new text memo without overwriting the original.
+
+Undone schedules whose date has passed, plus timed schedules whose time has passed today, are labeled `미완료` consistently in the schedule view, home calendar, and morning briefing. All-day items remain upcoming until the day ends. The upcoming list shows both the date and time on its timeline rail.
+
+Finance keeps recurring-payment rules separate from posted ledger rows. A rule can use a numbered billing day or month-end, an optional end month, and optional automatic posting. Missing 29th–31st dates clamp to month-end, a rule/month is posted at most once, and deleting or editing a rule never rewrites historical ledger rows. New JSON backups use format version 2 and include these rules while version 1 backups remain importable.
+
+Finance can also create a one-time ledger snapshot for Android's system share sheet. Orbit JSON supports add-only import with duplicate preview; CSV is view-only. Memo text is excluded unless the sender explicitly opts in, and notification event IDs, owner values, and native queue data are never placed in the file. This does not create a shared account or ongoing synchronization.
+
+The current product does not expose workout or diet tracking, food-photo AI analysis, AI chat, app editing, pairing, or an Orbit Bridge connection. Legacy `/workout`, `/diet`, `/ai`, `/ai/edit`, and `/ai/settings` navigation returns to `/app`. The Android wrapper contains no Bridge HTTP/SSE transport, token store, network-status bridge, or image chooser. JSON backup remains available.
 
 The top-level page stays on the bundled origin. Main-frame navigation to other origins is blocked, TLS errors are cancelled, mixed content is disabled, and cleartext traffic is disabled. The asset responder injects a restrictive CSP that permits local scripts while disabling frames and objects.
 
@@ -49,6 +57,12 @@ The trusted embedded page can export and import a LifeHub JSON backup through An
 
 Payloads are capped at 8 MiB, decoded as strict UTF-8, and must be a strict top-level JSON object. Suggested filenames are bounded and cannot contain path separators or control characters. Only one native or browser-fallback JSON picker may be active at a time. Results are delivered through `lifehub:native-backup-result`; document URIs, contents, exceptions, and private paths are not logged.
 
+## Native finance file share contract
+
+The trusted embedded page may pass one validated JSON or CSV snapshot, capped at 8 MiB, to Android's `ACTION_SEND` chooser. Orbit writes it to a tokenized file under the app-private cache and exposes it through a non-exported `ContentProvider`. The chosen receiver gets temporary read permission only; write, delete, arbitrary paths, broad storage access, and direct URI access are rejected. Managed files older than 24 hours are removed on a later share or app start.
+
+Bluetooth and Quick Share appear through Android's chooser when the device supports them. Orbit does not scan for nearby devices, establish a Bluetooth connection itself, or request a Bluetooth permission. A successful native return means the chooser opened, not that a receiver completed delivery.
+
 ## Native interface
 
 Native methods are accepted only from the committed top-level `appassets.androidplatform.net` page; subframes and other origins are rejected. `AiAssistantNative` is retained as the historical JavaScript object name for compatibility, but it no longer exposes any AI or Bridge transport.
@@ -57,6 +71,7 @@ Native methods are accepted only from the committed top-level `appassets.android
 interface AiAssistantNative {
   exportLifeHubBackup(requestId: string, fileName: string, json: string): boolean
   importLifeHubBackup(requestId: string): boolean
+  shareFinanceFile(fileName: string, mimeType: 'application/json' | 'text/csv', content: string): boolean
   getNotificationCapabilities(): string | null
   getNotificationPermission(): 'granted' | 'default' | 'denied' | null
   getExactAlarmPermission(): 'granted' | 'default' | 'unsupported' | null
@@ -97,6 +112,7 @@ Notification access is a broad special permission. Sideloaded Android 13+ builds
 ## Embedded-mode limits
 
 - Personal records remain in the embedded origin's device storage and are not automatically synchronized to another device.
+- A finance share is a point-in-time file copy. Later edits, deletions, and new transactions do not propagate to the receiver.
 - Schedule reminders retain only the native synchronization window; reopening the app refreshes it.
 - Optional payment import covers only new, parseable notifications from selected supported apps.
 - The APK is debug-signed for direct testing. A store release requires a protected release key, managed versions, store assets, and policy review.

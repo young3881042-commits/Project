@@ -37,9 +37,8 @@ export default function HomePage({ model, navigate }) {
   const calendarSummaries = useMemo(() => summarizeHomeCalendar({
     dateKeys: calendar.dateKeys,
     schedules: calendarSchedules,
-    workouts: model.workouts,
     budgetEntries: model.budgetEntries
-  }), [calendar.dateKeys, calendarSchedules, model.workouts, model.budgetEntries]);
+  }), [calendar.dateKeys, calendarSchedules, model.budgetEntries]);
   const monthFinances = useMemo(
     () => summarizeMonthFinances(calendarMonth, model.budgetEntries),
     [calendarMonth, model.budgetEntries]
@@ -52,10 +51,8 @@ export default function HomePage({ model, navigate }) {
     period: activityPeriod,
     today: model.today,
     schedules: model.schedules,
-    workouts: model.workouts,
-    dietEntries: model.dietEntries,
     budgetEntries: model.budgetEntries
-  }), [activityPeriod, model.today, model.schedules, model.workouts, model.dietEntries, model.budgetEntries]);
+  }), [activityPeriod, model.today, model.schedules, model.budgetEntries]);
 
   const changeCalendarMonth = (offset) => {
     const nextMonth = shiftCalendarMonth(calendarMonth, offset);

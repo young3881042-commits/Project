@@ -1,28 +1,4 @@
 /* Home summary and local LifeHub Bridge / AI surfaces. */
-.lifeHubRoot .lifeHubBottomNav {
-  grid-template-columns: repeat(6, minmax(44px, 1fr));
-  gap: 0;
-  padding-inline: 4px;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-}
-
-.lifeHubRoot .lifeHubBottomNav::-webkit-scrollbar {
-  display: none;
-}
-
-.lifeHubRoot .lifeHubBottomNav button {
-  min-width: 44px;
-  padding-inline: 1px;
-}
-
-.lifeHubRoot .lifeHubBottomNav button > span {
-  font-size: 0.64rem;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-}
-
 .lifeHubRoot .lifeHubTopBar {
   grid-template-columns: minmax(0, 1fr) auto;
 }
@@ -356,7 +332,7 @@
 }
 
 .lifeHubRoute-ai .lifeHubBottomNav {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   width: min(100%, 1180px);
 }
 
@@ -1538,10 +1514,6 @@
 }
 
 @media (max-width: 760px) {
-  .lifeHubRoot .lifeHubBottomNav {
-    grid-template-columns: repeat(6, minmax(44px, 1fr));
-  }
-
   .lifeHubAiHomeCard {
     grid-template-columns: 48px minmax(0, 1fr);
     grid-template-areas:

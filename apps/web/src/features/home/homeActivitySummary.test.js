@@ -32,20 +32,20 @@ test('주·월·연 범위는 오늘을 끝으로 계산한다', () => {
   ]);
 });
 
-test('전체 범위는 모든 기록 중 가장 이른 날짜부터 시작한다', () => {
+test('전체 범위는 현재 제공하는 일정·가계부 중 가장 이른 날짜부터 시작한다', () => {
   assert.deepEqual(homeActivityRange('all', '2026-07-15', {
     schedules: [{ date: '2026-02-01' }],
     workouts: [{ date: '2025-12-30' }],
     dietEntries: [{ date: '잘못된 날짜' }],
     budgetEntries: [{ date: '2026-01-03' }]
-  }), { start: '2025-12-30', end: '2026-07-15' });
+  }), { start: '2026-01-03', end: '2026-07-15' });
   assert.deepEqual(homeActivityRange('all', '2026-07-15'), {
     start: '2026-07-15',
     end: '2026-07-15'
   });
 });
 
-test('주간 요약은 반복 일정을 날짜별로 확장하고 생활 기록 합계를 만든다', () => {
+test('주간 요약은 반복 일정을 날짜별로 확장하고 일정·지출 합계를 만든다', () => {
   const summary = buildHomeActivitySummary({
     period: 'week',
     today: '2026-07-15',
@@ -79,11 +79,10 @@ test('주간 요약은 반복 일정을 날짜별로 확장하고 생활 기록 
   assert.equal(summary.periodMeta.title, '이번 주');
   assert.deepEqual(summary.range, { start: '2026-07-13', end: '2026-07-15' });
   assert.deepEqual(summary.stats.map((item) => item.value), [
-    '3/4',
-    '1회',
-    '750kcal',
+    '4/5',
     '12,000원'
   ]);
+  assert.deepEqual(summary.stats.map((item) => item.route), ['/schedule', '/finance']);
 });
 
 test('전체 요약은 기본 완료와 반복 완료 기록을 합쳐 개수로 표시한다', () => {
@@ -105,6 +104,6 @@ test('전체 요약은 기본 완료와 반복 완료 기록을 합쳐 개수로
     budgetEntries: []
   });
 
-  assert.equal(summary.stats[0].value, '3개');
+  assert.equal(summary.stats[0].value, '4개');
   assert.deepEqual(summary.range, { start: '2025-01-01', end: '2026-07-15' });
 });

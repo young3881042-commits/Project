@@ -1,0 +1,197 @@
+/* Production-only home summary and local-storage card styles. */
+.lifeHubHomeSimplePage {
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.lifeHubHomeSimplePage > * {
+  width: 100%;
+  min-width: 0;
+}
+
+.lifeHubHomeGreeting,
+.lifeHubWeeklySummary {
+  border: 1px solid var(--lh-border);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.055);
+}
+
+.lifeHubHomeGreeting {
+  position: relative;
+  min-height: 154px;
+  display: block;
+  padding: 24px 154px 24px 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 88% 18%, rgba(15, 150, 133, 0.16), transparent 38%),
+    linear-gradient(140deg, #effbf8, #fff 72%);
+}
+
+.lifeHubHomeGreeting > div {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.lifeHubHomeGreeting > div > span {
+  color: #0f7f72;
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.lifeHubHomeGreeting h2 {
+  margin: 0;
+  color: var(--lh-ink);
+  font-size: clamp(1.35rem, 4vw, 1.9rem);
+  line-height: 1.22;
+  word-break: keep-all;
+}
+
+.lifeHubHomeGreeting p {
+  margin: 0;
+  color: var(--lh-muted);
+  line-height: 1.55;
+}
+
+.lifeHubHomeGreeting > .lifeHubPackIcon {
+  position: absolute;
+  right: 22px;
+  bottom: 18px;
+  width: 124px;
+  height: 112px;
+}
+
+.lifeHubLocalStorageCard {
+  min-height: 82px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.lifeHubLocalStorageCard > span {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #e9f8f5;
+  color: #087f72;
+}
+
+.lifeHubLocalStorageCard > span .memoNavIcon {
+  width: 23px;
+  height: 23px;
+}
+
+.lifeHubLocalStorageCard strong {
+  color: var(--lh-ink);
+  font-size: 0.9rem;
+}
+
+.lifeHubLocalStorageCard p {
+  margin: 4px 0 0;
+  color: var(--lh-muted);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.lifeHubWeeklySummary {
+  padding: 18px;
+}
+
+.lifeHubActivityPeriodTabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: #f1f5f9;
+}
+
+.lifeHubActivityPeriodTabs button {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--lh-muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.lifeHubActivityPeriodTabs button.active {
+  border-color: #bfe5df;
+  background: #ffffff;
+  color: #087f72;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.07);
+}
+
+.lifeHubWeeklyStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.lifeHubWeeklyStats button {
+  min-width: 0;
+  min-height: 112px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  padding: 12px 8px;
+  border: 1px solid #e0e8ec;
+  border-radius: 15px;
+  background: #fbfcfd;
+  color: var(--lh-ink);
+}
+
+.lifeHubWeeklyStats .memoNavIcon {
+  width: 28px;
+  height: 28px;
+  color: #0f766e;
+}
+
+.lifeHubWeeklyStats span {
+  color: var(--lh-muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.lifeHubWeeklyStats strong {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.94rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .lifeHubHomeGreeting {
+    min-height: 0;
+    padding: 18px;
+  }
+
+  .lifeHubHomeGreeting > .lifeHubPackIcon {
+    display: none;
+  }
+
+  .lifeHubHomeGreeting h2 {
+    font-size: 1.28rem;
+  }
+
+  .lifeHubHomeGreeting p {
+    font-size: 0.8rem;
+  }
+
+  .lifeHubWeeklyStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lifeHubWeeklyStats button {
+    min-height: 96px;
+  }
+}

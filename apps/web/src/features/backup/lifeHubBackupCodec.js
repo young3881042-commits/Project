@@ -1,12 +1,16 @@
-export const LIFEHUB_BACKUP_FORMAT_VERSION = 1;
+export const LIFEHUB_BACKUP_FORMAT_VERSION = 2;
 export const LIFEHUB_BACKUP_PRODUCT = 'LifeHub';
-export const LIFEHUB_BACKUP_COLLECTIONS = Object.freeze([
+const LIFEHUB_V1_BACKUP_COLLECTIONS = Object.freeze([
   'schedules',
   'notes',
   'workouts',
   'dietEntries',
   'budgetEntries',
   'trips'
+]);
+export const LIFEHUB_BACKUP_COLLECTIONS = Object.freeze([
+  ...LIFEHUB_V1_BACKUP_COLLECTIONS,
+  'recurringPayments'
 ]);
 
 const PROFILE_KEY = 'bodyProfile';
@@ -65,8 +69,7 @@ const CANONICAL_ROOT_KEYS = new Set([
   'data'
 ]);
 const LEGACY_ROOT_KEYS = new Set(['product', 'exportedAt', 'account', 'counts', 'data']);
-const CANONICAL_DATA_KEYS = new Set([...LIFEHUB_BACKUP_COLLECTIONS, PROFILE_KEY, BRIEFING_SETTINGS_KEY]);
-const LEGACY_DATA_KEYS = new Set([...CANONICAL_DATA_KEYS, LEGACY_PROFILE_KEY]);
+const LEGACY_DATA_KEYS = new Set([...LIFEHUB_V1_BACKUP_COLLECTIONS, PROFILE_KEY, BRIEFING_SETTINGS_KEY, LEGACY_PROFILE_KEY]);
 
 export class LifeHubBackupError extends Error {
   constructor(code, message, path = '$', cause = undefined) {
@@ -213,8 +216,8 @@ function normalizeBriefingSettings(value, path) {
   return cloneSafeJson(value);
 }
 
-function normalizedCounts(data) {
-  return Object.fromEntries(LIFEHUB_BACKUP_COLLECTIONS.map((key) => [key, data[key].length]));
+function normalizedCounts(data, collectionKeys = LIFEHUB_BACKUP_COLLECTIONS) {
+  return Object.fromEntries(collectionKeys.map((key) => [key, data[key].length]));
 }
 
 function normalizeDataForCreation(input) {
@@ -237,9 +240,14 @@ function normalizeDataForCreation(input) {
   return data;
 }
 
-function normalizeSnapshotData(input, { legacy = false } = {}) {
-  const allowed = legacy ? LEGACY_DATA_KEYS : CANONICAL_DATA_KEYS;
-  const required = [...LIFEHUB_BACKUP_COLLECTIONS];
+function normalizeSnapshotData(input, {
+  legacy = false,
+  collectionKeys = LIFEHUB_BACKUP_COLLECTIONS
+} = {}) {
+  const allowed = legacy
+    ? LEGACY_DATA_KEYS
+    : new Set([...collectionKeys, PROFILE_KEY, BRIEFING_SETTINGS_KEY]);
+  const required = [...collectionKeys];
   if (!legacy) required.push(PROFILE_KEY);
   assertAllowedKeys(input, allowed, required, '$.data');
   if (legacy && !own(input, PROFILE_KEY) && !own(input, LEGACY_PROFILE_KEY)) {
@@ -248,7 +256,9 @@ function normalizeSnapshotData(input, { legacy = false } = {}) {
 
   const data = {};
   for (const key of LIFEHUB_BACKUP_COLLECTIONS) {
-    data[key] = normalizeCollection(input[key], `$.data.${key}`);
+    data[key] = collectionKeys.includes(key)
+      ? normalizeCollection(input[key], `$.data.${key}`)
+      : [];
   }
   const profile = own(input, PROFILE_KEY) ? input[PROFILE_KEY] : input[LEGACY_PROFILE_KEY];
   data[PROFILE_KEY] = normalizeBodyProfile(profile, `$.data.${PROFILE_KEY}`);
@@ -259,10 +269,10 @@ function normalizeSnapshotData(input, { legacy = false } = {}) {
   return data;
 }
 
-function validateCounts(counts, data) {
-  assertAllowedKeys(counts, new Set(LIFEHUB_BACKUP_COLLECTIONS), LIFEHUB_BACKUP_COLLECTIONS, '$.counts');
-  const actual = normalizedCounts(data);
-  for (const key of LIFEHUB_BACKUP_COLLECTIONS) {
+function validateCounts(counts, data, collectionKeys = LIFEHUB_BACKUP_COLLECTIONS) {
+  assertAllowedKeys(counts, new Set(collectionKeys), collectionKeys, '$.counts');
+  const actual = normalizedCounts(data, collectionKeys);
+  for (const key of collectionKeys) {
     const value = counts[key];
     if (!Number.isSafeInteger(value) || value < 0) {
       fail('INVALID_SHAPE', `$.counts.${key}는 0 이상의 정수여야 합니다.`, `$.counts.${key}`);
@@ -306,8 +316,9 @@ function parseCanonicalSnapshot(root) {
   }
   assertAllowedKeys(root, CANONICAL_ROOT_KEYS, CANONICAL_ROOT_KEYS, '$');
   validateProduct(root.product);
-  const data = normalizeSnapshotData(root.data);
-  validateCounts(root.counts, data);
+  const collectionKeys = version === 1 ? LIFEHUB_V1_BACKUP_COLLECTIONS : LIFEHUB_BACKUP_COLLECTIONS;
+  const data = normalizeSnapshotData(root.data, { collectionKeys });
+  validateCounts(root.counts, data, collectionKeys);
   return createLifeHubBackup({
     owner: root.owner,
     appVersion: root.appVersion,
@@ -321,8 +332,11 @@ function parseLegacySnapshot(root) {
   validateProduct(root.product);
   assertAllowedKeys(root.account, new Set(['username', 'mode']), ['username', 'mode'], '$.account');
   normalizeRequiredString(root.account.mode, '$.account.mode', 32);
-  const data = normalizeSnapshotData(root.data, { legacy: true });
-  validateCounts(root.counts, data);
+  const data = normalizeSnapshotData(root.data, {
+    legacy: true,
+    collectionKeys: LIFEHUB_V1_BACKUP_COLLECTIONS
+  });
+  validateCounts(root.counts, data, LIFEHUB_V1_BACKUP_COLLECTIONS);
   return createLifeHubBackup({
     owner: root.account.username,
     appVersion: 'legacy',

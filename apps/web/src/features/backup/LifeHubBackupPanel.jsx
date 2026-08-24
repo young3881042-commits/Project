@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import MemoNavIcon from '../../components/MemoNavIcon.jsx';
 import {
-  LIFEHUB_BACKUP_COLLECTIONS,
   createLifeHubBackup,
   parseLifeHubBackup,
   planLifeHubBackupImport,
@@ -21,11 +20,11 @@ import {
 const COLLECTION_LABELS = {
   schedules: '일정',
   notes: '메모',
-  workouts: '운동',
-  dietEntries: '식단',
   budgetEntries: '가계부',
+  recurringPayments: '정기 결제',
   trips: '여행'
 };
+const VISIBLE_BACKUP_COLLECTIONS = Object.freeze(Object.keys(COLLECTION_LABELS));
 
 function backupFileName() {
   const now = new Date();
@@ -48,14 +47,11 @@ function downloadJson(json, fileName) {
 }
 
 function totalCounts(counts) {
-  return LIFEHUB_BACKUP_COLLECTIONS.reduce((sum, key) => sum + (Number(counts?.[key]) || 0), 0);
+  return VISIBLE_BACKUP_COLLECTIONS.reduce((sum, key) => sum + (Number(counts?.[key]) || 0), 0);
 }
 
 function changedSingletonLabel(plan) {
-  return [
-    plan?.bodyProfile?.overwritten ? '신체정보' : '',
-    plan?.dailyBriefingSettings?.overwritten ? '자동 브리핑 설정' : ''
-  ].filter(Boolean).join('·');
+  return plan?.dailyBriefingSettings?.overwritten ? '자동 브리핑 설정' : '';
 }
 
 function errorMessage(error, fallback) {
@@ -230,7 +226,7 @@ export default function LifeHubBackupPanel({
         <span><MemoNavIcon type="shield" /></span>
         <div>
           <strong id="lifehub-backup-title">백업과 복원</strong>
-          <p>일정·메모·건강·가계부·여행 기록을 JSON 파일로 옮길 수 있어요.</p>
+          <p>일정·메모·가계부·정기 결제·여행 기록을 JSON 파일로 옮길 수 있어요.</p>
         </div>
       </header>
       <div className="lifeHubBackupActions">
@@ -268,7 +264,7 @@ export default function LifeHubBackupPanel({
           </fieldset>
 
           <div className="lifeHubBackupCounts">
-            {LIFEHUB_BACKUP_COLLECTIONS.map((key) => (
+            {VISIBLE_BACKUP_COLLECTIONS.map((key) => (
               <span key={key}>
                 <small>{COLLECTION_LABELS[key]}</small>
                 <strong>{plan.collections[key].result}</strong>
@@ -276,7 +272,7 @@ export default function LifeHubBackupPanel({
               </span>
             ))}
           </div>
-          {plan.bodyProfile.overwritten || plan.dailyBriefingSettings.overwritten ? (
+          {changedSingletonLabel(plan) ? (
             <p className="lifeHubBackupWarning">
               이 복원은 기록과 함께 {changedSingletonLabel(plan)}도 백업 내용으로 변경합니다.
             </p>

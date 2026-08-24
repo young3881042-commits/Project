@@ -130,6 +130,9 @@ run_android_security_tests() {
   java \
     -classpath "${test_classes_dir}:${BUILD_DIR}/classes:${platform_dir}/android.jar" \
     com.platform.aiassitant.FinanceNotificationPolicyStaticTest
+  java \
+    -classpath "${test_classes_dir}:${BUILD_DIR}/classes:${platform_dir}/android.jar" \
+    com.platform.aiassitant.FinanceSharePolicyStaticTest
 }
 
 scan_apk_credentials() {
@@ -207,6 +210,46 @@ verify_apk_finance_notification_capability() {
   fi
 }
 
+verify_apk_finance_share_capability() {
+  local aapt2_bin="$1"
+  local apk_path="$2"
+  local manifest_dump provider_block provider_count dex_provider_count
+  log "Checking the grant-only finance file share capability."
+  manifest_dump="$("${aapt2_bin}" dump xmltree "${apk_path}" --file AndroidManifest.xml)"
+  provider_block="$(printf '%s\n' "${manifest_dump}" | awk '
+    /^          E: provider/ { capture = 1; block = $0 ORS; next }
+    capture && /^          E: (activity|service|receiver|provider)/ { capture = 0 }
+    capture { block = block $0 ORS }
+    END { printf "%s", block }
+  ')"
+  provider_count="$(printf '%s\n' "${manifest_dump}" \
+    | LC_ALL=C grep -c 'E: provider' || true)"
+  if [[ "${provider_count}" != "1" ]] \
+      || ! printf '%s\n' "${provider_block}" \
+          | LC_ALL=C grep -F '=".FinanceShareFileProvider"' >/dev/null \
+      || ! printf '%s\n' "${provider_block}" \
+          | LC_ALL=C grep -F '="com.platform.aiassitant.finance-share"' >/dev/null \
+      || ! printf '%s\n' "${provider_block}" \
+          | LC_ALL=C grep -F ':exported(0x01010010)=false' >/dev/null \
+      || ! printf '%s\n' "${provider_block}" \
+          | LC_ALL=C grep -F ':grantUriPermissions(0x0101001b)=true' >/dev/null; then
+    echo "APK manifest does not contain exactly one non-exported, grant-only finance share provider." >&2
+    exit 2
+  fi
+  if printf '%s\n' "${manifest_dump}" \
+      | LC_ALL=C grep -F 'android.permission.BLUETOOTH' >/dev/null; then
+    echo "APK finance sharing must not request a broad Bluetooth permission." >&2
+    exit 2
+  fi
+  dex_provider_count="$(unzip -p "${apk_path}" classes.dex \
+    | strings -a -n 8 \
+    | LC_ALL=C grep -c 'FinanceShareFileProvider' || true)"
+  if [[ "${dex_provider_count}" -lt 1 ]]; then
+    echo "APK DEX is missing the finance share provider implementation." >&2
+    exit 2
+  fi
+}
+
 audit_android_source_security() {
   local java_dir="${APP_DIR}/src"
   local forbidden='public[[:space:]]+(String|boolean)[[:space:]]+(getSecureValue|setSecureValue|setBridgeToken|getBridgeCapabilities|bridgeRequest|bridgeStream|bridgeCancel)[[:space:]]*\(|BridgeHttpProxy|SecureTokenStore|ImageFileChooserPolicy|setWebContentsDebuggingEnabled[[:space:]]*\([[:space:]]*true[[:space:]]*\)|\.proceed[[:space:]]*\([[:space:]]*\)|setHostnameVerifier|setSSLSocketFactory'
@@ -218,6 +261,8 @@ audit_android_source_security() {
   local forbidden_storage='READ_EXTERNAL_STORAGE|WRITE_EXTERNAL_STORAGE|MANAGE_EXTERNAL_STORAGE|MANAGE_DOCUMENTS|READ_MEDIA_(IMAGES|VIDEO|AUDIO)'
   local backup_source="${java_dir}/com/platform/aiassitant/LifeHubBackupDocumentCoordinator.java"
   local forbidden_backup_logging='android\.util\.Log|System\.(out|err)|printStackTrace'
+  local finance_share_sources="${java_dir}/com/platform/aiassitant/FinanceShare*.java"
+  local finance_share_provider_block
   log "Checking Android source security invariants."
   if LC_ALL=C grep -R -E "${forbidden}" "${java_dir}" >/dev/null; then
     echo "Android source security audit found a token-export, TLS-bypass, or debug-enabling API." >&2
@@ -298,6 +343,29 @@ audit_android_source_security() {
   if [[ -f "${backup_source}" ]] \
       && LC_ALL=C grep -E "${forbidden_backup_logging}" "${backup_source}" >/dev/null; then
     echo "Android source security audit found logging in the JSON backup document path." >&2
+    exit 2
+  fi
+  if compgen -G "${finance_share_sources}" >/dev/null \
+      && LC_ALL=C grep -E "${forbidden_finance_logging}" ${finance_share_sources} >/dev/null; then
+    echo "Android source security audit found logging in the finance share path." >&2
+    exit 2
+  fi
+  finance_share_provider_block="$(awk '
+    /<provider/ { capture = 1; block = $0 ORS; next }
+    capture { block = block $0 ORS }
+    capture && /\/>/ {
+      if (block ~ /FinanceShareFileProvider/) printf "%s", block
+      capture = 0
+      block = ""
+    }
+  ' "${APP_DIR}/AndroidManifest.xml")"
+  if ! printf '%s\n' "${finance_share_provider_block}" \
+          | LC_ALL=C grep -F 'android:authorities="com.platform.aiassitant.finance-share"' >/dev/null \
+      || ! printf '%s\n' "${finance_share_provider_block}" \
+          | LC_ALL=C grep -F 'android:exported="false"' >/dev/null \
+      || ! printf '%s\n' "${finance_share_provider_block}" \
+          | LC_ALL=C grep -F 'android:grantUriPermissions="true"' >/dev/null; then
+    echo "Android source audit requires a non-exported, grant-only finance share provider." >&2
     exit 2
   fi
 }
@@ -492,6 +560,9 @@ build_raw_apk() {
     "${BUILD_DIR}/ai-assitant-aligned.apk"
   "${build_tools_dir}/apksigner" verify --verbose "${BUILD_DIR}/ai-assitant-debug.apk"
   verify_apk_finance_notification_capability \
+    "${build_tools_dir}/aapt2" \
+    "${BUILD_DIR}/ai-assitant-debug.apk"
+  verify_apk_finance_share_capability \
     "${build_tools_dir}/aapt2" \
     "${BUILD_DIR}/ai-assitant-debug.apk"
   scan_apk_credentials "${BUILD_DIR}/ai-assitant-debug.apk"

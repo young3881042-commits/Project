@@ -1,10 +1,6 @@
-import {
-  expandSchedulesForCalendar,
-  isWorkoutSchedule
-} from '../../components/home/homeMonthCalendarModel.js';
+import { expandSchedulesForCalendar } from '../../components/home/homeMonthCalendarModel.js';
 import {
   addDays,
-  formatNumber,
   isDateKey,
   money
 } from '../../utils/lifeHubFormatters.js';
@@ -27,8 +23,6 @@ export function homeActivityRange(period, today, records = {}) {
 
   const recordedDates = [
     ...(records.schedules || []).map((item) => item.date),
-    ...(records.workouts || []).map((item) => item.date),
-    ...(records.dietEntries || []).map((item) => item.date),
     ...(records.budgetEntries || []).map((item) => item.date)
   ].filter(isDateKey).sort();
   return { start: recordedDates[0] || today, end: today };
@@ -45,11 +39,8 @@ export function dateKeysInRange(start, end) {
 }
 
 function schedulesForPeriod(period, range, schedules) {
-  if (period === 'all') return schedules.filter((item) => !isWorkoutSchedule(item));
-  return expandSchedulesForCalendar(
-    schedules,
-    dateKeysInRange(range.start, range.end)
-  ).filter((item) => !isWorkoutSchedule(item));
+  if (period === 'all') return schedules;
+  return expandSchedulesForCalendar(schedules, dateKeysInRange(range.start, range.end));
 }
 
 function completedScheduleCount(period, schedules) {
@@ -69,19 +60,13 @@ export function buildHomeActivitySummary({
   period = 'week',
   today,
   schedules = [],
-  workouts = [],
-  dietEntries = [],
   budgetEntries = []
 }) {
-  const records = { schedules, workouts, dietEntries, budgetEntries };
+  const records = { schedules, budgetEntries };
   const periodMeta = HOME_ACTIVITY_PERIODS.find((item) => item.value === period) || HOME_ACTIVITY_PERIODS[0];
   const range = homeActivityRange(period, today, records);
   const periodSchedules = schedulesForPeriod(period, range, schedules);
   const completedSchedules = completedScheduleCount(period, periodSchedules);
-  const periodWorkouts = workouts.filter((item) => isWithinRange(item, range));
-  const periodDietCalories = dietEntries
-    .filter((item) => isWithinRange(item, range))
-    .reduce((sum, item) => sum + item.calories, 0);
   const periodExpense = budgetEntries
     .filter((item) => item.type !== 'deposit' && isWithinRange(item, range))
     .reduce((sum, item) => sum + item.amount, 0);
@@ -96,8 +81,6 @@ export function buildHomeActivitySummary({
         icon: 'calendar',
         route: '/schedule'
       },
-      { label: '운동 기록', value: `${periodWorkouts.length}회`, icon: 'trophy', route: '/workout' },
-      { label: '섭취 합계', value: `${formatNumber(periodDietCalories)}kcal`, icon: 'meal', route: '/diet' },
       { label: '지출 합계', value: money(periodExpense), icon: 'chart', route: '/finance' }
     ]
   };

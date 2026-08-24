@@ -7,8 +7,6 @@ const LIFEHUB_PATHS = new Set([
   '/home',
   '/memo',
   '/schedule',
-  '/workout',
-  '/diet',
   '/finance',
   '/more'
 ]);
@@ -17,8 +15,8 @@ const LIFEHUB_PATHS = new Set([
 // Android/PWA build does not import them or ship their heavy editor assets.
 const LEGACY_ROUTE_ROOTS = new Set([
   'ai', 'analysis', 'analysisadmin', 'apps', 'assistant', 'budget', 'connect', 'connections',
-  'destinations', 'login', 'mypage', 'notes', 'partners', 'planner', 'plans',
-  'portfolio', 'reading', 'scheduler', 'signup', 'travel'
+  'destinations', 'diet', 'login', 'mypage', 'notes', 'partners', 'planner', 'plans',
+  'portfolio', 'reading', 'scheduler', 'signup', 'travel', 'workout'
 ]);
 
 const ROUTE_STATE_SHELL_STYLE = {

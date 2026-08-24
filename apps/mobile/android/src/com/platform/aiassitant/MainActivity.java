@@ -85,6 +85,7 @@ public final class MainActivity extends Activity {
     private int pendingWebFileRequestCode;
     private final Object documentPickerLock = new Object();
     private volatile LifeHubBackupDocumentCoordinator backupDocumentCoordinator;
+    private volatile FinanceShareCoordinator financeShareCoordinator;
 
     @Override
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
@@ -115,6 +116,26 @@ public final class MainActivity extends Activity {
                 documentPickerLock,
                 originKey(Uri.parse(LOCAL_ORIGIN)),
                 savedInstanceState
+        );
+        financeShareCoordinator = new FinanceShareCoordinator(
+                this,
+                new FinanceShareCoordinator.Host() {
+                    @Override
+                    public boolean isTrustedOrigin(String expectedOrigin) {
+                        return expectedOrigin != null
+                                && expectedOrigin.equals(trustedTopLevelOrigin)
+                                && isTrustedNativeCaller();
+                    }
+
+                    @Override
+                    public void onShareUnavailable() {
+                        Toast.makeText(
+                                MainActivity.this,
+                                R.string.finance_share_unavailable,
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                }
         );
 
         preferences = getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
@@ -530,6 +551,7 @@ public final class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         clearPendingWebFileCallback();
+        financeShareCoordinator = null;
         if (backupDocumentCoordinator != null) {
             backupDocumentCoordinator.destroy(isFinishing() && !isChangingConfigurations());
             backupDocumentCoordinator = null;
@@ -610,6 +632,16 @@ public final class MainActivity extends Activity {
         public boolean importLifeHubBackup(String requestId) {
             LifeHubBackupDocumentCoordinator coordinator = backupDocumentCoordinator;
             return coordinator != null && coordinator.importLifeHubBackup(requestId);
+        }
+
+        @JavascriptInterface
+        public boolean shareFinanceFile(String fileName, String mimeType, String content) {
+            String expectedOrigin = trustedTopLevelOrigin;
+            FinanceShareCoordinator coordinator = financeShareCoordinator;
+            return expectedOrigin != null
+                    && isTrustedNativeCaller()
+                    && coordinator != null
+                    && coordinator.share(expectedOrigin, fileName, mimeType, content);
         }
 
         @JavascriptInterface

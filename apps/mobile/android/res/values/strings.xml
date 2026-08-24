@@ -7,4 +7,6 @@
     <string name="notification_channel_description">LifeHub 일정과 AI 작업의 승인·완료 상태를 알려줍니다.</string>
     <string name="card_notification_listener_name">Orbit 결제 알림 자동 기록</string>
     <string name="card_notification_settings_unavailable">알림 접근 설정 화면을 열 수 없습니다.</string>
+    <string name="finance_share_chooser_title">가계부 파일 보내기</string>
+    <string name="finance_share_unavailable">가계부 파일을 공유할 앱을 열 수 없습니다.</string>
 </resources>

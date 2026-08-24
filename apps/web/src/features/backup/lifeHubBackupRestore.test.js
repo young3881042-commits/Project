@@ -3,7 +3,7 @@ import test from 'node:test';
 import { createLifeHubBackup, planLifeHubBackupImport } from './lifeHubBackupCodec.js';
 import { applyLifeHubBackupPlan, prepareLifeHubRestoreData } from './lifeHubBackupRestore.js';
 
-const KEYS = ['schedules', 'notes', 'workouts', 'dietEntries', 'budgetEntries', 'trips'];
+const KEYS = ['schedules', 'notes', 'workouts', 'dietEntries', 'budgetEntries', 'trips', 'recurringPayments'];
 
 function data(prefix = 'old') {
   return {

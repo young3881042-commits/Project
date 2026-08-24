@@ -238,3 +238,1054 @@
     grid-template-columns: 1fr;
   }
 }
+
+.lifeHubRecurringSummary {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 14px;
+  border: 1px solid #d8e1e7;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 7px 18px rgba(29, 48, 62, 0.055);
+}
+
+.lifeHubRecurringIcon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 9px;
+  border-radius: 11px;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.lifeHubRecurringIcon .memoNavIcon,
+.lifeHubRecurringListHeader .memoNavIcon,
+.lifeHubRecurringEmpty .memoNavIcon {
+  width: 100%;
+  height: 100%;
+}
+
+.lifeHubRecurringSummary > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 2px 7px;
+}
+
+.lifeHubRecurringSummary > div > span {
+  color: #667085;
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.lifeHubRecurringSummary > div > strong {
+  color: #16243a;
+  font-size: 1.02rem;
+  font-weight: 950;
+  letter-spacing: -0.035em;
+}
+
+.lifeHubRecurringSummary > div > small,
+.lifeHubRecurringSummary > div > em {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.67rem;
+  font-style: normal;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubRecurringSummary > div > em {
+  color: #4f46e5;
+  font-weight: 850;
+}
+
+.lifeHubRecurringSummary > button {
+  min-width: 58px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #c7d2fe;
+  border-radius: 10px;
+  background: #f5f7ff;
+  color: #4338ca;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.lifeHubRecurringBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  display: grid;
+  place-items: center;
+  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+.lifeHubRecurringSheet {
+  width: min(100%, 720px);
+  max-height: min(840px, calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid #dbe3ea;
+  border-radius: 22px;
+  background: #f7f9fb;
+  box-shadow: 0 30px 90px rgba(15, 23, 42, 0.28);
+}
+
+.lifeHubRecurringSheet > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid #e3e8ee;
+  background: #ffffff;
+}
+
+.lifeHubRecurringSheet > header > div {
+  min-width: 0;
+}
+
+.lifeHubRecurringSheet > header span,
+.lifeHubRecurringSheet > header h2,
+.lifeHubRecurringSheet > header p {
+  margin: 0;
+}
+
+.lifeHubRecurringSheet > header span {
+  color: #4f46e5;
+  font-size: 0.69rem;
+  font-weight: 900;
+}
+
+.lifeHubRecurringSheet > header h2 {
+  margin-top: 3px;
+  color: #142238;
+  font-size: 1.16rem;
+  letter-spacing: -0.035em;
+}
+
+.lifeHubRecurringSheet > header p {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 0.73rem;
+  line-height: 1.45;
+}
+
+.lifeHubRecurringSheet > header > button {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 11px;
+  border: 0;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.lifeHubRecurringSheet > header > button .memoNavIcon {
+  width: 100%;
+  height: 100%;
+}
+
+.lifeHubRecurringSheetBody {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 13px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 18px 22px;
+}
+
+.lifeHubRecurringMonthStatus {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.lifeHubRecurringMonthStatus > div {
+  display: grid;
+  gap: 3px;
+  padding: 11px 12px;
+  border: 1px solid #e0e7ef;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+.lifeHubRecurringMonthStatus span {
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.lifeHubRecurringMonthStatus strong {
+  color: #1e293b;
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.lifeHubRecurringForm {
+  display: grid;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid #cfd8ff;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(79, 70, 229, 0.06);
+}
+
+.lifeHubRecurringForm > header,
+.lifeHubRecurringListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.lifeHubRecurringForm > header strong,
+.lifeHubRecurringListHeader strong {
+  color: #1e293b;
+  font-size: 0.84rem;
+  font-weight: 950;
+}
+
+.lifeHubRecurringForm > header button {
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.lifeHubRecurringForm > label:not(.lifeHubRecurringToggle),
+.lifeHubRecurringTwoCol > label,
+.lifeHubRecurringAdvanced > label:not(.lifeHubRecurringToggle) {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.lifeHubRecurringForm label > span:first-child,
+.lifeHubRecurringAdvanced label > span:first-child {
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.lifeHubRecurringForm input:not([type='checkbox']),
+.lifeHubRecurringForm select {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0 11px;
+  border: 1px solid #d7dee7;
+  border-radius: 10px;
+  outline: 0;
+  background: #fbfcfd;
+  color: #1e293b;
+  font: inherit;
+  font-size: 0.79rem;
+}
+
+.lifeHubRecurringForm input:not([type='checkbox']):focus,
+.lifeHubRecurringForm select:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.lifeHubRecurringTwoCol,
+.lifeHubRecurringAdvanced {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.lifeHubRecurringToggle {
+  min-width: 0;
+  min-height: 56px;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid #e0e7ef;
+  border-radius: 11px;
+  background: #f8fafc;
+  cursor: pointer;
+}
+
+.lifeHubRecurringToggle input {
+  width: 21px;
+  height: 21px;
+  margin: 0;
+  accent-color: #4f46e5;
+}
+
+.lifeHubRecurringToggle > span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.lifeHubRecurringToggle strong {
+  color: #334155;
+  font-size: 0.74rem;
+}
+
+.lifeHubRecurringToggle small,
+.lifeHubRecurringGuide {
+  color: #64748b;
+  font-size: 0.67rem;
+  line-height: 1.45;
+}
+
+.lifeHubRecurringToggle.compact {
+  min-height: 46px;
+}
+
+.lifeHubRecurringForm details {
+  border-top: 1px solid #e5eaf0;
+}
+
+.lifeHubRecurringForm summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.lifeHubRecurringAdvanced {
+  padding-bottom: 4px;
+}
+
+.lifeHubRecurringWarning,
+.lifeHubRecurringError {
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 9px;
+  font-size: 0.69rem;
+  font-weight: 750;
+  line-height: 1.48;
+}
+
+.lifeHubRecurringWarning {
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.lifeHubRecurringError {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.lifeHubRecurringForm > button.primary {
+  min-height: 46px;
+  border: 0;
+  border-radius: 10px;
+  background: #4f46e5;
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 950;
+}
+
+.lifeHubRecurringListHeader {
+  padding: 2px 2px 0;
+}
+
+.lifeHubRecurringListHeader > button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 11px;
+  border: 1px solid #c7d2fe;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #4338ca;
+  font-size: 0.71rem;
+  font-weight: 900;
+}
+
+.lifeHubRecurringListHeader > button .memoNavIcon {
+  width: 17px;
+  height: 17px;
+}
+
+.lifeHubRecurringList {
+  display: grid;
+  gap: 8px;
+}
+
+.lifeHubRecurringList > article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 11px;
+  border: 1px solid #e0e6ed;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.lifeHubRecurringList > article.isPaused {
+  opacity: 0.65;
+}
+
+.lifeHubRecurringDay {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.lifeHubRecurringDay.posted {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.lifeHubRecurringDay.due {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.lifeHubRecurringList > article > div:nth-child(2) {
+  min-width: 0;
+}
+
+.lifeHubRecurringList article header {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.lifeHubRecurringList article header strong {
+  overflow: hidden;
+  color: #1e293b;
+  font-size: 0.8rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubRecurringList article header em {
+  flex: 0 0 auto;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.61rem;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.lifeHubRecurringList article p,
+.lifeHubRecurringList article small {
+  display: block;
+  margin: 3px 0 0;
+  color: #64748b;
+  font-size: 0.67rem;
+  line-height: 1.4;
+}
+
+.lifeHubRecurringRowActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.lifeHubRecurringRowActions button {
+  min-height: 44px;
+  padding: 0 9px;
+  border: 1px solid #dce2e9;
+  border-radius: 9px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.66rem;
+  font-weight: 850;
+}
+
+.lifeHubRecurringRowActions button.post {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.lifeHubRecurringRowActions button.delete {
+  color: #b91c1c;
+}
+
+.lifeHubRecurringEmpty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 28px 18px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 13px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.lifeHubRecurringEmpty > .memoNavIcon {
+  width: 30px;
+  height: 30px;
+  color: #818cf8;
+}
+
+.lifeHubRecurringEmpty strong {
+  color: #334155;
+  font-size: 0.8rem;
+}
+
+.lifeHubRecurringEmpty p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.lifeHubRecurringEmpty button {
+  min-height: 44px;
+  margin-top: 5px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 10px;
+  background: #4f46e5;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+@media (max-width: 699px) {
+  .lifeHubRecurringBackdrop {
+    place-items: end center;
+    padding: 0;
+  }
+
+  .lifeHubRecurringSheet {
+    width: 100%;
+    max-height: calc(92dvh - env(safe-area-inset-top));
+    border-width: 1px 0 0;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .lifeHubRecurringSheet > header {
+    padding: 16px 16px 13px;
+  }
+
+  .lifeHubRecurringSheetBody {
+    padding: 13px 12px calc(18px + env(safe-area-inset-bottom));
+  }
+
+  .lifeHubRecurringList > article {
+    grid-template-columns: 46px minmax(0, 1fr);
+  }
+
+  .lifeHubRecurringDay {
+    width: 46px;
+    height: 46px;
+  }
+
+  .lifeHubRecurringRowActions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .lifeHubRecurringRowActions button {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 440px) {
+  .lifeHubRecurringTwoCol,
+  .lifeHubRecurringAdvanced {
+    grid-template-columns: 1fr;
+  }
+
+  .lifeHubRecurringSummary {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .lifeHubRecurringSummary > button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+.lifeHubFinanceShareSummary {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 14px;
+  border: 1px solid #b9dcd6;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #f0fdfa 0%, #ffffff 74%);
+  box-shadow: 0 7px 18px rgba(15, 118, 110, 0.06);
+}
+
+.lifeHubFinanceShareSummary > span {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 9px;
+  border-radius: 11px;
+  background: #d9f5ef;
+  color: #0f766e;
+}
+
+.lifeHubFinanceShareSummary .memoNavIcon {
+  width: 100%;
+  height: 100%;
+}
+
+.lifeHubFinanceShareSummary > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.lifeHubFinanceShareSummary strong {
+  color: #16243a;
+  font-size: 0.84rem;
+  font-weight: 950;
+}
+
+.lifeHubFinanceShareSummary small {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.67rem;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubFinanceShareSummary > button,
+.lifeHubFinanceImportPicker,
+.lifeHubFinanceShareActions button,
+.lifeHubFinanceImportPreview > button.primary {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #99d8ce;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0f766e;
+  font-size: 0.71rem;
+  font-weight: 900;
+}
+
+.lifeHubFinanceShareBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 165;
+  display: grid;
+  place-items: center;
+  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+.lifeHubFinanceShareSheet {
+  width: min(100%, 680px);
+  max-height: min(840px, calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid #dbe3ea;
+  border-radius: 22px;
+  background: #f7f9fb;
+  box-shadow: 0 30px 90px rgba(15, 23, 42, 0.28);
+}
+
+.lifeHubFinanceShareSheet > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid #e3e8ee;
+  background: #ffffff;
+}
+
+.lifeHubFinanceShareSheet > header span,
+.lifeHubFinanceShareSheet > header h2,
+.lifeHubFinanceShareSheet > header p {
+  margin: 0;
+}
+
+.lifeHubFinanceShareSheet > header span {
+  color: #0f766e;
+  font-size: 0.69rem;
+  font-weight: 900;
+}
+
+.lifeHubFinanceShareSheet > header h2 {
+  margin-top: 3px;
+  color: #142238;
+  font-size: 1.16rem;
+  letter-spacing: -0.035em;
+}
+
+.lifeHubFinanceShareSheet > header p {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 0.73rem;
+  line-height: 1.45;
+}
+
+.lifeHubFinanceShareSheet > header > button {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 11px;
+  border: 0;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.lifeHubFinanceShareSheet > header > button .memoNavIcon {
+  width: 100%;
+  height: 100%;
+}
+
+.lifeHubFinanceShareBody {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 18px 22px;
+}
+
+.lifeHubFinanceShareBlock {
+  display: grid;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid #dce4ea;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.lifeHubFinanceShareBlock > header {
+  display: grid;
+  gap: 3px;
+}
+
+.lifeHubFinanceShareBlock > header strong {
+  color: #1e293b;
+  font-size: 0.84rem;
+  font-weight: 950;
+}
+
+.lifeHubFinanceShareBlock > header small {
+  color: #64748b;
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.lifeHubFinanceShareScopes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.lifeHubFinanceShareScopes label {
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0 9px;
+  border: 1px solid #d7e0e6;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.lifeHubFinanceShareScopes label.active {
+  border-color: #0f766e;
+  background: #e8f8f4;
+  color: #0f766e;
+}
+
+.lifeHubFinanceShareScopes input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.lifeHubFinanceShareScopes label:focus-within {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.lifeHubFinanceShareDates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lifeHubFinanceShareDates label {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  color: #475569;
+  font-size: 0.69rem;
+  font-weight: 850;
+}
+
+.lifeHubFinanceShareDates input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid #d7e0e6;
+  border-radius: 10px;
+  background: #fbfcfd;
+  color: #1e293b;
+}
+
+.lifeHubFinanceShareMemo {
+  min-height: 56px;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid #dce5e9;
+  border-radius: 11px;
+  background: #f8fafc;
+  cursor: pointer;
+}
+
+.lifeHubFinanceShareMemo input {
+  width: 21px;
+  height: 21px;
+  margin: 0;
+  accent-color: #0f766e;
+}
+
+.lifeHubFinanceShareMemo > span {
+  display: grid;
+  gap: 2px;
+}
+
+.lifeHubFinanceShareMemo strong {
+  color: #334155;
+  font-size: 0.74rem;
+}
+
+.lifeHubFinanceShareMemo small,
+.lifeHubFinanceSharePrivacy {
+  color: #64748b;
+  font-size: 0.67rem;
+  line-height: 1.45;
+}
+
+.lifeHubFinanceSharePrivacy {
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 9px;
+  background: #f1f5f9;
+}
+
+.lifeHubFinanceShareActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lifeHubFinanceShareActions button.primary,
+.lifeHubFinanceImportPreview > button.primary {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.lifeHubFinanceImportPicker {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.lifeHubFinanceImportPicker .memoNavIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.lifeHubFinanceImportPreview {
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid #99d8ce;
+  border-radius: 12px;
+  background: #f0fdfa;
+}
+
+.lifeHubFinanceImportPreview > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lifeHubFinanceImportPreview > header strong {
+  color: #134e4a;
+  font-size: 0.8rem;
+}
+
+.lifeHubFinanceImportPreview > header button {
+  min-width: 44px;
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.lifeHubFinanceImportPreview > p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.lifeHubFinanceImportPreview > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.lifeHubFinanceImportPreview > div span {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 8px;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.lifeHubFinanceImportPreview > div small {
+  color: #64748b;
+  font-size: 0.63rem;
+}
+
+.lifeHubFinanceImportPreview > div strong {
+  overflow: hidden;
+  color: #1e293b;
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubFinanceShareStatus {
+  margin: 0;
+  padding: 10px 11px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.lifeHubFinanceShareStatus.success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.lifeHubFinanceShareStatus.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.finance-ledger-more {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+@media (max-width: 699px) {
+  .lifeHubFinanceShareBackdrop {
+    place-items: end center;
+    padding: 0;
+  }
+
+  .lifeHubFinanceShareSheet {
+    width: 100%;
+    max-height: calc(92dvh - env(safe-area-inset-top));
+    border-width: 1px 0 0;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .lifeHubFinanceShareSheet > header {
+    padding: 16px 16px 13px;
+  }
+
+  .lifeHubFinanceShareBody {
+    padding: 13px 12px calc(18px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 440px) {
+  .lifeHubFinanceShareSummary {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .lifeHubFinanceShareSummary > button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .lifeHubFinanceShareDates,
+  .lifeHubFinanceShareActions {
+    grid-template-columns: 1fr;
+  }
+}

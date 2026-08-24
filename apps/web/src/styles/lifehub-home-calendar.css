@@ -243,21 +243,19 @@
   color: #be123c;
 }
 
-.homeMonthDayMarkers .planned,
-.homeMonthDayMarkers .workoutPlanned {
+.homeMonthDayMarkers .planned {
   background: #fff7df;
   color: #9a6700;
 }
 
-.homeMonthDayMarkers .done,
-.homeMonthDayMarkers .workoutDone {
-  background: #e8f5ff;
-  color: #1769a7;
+.homeMonthDayMarkers .incomplete {
+  background: #ffebe8;
+  color: #a33f37;
 }
 
-.homeMonthDayMarkers .workoutPlanned,
-.homeMonthDayMarkers .workoutDone {
-  border-left: 2px solid #7c3aed;
+.homeMonthDayMarkers .done {
+  background: #e8f5ff;
+  color: #1769a7;
 }
 
 .homeMonthSelectedDetail {
@@ -435,11 +433,6 @@
   color: #1769a7;
 }
 
-.homeMonthActivityIcon.workout {
-  background: #f2edff;
-  color: #6d28d9;
-}
-
 .homeMonthActivityIcon .memoNavIcon {
   width: 17px;
   height: 17px;
@@ -482,6 +475,11 @@
 .homeMonthActivityList em.planned {
   background: #fff7df;
   color: #9a6700;
+}
+
+.homeMonthActivityList em.incomplete {
+  background: #ffebe8;
+  color: #a33f37;
 }
 
 .homeMonthActivityList em.done {
