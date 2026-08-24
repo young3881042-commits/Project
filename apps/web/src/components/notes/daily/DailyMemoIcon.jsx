@@ -5,18 +5,14 @@ const ICON_PATHS = {
       <path d="m6.75 10.25 5.25-5.25 5.25 5.25" />
     </>
   ),
-  calendar: (
-    <>
-      <rect x="3.5" y="5.25" width="17" height="15" rx="3" />
-      <path d="M7.5 3.5v3.75M16.5 3.5v3.75M3.5 9.25h17" />
-      <path d="M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01" />
-    </>
-  ),
   check: (
     <>
       <circle cx="12" cy="12" r="9" />
       <path d="m7.75 12.2 2.7 2.7 5.85-6" />
     </>
+  ),
+  chevronRight: (
+    <path d="m9 5.5 6.5 6.5L9 18.5" />
   ),
   close: (
     <>
@@ -30,8 +26,14 @@ const ICON_PATHS = {
       <path d="m14.25 6.5 3.25 3.25M5.25 18.75l3.75-1.05" />
     </>
   ),
-  flame: (
-    <path d="M12.2 21c4 0 6.7-2.65 6.7-6.4 0-2.75-1.35-5.05-4.1-7.45.15 2.1-.85 3.35-2 4.15.3-3.75-1.55-6.35-4.15-8.3.15 3.4-3.55 5.9-3.55 11.15C5.1 18.15 8 21 12.2 21Z" />
+  eye: (
+    <>
+      <path d="M2.75 12s3.4-6 9.25-6 9.25 6 9.25 6-3.4 6-9.25 6S2.75 12 2.75 12Z" />
+      <circle cx="12" cy="12" r="2.7" />
+    </>
+  ),
+  folder: (
+    <path d="M3.5 6.5A2.5 2.5 0 0 1 6 4h4l2 2h6A2.5 2.5 0 0 1 20.5 8.5v8A2.5 2.5 0 0 1 18 19H6a2.5 2.5 0 0 1-2.5-2.5v-10Z" />
   ),
   leaf: (
     <>
@@ -59,17 +61,16 @@ const ICON_PATHS = {
       <path d="m10.45 14.75-6.2 6.2" />
     </>
   ),
+  plus: (
+    <>
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </>
+  ),
   search: (
     <>
       <circle cx="10.75" cy="10.75" r="6.25" />
       <path d="m15.35 15.35 4.15 4.15" />
-    </>
-  ),
-  spark: (
-    <>
-      <path d="m12 3 1.3 4.2L17.5 8.5l-4.2 1.3L12 14l-1.3-4.2-4.2-1.3 4.2-1.3L12 3Z" />
-      <path d="m18.5 14 .65 2.15 2.15.65-2.15.65-.65 2.15-.65-2.15-2.15-.65 2.15-.65.65-2.15Z" />
-      <path d="m5.25 15 .55 1.7 1.7.55-1.7.55-.55 1.7-.55-1.7-1.7-.55 1.7-.55.55-1.7Z" />
     </>
   ),
   tag: (
@@ -101,22 +102,6 @@ export default function DailyMemoIcon({ name, className = '', size = 20, strokeW
       strokeWidth={strokeWidth}
     >
       {ICON_PATHS[name] || ICON_PATHS.note}
-    </svg>
-  );
-}
-
-export function DailyMemoMark({ className = '' }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={`dailyMemoMark ${className}`.trim()}
-      viewBox="0 0 48 48"
-    >
-      <rect width="48" height="48" rx="15" fill="#2f6f5e" />
-      <path d="M14 12.5h14.8L35 18.7v16.8H16.5A4.5 4.5 0 0 1 12 31V14.5a2 2 0 0 1 2-2Z" fill="#fffdf8" />
-      <path d="M28.5 12.5v6.4H35" fill="none" stroke="#b9ded1" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
-      <path d="M18 27.2c5.7.1 9.4-2.2 9.9-6.9-5.6-.1-9.4 2.2-9.9 6.9Z" fill="#f2b56b" />
-      <path d="M17.2 32c1.8-4.3 5-7.2 9.2-9" fill="none" stroke="#2f6f5e" strokeLinecap="round" strokeWidth="2" />
     </svg>
   );
 }

@@ -1,7 +1,7 @@
 {
   "name": "Orbit",
   "short_name": "Orbit",
-  "description": "메모, 일정, 운동, 식단, 가계부를 한곳에서 관리하는 생활 앱",
+  "description": "메모, 일정, 가계부를 한곳에서 관리하는 생활 앱",
   "start_url": "/app",
   "scope": "/",
   "display": "standalone",

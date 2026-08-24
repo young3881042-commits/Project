@@ -7,21 +7,16 @@ const LIFEHUB_PATHS = new Set([
   '/home',
   '/memo',
   '/schedule',
-  '/workout',
-  '/diet',
   '/finance',
-  '/more',
-  '/ai',
-  '/ai/edit',
-  '/ai/settings'
+  '/more'
 ]);
 
 // These source screens remain in the repository for reference, but the local
 // Android/PWA build does not import them or ship their heavy editor assets.
 const LEGACY_ROUTE_ROOTS = new Set([
-  'analysis', 'analysisadmin', 'apps', 'assistant', 'budget', 'connect', 'connections',
-  'destinations', 'login', 'mypage', 'notes', 'partners', 'planner', 'plans',
-  'portfolio', 'reading', 'scheduler', 'signup', 'travel'
+  'ai', 'analysis', 'analysisadmin', 'apps', 'assistant', 'budget', 'connect', 'connections',
+  'destinations', 'diet', 'login', 'mypage', 'notes', 'partners', 'planner', 'plans',
+  'portfolio', 'reading', 'scheduler', 'signup', 'travel', 'workout'
 ]);
 
 const ROUTE_STATE_SHELL_STYLE = {

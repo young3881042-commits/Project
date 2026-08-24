@@ -148,12 +148,10 @@
 .lifeHubFormCard,
 .lifeHubDetailsCard,
 .lifeHubProgressCard,
-.lifeHubSection.more-control-section,
-.more-account-strip,
-.finance-wallet-card,
-.workout-session-panel,
-.workout-metric-tile,
-.travel-boarding-pass {
+  .lifeHubSection.more-control-section,
+  .more-account-strip,
+  .finance-wallet-card,
+  .travel-boarding-pass {
   border-radius: 20px;
   border-color: var(--lh-border);
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.055);
@@ -216,33 +214,6 @@
 .lifeHubButton.primary,
 .lifeHubFormCard button.primary {
   background: #0d1b34;
-}
-
-.workout-duration-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.workout-duration-grid > div {
-  grid-column: 1 / -1;
-}
-
-.workout-type-chip > div {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.workout-type-chip button {
-  min-width: 0;
-  padding-inline: 7px;
-  font-size: 0.7rem;
-  line-height: 1.15;
-}
-
-@media (max-width: 480px) {
-  .workout-duration-grid,
-  .workout-type-chip > div {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 .lifeHubFinancePage .lifeHubCategoryBars {
@@ -318,10 +289,6 @@
   --dm-green: #0f8f7f;
   --dm-green-dark: #08756a;
   --dm-green-soft: #e9f8f5;
-  --dm-coral: #0f8f7f;
-  --dm-coral-soft: #e9f8f5;
-  --dm-sun: #65bfae;
-  --dm-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
   background: #edf2f4;
 }
 
@@ -337,10 +304,14 @@
   background: rgba(255, 255, 255, 0.96);
 }
 
-.dailyMemoWelcome,
-.dailyMemoComposer,
+.dailyMemoComposer {
+  border-radius: 18px;
+  border-color: var(--dm-line);
+  background: #ffffff;
+}
+
 .dailyMemoCard {
-  border-radius: 20px;
+  border-radius: 14px;
   border-color: var(--dm-line);
   background: #ffffff;
 }
@@ -389,10 +360,6 @@ main h1[tabindex='-1']:focus {
 
 @media (max-width: 360px) {
   .lifeHubFinancePage .lifeHubCategoryBars {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .workout-type-chip > div {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

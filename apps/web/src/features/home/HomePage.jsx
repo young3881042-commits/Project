@@ -12,7 +12,6 @@ import {
 import LifeHubPackIcon from '../../components/lifehub/LifeHubPackIcon.jsx';
 import { Section } from '../../components/lifehub/LifeHubUi.jsx';
 import { fullDateLabel } from '../../utils/lifeHubFormatters.js';
-import AiHomeCard from '../lifehub-ai/AiHomeCard.jsx';
 import DailyBriefingCard from '../automation/DailyBriefingCard.jsx';
 import {
   HOME_ACTIVITY_PERIODS,
@@ -38,9 +37,8 @@ export default function HomePage({ model, navigate }) {
   const calendarSummaries = useMemo(() => summarizeHomeCalendar({
     dateKeys: calendar.dateKeys,
     schedules: calendarSchedules,
-    workouts: model.workouts,
     budgetEntries: model.budgetEntries
-  }), [calendar.dateKeys, calendarSchedules, model.workouts, model.budgetEntries]);
+  }), [calendar.dateKeys, calendarSchedules, model.budgetEntries]);
   const monthFinances = useMemo(
     () => summarizeMonthFinances(calendarMonth, model.budgetEntries),
     [calendarMonth, model.budgetEntries]
@@ -53,10 +51,8 @@ export default function HomePage({ model, navigate }) {
     period: activityPeriod,
     today: model.today,
     schedules: model.schedules,
-    workouts: model.workouts,
-    dietEntries: model.dietEntries,
     budgetEntries: model.budgetEntries
-  }), [activityPeriod, model.today, model.schedules, model.workouts, model.dietEntries, model.budgetEntries]);
+  }), [activityPeriod, model.today, model.schedules, model.budgetEntries]);
 
   const changeCalendarMonth = (offset) => {
     const nextMonth = shiftCalendarMonth(calendarMonth, offset);
@@ -90,6 +86,7 @@ export default function HomePage({ model, navigate }) {
 
       <HomeMonthCalendar
         calendar={calendar}
+        budgetEntries={model.budgetEntries}
         navigate={navigate}
         monthFinances={monthFinances}
         onChangeMonth={changeCalendarMonth}
@@ -129,8 +126,6 @@ export default function HomePage({ model, navigate }) {
           ))}
         </div>
       </Section>
-
-      <AiHomeCard navigate={navigate} />
     </div>
   );
 }

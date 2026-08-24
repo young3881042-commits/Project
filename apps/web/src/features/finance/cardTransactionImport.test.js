@@ -32,9 +32,23 @@ function memoryStorage() {
 test('owner별 source opt-in은 허용된 순서와 값만 보관한다', () => {
   const storage = memoryStorage();
   assert.deepEqual(readCardImportSources('Owner-1', storage), []);
-  assert.equal(saveCardImportSources('Owner-1', ['bad', 'samsung-wallet'], storage).saved, true);
-  assert.deepEqual(readCardImportSources('Owner-1', storage), ['samsung-wallet']);
+  assert.equal(saveCardImportSources('Owner-1', [
+    'bad',
+    'samsung-wallet',
+    'kakao-pay',
+    'kakao-pay'
+  ], storage).saved, true);
+  assert.deepEqual(readCardImportSources('Owner-1', storage), [
+    'samsung-wallet',
+    'kakao-pay'
+  ]);
   assert.deepEqual(readCardImportSources('Owner-2', storage), []);
+});
+
+test('기존 삼성월렛 단일 opt-in은 업그레이드 뒤에도 그대로 유지된다', () => {
+  const storage = memoryStorage();
+  assert.equal(saveCardImportSources('Owner-1', ['samsung-wallet'], storage).saved, true);
+  assert.deepEqual(readCardImportSources('Owner-1', storage), ['samsung-wallet']);
 });
 
 test('native category는 받지 않고 sanitized merchant로 보수적 기본 카테고리를 계산한다', () => {
@@ -70,6 +84,26 @@ test('batch는 여러 승인 결제를 한 번 저장한 뒤 saved로 ack한다'
   ]);
   assert.equal(rows[0].memo, '오비트카페');
   assert.deepEqual(Object.keys(rows[0].origin).sort(), ['eventId', 'kind', 'source']);
+});
+
+test('batch는 선택한 카카오페이 승인만 가져온다', async () => {
+  let rows = [];
+  const decisions = [];
+  const result = await importCardTransactionBatch([
+    candidate('wallet:v1:samsung'),
+    candidate('kakao:v1:pay', { source: 'kakao-pay', merchant: '카카오카페' })
+  ], {
+    selectedSources: ['kakao-pay'],
+    readBudget: () => rows,
+    normalizeBudget: (entry) => entry,
+    saveBudget: (items) => { rows = items; return { saved: true }; },
+    acknowledgeDecisions: async (items) => { decisions.push(...items); return { ok: true }; }
+  });
+  assert.equal(result.imported, 1);
+  assert.deepEqual(rows.map((entry) => entry.origin.source), ['kakao-pay']);
+  assert.deepEqual(decisions, [
+    { eventId: 'kakao:v1:pay', status: 'saved' }
+  ]);
 });
 
 test('같은 eventId는 save 없이 duplicate ack하고 같은 금액·가맹점의 다른 eventId는 보존한다', async () => {

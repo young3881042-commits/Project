@@ -2,6 +2,7 @@ import {
   scheduleRecurrenceMatches,
   scheduleRepeatFor
 } from '../schedule/scheduleRecurrenceModel.js';
+import { scheduleStatusLabel } from '../schedule/scheduleStatusModel.js';
 
 const NUMBER_FORMATTER = new Intl.NumberFormat('ko-KR');
 
@@ -49,21 +50,6 @@ function scheduleOccurrence(item, targetDate) {
   };
 }
 
-function linkedWorkoutId(schedule) {
-  if (schedule?.origin?.workoutLogId) return String(schedule.origin.workoutLogId);
-  if (schedule?.origin?.workoutId) return String(schedule.origin.workoutId);
-  const id = String(schedule?.scheduleId || schedule?.id || '');
-  const sourceId = String(schedule?.sourceId || '');
-  if (schedule?.source === 'workout' && sourceId && sourceId !== id) return sourceId;
-  return id.startsWith('workout-schedule-') ? id.slice('workout-schedule-'.length).split(':')[0] : '';
-}
-
-export function isWorkoutSchedule(schedule) {
-  return schedule?.source === 'workout'
-    || schedule?.category === 'exercise'
-    || schedule?.type === '운동';
-}
-
 function emptySummary(date) {
   return {
     date,
@@ -71,9 +57,8 @@ function emptySummary(date) {
     expense: 0,
     incomeCount: 0,
     expenseCount: 0,
-    workoutPlanned: 0,
-    workoutDone: 0,
     schedulePlanned: 0,
+    scheduleIncomplete: 0,
     scheduleDone: 0,
     activities: [],
     budgetItems: []
@@ -132,49 +117,25 @@ export function expandSchedulesForCalendar(items, targetDates) {
   ));
 }
 
-export function summarizeHomeCalendar({ dateKeys, schedules, workouts, budgetEntries }) {
+export function summarizeHomeCalendar({ dateKeys, schedules, budgetEntries, now = new Date() }) {
   const summaries = Object.fromEntries((dateKeys || []).map((date) => [date, emptySummary(date)]));
-  const workoutMap = new Map();
-  (workouts || []).forEach((workout) => {
-    const id = String(workout?.id || '');
-    if (!id || workoutMap.has(id) || !summaries[workout.date]) return;
-    workoutMap.set(id, workout);
-    const summary = summaries[workout.date];
-    summary.workoutDone += 1;
-    summary.activities.push({
-      id,
-      kind: 'workout',
-      title: workout.title || '운동',
-      time: workout.startTime || '',
-      status: '완료',
-      durationMinutes: Number(workout.durationMinutes) || 0,
-      caloriesBurned: Number(workout.caloriesBurned) || 0
-    });
-  });
-
   const seenSchedules = new Set();
   (schedules || []).forEach((schedule) => {
     const key = `${schedule?.id || ''}:${schedule?.date || ''}`;
     if (!schedule?.id || seenSchedules.has(key) || !summaries[schedule.date]) return;
     seenSchedules.add(key);
-    const linkedId = linkedWorkoutId(schedule);
-    const linkedWorkout = linkedId ? workoutMap.get(linkedId) : null;
-    if (linkedWorkout?.date === schedule.date) return;
     const summary = summaries[schedule.date];
-    const done = Boolean(schedule.done);
-    const workoutSchedule = isWorkoutSchedule(schedule);
-    if (workoutSchedule) {
-      if (done) summary.workoutDone += 1;
-      else summary.workoutPlanned += 1;
-    } else if (done) summary.scheduleDone += 1;
+    const status = scheduleStatusLabel(schedule, now);
+    if (status === '완료') summary.scheduleDone += 1;
+    else if (status === '미완료') summary.scheduleIncomplete += 1;
     else summary.schedulePlanned += 1;
     summary.activities.push({
       id: schedule.id,
       scheduleId: schedule.scheduleId || schedule.sourceId || schedule.id,
-      kind: workoutSchedule ? 'workout-schedule' : 'schedule',
-      title: schedule.title || (workoutSchedule ? '운동' : '일정'),
+      kind: 'schedule',
+      title: schedule.title || '일정',
       time: schedule.time || '',
-      status: done ? '완료' : '예정',
+      status,
       category: schedule.category || '',
       type: schedule.type || ''
     });

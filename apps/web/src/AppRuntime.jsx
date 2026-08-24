@@ -5213,6 +5213,13 @@ export function BudgetPage({ navigate }) {
     setEntries((current) => saveBudgetEntries(storageKey, current.filter((entry) => entry.id !== entryId)));
   };
 
+  const sourceLabelForEntry = (entry) => {
+    if (entry?.origin?.kind !== 'card-notification') return '';
+    if (entry.origin.source === 'kakao-pay') return '카카오페이';
+    if (entry.origin.source === 'samsung-wallet') return '삼성페이';
+    return '결제 알림';
+  };
+
   return (
     <MobilePageShell
       activeTab="more"
@@ -5352,7 +5359,12 @@ export function BudgetPage({ navigate }) {
               <article className="utilityLogRow budgetLogRow" key={entry.id}>
                 <span className={`utilityLogBadge ${entry.type}`}>{entry.type === 'deposit' ? '입금' : '출금'}</span>
                 <div>
-                  <strong>{entry.category}</strong>
+                  <strong>
+                    {entry.category}
+                    {sourceLabelForEntry(entry) ? (
+                      <span className="budgetOriginBadge">{sourceLabelForEntry(entry)}</span>
+                    ) : null}
+                  </strong>
                   <small>{[entry.date, entry.memo].filter(Boolean).join(' · ')}</small>
                 </div>
                 <em className={entry.type}>{formatKoreanMoney(entry.amount)}</em>

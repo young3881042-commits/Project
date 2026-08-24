@@ -132,7 +132,7 @@ test('Android 13 알림 권한 응답을 requestId로 연결한다', async () =>
   assert.equal(await requestNativeNotificationPermission({ target, timeoutMs: 1000 }), 'granted');
 });
 
-test('일정 알림 목록과 즉시 알림을 native bridge로 전달한다', () => {
+test('일정 알림 목록과 즉시 알림을 네이티브 알림 API로 전달한다', () => {
   let scheduled = null;
   let immediate = null;
   const target = nativeTarget({
@@ -148,12 +148,16 @@ test('일정 알림 목록과 즉시 알림을 native bridge로 전달한다', (
   const rows = [{ id: 'routine-1', title: '운동', body: '시작할 시간이에요.', path: '/schedule?edit=1', triggerAt: Date.now() + 60000 }];
   assert.equal(replaceNativeScheduledNotifications(rows, target), true);
   assert.deepEqual(scheduled, rows);
-  assert.equal(showNativeNotification({ id: 'ai-1', title: 'AI 작업 완료', body: '결과를 확인하세요.', path: '/ai' }, target), true);
-  assert.deepEqual(immediate, ['ai-1', 'AI 작업 완료', '결과를 확인하세요.', '/ai']);
+  assert.equal(showNativeNotification({ id: 'routine-now', title: '운동 시간', body: '일정을 확인하세요.', path: '/schedule' }, target), true);
+  assert.deepEqual(immediate, ['routine-now', '운동 시간', '일정을 확인하세요.', '/schedule']);
+  assert.equal(showNativeNotification({ id: 'legacy-ai', title: '이전 기능', path: '/ai' }, target), false);
+  assert.equal(replaceNativeScheduledNotifications([
+    { id: 'legacy-ai', title: '이전 기능', path: '/ai', triggerAt: Date.now() + 60000 }
+  ], target), false);
 });
 
-test('포커스가 없는 화면에서만 AI 시스템 알림을 선택한다', () => {
+test('포커스가 없는 화면에서만 시스템 알림을 선택한다', () => {
   assert.equal(shouldDeliverNativeNotification({ visibilityState: 'visible', hasFocus: () => true }), false);
   assert.equal(shouldDeliverNativeNotification({ visibilityState: 'hidden', hasFocus: () => false }), true);
-  assert.equal(stableNativeNotificationId('ai-complete', 'thread-1:event-2'), stableNativeNotificationId('ai-complete', 'thread-1:event-2'));
+  assert.equal(stableNativeNotificationId('routine', 'schedule-1:event-2'), stableNativeNotificationId('routine', 'schedule-1:event-2'));
 });

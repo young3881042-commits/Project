@@ -243,21 +243,19 @@
   color: #be123c;
 }
 
-.homeMonthDayMarkers .planned,
-.homeMonthDayMarkers .workoutPlanned {
+.homeMonthDayMarkers .planned {
   background: #fff7df;
   color: #9a6700;
 }
 
-.homeMonthDayMarkers .done,
-.homeMonthDayMarkers .workoutDone {
-  background: #e8f5ff;
-  color: #1769a7;
+.homeMonthDayMarkers .incomplete {
+  background: #ffebe8;
+  color: #a33f37;
 }
 
-.homeMonthDayMarkers .workoutPlanned,
-.homeMonthDayMarkers .workoutDone {
-  border-left: 2px solid #7c3aed;
+.homeMonthDayMarkers .done {
+  background: #e8f5ff;
+  color: #1769a7;
 }
 
 .homeMonthSelectedDetail {
@@ -344,6 +342,68 @@
   color: #be123c;
 }
 
+.homeMonthFinanceList {
+  display: grid;
+  gap: 6px;
+}
+
+.homeMonthFinanceRow {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.homeMonthFinanceType {
+  font-size: 0.65rem;
+  font-weight: 900;
+}
+
+.homeMonthFinanceType.deposit,
+.homeMonthFinanceRow em.deposit {
+  color: #047857;
+}
+
+.homeMonthFinanceType.withdraw,
+.homeMonthFinanceRow em.withdraw {
+  color: #be123c;
+}
+
+.homeMonthFinanceCopy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.homeMonthFinanceCopy strong,
+.homeMonthFinanceCopy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.homeMonthFinanceCopy strong {
+  color: #1e293b;
+  font-size: 0.72rem;
+}
+
+.homeMonthFinanceCopy small {
+  color: #64748b;
+  font-size: 0.64rem;
+}
+
+.homeMonthFinanceRow em {
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
 .homeMonthActivityList {
   display: grid;
   gap: 6px;
@@ -371,11 +431,6 @@
   border-radius: 10px;
   background: #edf8ff;
   color: #1769a7;
-}
-
-.homeMonthActivityIcon.workout {
-  background: #f2edff;
-  color: #6d28d9;
 }
 
 .homeMonthActivityIcon .memoNavIcon {
@@ -420,6 +475,11 @@
 .homeMonthActivityList em.planned {
   background: #fff7df;
   color: #9a6700;
+}
+
+.homeMonthActivityList em.incomplete {
+  background: #ffebe8;
+  color: #a33f37;
 }
 
 .homeMonthActivityList em.done {

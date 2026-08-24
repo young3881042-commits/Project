@@ -35,14 +35,14 @@ test('브리핑 설정은 잘못된 시각을 기본값으로 복구하고 사�
   assert.deepEqual(readDailyBriefingSettings({ username: 'owner-b' }, storage), normalizeDailyBriefingSettings());
 });
 
-test('아침과 저녁 브리핑은 실제 생활 기록을 요약한다', () => {
+test('아침과 저녁 브리핑은 일정과 지출만 요약한다', () => {
   const model = {
     today: '2026-07-16',
     expandedSchedules: [
       { id: 'one', date: '2026-07-16', done: false },
       { id: 'two', date: '2026-07-16', done: true }
     ],
-    missedSchedules: [{ id: 'missed', done: false }],
+    incompleteSchedules: [{ id: 'incomplete', done: false }],
     workouts: [{ date: '2026-07-16', durationMinutes: 30 }],
     dietEntries: [{ date: '2026-07-16', calories: 650 }],
     budgetEntries: [{ date: '2026-07-16', type: 'withdraw', amount: 4500 }],
@@ -51,13 +51,16 @@ test('아침과 저녁 브리핑은 실제 생활 기록을 요약한다', () =>
   const morning = buildDailyBriefing(model, { period: 'morning' });
   assert.equal(morning.period, 'morning');
   assert.match(morning.summary, /오늘 일정 1개/);
-  assert.match(morning.summary, /놓친 일정 1개/);
+  assert.match(morning.summary, /미완료 일정 1개/);
+  assert.equal(morning.items.find((item) => item.label === '미완료 일정').route, '/schedule?filter=incomplete');
 
   const evening = buildDailyBriefing(model, { period: 'evening' });
   assert.equal(evening.period, 'evening');
   assert.match(evening.summary, /일정 1\/2/);
-  assert.equal(evening.items.find((item) => item.label === '운동').value, '30분');
   assert.equal(evening.items.find((item) => item.label === '오늘 지출').value, '4,500원');
+  assert.deepEqual(evening.items.map((item) => item.label), ['완료 일정', '오늘 지출']);
+  assert.equal(evening.summary.includes('운동'), false);
+  assert.equal(evening.summary.includes('식단'), false);
 });
 
 test('켜진 브리핑만 미래 14일 범위에 예약한다', () => {

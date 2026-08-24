@@ -1,13 +1,7 @@
 import { lazy, useEffect, useMemo, useRef, useState } from 'react';
 import MemoNavIcon from './components/MemoNavIcon.jsx';
-import BodyProfileCard from './components/body/BodyProfileCard.jsx';
 import {
   BODY_PROFILE_EVENT,
-  LEGACY_WORKOUT_PROFILE_KEY,
-  bodyProfileStorageKey,
-  bodyProfilesEqual,
-  cacheBodyProfileSession,
-  legacyBodyProfileStorageKey,
   readBodyProfile,
   saveBodyProfile,
   validateBodyProfile
@@ -27,10 +21,20 @@ import {
   readDailyBriefingSettings,
   saveDailyBriefingSettings
 } from './features/automation/dailyBriefing.js';
-import { prepareAssistantScheduleChange } from './features/lifehub-ai/assistantScheduleChange.js';
-import { saveLifeRecordAction } from './features/life-records/saveLifeRecordAction.js';
 import CardTransactionImportPanel from './features/finance/CardTransactionImportPanel.jsx';
+import FinanceSharePanel from './features/finance/FinanceSharePanel.jsx';
+import RecurringPaymentsPanel from './features/finance/RecurringPaymentsPanel.jsx';
 import { useCardTransactionImport } from './features/finance/useCardTransactionImport.js';
+import { planFinanceShareImport } from './features/finance/financeShare.js';
+import {
+  RECURRING_PAYMENT_SOURCE,
+  applyDueRecurringPayments,
+  markRecurringPaymentsProcessed,
+  normalizeRecurringPayment,
+  postRecurringPayment,
+  readRecurringPayments,
+  saveRecurringPayments
+} from './features/finance/recurringPayments.js';
 import { LIFEHUB_APP_ICON } from './components/lifehub/LifeHubPackIcon.jsx';
 import LifeHubShell, { routeTitle } from './components/lifehub/LifeHubShell.jsx';
 import {
@@ -49,16 +53,12 @@ import {
   Section,
   ScheduleTimelineItem,
   TravelBoardingPass,
-  WorkoutSessionPanel,
   useLifeHubFeedback
 } from './components/lifehub/LifeHubUi.jsx';
 import {
   WORKOUT_CARDIO_ACTIVITIES,
-  WORKOUT_DURATION_OPTIONS,
   WORKOUT_TEMPLATES,
-  cardioActivityForId,
   createCardioExercise,
-  estimateWorkoutCalories,
   workoutDurationMinutes,
   workoutKindForTemplate
 } from './components/workout/workoutMetrics.js';
@@ -92,6 +92,11 @@ import {
   toggleRepeatDay
 } from './components/schedule/scheduleRecurrenceModel.js';
 import {
+  isIncompleteSchedule,
+  scheduleDisplayStatus,
+  scheduleStatusLabel
+} from './components/schedule/scheduleStatusModel.js';
+import {
   hasNativeNotificationApi,
   nativeExactAlarmPermissionState,
   nativeNotificationPermissionState,
@@ -101,10 +106,6 @@ import {
 } from './features/lifehub-ai/nativeNotifications.js';
 
 const DailyMemoPage = lazy(() => import('./components/notes/daily/DailyMemoPage.jsx'));
-const DietPage = lazy(() => import('./components/diet/DietPage.jsx'));
-const AiAssistantPage = lazy(() => import('./features/lifehub-ai/AiAssistantPage.jsx'));
-const AppEditorPage = lazy(() => import('./features/lifehub-ai/AppEditorPage.jsx'));
-const AiPairingPage = lazy(() => import('./features/lifehub-ai/AiPairingPage.jsx'));
 
 const AUTH_KEY = 'codex-workspace-auth';
 const LIFEHUB_OWNER_KEY = 'ai-assistant-lifehub-local-owner';
@@ -121,23 +122,17 @@ const ROUTE_ALIASES = {
   '/home': 'home',
   '/memo': 'memo',
   '/schedule': 'schedule',
-  '/workout': 'workout',
-  '/diet': 'diet',
   '/finance': 'finance',
-  '/more': 'more',
-  '/ai': 'ai',
-  '/ai/edit': 'ai-editor',
-  '/ai/settings': 'ai-settings'
+  '/more': 'more'
 };
 
 const SCHEDULE_FILTERS = [
   { value: 'date', label: '오늘' },
   { value: 'upcoming', label: '예정' },
-  { value: 'missed', label: '놓친 일정' },
+  { value: 'incomplete', label: '미완료' },
   { value: 'done', label: '완료' }
 ];
 const ROUTINE_CATEGORY_OPTIONS = [
-  { value: 'exercise', label: '운동', icon: 'trophy', type: '운동' },
   { value: 'budget', label: '가계부', icon: 'chart', type: '가계부' },
   { value: 'memo', label: '메모', icon: 'edit', type: '메모' },
   { value: 'work', label: '업무', icon: 'briefcase', type: '업무' },
@@ -214,7 +209,7 @@ function normalizeScheduleType(value) {
   if (['업무', 'work', 'WORK', '회의', '작업'].includes(raw)) return '업무';
   if (['독서', 'reading', 'book'].includes(raw)) return '개인';
   if (['메모', 'AI Note', 'note'].includes(raw)) return '메모';
-  if (['운동', 'fitness', 'workout'].includes(raw)) return '운동';
+  if (['운동', 'fitness', 'workout'].includes(raw)) return '개인';
   if (['가계부', 'budget', 'finance', 'money'].includes(raw)) return '가계부';
   if (['여행', 'travel', 'trip'].includes(raw)) return '여행';
   return raw || '개인';
@@ -223,7 +218,7 @@ function normalizeScheduleType(value) {
 function routineCategoryFor(value) {
   const raw = String(value || '').trim().toLowerCase();
   if (['reading', '독서', 'book'].includes(raw)) return 'etc';
-  if (['exercise', '운동', 'fitness', 'workout'].includes(raw)) return 'exercise';
+  if (['exercise', '운동', 'fitness', 'workout'].includes(raw)) return 'etc';
   if (['budget', '가계부', 'finance', 'money'].includes(raw)) return 'budget';
   if (['memo', '메모', 'note', 'ai note'].includes(raw)) return 'memo';
   if (['work', '업무', '회의', '작업', 'briefcase'].includes(raw)) return 'work';
@@ -304,6 +299,14 @@ function saveSchedules(session, items) {
     emitDataChanged({ key });
   }
   return { items: normalized, saved };
+}
+
+function isLegacyWorkoutSchedule(item) {
+  const id = String(item?.id || '');
+  return item?.source === 'workout'
+    || item?.origin?.kind === 'workout'
+    || Boolean(item?.origin?.workoutId || item?.origin?.workoutLogId)
+    || id.startsWith('workout-schedule-');
 }
 
 function recurrenceMatches(item, targetDate) {
@@ -468,6 +471,20 @@ function saveBudget(session, entries) {
   return { items: normalized, saved };
 }
 
+function budgetEntryTitle(entry) {
+  if (entry?.source === 'card-notification' || entry?.source === RECURRING_PAYMENT_SOURCE) {
+    return entry.memo || entry.category;
+  }
+  return entry?.category || '거래';
+}
+
+function budgetEntryMeta(entry) {
+  if (entry?.source === 'card-notification') return `${entry.date} · 카드 자동 · ${entry.category}`;
+  if (entry?.source === RECURRING_PAYMENT_SOURCE) return `${entry.date} · 정기 결제 · ${entry.category}`;
+  if (entry?.source === 'finance-share') return `${entry.date} · 받은 파일 · ${entry.category}`;
+  return `${entry?.date || ''} · ${entry?.memo || '메모 미입력'}`;
+}
+
 function normalizeExercise(exercise, index = 0) {
   const name = String(exercise?.name || '').trim();
   if (!name) return null;
@@ -584,20 +601,24 @@ function monthlyBudgetSummary(entries, baseMonth = monthKey()) {
 }
 
 function readLifeHubData(session) {
+  const now = new Date();
   ensureDailyMemoBoards(session);
-  const today = todayKey();
-  const schedules = readSchedules(session);
+  const today = todayKey(now);
+  const schedules = readSchedules(session).filter((item) => !isLegacyWorkoutSchedule(item));
   const expandedSchedules = expandSchedules(schedules);
   const todaySchedules = expandedSchedules.filter((item) => item.date === today).sort(compareDateTime);
-  const missedSchedules = expandedSchedules.filter((item) => item.date < today && !item.done).sort(compareDateTime).slice(0, 8);
-  const upcomingSchedules = expandedSchedules.filter((item) => item.date > today && !item.done).sort(compareDateTime).slice(0, 8);
+  const incompleteSchedules = expandedSchedules.filter((item) => isIncompleteSchedule(item, now)).sort(compareDateTime);
+  const upcomingSchedules = expandedSchedules
+    .filter((item) => scheduleDisplayStatus(item, now) === 'upcoming')
+    .sort(compareDateTime);
   const notes = readDailyMemos(session);
   const workouts = readWorkouts(session);
   const dietEntries = readDietEntries(session);
   const budgetEntries = readBudget(session);
+  const recurringPayments = readRecurringPayments(session);
   const trips = readTrips(session);
+  const bodyProfile = readBodyProfile(session);
   const budget = monthlyBudgetSummary(budgetEntries);
-  const todayWorkout = workouts.find((log) => log.date === today) || null;
   const nextTrip = trips.find((trip) => !trip.startDate || trip.startDate >= today) || trips[0] || null;
   return {
     today,
@@ -605,15 +626,17 @@ function readLifeHubData(session) {
     schedules,
     expandedSchedules,
     todaySchedules,
-    missedSchedules,
+    incompleteSchedules,
+    missedSchedules: incompleteSchedules,
     upcomingSchedules,
     notes,
     workouts,
     dietEntries,
     budgetEntries,
+    recurringPayments,
     budget,
     trips,
-    todayWorkout,
+    bodyProfile,
     nextTrip
   };
 }
@@ -671,7 +694,7 @@ function closeLifeHubEditorPath() {
   replaceLifeHubPath('/schedule');
 }
 
-function ScheduleTimeline({ items, empty, emptyText, emptyActionLabel, onEmptyAction, onToggle, onDelete, onOpen }) {
+function ScheduleTimeline({ items, empty, emptyText, emptyActionLabel, now, onEmptyAction, onToggle, onDelete, onOpen, showDateTime = false }) {
   if (!items.length) {
     return (
       <EmptyState
@@ -689,9 +712,10 @@ function ScheduleTimeline({ items, empty, emptyText, emptyActionLabel, onEmptyAc
         <ScheduleTimelineItem
           key={item.id}
           item={item}
+          dateLabel={showDateTime ? compactDateLabel(item.date) : ''}
           timeLabel={item.time || '종일'}
-          meta={`${compactDateLabel(item.date)} · ${routineCategoryLabel(item.category, item.type)}${item.note ? ` · ${item.note}` : ''}`}
-          statusLabel={item.done ? '완료' : '예정'}
+          meta={`${showDateTime ? '' : `${compactDateLabel(item.date)} · `}${routineCategoryLabel(item.category, item.type)}${item.note ? ` · ${item.note}` : ''}`}
+          statusLabel={scheduleStatusLabel(item, now)}
           onToggle={onToggle}
           onDelete={onDelete}
           onOpen={onOpen}
@@ -787,8 +811,14 @@ function notificationNoticeFor(status, nativeDelivery = false, exactAlarmStatus 
 }
 
 function SchedulePage({ model, session, refresh, path }) {
-  const [filter, setFilter] = useState('date');
   const initialParams = scheduleParamsForPath(path);
+  const initialRequestedFilter = initialParams.get('filter');
+  const [filter, setFilter] = useState(() => (
+    SCHEDULE_FILTERS.some((item) => item.value === initialRequestedFilter)
+      ? initialRequestedFilter
+      : 'date'
+  ));
+  const [statusNow, setStatusNow] = useState(() => new Date());
   const initialEditId = initialParams.get('edit') || '';
   const initialEditItem = initialEditId ? readSchedules(session).find((item) => item.id === initialEditId) || null : null;
   const initialNewForm = ['routine', 'schedule'].includes(initialParams.get('new'));
@@ -815,12 +845,18 @@ function SchedulePage({ model, session, refresh, path }) {
       : fallback;
   });
   const focusedDateSchedules = model.expandedSchedules.filter((item) => item.date === focusedDate).sort(compareDateTime);
+  const incompleteSchedules = model.expandedSchedules
+    .filter((item) => isIncompleteSchedule(item, statusNow))
+    .sort(compareDateTime);
+  const upcomingSchedules = model.expandedSchedules
+    .filter((item) => scheduleDisplayStatus(item, statusNow) === 'upcoming')
+    .sort(compareDateTime);
   const source = filter === 'date'
     ? focusedDateSchedules
     : filter === 'upcoming'
-      ? model.upcomingSchedules
-      : filter === 'missed'
-        ? model.missedSchedules
+      ? upcomingSchedules
+      : filter === 'incomplete'
+        ? incompleteSchedules
         : model.expandedSchedules.filter((item) => item.done).sort(compareDateTime).slice(0, 20);
   const filterOptions = SCHEDULE_FILTERS.map((item) => (
     item.value === 'date'
@@ -845,6 +881,11 @@ function SchedulePage({ model, session, refresh, path }) {
     if (!showForm || discardScheduleDraftRef.current) return;
     saveScheduleDraft(session, editingId, draft);
   }, [draft, editingId, showForm, session?.username, session?.isGuest]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setStatusNow(new Date()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const params = scheduleParamsForPath(path);
@@ -896,6 +937,10 @@ function SchedulePage({ model, session, refresh, path }) {
     setTitleError(false);
     setRepeatDaysError(false);
     setShowForm(false);
+    const requestedFilter = params.get('filter');
+    setFilter(SCHEDULE_FILTERS.some((item) => item.value === requestedFilter) ? requestedFilter : 'date');
+    const requestedDate = params.get('date');
+    if (isDateKey(requestedDate)) setFocusedDate(requestedDate);
     if ((params.has('edit') || params.has('new')) && window.location.pathname === '/schedule') replaceLifeHubPath('/schedule');
   }, [path, session?.username, session?.isGuest, model.today]);
 
@@ -1143,7 +1188,8 @@ function SchedulePage({ model, session, refresh, path }) {
         </div>
         <div className="lifeHubAgendaCounts">
           <article><strong>{model.todaySchedules.length}</strong><span>오늘</span></article>
-          <article><strong>{model.upcomingSchedules.length}</strong><span>예정</span></article>
+          <article><strong>{upcomingSchedules.length}</strong><span>예정</span></article>
+          <article className="incomplete"><strong>{incompleteSchedules.length}</strong><span>미완료</span></article>
           <article><strong>{completedCount}</strong><span>완료</span></article>
         </div>
       </section>
@@ -1193,6 +1239,8 @@ function SchedulePage({ model, session, refresh, path }) {
 
       <ScheduleTimeline
         items={source}
+        now={statusNow}
+        showDateTime={filter === 'upcoming'}
         empty={filter === 'date' ? focusedDateEmptyTitle : `${filterOptions.find((item) => item.value === filter)?.label || '일정'}이 비어 있어요`}
         emptyText={filter === 'date' ? focusedDateEmptyText : '조건에 맞는 일정이 생기면 여기에 보여드릴게요.'}
         emptyActionLabel="일정 추가"
@@ -1202,7 +1250,7 @@ function SchedulePage({ model, session, refresh, path }) {
         }}
         onToggle={(item) => {
           const result = updateScheduleDone(session, item, !item.done);
-          notify(result.saved ? (item.done ? '일정을 다시 대기로 돌렸어요.' : '완료한 일정으로 정리했어요.') : '상태를 저장하지 못했어요.', result.saved ? 'success' : 'error');
+          notify(result.saved ? (item.done ? '일정 완료를 취소했어요.' : '완료한 일정으로 정리했어요.') : '상태를 저장하지 못했어요.', result.saved ? 'success' : 'error');
           refresh();
         }}
         onDelete={deleteSchedule}
@@ -1351,240 +1399,12 @@ function SchedulePage({ model, session, refresh, path }) {
   );
 }
 
-function WorkoutPage({ model, onBodyProfileChange, onSaveBodyProfile, path, session, refresh }) {
-  const profile = model.bodyProfile;
-  const { feedback, notify, clearFeedback } = useLifeHubFeedback();
-  const requestedWorkoutDate = scheduleParamsForPath(path).get('date');
-  const focusedWorkoutDate = isDateKey(requestedWorkoutDate) ? requestedWorkoutDate : '';
-  const focusedWorkoutLogs = focusedWorkoutDate ? model.workouts.filter((log) => log.date === focusedWorkoutDate) : [];
-  const [draft, setDraft] = useState(() => ({
-    templateId: 'cardio',
-    date: focusedWorkoutDate || model.today,
-    durationMinutes: '15',
-    memo: '',
-    addToSchedule: true,
-    exercises: [createCardioExercise(cardioActivityForId('brisk-walk') || WORKOUT_CARDIO_ACTIVITIES[0])]
-  }));
-  const template = WORKOUT_TEMPLATES.find((item) => item.id === draft.templateId) || WORKOUT_TEMPLATES[0];
-  const monthLogs = model.workouts.filter((log) => log.date.startsWith(monthKey(model.today)));
-  const totalMinutes = monthLogs.reduce((sum, log) => sum + (Number(log.durationMinutes) || 0), 0);
-  const totalCalories = monthLogs.reduce((sum, log) => sum + (Number(log.caloriesBurned) || 0), 0);
-  const estimatedCalories = estimateWorkoutCalories({
-    templateId: draft.templateId,
-    durationMinutes: draft.durationMinutes,
-    exercises: draft.exercises,
-    profile
-  }) || 0;
-
-  const selectTemplate = (templateId) => {
-    if (templateId === 'cardio') {
-      const activity = cardioActivityForId('brisk-walk') || WORKOUT_CARDIO_ACTIVITIES[0];
-      setDraft((current) => ({
-        ...current,
-        templateId: 'cardio',
-        exercises: [createCardioExercise(activity)]
-      }));
-      return;
-    }
-    setDraft((current) => ({ ...current, templateId, exercises: exercisesForTemplate(templateId) }));
-  };
-  const selectedWorkoutChoice = draft.templateId;
-  const workoutChoiceLabel = template.title;
-
-  const submitWorkout = (event) => {
-    event.preventDefault();
-    const duration = workoutDurationMinutes({ templateId: draft.templateId, durationMinutes: draft.durationMinutes, exercises: draft.exercises });
-    if (!duration) {
-      notify('운동 시간을 선택하거나 입력해주세요.', 'error');
-      return;
-    }
-    const profileValidation = validateBodyProfile(profile);
-    const profileResult = profileValidation.valid
-      ? onSaveBodyProfile(profile)
-      : { saved: true };
-    const log = normalizeWorkout({
-      id: `workout-${Date.now()}`,
-      templateId: draft.templateId,
-      title: workoutChoiceLabel,
-      date: draft.date,
-      durationMinutes: duration,
-      caloriesBurned: estimatedCalories,
-      memo: draft.memo,
-      exercises: draft.exercises,
-      createdAt: new Date().toISOString()
-    });
-    const workoutResult = saveWorkouts(session, [log, ...readWorkouts(session)]);
-    if (!workoutResult.saved) {
-      notify('운동 기록을 저장하지 못했어요. 입력 내용은 그대로 두었어요.', 'error');
-      return;
-    }
-    let scheduleSaved = true;
-    if (draft.addToSchedule) {
-      const schedule = normalizeSchedule({
-        id: `workout-schedule-${log.id}`,
-        title: `${log.title} 운동`,
-        date: log.date,
-        time: '',
-        type: '운동',
-        memo: `${log.durationMinutes}분 · ${log.caloriesBurned}kcal`,
-        source: 'workout',
-        origin: { kind: 'workout', workoutLogId: log.id },
-        done: true
-      });
-      scheduleSaved = saveSchedules(
-        session,
-        [...readSchedules(session).filter((item) => item.id !== schedule.id), schedule]
-      ).saved;
-    }
-    setDraft((current) => ({ ...current, memo: '' }));
-    if (!profileResult?.saved && !scheduleSaved) {
-      notify('운동은 저장했지만 신체정보와 일정 등록을 저장하지 못했어요.', 'error');
-    } else if (!profileResult?.saved) {
-      notify('운동은 저장했지만 신체정보는 저장하지 못했어요.', 'error');
-    } else if (!scheduleSaved) {
-      notify('운동은 저장했지만 일정에는 등록하지 못했어요.', 'error');
-    } else {
-      notify('오늘 운동 완료로 기록했어요.', 'success');
-    }
-    refresh();
-  };
-
-  return (
-    <div className="lifeHubPage lifeHubWorkoutPage">
-      <FeedbackToast feedback={feedback} onClose={clearFeedback} />
-      <WorkoutSessionPanel
-        done={Boolean(model.todayWorkout)}
-        badge={`오늘 브리핑 · ${model.todayWorkout ? '오늘 운동 완료' : '운동 리마인더'}`}
-        title={model.todayWorkout ? `${model.todayWorkout.title} · ${model.todayWorkout.durationMinutes}분` : '오늘 아직 운동 기록이 없어요'}
-        text={model.todayWorkout ? '오늘 기록은 완료됐어요. 필요하면 아래에서 추가 기록을 남길 수 있어요.' : '15분만 기록해도 오늘 운동 흐름을 이어갈 수 있어요.'}
-      />
-
-      <section className="lifeHubWorkoutQuickDock workout-duration-grid" aria-label="빠른 운동 시간">
-        <div>
-          <span>바로 기록</span>
-          <strong>{workoutChoiceLabel}</strong>
-        </div>
-        {WORKOUT_DURATION_OPTIONS.map((minutes) => (
-          <button
-            type="button"
-            key={minutes}
-            className={String(draft.durationMinutes) === String(minutes) ? 'active' : ''}
-            onClick={() => setDraft((current) => ({ ...current, durationMinutes: String(minutes) }))}
-          >
-            {minutes}분
-          </button>
-        ))}
-      </section>
-
-      <section className="workout-metric-grid" aria-label="운동 통계">
-        <article className="workout-metric-tile"><span>이번 달 운동일</span><strong>{new Set(monthLogs.map((log) => log.date)).size}일</strong></article>
-        <article className="workout-metric-tile"><span>총 운동시간</span><strong>{totalMinutes}분</strong></article>
-        <article className="workout-metric-tile"><span>소모 kcal</span><strong>{formatNumber(totalCalories)}kcal</strong></article>
-      </section>
-
-      <BodyProfileCard
-        id="shared-body-profile-workout"
-        className="workout-coach-card"
-        profile={profile}
-        onChange={onBodyProfileChange}
-        onSave={(nextProfile) => {
-          const result = onSaveBodyProfile(nextProfile);
-          notify(
-            result.saved ? `공용 신체정보를 저장했어요. BMI ${result.bmi.toFixed(1)}` : result.message,
-            result.saved ? 'success' : 'error'
-          );
-          return result;
-        }}
-      />
-
-      {focusedWorkoutDate ? (
-        <Section title={`${compactDateLabel(focusedWorkoutDate)} 운동 기록`} eyebrow={`${focusedWorkoutLogs.length}개`}>
-          {focusedWorkoutLogs.length ? (
-            <div className="lifeHubWorkoutDateList">
-              {focusedWorkoutLogs.map((log) => (
-                <article key={log.id}>
-                  <span><MemoNavIcon type="trophy" /></span>
-                  <div><strong>{log.title || '운동'}</strong><small>{log.durationMinutes || 0}분</small></div>
-                  <em>{formatNumber(log.caloriesBurned || 0)}kcal</em>
-                </article>
-              ))}
-            </div>
-          ) : <EmptyState title="이 날짜의 완료 운동이 없어요" text="아래 입력창에서 운동을 바로 기록할 수 있어요." icon="trophy" />}
-        </Section>
-      ) : null}
-
-      <form className="lifeHubFormCard lifeHubFastForm workout-coach-card" onSubmit={submitWorkout}>
-        <header><strong>운동 기록</strong><small>종류와 시간만 고르면 바로 저장됩니다.</small></header>
-        <QuickChoiceGroup
-          label="운동 종류"
-          options={[
-            { value: 'cardio', label: '유산소' },
-            { value: 'upper', label: '상체' },
-            { value: 'lower', label: '하체' },
-            { value: 'other', label: '기타' }
-          ]}
-          value={selectedWorkoutChoice}
-          onChange={selectTemplate}
-          className="workout-type-chip"
-        />
-        <QuickChoiceGroup
-          label="운동 시간"
-          options={WORKOUT_DURATION_OPTIONS.map((minutes) => ({ value: String(minutes), label: `${minutes}분` }))}
-          value={String(draft.durationMinutes)}
-          onChange={(durationMinutes) => setDraft((current) => ({ ...current, durationMinutes }))}
-        />
-        <label><span>날짜</span><input type="date" value={draft.date} onChange={(event) => setDraft((current) => ({ ...current, date: event.target.value }))} /></label>
-        <details className="lifeHubInlineDetails">
-          <summary>세트 기록은 선택 입력</summary>
-          <div className="lifeHubExerciseList">
-            {draft.exercises.map((exercise, index) => (
-              <article key={exercise.id || index}>
-                <label>
-                  <span>{draft.templateId === 'cardio' ? '운동 선택' : '운동명'}</span>
-                  {draft.templateId === 'cardio' ? (
-                    <select
-                      value={WORKOUT_CARDIO_ACTIVITIES.find((item) => item.name === exercise.name)?.id || WORKOUT_CARDIO_ACTIVITIES[0].id}
-                      onChange={(event) => {
-                        const activity = cardioActivityForId(event.target.value) || WORKOUT_CARDIO_ACTIVITIES[0];
-                        setDraft((current) => ({
-                          ...current,
-                          exercises: current.exercises.map((item, itemIndex) => (
-                            itemIndex === index ? { ...item, mode: 'cardio', name: activity.name, met: String(activity.met), durationMinutes: current.durationMinutes } : item
-                          ))
-                        }));
-                      }}
-                    >
-                      {WORKOUT_CARDIO_ACTIVITIES.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                    </select>
-                  ) : (
-                    <input value={exercise.name} onChange={(event) => setDraft((current) => ({ ...current, exercises: current.exercises.map((item, itemIndex) => itemIndex === index ? { ...item, name: event.target.value } : item) }))} />
-                  )}
-                </label>
-                {draft.templateId === 'cardio' ? (
-                  <label><span>분</span><input inputMode="numeric" value={exercise.durationMinutes || draft.durationMinutes} onChange={(event) => setDraft((current) => ({ ...current, exercises: current.exercises.map((item, itemIndex) => itemIndex === index ? { ...item, durationMinutes: event.target.value } : item) }))} /></label>
-                ) : (
-                  <div className="lifeHubThreeCol">
-                    <label><span>세트</span><input inputMode="numeric" value={exercise.sets} onChange={(event) => setDraft((current) => ({ ...current, exercises: current.exercises.map((item, itemIndex) => itemIndex === index ? { ...item, sets: event.target.value } : item) }))} /></label>
-                    <label><span>횟수</span><input inputMode="numeric" value={exercise.reps} onChange={(event) => setDraft((current) => ({ ...current, exercises: current.exercises.map((item, itemIndex) => itemIndex === index ? { ...item, reps: event.target.value } : item) }))} /></label>
-                    <label><span>무게</span><input inputMode="decimal" value={exercise.weight} onChange={(event) => setDraft((current) => ({ ...current, exercises: current.exercises.map((item, itemIndex) => itemIndex === index ? { ...item, weight: event.target.value } : item) }))} /></label>
-                  </div>
-                )}
-              </article>
-            ))}
-          </div>
-        </details>
-        <label><span>메모</span><input value={draft.memo} onChange={(event) => setDraft((current) => ({ ...current, memo: event.target.value }))} placeholder="컨디션, 난이도" /></label>
-        <label className="lifeHubCheckLine"><input type="checkbox" checked={draft.addToSchedule} onChange={(event) => setDraft((current) => ({ ...current, addToSchedule: event.target.checked }))} /><span>저장 시 일정에도 등록</span></label>
-        <LifeHubButton type="submit" className="primary" icon="trophy">운동 저장 · 예상 {formatNumber(estimatedCalories)}kcal</LifeHubButton>
-      </form>
-    </div>
-  );
-}
 
 function FinancePage({ model, path, session, refresh, cardImport }) {
   const requestedFinanceDate = scheduleParamsForPath(path).get('date');
   const focusedFinanceDate = isDateKey(requestedFinanceDate) ? requestedFinanceDate : '';
   const [draft, setDraft] = useState({ type: 'withdraw', amount: '', category: '식비', memo: '', date: focusedFinanceDate || model.today });
+  const [entryLimit, setEntryLimit] = useState(8);
   const formRef = useRef(null);
   const amountInputRef = useRef(null);
   const { feedback, notify, clearFeedback } = useLifeHubFeedback();
@@ -1633,6 +1453,79 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
     }
   };
 
+  const saveRecurringRule = (value) => {
+    const current = readRecurringPayments(session);
+    const previous = value.id ? current.find((rule) => rule.id === value.id) || null : null;
+    const normalized = normalizeRecurringPayment({
+      ...(previous || {}),
+      ...value,
+      id: value.id || undefined,
+      createdAt: previous?.createdAt || value.createdAt || new Date().toISOString()
+    });
+    if (!normalized) {
+      notify('정기 결제 이름과 금액을 확인해주세요.', 'error');
+      return false;
+    }
+    const next = previous
+      ? current.map((rule) => (rule.id === previous.id ? normalized : rule))
+      : [normalized, ...current];
+    const result = saveRecurringPayments(session, next);
+    notify(result.saved ? '정기 결제를 저장했어요.' : '정기 결제를 저장하지 못했어요.', result.saved ? 'success' : 'error');
+    if (result.saved) refresh();
+    return result.saved;
+  };
+
+  const deleteRecurringRule = (rule) => {
+    const result = saveRecurringPayments(
+      session,
+      readRecurringPayments(session).filter((item) => item.id !== rule.id)
+    );
+    notify(
+      result.saved ? '정기 결제를 삭제했어요. 이전 가계부 기록은 유지돼요.' : '정기 결제를 삭제하지 못했어요.',
+      result.saved ? 'success' : 'error'
+    );
+    if (result.saved) refresh();
+    return result.saved;
+  };
+
+  const postRecurringRule = (rule) => {
+    const currentEntries = readBudget(session);
+    const result = postRecurringPayment(rule, currentEntries, {
+      month: model.today.slice(0, 7),
+      now: new Date()
+    });
+    if (!result.created.length) {
+      notify('이번 달에는 이미 가계부에 기록되어 있어요.');
+      return true;
+    }
+    const budgetResult = saveBudget(session, result.entries);
+    if (!budgetResult.saved) {
+      notify('정기 결제를 가계부에 반영하지 못했어요.', 'error');
+      return false;
+    }
+    const currentRules = readRecurringPayments(session);
+    saveRecurringPayments(
+      session,
+      markRecurringPaymentsProcessed(currentRules, [rule.id], model.today.slice(0, 7))
+    );
+    notify('이번 달 정기 결제를 가계부에 반영했어요.', 'success');
+    refresh();
+    return true;
+  };
+
+  const importFinanceShare = (previewPlan) => {
+    const currentEntries = readBudget(session);
+    const confirmedPlan = planFinanceShareImport(currentEntries, previewPlan.snapshot);
+    if (!confirmedPlan.added.length) return { saved: true, imported: 0 };
+    const result = saveBudget(session, [...confirmedPlan.added, ...currentEntries]);
+    if (result.saved) refresh();
+    return {
+      saved: result.saved,
+      imported: result.saved ? confirmedPlan.added.length : 0,
+      message: result.saved ? '' : '가계부 저장공간을 확인해주세요.'
+    };
+  };
+
   return (
     <div className="lifeHubPage lifeHubFinancePage">
       <FeedbackToast feedback={feedback} onClose={clearFeedback} />
@@ -1642,6 +1535,20 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
         expense={money(model.budget.expense)}
         usage={progressPercent(model.budget.usage)}
         message={model.budget.usage >= 80 ? '이번 달 지출이 비교 기준보다 빠르게 늘고 있어요.' : '이번 달 지출 흐름은 안정적이에요.'}
+      />
+      <FinanceSharePanel
+        entries={model.budgetEntries}
+        onImport={importFinanceShare}
+        today={model.today}
+      />
+      <RecurringPaymentsPanel
+        budgetEntries={model.budgetEntries}
+        cardImportActive={cardImport.enabled}
+        onDelete={deleteRecurringRule}
+        onPost={postRecurringRule}
+        onSave={saveRecurringRule}
+        rules={model.recurringPayments}
+        today={model.today}
       />
       <CardTransactionImportPanel
         cardImport={cardImport}
@@ -1700,19 +1607,24 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
       </form>
       <Section title={focusedFinanceDate ? `${compactDateLabel(focusedFinanceDate)} 거래` : '최근 거래'} eyebrow={`${visibleBudgetEntries.length}개`}>
         <div className="lifeHubTransactionList">
-          {visibleBudgetEntries.slice(0, 8).map((entry) => (
+          {visibleBudgetEntries.slice(0, entryLimit).map((entry) => (
             <article key={entry.id} className="finance-ledger-row">
               <span className={entry.type}>{entry.type === 'deposit' ? '수입' : '지출'}</span>
               <div>
-                <strong>{entry.source === 'card-notification' ? entry.memo : entry.category}</strong>
-                <small>{entry.date} · {entry.source === 'card-notification' ? `카드 자동 · ${entry.category}` : entry.memo || '메모 미입력'}</small>
+                <strong>{budgetEntryTitle(entry)}</strong>
+                <small>{budgetEntryMeta(entry)}</small>
               </div>
               <em>{entry.type === 'deposit' ? '+' : '-'}{money(entry.amount)}</em>
-              <button type="button" className="lifeHubInlineDelete" onClick={() => deleteEntry(entry)} aria-label={`${entry.source === 'card-notification' ? entry.memo : entry.category} 거래 삭제`}>
+              <button type="button" className="lifeHubInlineDelete" onClick={() => deleteEntry(entry)} aria-label={`${budgetEntryTitle(entry)} 거래 삭제`}>
                 삭제
               </button>
             </article>
           ))}
+          {visibleBudgetEntries.length > entryLimit ? (
+            <button type="button" className="finance-ledger-more" onClick={() => setEntryLimit((current) => current + 20)}>
+              거래 더 보기 · {visibleBudgetEntries.length - entryLimit}개 남음
+            </button>
+          ) : null}
           {visibleBudgetEntries.length ? null : <EmptyState title={focusedFinanceDate ? '이 날짜의 거래가 없어요' : '아직 기록한 거래가 없어요'} text="금액만 입력해도 이번 달 흐름에 바로 반영돼요." actionLabel="지출 기록하기" icon="chart" onAction={() => selectEntryType('withdraw', { focusAmount: true })} />}
         </div>
       </Section>
@@ -1847,13 +1759,14 @@ function backupDataForModel(model, dailyBriefingSettings) {
     workouts: model.workouts,
     dietEntries: model.dietEntries,
     budgetEntries: model.budgetEntries,
+    recurringPayments: model.recurringPayments,
     trips: model.trips,
     bodyProfile: model.bodyProfile,
     dailyBriefingSettings
   };
 }
 
-function MorePage({ model, session, navigate, refresh, onRestoreBackup }) {
+function MorePage({ model, session, refresh, onRestoreBackup }) {
   const [installPrompt, setInstallPrompt] = useState(null);
   const [standalone, setStandalone] = useState(() => (
     window.matchMedia?.('(display-mode: standalone)').matches
@@ -1918,12 +1831,6 @@ function MorePage({ model, session, navigate, refresh, onRestoreBackup }) {
       <Section title="더보기 메뉴" className="more-control-section more-settings-section">
         <div className="more-settings-list">
           <MoreSettingsRow
-            icon="edit"
-            label="앱 수정하기"
-            detail="대화로 앱·웹 수정 요청"
-            onClick={() => navigate('/ai/edit')}
-          />
-          <MoreSettingsRow
             icon="home"
             label="앱 설치"
             detail={standalone ? '설치됨' : installPrompt ? '설치 가능' : '홈 화면에서 앱처럼 실행'}
@@ -1938,21 +1845,14 @@ function MorePage({ model, session, navigate, refresh, onRestoreBackup }) {
 
 export default function LifeHubApp({ path, navigate }) {
   const [session] = useState(() => readLifeHubOwner());
-  const [bodyProfile, setBodyProfile] = useState(() => readBodyProfile(session));
-  const [bodyProfileDirty, setBodyProfileDirty] = useState(false);
-  const bodyProfileRef = useRef(bodyProfile);
-  const bodyProfileDirtyRef = useRef(false);
   const [refreshSeed, setRefreshSeed] = useState(0);
+  const recurringAutoPostSignatureRef = useRef('');
   const route = routeForPath(path);
   const storedModel = useMemo(
     () => readLifeHubData(session),
     [session?.username, session?.isGuest, refreshSeed]
   );
-  const model = useMemo(() => ({
-    ...storedModel,
-    bodyProfile,
-    workoutProfile: bodyProfile
-  }), [storedModel, bodyProfile]);
+  const model = storedModel;
 
   const refresh = () => setRefreshSeed((current) => current + 1);
   const cardImport = useCardTransactionImport({
@@ -1964,28 +1864,40 @@ export default function LifeHubApp({ path, navigate }) {
     saveBudget: (items) => saveBudget(session, items),
     onSaved: refresh
   });
-  const createScheduleFromAssistant = (draft, requestId) => {
-    const current = readSchedules(session);
-    const change = prepareAssistantScheduleChange(current, draft, requestId, { normalize: normalizeSchedule });
-    if (change.status !== 'created') return change;
-    const saved = saveSchedules(session, change.items);
-    return saved.saved ? { status: 'created', item: change.item } : { status: 'failed' };
-  };
-  const createLifeRecordFromAssistant = (action, requestId) => {
-    return saveLifeRecordAction(action, requestId, {
-      readNotes: () => readDailyMemos(session),
-      saveNotes: (items) => saveDailyMemos(session, items),
-      readBudget: () => readBudget(session),
-      normalizeBudget,
-      saveBudget: (items) => saveBudget(session, items),
-      readWorkouts: () => readWorkouts(session),
-      normalizeWorkout,
-      saveWorkouts: (items) => saveWorkouts(session, items),
-      readDietEntries: () => readDietEntries(session),
-      saveDietEntries: (items) => saveDietEntries(session, items),
-      bodyProfile: bodyProfileRef.current
+  useEffect(() => {
+    const signature = JSON.stringify({
+      today: model.today,
+      rules: model.recurringPayments.map((rule) => [
+        rule.id,
+        rule.amount,
+        rule.billingDay,
+        rule.startMonth,
+        rule.endMonth,
+        rule.autoPost,
+        rule.active,
+        rule.processedMonths
+      ]),
+      entries: model.budgetEntries.map((entry) => entry.id)
     });
-  };
+    if (recurringAutoPostSignatureRef.current === signature) return;
+    recurringAutoPostSignatureRef.current = signature;
+
+    const currentEntries = readBudget(session);
+    const posting = applyDueRecurringPayments(model.recurringPayments, currentEntries, {
+      today: model.today,
+      now: new Date()
+    });
+    if (!posting.created.length) return;
+    const budgetResult = saveBudget(session, posting.entries);
+    if (!budgetResult.saved) return;
+    const processedRuleIds = posting.created.map((entry) => entry.origin?.ruleId).filter(Boolean);
+    const currentRules = readRecurringPayments(session);
+    saveRecurringPayments(
+      session,
+      markRecurringPaymentsProcessed(currentRules, processedRuleIds, model.today.slice(0, 7))
+    );
+    refresh();
+  }, [model.budgetEntries, model.recurringPayments, model.today, session?.username]);
   const restoreLifeHubBackup = (plan) => {
     return applyLifeHubBackupPlan(plan, {
       readCurrent: () => ({
@@ -1994,6 +1906,7 @@ export default function LifeHubApp({ path, navigate }) {
         workouts: readWorkouts(session),
         dietEntries: readDietEntries(session),
         budgetEntries: readBudget(session),
+        recurringPayments: readRecurringPayments(session),
         trips: readTrips(session),
         bodyProfile: readBodyProfile(session, { preferSession: false }),
         dailyBriefingSettings: readDailyBriefingSettings(session)
@@ -2004,6 +1917,7 @@ export default function LifeHubApp({ path, navigate }) {
         workouts: normalizeWorkout,
         dietEntries: normalizeDietEntry,
         budgetEntries: normalizeBudget,
+        recurringPayments: normalizeRecurringPayment,
         trips: normalizeTrip,
         dailyBriefingSettings: normalizeDailyBriefingSettings
       },
@@ -2014,39 +1928,13 @@ export default function LifeHubApp({ path, navigate }) {
         workouts: (items) => saveWorkouts(session, items),
         dietEntries: (items) => saveDietEntries(session, items),
         budgetEntries: (items) => saveBudget(session, items),
+        recurringPayments: (items) => saveRecurringPayments(session, items),
         trips: (items) => saveTrips(session, items),
         bodyProfile: (profile) => saveBodyProfile(session, profile),
         dailyBriefingSettings: (settings) => saveDailyBriefingSettings(session, settings)
       },
-      onProfile: (profile) => {
-        bodyProfileRef.current = profile;
-        bodyProfileDirtyRef.current = false;
-        setBodyProfileDirty(false);
-        setBodyProfile(profile);
-      },
       onRefresh: refresh
     });
-  };
-  const updateBodyProfile = (nextProfile) => {
-    const candidate = typeof nextProfile === 'function'
-      ? nextProfile(bodyProfile)
-      : nextProfile;
-    const result = cacheBodyProfileSession(session, candidate);
-    bodyProfileRef.current = result.profile;
-    bodyProfileDirtyRef.current = true;
-    setBodyProfileDirty(true);
-    setBodyProfile(result.profile);
-    return result;
-  };
-  const persistBodyProfile = (nextProfile = bodyProfile) => {
-    const result = saveBodyProfile(session, nextProfile);
-    if (result.saved) {
-      bodyProfileRef.current = result.profile;
-      bodyProfileDirtyRef.current = false;
-      setBodyProfileDirty(false);
-      setBodyProfile((current) => bodyProfilesEqual(current, result.profile) ? current : result.profile);
-    }
-    return result;
   };
   const go = (nextPath) => {
     if (navigate) navigate(nextPath);
@@ -2079,74 +1967,8 @@ export default function LifeHubApp({ path, navigate }) {
       clearRoutineNotificationTimers();
     };
   }, [model.expandedSchedules, session?.username]);
-
   useEffect(() => {
-    bodyProfileRef.current = bodyProfile;
-  }, [bodyProfile]);
-
-  useEffect(() => {
-    if (!bodyProfileDirty || !validateBodyProfile(bodyProfile).valid) return undefined;
-    const autosaveTimer = window.setTimeout(() => {
-      const result = saveBodyProfile(session, bodyProfile, { emit: false });
-      if (!result.saved) return;
-      bodyProfileDirtyRef.current = false;
-      setBodyProfileDirty(false);
-    }, 500);
-    return () => window.clearTimeout(autosaveTimer);
-  }, [session?.username, bodyProfile, bodyProfileDirty]);
-
-  useEffect(() => {
-    const flushBodyProfile = (updateMountedState = false) => {
-      const latestProfile = bodyProfileRef.current;
-      if (!bodyProfileDirtyRef.current || !validateBodyProfile(latestProfile).valid) return;
-      const result = saveBodyProfile(session, latestProfile, { emit: false });
-      if (!result.saved) return;
-      bodyProfileDirtyRef.current = false;
-      if (updateMountedState) setBodyProfileDirty(false);
-    };
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') flushBodyProfile(true);
-    };
-    const handlePageHide = () => flushBodyProfile(false);
-    window.addEventListener('pagehide', handlePageHide);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      flushBodyProfile(false);
-      window.removeEventListener('pagehide', handlePageHide);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [session?.username]);
-
-  useEffect(() => {
-    const durableProfileKey = bodyProfileStorageKey(session);
-    const legacyProfileKey = legacyBodyProfileStorageKey(session);
-    const sync = (event) => {
-      if (
-        event.type === BODY_PROFILE_EVENT
-        && event.detail?.owner === storageUsername(session)
-        && event.detail?.profile
-        && !bodyProfileDirtyRef.current
-      ) {
-        bodyProfileRef.current = event.detail.profile;
-        setBodyProfile((current) => (
-          bodyProfilesEqual(current, event.detail.profile) ? current : event.detail.profile
-        ));
-      } else if (
-        event.type === 'storage'
-        && (
-          event.key === durableProfileKey
-          || event.key === legacyProfileKey
-          || (session.isGuest && event.key === LEGACY_WORKOUT_PROFILE_KEY)
-        )
-        && !bodyProfileDirtyRef.current
-      ) {
-        const nextProfile = readBodyProfile(session, { preferSession: false });
-        cacheBodyProfileSession(session, nextProfile);
-        bodyProfileRef.current = nextProfile;
-        setBodyProfile((current) => bodyProfilesEqual(current, nextProfile) ? current : nextProfile);
-      }
-      refresh();
-    };
+    const sync = () => refresh();
     window.addEventListener('storage', sync);
     window.addEventListener(LIFEHUB_EVENT, sync);
     window.addEventListener(BODY_PROFILE_EVENT, sync);
@@ -2162,16 +1984,7 @@ export default function LifeHubApp({ path, navigate }) {
   }, [session?.username]);
 
   let content = null;
-  if (route === 'ai') content = (
-    <AiAssistantPage
-      navigate={go}
-      onCreateSchedule={createScheduleFromAssistant}
-      onCreateLifeRecord={createLifeRecordFromAssistant}
-    />
-  );
-  else if (route === 'ai-editor') content = <AppEditorPage navigate={go} onCreateSchedule={createScheduleFromAssistant} />;
-  else if (route === 'ai-settings') content = <AiPairingPage navigate={go} />;
-  else if (route === 'memo') content = (
+  if (route === 'memo') content = (
     <DailyMemoPage
       key={storageUsername(session)}
       navigate={go}
@@ -2182,26 +1995,6 @@ export default function LifeHubApp({ path, navigate }) {
     />
   );
   else if (route === 'schedule') content = <SchedulePage model={model} session={session} refresh={refresh} path={path} />;
-  else if (route === 'workout') content = (
-    <WorkoutPage
-      model={model}
-      onBodyProfileChange={updateBodyProfile}
-      onSaveBodyProfile={persistBodyProfile}
-      path={path}
-      session={session}
-      refresh={refresh}
-    />
-  );
-  else if (route === 'diet') content = (
-    <DietPage
-      model={model}
-      navigate={go}
-      onBodyProfileChange={updateBodyProfile}
-      onSaveBodyProfile={persistBodyProfile}
-      refresh={refresh}
-      session={session}
-    />
-  );
   else if (route === 'finance') content = (
     <FinancePage
       model={model}
@@ -2215,7 +2008,6 @@ export default function LifeHubApp({ path, navigate }) {
     <MorePage
       model={model}
       session={session}
-      navigate={go}
       refresh={refresh}
       onRestoreBackup={restoreLifeHubBackup}
     />

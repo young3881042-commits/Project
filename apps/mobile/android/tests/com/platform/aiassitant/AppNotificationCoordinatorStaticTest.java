@@ -12,9 +12,9 @@ public final class AppNotificationCoordinatorStaticTest {
         require(!AppNotificationCoordinator.isValidNotificationId("bad\nidentifier"));
 
         require(AppNotificationCoordinator.isAllowedInternalPath("/schedule?edit=schedule-1"));
-        require(AppNotificationCoordinator.isAllowedInternalPath("/ai"));
-        require(AppNotificationCoordinator.isAllowedInternalPath("/ai/edit"));
-        require(AppNotificationCoordinator.isAllowedInternalPath("/ai/settings"));
+        require(!AppNotificationCoordinator.isAllowedInternalPath("/ai"));
+        require(!AppNotificationCoordinator.isAllowedInternalPath("/ai/edit"));
+        require(!AppNotificationCoordinator.isAllowedInternalPath("/ai/settings"));
         require(!AppNotificationCoordinator.isAllowedInternalPath("https://example.com/ai"));
         require(!AppNotificationCoordinator.isAllowedInternalPath("//example.com/ai"));
         require(!AppNotificationCoordinator.isAllowedInternalPath("/account"));

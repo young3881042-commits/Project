@@ -1,13 +1,10 @@
 /* Lightweight production entry for the local Orbit/LifeHub app.
  * Legacy workspace styles remain in styles.css but are not bundled into the APK. */
 @import './styles/core-foundation.css';
-@import './styles/workout-scheduler.css';
 @import './styles/lifehub.css';
 @import './styles/daily-memo.css';
 @import './styles/lifehub-reference.css';
-@import './styles/lifehub-ai.css';
-@import './styles/lifehub-diet.css';
-@import './styles/lifehub-body-profile.css';
+@import './styles/lifehub-home.css';
 @import './styles/lifehub-home-calendar.css';
 @import './styles/lifehub-automation.css';
 @import './styles/lifehub-backup.css';

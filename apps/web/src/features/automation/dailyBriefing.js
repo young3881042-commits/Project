@@ -77,10 +77,10 @@ export function buildDailyBriefing(model = {}, {
   const schedules = todaySchedules(model, date);
   const pendingSchedules = schedules.filter((item) => !item.done);
   const completedSchedules = schedules.filter((item) => item.done);
-  const missedCount = (Array.isArray(model?.missedSchedules) ? model.missedSchedules : []).filter((item) => !item.done).length;
-  const workouts = (Array.isArray(model?.workouts) ? model.workouts : []).filter((item) => entryDate(item) === date);
-  const dietEntries = (Array.isArray(model?.dietEntries) ? model.dietEntries : []).filter((item) => entryDate(item) === date);
-  const calories = dietEntries.reduce((sum, entry) => sum + Math.max(0, Number(entry?.calories) || 0), 0);
+  const incompleteSource = Array.isArray(model?.incompleteSchedules)
+    ? model.incompleteSchedules
+    : Array.isArray(model?.missedSchedules) ? model.missedSchedules : [];
+  const incompleteCount = incompleteSource.filter((item) => !item.done).length;
   const expense = todayExpenses(model, date);
 
   if (selectedPeriod === 'morning') {
@@ -94,10 +94,10 @@ export function buildDailyBriefing(model = {}, {
       },
       {
         icon: 'bell',
-        label: '놓친 일정',
-        value: `${missedCount}개`,
-        detail: missedCount ? '먼저 정리하면 하루가 가벼워져요' : '밀린 일정이 없어요',
-        route: '/schedule?filter=missed'
+        label: '미완료 일정',
+        value: `${incompleteCount}개`,
+        detail: incompleteCount ? '먼저 정리하면 하루가 가벼워져요' : '미완료 일정이 없어요',
+        route: '/schedule?filter=incomplete'
       },
       {
         icon: 'chart',
@@ -111,7 +111,7 @@ export function buildDailyBriefing(model = {}, {
       period: selectedPeriod,
       eyebrow: '아침 자동 브리핑',
       title: pendingSchedules.length ? `오늘 준비할 일정이 ${pendingSchedules.length}개 있어요` : '여유롭게 하루를 시작해보세요',
-      summary: `오늘 일정 ${pendingSchedules.length}개${missedCount ? `, 놓친 일정 ${missedCount}개` : ''}`,
+      summary: `오늘 일정 ${pendingSchedules.length}개${incompleteCount ? `, 미완료 일정 ${incompleteCount}개` : ''}`,
       items
     };
   }
@@ -125,20 +125,6 @@ export function buildDailyBriefing(model = {}, {
       route: `/schedule?date=${encodeURIComponent(date)}`
     },
     {
-      icon: 'trophy',
-      label: '운동',
-      value: workouts.length ? `${workouts.reduce((sum, item) => sum + Math.max(0, Number(item?.durationMinutes) || 0), 0)}분` : '미기록',
-      detail: workouts.length ? `${workouts.length}개 운동 기록` : '오늘 움직임을 짧게 남겨보세요',
-      route: `/workout?date=${encodeURIComponent(date)}`
-    },
-    {
-      icon: 'meal',
-      label: '식단',
-      value: dietEntries.length ? `${formatNumber(calories)}kcal` : '미기록',
-      detail: dietEntries.length ? `${dietEntries.length}개 식사 기록` : '기억나는 식사만 기록해도 충분해요',
-      route: '/diet'
-    },
-    {
       icon: 'chart',
       label: '오늘 지출',
       value: `${formatNumber(expense)}원`,
@@ -150,7 +136,7 @@ export function buildDailyBriefing(model = {}, {
     period: selectedPeriod,
     eyebrow: '저녁 자동 브리핑',
     title: pendingSchedules.length ? `오늘 할 일이 ${pendingSchedules.length}개 남았어요` : '오늘 하루를 정리했어요',
-    summary: `일정 ${completedSchedules.length}/${schedules.length}, 운동 ${workouts.length ? '기록' : '미기록'}, 식단 ${dietEntries.length}건`,
+    summary: `일정 ${completedSchedules.length}/${schedules.length}, 오늘 지출 ${formatNumber(expense)}원`,
     items
   };
 }
@@ -182,7 +168,7 @@ export function dailyBriefingNotifications(settingsValue, {
       kind: 'evening',
       time: settings.eveningTime,
       title: 'Orbit 저녁 브리핑',
-      body: '오늘 일정과 운동·식단·지출 기록을 가볍게 정리해보세요.'
+      body: '오늘 일정과 지출 기록을 가볍게 정리해보세요.'
     } : null
   ].filter(Boolean);
 

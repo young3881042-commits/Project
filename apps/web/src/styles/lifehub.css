@@ -1273,7 +1273,7 @@
 
 .lifeHubAgendaCounts {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
 }
 
@@ -1288,6 +1288,15 @@
 .lifeHubAgendaCounts strong {
   color: var(--lh-ink);
   font-size: 1rem;
+}
+
+.lifeHubAgendaCounts article.incomplete {
+  background: rgba(255, 240, 238, 0.88);
+}
+
+.lifeHubAgendaCounts article.incomplete strong,
+.lifeHubAgendaCounts article.incomplete span {
+  color: #a34840;
 }
 
 .lifeHubNotificationNotice {
@@ -1435,12 +1444,34 @@
   align-items: stretch;
 }
 
+.schedule-timeline-item.has-date-time {
+  grid-template-columns: 68px 14px minmax(0, 1fr);
+}
+
 .schedule-timeline-item time {
   padding-top: 12px;
   color: #475569;
   font-size: 0.72rem;
   font-weight: 950;
   text-align: right;
+}
+
+.schedule-timeline-item.has-date-time time {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  line-height: 1.2;
+}
+
+.schedule-timeline-item.has-date-time time span {
+  color: #334155;
+  font-size: 0.7rem;
+}
+
+.schedule-timeline-item.has-date-time time b {
+  color: #64748b;
+  font-size: 0.66rem;
+  font-weight: 850;
 }
 
 .schedule-time-rail {
@@ -1490,6 +1521,21 @@
 .schedule-completed-row > div {
   opacity: 0.68;
   background: #f8fafc;
+}
+
+.schedule-incomplete-row > div {
+  border-color: #fecaca;
+  background: #fff8f7;
+}
+
+.schedule-incomplete-row .schedule-time-rail::after {
+  border-color: #dc2626;
+  background: #fff1f2;
+}
+
+.schedule-incomplete-row em {
+  background: #fee2e2;
+  color: #b42318;
 }
 
 .schedule-timeline-item header {
@@ -1625,218 +1671,6 @@
   box-shadow: 0 14px 28px rgba(15, 23, 42, 0.22);
 }
 
-.workout-session-panel {
-  display: grid;
-  gap: 6px;
-  padding: 14px;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  background: linear-gradient(180deg, #fff7f7 0%, #ffffff 100%);
-}
-
-.workout-session-panel.done {
-  border-color: #bbf7d0;
-  background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
-}
-
-.workout-status-badge {
-  width: fit-content;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: #fee2e2;
-  color: #991b1b;
-  font-size: 0.66rem;
-  font-weight: 950;
-}
-
-.workout-session-panel.done .workout-status-badge {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.workout-session-panel h2 {
-  margin: 0;
-  color: var(--lh-ink);
-  font-size: 1.24rem;
-  line-height: 1.18;
-}
-
-.workout-session-panel p {
-  margin: 0;
-  color: var(--lh-muted);
-  font-size: 0.8rem;
-  line-height: 1.45;
-}
-
-.workout-duration-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) repeat(4, minmax(0, 0.8fr));
-  gap: 6px;
-  padding: 9px;
-  border: 1px solid var(--lh-border);
-  border-radius: 8px;
-  background: var(--lh-surface);
-}
-
-.workout-duration-grid > div {
-  min-width: 0;
-  display: grid;
-  align-content: center;
-}
-
-.workout-duration-grid span {
-  color: var(--lh-muted);
-  font-size: 0.66rem;
-  font-weight: 850;
-}
-
-.workout-duration-grid strong {
-  overflow: hidden;
-  color: var(--lh-ink);
-  font-size: 0.8rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.workout-duration-grid button {
-  min-width: 0;
-  min-height: 44px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #f8fafc;
-  color: #334155;
-  font-size: 0.72rem;
-  font-weight: 950;
-}
-
-.workout-duration-grid button.active,
-.workout-type-chip button.active {
-  border-color: var(--lh-red);
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.workout-metric-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 7px;
-}
-
-.workout-metric-tile {
-  display: grid;
-  gap: 3px;
-  padding: 9px;
-  border: 1px solid var(--lh-border);
-  border-radius: 8px;
-  background: #ffffff;
-}
-
-.workout-metric-tile span {
-  color: var(--lh-muted);
-  font-size: 0.66rem;
-  font-weight: 850;
-}
-
-.workout-metric-tile strong {
-  color: var(--lh-ink);
-  font-size: 0.92rem;
-  font-weight: 950;
-}
-
-.workout-coach-card {
-  border-color: #fecaca;
-}
-
-.lifeHubWorkoutDateList {
-  display: grid;
-  gap: 7px;
-}
-
-.lifeHubWorkoutDateList article {
-  min-width: 0;
-  min-height: 48px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 9px;
-  padding: 8px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  background: #ffffff;
-}
-
-.lifeHubWorkoutDateList article > span {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: 9px;
-  background: #f2edff;
-  color: #6d28d9;
-}
-
-.lifeHubWorkoutDateList .memoNavIcon {
-  width: 17px;
-  height: 17px;
-}
-
-.lifeHubWorkoutDateList div {
-  min-width: 0;
-  display: grid;
-  gap: 2px;
-}
-
-.lifeHubWorkoutDateList strong,
-.lifeHubWorkoutDateList small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.lifeHubWorkoutDateList strong {
-  color: var(--lh-ink);
-  font-size: 0.76rem;
-  font-weight: 900;
-}
-
-.lifeHubWorkoutDateList small {
-  color: var(--lh-muted);
-  font-size: 0.65rem;
-  font-weight: 750;
-}
-
-.lifeHubWorkoutDateList em {
-  color: #6d28d9;
-  font-size: 0.7rem;
-  font-style: normal;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.lifeHubExerciseList {
-  display: grid;
-  gap: 8px;
-}
-
-.lifeHubExerciseList article {
-  display: grid;
-  gap: 8px;
-  padding: 9px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: #f8fafc;
-}
-
-.lifeHubCheckLine {
-  min-height: 44px;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-}
-
-.lifeHubCheckLine input {
-  width: 20px;
-  min-height: 20px;
-}
 
 .finance-wallet-card {
   display: grid;
@@ -2435,20 +2269,10 @@
 
   .lifeHubHomeMetricGrid,
   .home-quick-action-dock,
-  .workout-metric-grid,
-  .workout-duration-grid,
   .lifeHubMemoList,
   .memo-sticky-grid,
   .more-module-grid {
     grid-template-columns: 1fr;
-  }
-
-  .workout-duration-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .workout-duration-grid > div {
-    grid-column: 1 / -1;
   }
 
   .lifeHubTwoCol,

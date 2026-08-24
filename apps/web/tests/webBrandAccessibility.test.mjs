@@ -19,13 +19,15 @@ test('HTML metadata consistently exposes the Orbit product name', async () => {
   assert.match(html, /<meta name="apple-mobile-web-app-title" content="Orbit" \/>/);
   assert.match(html, /<meta property="og:title" content="Orbit · 나의 생활 허브" \/>/);
   assert.match(html, /<title>Orbit · 나의 생활 허브<\/title>/);
+  assert.match(html, /Orbit는 메모, 일정, 가계부를 한곳에서 관리하는 생활 앱입니다/);
+  assert.doesNotMatch(html, /운동, 식단/);
   assert.doesNotMatch(html, /ai-assitant/i);
 });
 
 test('service worker cache revision is advanced for the lightweight local release', async () => {
   const serviceWorker = await readWebFile('public/sw.js');
 
-  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v27';/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v35';/);
   assert.doesNotMatch(serviceWorker, /web-v22/);
 });
 
@@ -49,7 +51,9 @@ test('local app entry excludes legacy workspace bundles and keeps only LifeHub s
   assert.doesNotMatch(main, /import '\.\/styles\.css'/);
   assert.match(entry, /@import '\.\/styles\/lifehub\.css'/);
   assert.match(entry, /@import '\.\/styles\/daily-memo\.css'/);
+  assert.match(entry, /@import '\.\/styles\/lifehub-home\.css'/);
   assert.match(entry, /@import '\.\/styles\/lifehub-finance\.css'/);
+  assert.doesNotMatch(entry, /lifehub-ai\.css/);
   assert.doesNotMatch(entry, /@import[^;]*(BlockNote|portfolio|localtrip|workspace)/);
   assert.doesNotMatch(router, /AppRuntime|CodeEditor|BlockNote|NotesPage|SchedulerPage/);
   assert.match(router, /const LEGACY_ROUTE_ROOTS = new Set/);

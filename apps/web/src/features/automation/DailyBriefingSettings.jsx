@@ -62,7 +62,7 @@ export default function DailyBriefingSettings({
         </div>
         <div className="lifeHubBriefingSettingRow">
           <input id="lifehub-evening-briefing-toggle" type="checkbox" checked={settings.eveningEnabled} onChange={(event) => update({ eveningEnabled: event.target.checked })} />
-          <label htmlFor="lifehub-evening-briefing-toggle"><strong>저녁 브리핑</strong><small>일정·운동·식단·지출 정리</small></label>
+          <label htmlFor="lifehub-evening-briefing-toggle"><strong>저녁 브리핑</strong><small>일정·지출 정리</small></label>
           <input type="time" value={settings.eveningTime} disabled={!settings.eveningEnabled} aria-label="저녁 브리핑 시각" onChange={(event) => update({ eveningTime: event.target.value })} />
         </div>
       </div>

@@ -9,6 +9,7 @@ const COLLECTION_LABELS = Object.freeze({
   workouts: '운동',
   dietEntries: '식단',
   budgetEntries: '가계부',
+  recurringPayments: '정기 결제',
   trips: '여행'
 });
 const RESTORE_KEYS = Object.freeze([

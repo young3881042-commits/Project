@@ -103,16 +103,11 @@ test('커스텀 반복은 홈 달력에서도 선택한 요일에만 표시한�
   ]);
 });
 
-test('날짜별 수입·지출과 운동·일정 예정/완료를 중복 없이 집계한다', () => {
+test('날짜별 수입·지출과 일정 예정/완료를 중복 없이 집계한다', () => {
   const date = '2026-08-03';
   const summaries = summarizeHomeCalendar({
     dateKeys: [date, '2026-08-04'],
-    workouts: [
-      { id: 'workout-1', date, title: '유산소', durationMinutes: 60, caloriesBurned: 420 },
-      { id: 'workout-1', date, title: '중복 운동' }
-    ],
     schedules: [
-      { id: 'workout-schedule-workout-1', date, title: '유산소 운동', source: 'workout', origin: { workoutLogId: 'workout-1' }, done: true },
       { id: 'exercise-plan', date, title: '상체 운동', category: 'exercise', type: '운동', done: false },
       { id: 'exercise-done', date, title: '하체 운동', category: 'exercise', type: '운동', done: true },
       { id: 'schedule-plan', date, title: '회의', category: 'work', type: '업무', done: false },
@@ -125,52 +120,55 @@ test('날짜별 수입·지출과 운동·일정 예정/완료를 중복 없이 
       { id: 'expense-1', date, type: 'withdraw', amount: 3000 },
       { id: 'expense-2', date, type: 'withdraw', amount: 2000 },
       { id: 'other-day', date: '2026-08-04', type: 'withdraw', amount: 9000 }
-    ]
+    ],
+    now: new Date(2026, 7, 3, 12, 0, 0)
   });
 
   assert.equal(summaries[date].income, 25000);
   assert.equal(summaries[date].expense, 5000);
   assert.equal(summaries[date].incomeCount, 2);
   assert.equal(summaries[date].expenseCount, 2);
-  assert.equal(summaries[date].workoutPlanned, 1);
-  assert.equal(summaries[date].workoutDone, 2);
-  assert.equal(summaries[date].schedulePlanned, 1);
-  assert.equal(summaries[date].scheduleDone, 1);
-  assert.equal(summaries[date].activities.length, 5);
+  assert.equal(summaries[date].schedulePlanned, 2);
+  assert.equal(summaries[date].scheduleIncomplete, 0);
+  assert.equal(summaries[date].scheduleDone, 2);
+  assert.equal(summaries[date].activities.length, 4);
+  assert.equal(Object.hasOwn(summaries[date], 'workoutPlanned'), false);
+  assert.equal(Object.hasOwn(summaries[date], 'workoutDone'), false);
   assert.equal(summaries['2026-08-04'].expense, 9000);
 });
 
-test('레거시 운동 연결 일정은 같은 날짜만 합치고 옮긴 일정은 유지한다', () => {
-  const workoutDate = '2026-08-03';
-  const movedDate = '2026-08-05';
+test('레거시 운동 기록 collection은 홈 달력에 표시하지 않는다', () => {
+  const date = '2026-08-03';
   const summaries = summarizeHomeCalendar({
-    dateKeys: [workoutDate, movedDate],
-    workouts: [{ id: 'workout-legacy', date: workoutDate, title: '완료 운동' }],
-    schedules: [
-      {
-        id: 'workout-schedule-workout-legacy',
-        date: workoutDate,
-        title: '완료 운동 일정',
-        source: 'workout',
-        done: true
-      },
-      {
-        id: 'workout-schedule-workout-legacy:2026-08-05',
-        scheduleId: 'workout-schedule-workout-legacy',
-        sourceId: 'workout-schedule-workout-legacy',
-        date: movedDate,
-        title: '옮긴 운동 일정',
-        source: 'workout',
-        done: false
-      }
-    ],
-    budgetEntries: []
+    dateKeys: [date],
+    workouts: [{ id: 'workout-legacy', date, title: '완료 운동' }],
+    schedules: [],
+    budgetEntries: [],
+    now: new Date(2026, 7, 3, 12, 0, 0)
   });
 
-  assert.equal(summaries[workoutDate].workoutDone, 1);
-  assert.equal(summaries[workoutDate].activities.length, 1);
-  assert.equal(summaries[movedDate].workoutPlanned, 1);
-  assert.equal(summaries[movedDate].activities[0].title, '옮긴 운동 일정');
+  assert.equal(summaries[date].activities.length, 0);
+  assert.equal(summaries[date].schedulePlanned, 0);
+  assert.equal(summaries[date].scheduleIncomplete, 0);
+  assert.equal(summaries[date].scheduleDone, 0);
+});
+
+test('홈 달력도 지난 미완료 일정과 오늘 시간이 지난 일정을 구분한다', () => {
+  const summaries = summarizeHomeCalendar({
+    dateKeys: ['2026-08-22', '2026-08-23'],
+    schedules: [
+      { id: 'past', date: '2026-08-22', title: '지난 일정', done: false },
+      { id: 'due', date: '2026-08-23', time: '09:00', title: '시간 지난 일정', done: false },
+      { id: 'future', date: '2026-08-23', time: '18:00', title: '저녁 일정', done: false }
+    ],
+    budgetEntries: [],
+    now: new Date(2026, 7, 23, 14, 30, 0)
+  });
+
+  assert.equal(summaries['2026-08-22'].scheduleIncomplete, 1);
+  assert.equal(summaries['2026-08-23'].scheduleIncomplete, 1);
+  assert.equal(summaries['2026-08-23'].schedulePlanned, 1);
+  assert.deepEqual(summaries['2026-08-23'].activities.map((item) => item.status), ['미완료', '예정']);
 });
 
 test('선택한 월의 수입과 지출 합계를 다른 달과 분리한다', () => {

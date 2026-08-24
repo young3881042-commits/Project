@@ -15,6 +15,9 @@ final class FinanceNotificationParser {
     static final String SAMSUNG_WALLET_PACKAGE = "com.samsung.android.spay";
     static final String SAMSUNG_WALLET_SOURCE = "samsung-wallet";
     static final String SAMSUNG_WALLET_FALLBACK_MERCHANT = "삼성월렛";
+    static final String KAKAO_PAY_PACKAGE = "com.kakaopay.app";
+    static final String KAKAO_PAY_SOURCE = "kakao-pay";
+    static final String KAKAO_PAY_FALLBACK_MERCHANT = "카카오페이";
 
     private static final long MAX_TRANSACTION_AMOUNT = 999_999_999L;
     private static final int MAX_TEXT_PARTS = 12;
@@ -43,22 +46,34 @@ final class FinanceNotificationParser {
     );
     private static final Pattern MERCHANT_NOISE_PATTERN = Pattern.compile(
             "(?i)(삼성\\s*월렛|삼성\\s*페이|samsung\\s*(?:wallet|pay)|"
+                    + "카카오\\s*페이(?:머니)?|kakao\\s*pay|"
                     + "결제|승인|카드\\s*사용|사용|일시불|할부|거래|알림|"
-                    + "완료|되었습니다|처리되었습니다|"
-                    + "가맹점|사용처|상호|매장|merchant|카드|계좌|잔액|누적|한도|"
+                    + "완료|되었습니다|처리되었습니다|했어요|"
+                    + "가맹점명|가맹점|결제처|사용처명|사용처|상호명|상호|매장|merchant|결제금액|금액|카드|계좌|잔액|누적|한도|"
                     + "고객|본인|승인번호|거래번호|원|krw)"
     );
 
-    private static final String[] POSITIVE_TERMS = {
+    private static final String[] SAMSUNG_WALLET_POSITIVE_TERMS = {
             "결제", "승인", "카드사용", "카드 사용", "일시불", "할부",
             "payment", "purchase"
     };
-    private static final String[] NEGATIVE_TERMS = {
+    private static final String[] KAKAO_PAY_STRONG_POSITIVE_TERMS = {
+            "결제완료", "결제 완료", "결제가 완료", "결제를 완료",
+            "결제승인", "결제 승인", "결제했", "결제됐", "결제되었습니다",
+            "payment approved", "payment complete", "payment completed"
+    };
+    private static final String[] COMMON_NEGATIVE_TERMS = {
             "승인취소", "승인 취소", "결제취소", "결제 취소", "취소",
             "환불", "거절", "실패", "미승인", "승인실패", "승인 실패",
             "광고", "이벤트", "쿠폰", "혜택",
             "입금", "출금", "송금", "이체", "atm", "현금인출", "현금 인출",
             "자동이체", "계좌이체", "대출", "예금", "적금"
+    };
+    private static final String[] KAKAO_PAY_NEGATIVE_TERMS = {
+            "충전", "포인트 적립", "리워드", "송금받기",
+            "결제예정", "결제 예정", "결제안내", "결제 안내",
+            "결제방법", "결제 방법", "결제요청", "결제 요청",
+            "결제한도", "결제 한도", "결제하면", "결제 시", "할인"
     };
     private static final Set<String> GENERIC_MERCHANTS = new LinkedHashSet<>();
 
@@ -78,7 +93,39 @@ final class FinanceNotificationParser {
     private FinanceNotificationParser() {}
 
     static boolean isSupportedPackage(String packageName) {
-        return SAMSUNG_WALLET_PACKAGE.equals(packageName);
+        return sourceForPackage(packageName) != null;
+    }
+
+    static String labelForSource(String source) {
+        if (SAMSUNG_WALLET_SOURCE.equals(source)) {
+            return "삼성페이";
+        }
+        if (KAKAO_PAY_SOURCE.equals(source)) {
+            return "카카오페이";
+        }
+        return null;
+    }
+
+    static String sourceForPackage(String packageName) {
+        if (SAMSUNG_WALLET_PACKAGE.equals(packageName)) {
+            return SAMSUNG_WALLET_SOURCE;
+        }
+        if (KAKAO_PAY_PACKAGE.equals(packageName)) {
+            return KAKAO_PAY_SOURCE;
+        }
+        return null;
+    }
+
+    static boolean isSupportedSource(String source) {
+        return SAMSUNG_WALLET_SOURCE.equals(source)
+                || KAKAO_PAY_SOURCE.equals(source);
+    }
+
+    static LinkedHashSet<String> supportedSources() {
+        LinkedHashSet<String> sources = new LinkedHashSet<>();
+        sources.add(SAMSUNG_WALLET_SOURCE);
+        sources.add(KAKAO_PAY_SOURCE);
+        return sources;
     }
 
     static Candidate parse(
@@ -87,7 +134,8 @@ final class FinanceNotificationParser {
             long occurredAt,
             List<String> textParts
     ) {
-        if (!isSupportedPackage(packageName) || occurredAt <= 0L) {
+        String source = sourceForPackage(packageName);
+        if (source == null || occurredAt <= 0L) {
             return null;
         }
         List<String> normalizedParts = normalizedParts(textParts);
@@ -96,32 +144,86 @@ final class FinanceNotificationParser {
         }
         String combined = join(normalizedParts, "\n");
         String searchable = combined.toLowerCase(Locale.ROOT);
-        if (!containsAny(searchable, POSITIVE_TERMS)
-                || containsAny(searchable, NEGATIVE_TERMS)) {
+        // The package is the authoritative source. If the visible message explicitly
+        // names the other payment app, reject it instead of mislabelling the event.
+        if (!messageMatchesSource(source, searchable)) {
+            return null;
+        }
+        if (containsAny(searchable, COMMON_NEGATIVE_TERMS)
+                || containsSourceNegativeTerm(source, searchable)
+                || !hasSourcePositiveTerm(source, searchable)) {
             return null;
         }
 
-        Set<Long> amounts = transactionAmounts(combined);
-        if (amounts.size() != 1) {
+        Long amount = uniqueTransactionAmount(combined);
+        if (amount == null) {
             return null;
         }
-        long amount = amounts.iterator().next();
         String merchant = merchantFrom(normalizedParts);
         boolean fallbackMerchant = merchant == null;
+        if (KAKAO_PAY_SOURCE.equals(source)
+                && !containsAny(searchable, KAKAO_PAY_STRONG_POSITIVE_TERMS)
+                && fallbackMerchant) {
+            return null;
+        }
         if (fallbackMerchant) {
-            merchant = SAMSUNG_WALLET_FALLBACK_MERCHANT;
+            merchant = fallbackMerchantForSource(source);
         }
         String eventId = eventId(packageName, notificationKey, occurredAt, combined);
         return eventId == null
                 ? null
                 : new Candidate(
                         eventId,
-                        SAMSUNG_WALLET_SOURCE,
+                        source,
                         amount,
                         merchant,
                         occurredAt,
                         fallbackMerchant
                 );
+    }
+
+    private static boolean hasSourcePositiveTerm(String source, String searchable) {
+        if (SAMSUNG_WALLET_SOURCE.equals(source)) {
+            return containsAny(searchable, SAMSUNG_WALLET_POSITIVE_TERMS);
+        }
+        if (KAKAO_PAY_SOURCE.equals(source)) {
+            return containsAny(searchable, KAKAO_PAY_STRONG_POSITIVE_TERMS)
+                    || searchable.contains("결제");
+        }
+        return false;
+    }
+
+    private static boolean messageMatchesSource(String source, String searchable) {
+        boolean mentionsSamsung = searchable.contains("삼성페이")
+                || searchable.contains("삼성 페이")
+                || searchable.contains("samsung pay")
+                || searchable.contains("삼성월렛")
+                || searchable.contains("삼성 월렛")
+                || searchable.contains("samsung wallet");
+        boolean mentionsKakao = searchable.contains("카카오페이")
+                || searchable.contains("카카오 페이")
+                || searchable.contains("kakao pay");
+        if (SAMSUNG_WALLET_SOURCE.equals(source)) {
+            return !mentionsKakao || mentionsSamsung;
+        }
+        if (KAKAO_PAY_SOURCE.equals(source)) {
+            return !mentionsSamsung || mentionsKakao;
+        }
+        return false;
+    }
+
+    private static boolean containsSourceNegativeTerm(String source, String searchable) {
+        if (KAKAO_PAY_SOURCE.equals(source)) {
+            return containsAny(searchable, KAKAO_PAY_NEGATIVE_TERMS);
+        }
+        return false;
+    }
+
+    private static String fallbackMerchantForSource(String source) {
+        if (KAKAO_PAY_SOURCE.equals(source)) {
+            return KAKAO_PAY_FALLBACK_MERCHANT;
+        }
+        return SAMSUNG_WALLET_FALLBACK_MERCHANT;
     }
 
     private static List<String> normalizedParts(List<String> values) {
@@ -173,6 +275,11 @@ final class FinanceNotificationParser {
             }
         }
         return amounts;
+    }
+
+    private static Long uniqueTransactionAmount(String value) {
+        Set<Long> amounts = transactionAmounts(value);
+        return amounts.size() == 1 ? amounts.iterator().next() : null;
     }
 
     private static Long parseAmount(String raw) {

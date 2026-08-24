@@ -10,7 +10,7 @@
     "test:lifehub-ai": "node --test src/features/lifehub-ai/*.test.js",
     "test:lifehub-data": "node --test src/features/automation/*.test.js src/features/backup/*.test.js src/features/finance/*.test.js src/features/life-records/*.test.js",
     "test:lifehub-ui": "node --test tests/lifeHubUiStructure.test.mjs tests/mobileLifeHubUx.test.mjs tests/webBrandAccessibility.test.mjs",
-    "test:routine-notifications": "node --test tests/routineNotificationModel.test.mjs tests/scheduleRecurrenceModel.test.mjs",
+    "test:routine-notifications": "node --test tests/routineNotificationModel.test.mjs tests/scheduleRecurrenceModel.test.mjs tests/scheduleStatusModel.test.mjs",
     "test:daily-memo": "node tests/dailyMemoModel.test.mjs",
     "test:diet": "node --test tests/dietModel.test.mjs tests/dietDraft.test.mjs tests/foodPhotoFlow.test.mjs tests/foodPhotoUiStructure.test.mjs",
     "test:body-profile": "node --test tests/bodyProfileModel.test.mjs",
