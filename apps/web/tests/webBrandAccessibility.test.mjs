@@ -27,7 +27,7 @@ test('HTML metadata consistently exposes the Orbit product name', async () => {
 test('service worker cache revision is advanced for the lightweight local release', async () => {
   const serviceWorker = await readWebFile('public/sw.js');
 
-  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v38';/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v42';/);
   assert.doesNotMatch(serviceWorker, /web-v22/);
 });
 

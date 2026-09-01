@@ -1693,8 +1693,12 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
         </div>
       ) : null}
       <FinanceWalletCard
-        balance={money(model.budget.balance)}
-        income={money(model.budget.income)}
+        remaining={!model.budget.configured
+          ? '예산을 설정해주세요'
+          : model.budget.exceeded
+            ? money(model.budget.exceeded) + ' 초과'
+            : money(model.budget.remaining) + ' 남음'}
+        budget={model.budget.configured ? money(model.monthlyBudget.amount) : '미설정'}
         expense={money(model.budget.expense)}
         usage={model.budget.usage}
         message={!model.budget.configured
@@ -1702,13 +1706,14 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
           : model.budget.usage >= 80
             ? '이번 달 예산 사용률이 80%를 넘었어요.'
             : '이번 달 지출은 설정한 예산 안에서 관리되고 있어요.'}
-      />
+      >
+        <MonthlyBudgetPanel
+          amount={model.monthlyBudget.amount}
+          usage={model.budget.usage}
+          onSave={saveMonthlyBudgetAmount}
+        />
+      </FinanceWalletCard>
       <FinanceSectionTabs active={financeSection} onChange={setFinanceSection} />
-      <MonthlyBudgetPanel
-        amount={model.monthlyBudget.amount}
-        expense={model.budget.expense}
-        onSave={saveMonthlyBudgetAmount}
-      />
       <FinanceSharePanel
         entries={model.budgetEntries}
         onImport={importFinanceShare}

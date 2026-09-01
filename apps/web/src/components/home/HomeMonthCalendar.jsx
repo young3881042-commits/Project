@@ -68,11 +68,20 @@ function SelectedDateDetail({ budgetEntries, date, detailRef, summary, navigate,
           <span>{date === today ? '오늘 · 선택됨' : '선택한 날짜'}</span>
           <h3 aria-live="polite">{fullDateLabel(date)}</h3>
         </div>
-        <div className="homeMonthHeaderActions">
-          <button type="button" onClick={() => navigate('/schedule?new=schedule&date=' + encodeURIComponent(date))}>일정 추가</button>
-          <button type="button" onClick={() => navigate('/memo?new=memo')}>메모 작성</button>
-        </div>
       </header>
+
+      {date === today ? (
+        <div className="homeMonthTodayActions" role="group" aria-label="오늘 기록 추가">
+          <button type="button" onClick={() => navigate('/schedule?new=schedule&date=' + encodeURIComponent(date))}>
+            <MemoNavIcon type="calendar" />
+            <span>일정 추가</span>
+          </button>
+          <button type="button" onClick={() => navigate('/memo?new=memo')}>
+            <MemoNavIcon type="edit" />
+            <span>메모 작성</span>
+          </button>
+        </div>
+      ) : null}
 
       <div className="homeMonthMoneySummary">
         <button type="button" onClick={() => navigate(`/finance?date=${encodeURIComponent(date)}`)}>

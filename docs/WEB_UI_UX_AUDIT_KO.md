@@ -82,7 +82,7 @@
 - 홈 월간 캘린더·활동 요약과 아침·저녁 브리핑에서 운동·식단 기록 및 이동 버튼을 제거
 - 운동이 만들었던 레거시 연결 일정은 저장소에서 삭제하지 않고 현재 화면·알림에서만 제외
 - 운동·식단 호환 필드는 보존하되 백업 화면에는 현재 제공하는 일정·메모·가계부·정기 결제·여행만 표시
-- 설치된 PWA가 가계부 내부 메뉴, 기존 카카오페이 상호명 보정, 파일 공유와 사용자 분류를 즉시 받도록 서비스 워커를 `orbit-web-v38`로 갱신
+- 설치된 PWA가 오늘 날짜 상세의 일정·메모 버튼과 남은 예산 기준 월간 지갑을 즉시 받도록 서비스 워커를 `orbit-web-v42`로 갱신
 
 ### 홈 활동 요약 기간
 
@@ -216,12 +216,12 @@
 - 구형 워크스페이스 라우트는 `/app`으로 보내고 배포 라우터에서 import하지 않는다. 소스 파일은 보존되지만 BlockNote, CodeEditor, 구형 스케줄러 자산은 APK에 포함되지 않는다.
 - 일일 메모 화면은 탭을 열 때만 로드하고, Markdown 렌더러와 운동·식단·AI·AI 연결 화면은 production import에서 제외한다.
 - Vite 프로덕션 빌드는 `public` 전체를 복사하지 않고 실제 앱이 쓰는 6개 파일만 포함한다. 약 4.6MB의 구형 로봇·여행·홈 PNG는 소스에 남고 APK에서는 빠진다.
-- 서비스 워커 캐시는 4탭·가계부 내부 메뉴·기존 카카오페이 상호명 보정·파일 공유·사용자 분류·일반 텍스트 메모·정기 결제를 반영한 `orbit-web-v38`을 유지한다.
+- 서비스 워커 캐시는 메인 상단 추가 버튼 제거, 오늘 날짜 상세의 2열 기록 버튼과 남은 예산·사용 퍼센트를 반영한 `orbit-web-v42`를 유지한다.
 
 ## 검증 기록
 
 - 웹 전체 테스트 245/245 통과: LifeHub AI 보관 모듈 61, 데이터 87, 구조·모바일·브랜드 31, 일정 알림·상태 13, 메모 11, 식단 보관 모델 22, 신체정보 보관 모델 5, 홈 달력·요약 15
 - Vite production build 81 modules 통과. 초기 JS 335.90kB(gzip 109.99kB), CSS 109.70kB(gzip 18.71kB), 메모 지연 청크 28.66kB(gzip 10.04kB)
 - Android Java/API compile, native security smoke test, 결제 알림·grant-only 공유 Provider 경계, APK credential scan과 v1/v2/v3 서명 검증 통과. 경량 SDK에 Android Lint가 없어 명시적으로 제외했다.
-- 설치용 APK: `/sdcard/Download/Orbit-latest.apk`, `0.5.9-debug` (`versionCode 25`), 222,667바이트, SHA-256 `5e69cbe5f1fd0f7f628b6bd67b62805c0ac923cd77fc1737b157423462274360`; 저장소의 기존 release APK는 덮지 않았다.
+- 설치용 APK: `/sdcard/Download/Orbit-latest.apk`, `0.6.1-debug` (`versionCode 27`); Java compile·native security smoke·v1/v2/v3 서명과 민감정보 검사를 통과한 최신 v42 웹 내장 파일을 사용한다.
 - `git diff --check` 통과. 실제 두 기기 파일 전송, 기기 키보드·오프라인·알림·백업 왕복·기존 설치 업데이트는 이번 환경에서 미실행

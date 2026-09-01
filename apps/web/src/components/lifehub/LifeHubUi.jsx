@@ -165,14 +165,14 @@ export function ScheduleTimelineItem({ item, dateLabel = '', timeLabel, meta, st
   );
 }
 
-export function FinanceWalletCard({ balance, income, expense, usage, message }) {
+export function FinanceWalletCard({ remaining, budget, expense, usage, message, children }) {
   const hasBudget = Number.isFinite(usage);
   return (
     <section className="finance-wallet-card">
       <header>
-        <span>월간 지갑</span>
-        <strong>{balance}</strong>
-        <small className="finance-amount-row">수입 {income} · 지출 {expense}</small>
+        <span>월간 지갑 · 남은 예산</span>
+        <strong>{remaining}</strong>
+        <small className="finance-amount-row">월 예산 {budget} · 지출 {expense}</small>
       </header>
       {hasBudget ? (
         <div className="lifeHubWalletMeter finance-budget-bar" role="progressbar" aria-label="월 예산 사용률" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.min(100, usage)}>
@@ -181,6 +181,7 @@ export function FinanceWalletCard({ balance, income, expense, usage, message }) 
         </div>
       ) : null}
       <p>{message}</p>
+      {children}
     </section>
   );
 }

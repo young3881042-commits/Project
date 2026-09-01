@@ -293,16 +293,46 @@
   font-weight: 950;
 }
 
-.homeMonthSelectedDetail > header > button {
-  min-width: 70px;
+.homeMonthTodayActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.homeMonthTodayActions button {
+  width: 100%;
+  min-width: 0;
   min-height: 44px;
-  padding-inline: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
   border: 1px solid #b7ddd7;
   border-radius: 10px;
   background: #edfaf7;
   color: #0f766e;
-  font-size: 0.7rem;
+  font: inherit;
+  font-size: 0.74rem;
   font-weight: 900;
+}
+
+.homeMonthTodayActions button:first-child {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.homeMonthTodayActions .memoNavIcon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.homeMonthTodayActions button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .homeMonthMoneySummary {

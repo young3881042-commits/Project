@@ -78,6 +78,10 @@ test('홈 월 캘린더는 날짜별 금액과 일정 예정/미완료/완료를
   assert.match(calendar, /data-date=\{cell\.date\}/);
   assert.match(calendar, /예정·미완료·완료<\/strong> 일정 상태/);
   assert.match(calendar, /\/finance\?date=/);
+  assert.match(calendar, /date === today[\s\S]*className="homeMonthTodayActions"/);
+  assert.match(calendar, /오늘 기록 추가/);
+  assert.match(calendar, /일정 추가/);
+  assert.match(calendar, /메모 작성/);
   assert.doesNotMatch(calendar, /\/workout\?date=|운동 전체 보기/);
   assert.match(calendarModel, /expandSchedulesForCalendar/);
   assert.doesNotMatch(calendarModel, /workoutPlanned|workoutDone|linkedWorkoutId/);
@@ -85,6 +89,8 @@ test('홈 월 캘린더는 날짜별 금액과 일정 예정/미완료/완료를
   assert.match(calendarCss, /\.homeMonthFinanceTotals \{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(calendarCss, /\.homeMonthDay \{[\s\S]*min-height: 82px/);
   assert.match(calendarCss, /\.homeMonthCalendarHeader nav button \{[\s\S]*min-width: 44px;[\s\S]*min-height: 44px/);
+  assert.match(calendarCss, /\.homeMonthTodayActions \{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(calendarCss, /\.homeMonthTodayActions button \{[\s\S]*min-width: 0;[\s\S]*min-height: 44px/);
   assert.match(home, /buildHomeActivitySummary/);
   assert.match(activitySummary, /dateKeysInRange\(range\.start, range\.end\)/);
   assert.doesNotMatch(activitySummary, /isWorkoutSchedule|\/workout|\/diet|섭취 합계|운동 기록/);
@@ -277,12 +283,14 @@ test('홈과 더보기는 아침·저녁 브리핑 카드·설정과 예약 알�
 });
 
 test('IndexedDB 호환 저장과 거래 복구·월 예산·날짜 메모·백업 상태를 연결한다', async () => {
-  const [main, storage, lifeHub, budget, home, calendar, backup] = await Promise.all([
+  const [main, storage, lifeHub, budget, home, briefingCard, budgetPanel, calendar, backup] = await Promise.all([
     source('src/main.jsx'),
     source('src/utils/orbitIndexedDbStorage.js'),
     source('src/LifeHubApp.jsx'),
     source('src/features/finance/monthlyBudget.js'),
     source('src/features/home/HomePage.jsx'),
+    source('src/features/automation/DailyBriefingCard.jsx'),
+    source('src/features/finance/MonthlyBudgetPanel.jsx'),
     source('src/components/home/HomeMonthCalendar.jsx'),
     source('src/features/backup/LifeHubBackupPanel.jsx')
   ]);
@@ -293,13 +301,19 @@ test('IndexedDB 호환 저장과 거래 복구·월 예산·날짜 메모·백�
   assert.doesNotMatch(storage, /bridge-token|device-token|authorization/i);
   assert.match(lifeHub, /const \[editingEntryId, setEditingEntryId\]/);
   assert.match(lifeHub, /setDeletedEntry\(entry\)[\s\S]*saveBudget\(session, \[deletedEntry, \.\.\.current\]\)/);
-  assert.match(lifeHub, /<MonthlyBudgetPanel/);
+  assert.match(lifeHub, /<FinanceWalletCard[\s\S]*<MonthlyBudgetPanel[\s\S]*<\/FinanceWalletCard>/);
+  assert.equal((lifeHub.match(/<MonthlyBudgetPanel/g) || []).length, 1);
+  assert.match(lifeHub, /remaining=\{!model\.budget\.configured[\s\S]*model\.budget\.remaining/);
+  assert.match(lifeHub, /budget=\{model\.budget\.configured \? money\(model\.monthlyBudget\.amount\) : '미설정'\}/);
   assert.match(budget, /if \(!normalizedAmount\)/);
-  assert.match(home, /className="orbitHomeCapture"/);
+  assert.doesNotMatch(home, /orbitHomeCapture|바로 남기기/);
+  assert.doesNotMatch(briefingCard, /lifeHubBriefingCapture|바로 남기기|\/schedule\?new=schedule|\/memo\?new=memo|\/finance\?new=entry/);
+  assert.doesNotMatch(budgetPanel, /monthlyBudgetProgress|role="progressbar"/);
+  assert.match(budgetPanel, /usage \+ '% 사용'/);
   assert.match(calendar, /summary\.memoItems/);
   assert.match(backup, /backupHealth\(currentData, backupStatus\)/);
 });
-test('v38 경량 캐시는 가계부 내부 메뉴·상호명 보정·분류 관리 스타일을 포함한다', async () => {
+test('v42 경량 캐시는 남은 예산 지갑과 오늘 날짜 기록 버튼을 포함한다', async () => {
   const [serviceWorker, packageJson, entryCss, shell, home] = await Promise.all([
     source('public/sw.js'),
     source('package.json'),
@@ -308,7 +322,7 @@ test('v38 경량 캐시는 가계부 내부 메뉴·상호명 보정·분류 관
     source('src/features/home/HomePage.jsx')
   ]);
 
-  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v38'/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v42'/);
   assert.match(packageJson, /"test:lifehub-data": "node --test src\/features\/automation\/\*\.test\.js src\/features\/backup\/\*\.test\.js src\/features\/finance\/\*\.test\.js src\/features\/life-records\/\*\.test\.js"/);
   assert.match(packageJson, /"test": "npm run test:lifehub-ai && npm run test:lifehub-data/);
   assert.match(entryCss, /@import '\.\/styles\/lifehub-automation\.css'/);
@@ -446,8 +460,8 @@ test('Android WebView는 Orbit 이름·중앙 O 아이콘과 내장 웹 버전 �
   assert.match(manifest, /android\.permission\.SCHEDULE_EXACT_ALARM/);
   assert.match(manifest, /android\.permission\.VIBRATE/);
   assert.match(manifest, /SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED/);
-  assert.match(manifest, /android:versionName="0\.5\.9-debug"/);
-  assert.match(manifest, /android:versionCode="25"/);
+  assert.match(manifest, /android:versionName="0\.6\.1-debug"/);
+  assert.match(manifest, /android:versionCode="27"/);
   assert.match(manifest, /android:name="\.FinanceNotificationListenerService"/);
   assert.match(manifest, /android:permission="android\.permission\.BIND_NOTIFICATION_LISTENER_SERVICE"/);
   assert.match(manifest, /android:name="android\.service\.notification\.NotificationListenerService"/);

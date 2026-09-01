@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react';
 import { formatNumber } from '../../utils/lifeHubFormatters.js';
-import { monthlyBudgetProgress } from './monthlyBudget.js';
 
-export default function MonthlyBudgetPanel({ amount = 0, expense = 0, onSave }) {
-  const [editing, setEditing] = useState(!amount);
+export default function MonthlyBudgetPanel({ amount = 0, usage = null, onSave }) {
+  const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(amount ? String(amount) : '');
   const [message, setMessage] = useState('');
-  const progress = monthlyBudgetProgress(expense, amount);
 
   useEffect(() => {
     setDraft(amount ? String(amount) : '');
-    if (!amount) setEditing(true);
   }, [amount]);
 
   const submit = (event) => {
@@ -30,13 +27,14 @@ export default function MonthlyBudgetPanel({ amount = 0, expense = 0, onSave }) 
   };
 
   return (
-    <section className="lifeHubMonthlyBudgetPanel" aria-labelledby="lifehub-monthly-budget-title">
+    <div className="lifeHubMonthlyBudgetPanel" aria-labelledby="lifehub-monthly-budget-title">
       <header>
         <div>
-          <span>이번 달 기준</span>
-          <strong id="lifehub-monthly-budget-title">월 예산</strong>
+          <span id="lifehub-monthly-budget-title">월 예산</span>
+          <strong>{amount && Number.isFinite(usage) ? usage + '% 사용' : '아직 설정하지 않았어요'}</strong>
+          {amount ? <small>설정 금액 {formatNumber(amount)}원</small> : null}
         </div>
-        {amount && !editing ? <button type="button" onClick={() => setEditing(true)}>변경</button> : null}
+        {!editing ? <button type="button" onClick={() => { setEditing(true); setMessage(''); }}>{amount ? '변경' : '설정'}</button> : null}
       </header>
 
       {editing ? (
@@ -56,22 +54,11 @@ export default function MonthlyBudgetPanel({ amount = 0, expense = 0, onSave }) 
           </label>
           <div>
             <button type="submit" className="primary">예산 저장</button>
-            {amount ? <button type="button" onClick={() => { setEditing(false); setDraft(String(amount)); setMessage(''); }}>취소</button> : null}
+            <button type="button" onClick={() => { setEditing(false); setDraft(amount ? String(amount) : ''); setMessage(''); }}>취소</button>
           </div>
         </form>
-      ) : (
-        <div className="lifeHubMonthlyBudgetProgress">
-          <div>
-            <span>예산 {formatNumber(amount)}원</span>
-            <strong>{progress.exceeded ? formatNumber(progress.exceeded) + '원 초과' : formatNumber(progress.remaining) + '원 남음'}</strong>
-          </div>
-          <div role="progressbar" aria-label="월 예산 사용률" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.min(100, progress.usage)}>
-            <span style={{ width: String(Math.min(100, progress.usage)) + '%' }} />
-          </div>
-          <small>현재 {formatNumber(expense)}원 · 예산의 {progress.usage}%</small>
-        </div>
-      )}
+      ) : null}
       {message ? <p role="status">{message}</p> : null}
-    </section>
+    </div>
   );
 }
