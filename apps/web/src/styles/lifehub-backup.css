@@ -201,3 +201,39 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.lifeHubBackupHealth {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #eef8f6;
+  color: #315b55;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.lifeHubBackupHealth strong {
+  color: #0f766e;
+  white-space: nowrap;
+}
+
+.lifeHubBackupHealth.due {
+  border: 1px solid #f0c88d;
+  background: #fff8e8;
+  color: #7c5a35;
+}
+
+.lifeHubBackupHealth.due strong {
+  color: #9a5b0a;
+}
+
+.lifeHubLocalStorageCard small {
+  display: block;
+  margin-top: 5px;
+  color: #0f766e;
+  font-size: 0.68rem;
+  font-weight: 800;
+}

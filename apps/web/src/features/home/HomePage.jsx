@@ -37,8 +37,9 @@ export default function HomePage({ model, navigate }) {
   const calendarSummaries = useMemo(() => summarizeHomeCalendar({
     dateKeys: calendar.dateKeys,
     schedules: calendarSchedules,
-    budgetEntries: model.budgetEntries
-  }), [calendar.dateKeys, calendarSchedules, model.budgetEntries]);
+    budgetEntries: model.budgetEntries,
+    notes: model.notes
+  }), [calendar.dateKeys, calendarSchedules, model.budgetEntries, model.notes]);
   const monthFinances = useMemo(
     () => summarizeMonthFinances(calendarMonth, model.budgetEntries),
     [calendarMonth, model.budgetEntries]
@@ -80,6 +81,15 @@ export default function HomePage({ model, navigate }) {
           <p>오늘 일정과 생활 기록을 한눈에 확인하세요.</p>
         </div>
         <LifeHubPackIcon name="habit" />
+      </section>
+
+      <section className="orbitHomeCapture" aria-label="바로 기록하기">
+        <strong>바로 남기기</strong>
+        <div>
+          <button type="button" onClick={() => navigate('/schedule?new=schedule')}><MemoNavIcon type="calendar" /><span>일정</span></button>
+          <button type="button" onClick={() => navigate('/memo?new=memo')}><MemoNavIcon type="edit" /><span>메모</span></button>
+          <button type="button" onClick={() => navigate('/finance?new=entry')}><MemoNavIcon type="chart" /><span>지출</span></button>
+        </div>
       </section>
 
       <DailyBriefingCard model={model} navigate={navigate} />

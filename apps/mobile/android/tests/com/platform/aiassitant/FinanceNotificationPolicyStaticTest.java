@@ -92,6 +92,16 @@ public final class FinanceNotificationPolicyStaticTest {
                 FinanceNotificationParser.KAKAO_PAY_SOURCE,
                 "스타벅스"
         )));
+        require(!FinanceNotificationPolicy.isValidCandidate(
+                new FinanceNotificationParser.Candidate(
+                        eventId(901),
+                        FinanceNotificationParser.KAKAO_PAY_SOURCE,
+                        1_901L,
+                        "카카오페이",
+                        1_750_000_000_901L,
+                        true
+                )
+        ));
         require(!FinanceNotificationPolicy.isValidCandidate(candidate(
                 902,
                 "mobile-tmoney",

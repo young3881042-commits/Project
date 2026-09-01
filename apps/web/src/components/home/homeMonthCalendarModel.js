@@ -13,6 +13,15 @@ function dateKey(date) {
   return `${year}-${month}-${day}`;
 }
 
+export function memoDateKey(note) {
+  const explicit = String(note?.recordDate || '');
+  if (/^\d{4}-\d{2}-\d{2}$/.test(explicit)) return explicit;
+  const timestamp = note?.createdAt || note?.updatedAt;
+  const parsed = timestamp ? new Date(timestamp) : null;
+  if (!parsed || Number.isNaN(parsed.getTime())) return '';
+  return dateKey(parsed);
+}
+
 function parseMonth(month) {
   const match = /^(\d{4})-(\d{2})$/.exec(String(month || ''));
   if (!match) return null;
@@ -60,6 +69,8 @@ function emptySummary(date) {
     schedulePlanned: 0,
     scheduleIncomplete: 0,
     scheduleDone: 0,
+    memoCount: 0,
+    memoItems: [],
     activities: [],
     budgetItems: []
   };
@@ -117,7 +128,7 @@ export function expandSchedulesForCalendar(items, targetDates) {
   ));
 }
 
-export function summarizeHomeCalendar({ dateKeys, schedules, budgetEntries, now = new Date() }) {
+export function summarizeHomeCalendar({ dateKeys, schedules, budgetEntries, notes, now = new Date() }) {
   const summaries = Object.fromEntries((dateKeys || []).map((date) => [date, emptySummary(date)]));
   const seenSchedules = new Set();
   (schedules || []).forEach((schedule) => {
@@ -157,7 +168,22 @@ export function summarizeHomeCalendar({ dateKeys, schedules, budgetEntries, now 
     summary.budgetItems.push(entry);
   });
 
+  const seenNotes = new Set();
+  (notes || []).forEach((note) => {
+    const id = String(note?.id || '');
+    const date = memoDateKey(note);
+    if (!id || seenNotes.has(id) || !summaries[date]) return;
+    seenNotes.add(id);
+    summaries[date].memoCount += 1;
+    summaries[date].memoItems.push({
+      id,
+      title: String(note?.title || '메모'),
+      updatedAt: String(note?.updatedAt || note?.createdAt || '')
+    });
+  });
+
   Object.values(summaries).forEach((summary) => {
+    summary.memoItems.sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
     summary.activities.sort((left, right) => `${left.time || '99:99'}${left.title}`.localeCompare(`${right.time || '99:99'}${right.title}`));
   });
   return summaries;

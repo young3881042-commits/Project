@@ -19,6 +19,8 @@ final class FinanceTransactionQueue {
     private static final String KEY_SELECTED_SOURCES = "selected-sources";
     private static final String QUEUE_KEY_PREFIX = "pending:";
     private static final String SEEN_KEY_PREFIX = "seen:";
+    // 이전 버전이 상호명 없이 저장한 값은 새 parser가 다시 공개하지 않도록 한다.
+    private static final String LEGACY_KAKAO_PAY_FALLBACK_MERCHANT = "카카오페이";
 
     private FinanceTransactionQueue() {}
 
@@ -372,7 +374,7 @@ final class FinanceTransactionQueue {
             return FinanceNotificationParser.SAMSUNG_WALLET_FALLBACK_MERCHANT.equals(merchant);
         }
         if (FinanceNotificationParser.KAKAO_PAY_SOURCE.equals(source)) {
-            return FinanceNotificationParser.KAKAO_PAY_FALLBACK_MERCHANT.equals(merchant);
+            return LEGACY_KAKAO_PAY_FALLBACK_MERCHANT.equals(merchant);
         }
         return false;
     }

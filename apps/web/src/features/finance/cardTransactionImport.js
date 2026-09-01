@@ -1,9 +1,12 @@
+import { orbitStorage } from '../../utils/orbitIndexedDbStorage.js';
 import {
   CARD_IMPORT_SOURCES,
   normalizeCardImportOwner,
   normalizeCardImportSources,
   normalizeNativeCardCandidate
 } from './nativeCardTransactions.js';
+import { financeCategoryForMerchant } from './financeCategories.js';
+import { normalizeKakaoPayMerchant } from './kakaoPayMerchant.js';
 
 export const CARD_IMPORT_SOURCE_STORAGE_KEY = 'lifehub-card-import-sources:v1';
 
@@ -11,7 +14,7 @@ function storageKey(owner) {
   return `${CARD_IMPORT_SOURCE_STORAGE_KEY}:${normalizeCardImportOwner(owner)}`;
 }
 
-export function readCardImportSources(owner, storage = globalThis.localStorage) {
+export function readCardImportSources(owner, storage = orbitStorage) {
   try {
     const parsed = JSON.parse(storage?.getItem(storageKey(owner)) || '[]');
     return normalizeCardImportSources(parsed);
@@ -20,7 +23,7 @@ export function readCardImportSources(owner, storage = globalThis.localStorage) 
   }
 }
 
-export function saveCardImportSources(owner, sources, storage = globalThis.localStorage) {
+export function saveCardImportSources(owner, sources, storage = orbitStorage) {
   const normalized = normalizeCardImportSources(sources);
   try {
     storage?.setItem(storageKey(owner), JSON.stringify(normalized));
@@ -32,14 +35,6 @@ export function saveCardImportSources(owner, sources, storage = globalThis.local
 
 export function cardImportSourceLabel(sourceId) {
   return CARD_IMPORT_SOURCES.find((source) => source.id === sourceId)?.label || '카드 앱';
-}
-
-function categoryForMerchant(merchant) {
-  if (/(?:커피|카페|음료|디저트|베이커리|빵)/.test(merchant)) return '카페';
-  if (/(?:버스|택시|지하철|철도|기차|교통|주유|주차)/.test(merchant)) return '교통';
-  if (/(?:백화점|쇼핑|의류|신발|쿠팡|무신사)/.test(merchant)) return '쇼핑';
-  if (/(?:식당|음식|한식|일식|중식|분식|배달|마트|편의점)/.test(merchant)) return '식비';
-  return '기타';
 }
 
 function localDateKey(timestamp) {
@@ -57,16 +52,20 @@ function importedEventId(entry) {
     : '';
 }
 
-export function cardBudgetEntry(candidate) {
+export function cardBudgetEntry(candidate, categorySettings) {
   const normalized = normalizeNativeCardCandidate(candidate);
   if (!normalized) return null;
+  const merchant = normalized.source === 'kakao-pay'
+    ? normalizeKakaoPayMerchant(normalized.merchant)
+    : normalized.merchant;
+  if (!merchant) return null;
   return {
     id: `budget-card-${normalized.eventId}`,
     type: 'withdraw',
     amount: normalized.amount,
     date: localDateKey(normalized.occurredAt),
-    category: categoryForMerchant(normalized.merchant),
-    memo: normalized.merchant,
+    category: financeCategoryForMerchant(merchant, categorySettings),
+    memo: merchant,
     createdAt: new Date(normalized.occurredAt).toISOString(),
     source: 'card-notification',
     origin: {
@@ -75,6 +74,22 @@ export function cardBudgetEntry(candidate) {
       source: normalized.source
     }
   };
+}
+
+export function recategorizeImportedCardEntries(entries, categorySettings) {
+  let changed = 0;
+  const items = (Array.isArray(entries) ? entries : []).map((entry) => {
+    if (entry?.source !== 'card-notification'
+        || entry?.origin?.kind !== 'card-notification'
+        || typeof entry?.memo !== 'string') {
+      return entry;
+    }
+    const category = financeCategoryForMerchant(entry.memo, categorySettings);
+    if (entry.category === category) return entry;
+    changed += 1;
+    return { ...entry, category };
+  });
+  return { items, changed };
 }
 
 async function acknowledge(acknowledgeDecisions, eventIds, status) {
@@ -88,6 +103,7 @@ async function acknowledge(acknowledgeDecisions, eventIds, status) {
 }
 
 export async function importCardTransactionBatch(candidates, {
+  categorySettings,
   selectedSources,
   readBudget,
   normalizeBudget,
@@ -143,7 +159,9 @@ export async function importCardTransactionBatch(candidates, {
     };
   }
 
-  const entries = newCandidates.map(cardBudgetEntry).map(normalizeBudget);
+  const entries = newCandidates
+    .map((candidate) => cardBudgetEntry(candidate, categorySettings))
+    .map(normalizeBudget);
   if (entries.some((entry) => !entry)) {
     return {
       status: 'failed',

@@ -17,7 +17,6 @@ final class FinanceNotificationParser {
     static final String SAMSUNG_WALLET_FALLBACK_MERCHANT = "삼성월렛";
     static final String KAKAO_PAY_PACKAGE = "com.kakaopay.app";
     static final String KAKAO_PAY_SOURCE = "kakao-pay";
-    static final String KAKAO_PAY_FALLBACK_MERCHANT = "카카오페이";
 
     private static final long MAX_TRANSACTION_AMOUNT = 999_999_999L;
     private static final int MAX_TEXT_PARTS = 12;
@@ -44,13 +43,27 @@ final class FinanceNotificationParser {
             ".*(?:[0-9０-９]{4,}|[*#xX•·-]{2,}[0-9０-９]{2,}"
                     + "|[0-9０-９]{2,}[*#xX•·-]{2,}).*"
     );
+    private static final Pattern KAKAO_MERCHANT_LABEL_PATTERN = Pattern.compile(
+            "(?i)(?:상호명|가맹점명|가맹점|결제처|사용처명|사용처|매장명|매장|merchant)"
+                    + "(?:은|는|을|를)?\\s*(?:[:：=~|-])?\\s*(.{2,80}?)"
+                    + "(?=\\s*(?:결제\\s*금액|결제금액|금액|결제\\s*(?:완료|승인)|"
+                    + "결제수단|결제일시|승인일시|승인번호|거래번호|주문번호|"
+                    + "[₩￦]|[0-9][0-9,]{0,14}\\s*(?:원|krw)|$))"
+    );
+    private static final Pattern KAKAO_MERCHANT_LABEL_ONLY_PATTERN = Pattern.compile(
+            "(?i)^\\s*[\\[【(<]?\\s*(?:상호명|가맹점명|가맹점|결제처|"
+                    + "사용처명|사용처|매장명|매장|merchant)(?:은|는|을|를)?"
+                    + "\\s*[\\]】)>]?\\s*[:：=~|-]?\\s*$"
+    );
     private static final Pattern MERCHANT_NOISE_PATTERN = Pattern.compile(
             "(?i)(삼성\\s*월렛|삼성\\s*페이|samsung\\s*(?:wallet|pay)|"
                     + "카카오\\s*페이(?:머니)?|kakao\\s*pay|"
-                    + "결제|승인|카드\\s*사용|사용|일시불|할부|거래|알림|"
-                    + "완료|되었습니다|처리되었습니다|했어요|"
-                    + "가맹점명|가맹점|결제처|사용처명|사용처|상호명|상호|매장|merchant|결제금액|금액|카드|계좌|잔액|누적|한도|"
-                    + "고객|본인|승인번호|거래번호|원|krw)"
+                    + "가맹점명(?:은|는|을|를)?|가맹점(?:은|는|을|를)?|"
+                    + "결제처(?:은|는|을|를)?|사용처명(?:은|는|을|를)?|사용처(?:은|는|을|를)?|"
+                    + "상호명(?:은|는|을|를)?|상호(?:은|는|을|를)?|매장명(?:은|는|을|를)?|매장(?:은|는|을|를)?|merchant|"
+                    + "결제금액|결제\\s*금액|승인번호|거래번호|"
+                    + "카드\\s*사용|일시불|할부|거래|알림|"
+                    + "결제|승인|사용|완료|되었습니다|처리되었습니다|했어요|금액|카드|계좌|잔액|누적|한도|고객|본인|원|krw)"
     );
 
     private static final String[] SAMSUNG_WALLET_POSITIVE_TERMS = {
@@ -159,11 +172,11 @@ final class FinanceNotificationParser {
         if (amount == null) {
             return null;
         }
-        String merchant = merchantFrom(normalizedParts);
+        String merchant = merchantFrom(source, normalizedParts);
         boolean fallbackMerchant = merchant == null;
-        if (KAKAO_PAY_SOURCE.equals(source)
-                && !containsAny(searchable, KAKAO_PAY_STRONG_POSITIVE_TERMS)
-                && fallbackMerchant) {
+        // 카카오페이는 상호명을 확인할 수 있는 결제만 기록한다. 앱 이름을
+        // 대체 상호로 저장하면 사용처가 아닌 정보가 가계부에 남기 때문이다.
+        if (KAKAO_PAY_SOURCE.equals(source) && fallbackMerchant) {
             return null;
         }
         if (fallbackMerchant) {
@@ -220,9 +233,6 @@ final class FinanceNotificationParser {
     }
 
     private static String fallbackMerchantForSource(String source) {
-        if (KAKAO_PAY_SOURCE.equals(source)) {
-            return KAKAO_PAY_FALLBACK_MERCHANT;
-        }
         return SAMSUNG_WALLET_FALLBACK_MERCHANT;
     }
 
@@ -301,22 +311,45 @@ final class FinanceNotificationParser {
         }
     }
 
+    private static String merchantFrom(String source, List<String> parts) {
+        if (KAKAO_PAY_SOURCE.equals(source)) {
+            String labeled = kakaoMerchantFromLabel(parts);
+            if (labeled != null) {
+                return labeled;
+            }
+        }
+        return merchantFrom(parts);
+    }
+
+    private static String kakaoMerchantFromLabel(List<String> parts) {
+        for (int index = 0; index < parts.size(); index += 1) {
+            String part = parts.get(index);
+            Matcher matcher = KAKAO_MERCHANT_LABEL_PATTERN.matcher(part);
+            while (matcher.find()) {
+                String candidate = cleanedMerchantCandidate(matcher.group(1));
+                if (isSafeMerchant(candidate)) {
+                    return candidate;
+                }
+            }
+            if (KAKAO_MERCHANT_LABEL_ONLY_PATTERN.matcher(part).matches()) {
+                for (int offset = 1; offset <= 2 && index + offset < parts.size(); offset += 1) {
+                    String adjacent = parts.get(index + offset);
+                    String candidate = cleanedMerchantCandidate(adjacent);
+                    if (isSafeMerchant(candidate)) {
+                        return candidate;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     private static String merchantFrom(List<String> parts) {
         String best = null;
         int bestScore = Integer.MIN_VALUE;
         for (String part : parts) {
             boolean includesAmount = AMOUNT_PATTERN.matcher(part).find();
-            String candidate = AMOUNT_PATTERN.matcher(part).replaceAll(" ");
-            candidate = URL_PATTERN.matcher(candidate).replaceAll(" ");
-            candidate = BRACKETED_PATTERN.matcher(candidate).replaceAll(" ");
-            candidate = DATE_TIME_PATTERN.matcher(candidate).replaceAll(" ");
-            candidate = MERCHANT_NOISE_PATTERN.matcher(candidate).replaceAll(" ");
-            candidate = candidate
-                    .replaceAll("[\\p{Cntrl}\\p{So}]+", " ")
-                    .replaceAll("[|/\\\\·•:;,_=+*#~^!?(){}]+", " ")
-                    .replaceAll("\\s+", " ")
-                    .trim();
-            candidate = withoutNumericTokens(candidate);
+            String candidate = cleanedMerchantCandidate(part);
             if (!isSafeMerchant(candidate)) {
                 continue;
             }
@@ -327,6 +360,20 @@ final class FinanceNotificationParser {
             }
         }
         return best;
+    }
+
+    private static String cleanedMerchantCandidate(String value) {
+        String candidate = AMOUNT_PATTERN.matcher(value).replaceAll(" ");
+        candidate = URL_PATTERN.matcher(candidate).replaceAll(" ");
+        candidate = BRACKETED_PATTERN.matcher(candidate).replaceAll(" ");
+        candidate = DATE_TIME_PATTERN.matcher(candidate).replaceAll(" ");
+        candidate = MERCHANT_NOISE_PATTERN.matcher(candidate).replaceAll(" ");
+        candidate = candidate
+                .replaceAll("[\\p{Cntrl}\\p{So}]+", " ")
+                .replaceAll("[|/\\\\·•:;,_=+*#~^!?(){}]+", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
+        return withoutNumericTokens(candidate);
     }
 
     private static String withoutNumericTokens(String value) {

@@ -1,3 +1,4 @@
+import { orbitStorage } from '../../utils/orbitIndexedDbStorage.js';
 import { stableNativeNotificationId } from '../lifehub-ai/nativeNotifications.js';
 import { formatNumber, isTimeKey, todayKey } from '../../utils/lifeHubFormatters.js';
 
@@ -28,7 +29,7 @@ export function normalizeDailyBriefingSettings(value = {}) {
   };
 }
 
-export function readDailyBriefingSettings(session, storage = globalThis.localStorage) {
+export function readDailyBriefingSettings(session, storage = orbitStorage) {
   if (!storage) return { ...DEFAULT_DAILY_BRIEFING_SETTINGS };
   try {
     return normalizeDailyBriefingSettings(JSON.parse(storage.getItem(settingsKey(session)) || '{}'));
@@ -38,7 +39,7 @@ export function readDailyBriefingSettings(session, storage = globalThis.localSto
 }
 
 export function saveDailyBriefingSettings(session, value, {
-  storage = globalThis.localStorage,
+  storage = orbitStorage,
   eventTarget = globalThis.window
 } = {}) {
   const settings = normalizeDailyBriefingSettings(value);

@@ -295,6 +295,11 @@ export default function DailyMemoPage({ notes = [], path, refresh, session }) {
     window.requestAnimationFrame(() => searchInputRef.current?.focus());
   }, [searchOpen]);
 
+  useEffect(() => {
+    if (paramsForPath(path).get('new') !== 'memo') return;
+    window.requestAnimationFrame(focusComposer);
+  }, [path]);
+
   const submitMemo = (event) => {
     event.preventDefault();
     if (!draft.title.trim() && !draft.body.trim()) {

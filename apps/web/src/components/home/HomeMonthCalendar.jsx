@@ -22,6 +22,7 @@ function calendarCellLabel(cell, summary) {
   if (summary.schedulePlanned) parts.push(`일정 ${summary.schedulePlanned}개 예정`);
   if (summary.scheduleIncomplete) parts.push(`일정 ${summary.scheduleIncomplete}개 미완료`);
   if (summary.scheduleDone) parts.push(`일정 ${summary.scheduleDone}개 완료`);
+  if (summary.memoCount) parts.push('메모 ' + summary.memoCount + '개');
   return parts.join(', ');
 }
 
@@ -29,6 +30,7 @@ function CalendarMarkers({ summary }) {
   const hasPlanned = summary.schedulePlanned > 0;
   const hasIncomplete = summary.scheduleIncomplete > 0;
   const hasDone = summary.scheduleDone > 0;
+  const hasMemos = summary.memoCount > 0;
   return (
     <span className="homeMonthDayMarkers" aria-hidden="true">
       {summary.income ? <span className="income">+{formatCalendarAmount(summary.income)}</span> : null}
@@ -36,6 +38,7 @@ function CalendarMarkers({ summary }) {
       {hasPlanned ? <span className="planned">예정</span> : null}
       {hasIncomplete ? <span className="incomplete">미완료</span> : null}
       {hasDone ? <span className="done">완료</span> : null}
+      {hasMemos ? <span className="memo">메모{summary.memoCount}</span> : null}
     </span>
   );
 }
@@ -53,6 +56,8 @@ function SelectedDateDetail({ budgetEntries, date, detailRef, summary, navigate,
     .filter((entry) => entry?.date === date)
     .sort((left, right) => String(right.createdAt || '').localeCompare(String(left.createdAt || '')));
   const remainingActivities = summary.activities.slice(8);
+  const memoItems = (summary.memoItems || []).slice(0, 4);
+  const remainingMemos = Math.max(0, (summary.memoItems || []).length - memoItems.length);
   const hasRemainingSchedules = remainingActivities.some((activity) => activity.kind === 'schedule');
   const openActivity = (activity) => navigate(`/schedule?edit=${encodeURIComponent(activity.scheduleId || activity.id)}`);
 
@@ -63,7 +68,10 @@ function SelectedDateDetail({ budgetEntries, date, detailRef, summary, navigate,
           <span>{date === today ? '오늘 · 선택됨' : '선택한 날짜'}</span>
           <h3 aria-live="polite">{fullDateLabel(date)}</h3>
         </div>
-        <button type="button" onClick={() => navigate(`/schedule?new=schedule&date=${date}`)}>일정 추가</button>
+        <div className="homeMonthHeaderActions">
+          <button type="button" onClick={() => navigate('/schedule?new=schedule&date=' + encodeURIComponent(date))}>일정 추가</button>
+          <button type="button" onClick={() => navigate('/memo?new=memo')}>메모 작성</button>
+        </div>
       </header>
 
       <div className="homeMonthMoneySummary">
@@ -102,6 +110,19 @@ function SelectedDateDetail({ budgetEntries, date, detailRef, summary, navigate,
         </div>
       ) : null}
 
+      {memoItems.length ? (
+        <div className="homeMonthMemoList" aria-label={date + ' 작성 메모'}>
+          {memoItems.map((note) => (
+            <button type="button" key={note.id} onClick={() => navigate('/memo?edit=' + encodeURIComponent(note.id))}>
+              <span><MemoNavIcon type="edit" /></span>
+              <span><strong>{note.title}</strong><small>이날 작성한 메모</small></span>
+              <em>열기</em>
+            </button>
+          ))}
+          {remainingMemos ? <small>그 외 메모 {remainingMemos}개가 있어요.</small> : null}
+        </div>
+      ) : null}
+
       {activities.length ? (
         <div className="homeMonthActivityList">
           {activities.map((activity) => (
@@ -124,7 +145,7 @@ function SelectedDateDetail({ budgetEntries, date, detailRef, summary, navigate,
           ) : null}
         </div>
       ) : (
-        <p className="homeMonthEmptyDetail">예정되었거나 미완료·완료한 일정이 없어요.</p>
+        <p className="homeMonthEmptyDetail">이 날짜에 등록한 일정은 없어요.</p>
       )}
     </section>
   );

@@ -22,10 +22,26 @@ import {
   saveDailyBriefingSettings
 } from './features/automation/dailyBriefing.js';
 import CardTransactionImportPanel from './features/finance/CardTransactionImportPanel.jsx';
+import FinanceCategorySettingsPanel from './features/finance/FinanceCategorySettingsPanel.jsx';
+import FinanceSectionTabs from './features/finance/FinanceSectionTabs.jsx';
+import KakaoPayMerchantReviewPanel from './features/finance/KakaoPayMerchantReviewPanel.jsx';
 import FinanceSharePanel from './features/finance/FinanceSharePanel.jsx';
 import RecurringPaymentsPanel from './features/finance/RecurringPaymentsPanel.jsx';
+import MonthlyBudgetPanel from './features/finance/MonthlyBudgetPanel.jsx';
+import {
+  monthlyBudgetProgress,
+  readMonthlyBudget,
+  saveMonthlyBudget
+} from './features/finance/monthlyBudget.js';
 import { useCardTransactionImport } from './features/finance/useCardTransactionImport.js';
+import {
+  financeCategoriesForSelection,
+  readFinanceCategorySettings,
+  saveFinanceCategorySettings
+} from './features/finance/financeCategories.js';
 import { planFinanceShareImport } from './features/finance/financeShare.js';
+import { recategorizeImportedCardEntries } from './features/finance/cardTransactionImport.js';
+import { replaceKakaoPayEntryMerchant } from './features/finance/kakaoPayMerchant.js';
 import {
   RECURRING_PAYMENT_SOURCE,
   applyDueRecurringPayments,
@@ -77,6 +93,10 @@ import {
   todayKey
 } from './utils/lifeHubFormatters.js';
 import { safeParse, safeRemoveItem, safeSetItem } from './utils/lifeHubStorage.js';
+import {
+  getOrbitStorageStatus,
+  ORBIT_STORAGE_STATUS_EVENT
+} from './utils/orbitIndexedDbStorage.js';
 import {
   nativeRoutineNotifications,
   routineReminderSaveStatus
@@ -160,7 +180,6 @@ const SCHEDULE_PRIORITY_OPTIONS = [
   { value: '높음', label: '급함' },
   { value: '낮음', label: '가벼움' }
 ];
-const BUDGET_CATEGORY_OPTIONS = ['식비', '교통', '카페', '쇼핑', '기타'];
 function readStoredAuth() {
   const session = safeParse(localStorage.getItem(AUTH_KEY), null);
   if (!session) return null;
@@ -582,7 +601,7 @@ function saveTrips(session, trips) {
   return { items: normalized, saved };
 }
 
-function monthlyBudgetSummary(entries, baseMonth = monthKey()) {
+function monthlyBudgetSummary(entries, baseMonth = monthKey(), monthlyBudgetAmount = 0) {
   const monthEntries = entries.filter((entry) => entry.date.startsWith(baseMonth));
   const income = monthEntries.filter((entry) => entry.type === 'deposit').reduce((sum, entry) => sum + entry.amount, 0);
   const expense = monthEntries.filter((entry) => entry.type !== 'deposit').reduce((sum, entry) => sum + entry.amount, 0);
@@ -590,13 +609,13 @@ function monthlyBudgetSummary(entries, baseMonth = monthKey()) {
     groups[entry.category] = (groups[entry.category] || 0) + entry.amount;
     return groups;
   }, {});
-  const budgetBase = income || 1000000;
+  const progress = monthlyBudgetProgress(expense, monthlyBudgetAmount);
   return {
     income,
     expense,
     balance: income - expense,
-    usage: Math.min(999, Math.round((expense / Math.max(1, budgetBase)) * 100)),
-    byCategory
+    byCategory,
+    ...progress
   };
 }
 
@@ -615,10 +634,12 @@ function readLifeHubData(session) {
   const workouts = readWorkouts(session);
   const dietEntries = readDietEntries(session);
   const budgetEntries = readBudget(session);
+  const monthlyBudget = readMonthlyBudget(session);
+  const financeCategorySettings = readFinanceCategorySettings(session);
   const recurringPayments = readRecurringPayments(session);
   const trips = readTrips(session);
   const bodyProfile = readBodyProfile(session);
-  const budget = monthlyBudgetSummary(budgetEntries);
+  const budget = monthlyBudgetSummary(budgetEntries, monthKey(), monthlyBudget.amount);
   const nextTrip = trips.find((trip) => !trip.startDate || trip.startDate >= today) || trips[0] || null;
   return {
     today,
@@ -633,6 +654,8 @@ function readLifeHubData(session) {
     workouts,
     dietEntries,
     budgetEntries,
+    monthlyBudget,
+    financeCategorySettings,
     recurringPayments,
     budget,
     trips,
@@ -1405,13 +1428,43 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
   const focusedFinanceDate = isDateKey(requestedFinanceDate) ? requestedFinanceDate : '';
   const [draft, setDraft] = useState({ type: 'withdraw', amount: '', category: '식비', memo: '', date: focusedFinanceDate || model.today });
   const [entryLimit, setEntryLimit] = useState(8);
+  const [financeSection, setFinanceSection] = useState('ledger');
+  const [editingEntryId, setEditingEntryId] = useState('');
+  const [deletedEntry, setDeletedEntry] = useState(null);
   const formRef = useRef(null);
   const amountInputRef = useRef(null);
   const { feedback, notify, clearFeedback } = useLifeHubFeedback();
   const categories = Object.entries(model.budget.byCategory).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const existingBudgetCategories = model.budgetEntries
+    .filter((entry) => entry.type !== 'deposit')
+    .map((entry) => entry.category);
+  const financeCategories = financeCategoriesForSelection(
+    model.financeCategorySettings,
+    draft.category,
+    existingBudgetCategories
+  );
   const visibleBudgetEntries = focusedFinanceDate
     ? model.budgetEntries.filter((entry) => entry.date === focusedFinanceDate)
     : model.budgetEntries;
+  useEffect(() => {
+    if (focusedFinanceDate) setFinanceSection('ledger');
+  }, [focusedFinanceDate]);
+
+  useEffect(() => {
+    if (!deletedEntry) return undefined;
+    const timer = window.setTimeout(() => setDeletedEntry(null), 7000);
+    return () => window.clearTimeout(timer);
+  }, [deletedEntry?.id]);
+
+  useEffect(() => {
+    if (scheduleParamsForPath(path).get('new') !== 'entry') return;
+    setFinanceSection('ledger');
+    window.requestAnimationFrame(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      amountInputRef.current?.focus({ preventScroll: true });
+    });
+  }, [path]);
+
 
   const selectEntryType = (type, { focusAmount = false } = {}) => {
     setDraft((current) => ({
@@ -1429,19 +1482,58 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
 
   const submitEntry = (event) => {
     event.preventDefault();
-    const entry = normalizeBudget({ id: `budget-${Date.now()}`, ...draft, createdAt: new Date().toISOString() });
+    const entries = readBudget(session);
+    const existing = editingEntryId ? entries.find((item) => item.id === editingEntryId) || null : null;
+    if (editingEntryId && !existing) {
+      notify('수정할 거래를 찾지 못했어요.', 'error');
+      setEditingEntryId('');
+      return;
+    }
+    const entry = normalizeBudget({
+      ...(existing || {}),
+      id: existing?.id || 'budget-' + Date.now(),
+      ...draft,
+      updatedAt: new Date().toISOString(),
+      createdAt: existing?.createdAt || new Date().toISOString()
+    });
     if (!entry) {
       notify('금액을 입력해주세요.', 'error');
       return;
     }
-    const result = saveBudget(session, [entry, ...readBudget(session)]);
+    const nextEntries = existing
+      ? entries.map((item) => (item.id === existing.id ? entry : item))
+      : [entry, ...entries];
+    const result = saveBudget(session, nextEntries);
     if (!result.saved) {
       notify('거래를 저장하지 못했어요. 입력 내용은 그대로 두었어요.', 'error');
       return;
     }
+    const wasEditing = Boolean(existing);
     setDraft((current) => ({ ...current, amount: '', memo: '' }));
-    notify('거래를 저장했어요.', 'success');
+    setEditingEntryId('');
+    notify(wasEditing ? '거래를 수정했어요.' : '거래를 저장했어요.', 'success');
     refresh();
+  };
+
+  const startEditEntry = (entry) => {
+    setFinanceSection('ledger');
+    setEditingEntryId(entry.id);
+    setDraft({
+      type: entry.type,
+      amount: String(entry.amount),
+      category: entry.category,
+      memo: entry.memo || '',
+      date: entry.date
+    });
+    window.requestAnimationFrame(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      amountInputRef.current?.focus({ preventScroll: true });
+    });
+  };
+
+  const cancelEditEntry = () => {
+    setEditingEntryId('');
+    setDraft({ type: 'withdraw', amount: '', category: '식비', memo: '', date: focusedFinanceDate || model.today });
   };
 
   const deleteEntry = (entry) => {
@@ -1449,8 +1541,32 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
     const result = saveBudget(session, readBudget(session).filter((item) => item.id !== entry.id));
     notify(result.saved ? '거래를 삭제했어요.' : '거래 삭제를 저장하지 못했어요.', result.saved ? 'success' : 'error');
     if (result.saved) {
+      if (editingEntryId === entry.id) cancelEditEntry();
+      setDeletedEntry(entry);
       refresh();
     }
+  };
+
+  const undoDeleteEntry = () => {
+    if (!deletedEntry) return;
+    const current = readBudget(session);
+    if (current.some((entry) => entry.id === deletedEntry.id)) {
+      setDeletedEntry(null);
+      return;
+    }
+    const result = saveBudget(session, [deletedEntry, ...current]);
+    notify(result.saved ? '삭제한 거래를 되돌렸어요.' : '거래를 되돌리지 못했어요.', result.saved ? 'success' : 'error');
+    if (result.saved) {
+      setDeletedEntry(null);
+      refresh();
+    }
+  };
+
+  const saveMonthlyBudgetAmount = (amount) => {
+    const result = saveMonthlyBudget(session, { amount });
+    notify(result.saved ? '월 예산을 저장했어요.' : '월 예산을 저장하지 못했어요.', result.saved ? 'success' : 'error');
+    if (result.saved) refresh();
+    return result;
   };
 
   const saveRecurringRule = (value) => {
@@ -1526,15 +1642,72 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
     };
   };
 
+  const saveCategorySettings = (nextSettings) => {
+    const settingsResult = saveFinanceCategorySettings(session, nextSettings);
+    if (!settingsResult.saved) return { saved: false, applied: false, recategorized: 0 };
+
+    const recategorized = recategorizeImportedCardEntries(
+      readBudget(session),
+      settingsResult.settings
+    );
+    if (!recategorized.changed) {
+      refresh();
+      return { saved: true, applied: true, recategorized: 0 };
+    }
+    const budgetResult = saveBudget(session, recategorized.items);
+    refresh();
+    return {
+      saved: true,
+      applied: budgetResult.saved,
+      recategorized: budgetResult.saved ? recategorized.changed : 0
+    };
+  };
+
+  const repairExistingMerchant = (entryId, merchant) => {
+    const repaired = replaceKakaoPayEntryMerchant(
+      readBudget(session),
+      entryId,
+      merchant,
+      model.financeCategorySettings
+    );
+    if (!repaired.changed) {
+      return { saved: false, error: repaired.error };
+    }
+    const result = saveBudget(session, repaired.items);
+    if (result.saved) refresh();
+    return {
+      saved: result.saved,
+      error: result.saved ? '' : '상호명을 저장하지 못했어요. 저장공간을 확인해주세요.',
+      merchant: repaired.merchant,
+      category: repaired.category
+    };
+  };
+
   return (
-    <div className="lifeHubPage lifeHubFinancePage">
+    <div className={`lifeHubPage lifeHubFinancePage financeSection-${financeSection}`}>
       <FeedbackToast feedback={feedback} onClose={clearFeedback} />
+      {deletedEntry ? (
+        <div className="lifeHubUndoBar" role="status">
+          <span>{budgetEntryTitle(deletedEntry)} 거래를 삭제했어요.</span>
+          <button type="button" onClick={undoDeleteEntry}>되돌리기</button>
+        </div>
+      ) : null}
       <FinanceWalletCard
         balance={money(model.budget.balance)}
         income={money(model.budget.income)}
         expense={money(model.budget.expense)}
-        usage={progressPercent(model.budget.usage)}
-        message={model.budget.usage >= 80 ? '이번 달 지출이 비교 기준보다 빠르게 늘고 있어요.' : '이번 달 지출 흐름은 안정적이에요.'}
+        usage={model.budget.usage}
+        message={!model.budget.configured
+          ? '월 예산을 설정하면 남은 금액과 사용률을 정확히 보여드려요.'
+          : model.budget.usage >= 80
+            ? '이번 달 예산 사용률이 80%를 넘었어요.'
+            : '이번 달 지출은 설정한 예산 안에서 관리되고 있어요.'}
+      />
+      <FinanceSectionTabs active={financeSection} onChange={setFinanceSection} />
+      <MonthlyBudgetPanel
+        amount={model.monthlyBudget.amount}
+        expense={model.budget.expense}
+        onSave={saveMonthlyBudgetAmount}
       />
       <FinanceSharePanel
         entries={model.budgetEntries}
@@ -1544,6 +1717,11 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
       <RecurringPaymentsPanel
         budgetEntries={model.budgetEntries}
         cardImportActive={cardImport.enabled}
+        categories={financeCategoriesForSelection(
+          model.financeCategorySettings,
+          '',
+          existingBudgetCategories
+        )}
         onDelete={deleteRecurringRule}
         onPost={postRecurringRule}
         onSave={saveRecurringRule}
@@ -1552,19 +1730,25 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
       />
       <CardTransactionImportPanel
         cardImport={cardImport}
-        onManualEntry={() => selectEntryType('withdraw', { focusAmount: true })}
+        onManualEntry={() => {
+          setFinanceSection('ledger');
+          selectEntryType('withdraw', { focusAmount: true });
+        }}
       />
-      {model.budget.usage >= 80 ? (
+      <FinanceCategorySettingsPanel
+        settings={model.financeCategorySettings}
+        onSave={saveCategorySettings}
+      />
+      <KakaoPayMerchantReviewPanel
+        entries={model.budgetEntries}
+        onRepair={repairExistingMerchant}
+      />
+      {model.budget.configured && model.budget.usage >= 80 ? (
         <article className="lifeHubInsightCard finance-insight-card">
           <strong>지출 속도가 빨라요</strong>
           <p>이번 달 지출이 월 비교 기준의 {model.budget.usage}%입니다. 최근 거래를 한 번 확인해 보세요.</p>
         </article>
       ) : null}
-      <section className="lifeHubProgressCard finance-budget-bar">
-        <header><strong>월 지출 기준 사용률</strong><span>{model.budget.usage}%</span></header>
-        <div className="lifeHubProgress"><span style={{ width: `${progressPercent(model.budget.usage)}%` }} /></div>
-        <small>수입이 있으면 수입액, 없으면 100만원을 비교 기준으로 사용합니다.</small>
-      </section>
       <Section title="카테고리별 지출" eyebrow="이번 달">
         <div className="lifeHubCategoryBars">
           {categories.map(([category, amount]) => (
@@ -1577,7 +1761,7 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
         </div>
       </Section>
       <form ref={formRef} className="lifeHubFormCard lifeHubFastForm" onSubmit={submitEntry}>
-        <header><strong>빠른 수입/지출 입력</strong><small>오늘 기록할 지출이 있나요?</small></header>
+        <header><div><strong>{editingEntryId ? '거래 수정' : '빠른 수입/지출 입력'}</strong><small>{editingEntryId ? '금액·날짜·분류를 고쳐 저장할 수 있어요.' : '오늘 기록할 지출이 있나요?'}</small></div>{editingEntryId ? <button type="button" onClick={cancelEditEntry}>수정 취소</button> : null}</header>
         <QuickChoiceGroup
           label="유형"
           options={[{ value: 'withdraw', label: '지출' }, { value: 'deposit', label: '수입' }]}
@@ -1592,18 +1776,19 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
           <>
             <QuickChoiceGroup
               label="카테고리"
-              options={BUDGET_CATEGORY_OPTIONS}
+              options={financeCategories}
               value={draft.category}
               onChange={(category) => setDraft((current) => ({ ...current, category }))}
             />
             <details className="lifeHubInlineDetails">
               <summary>다른 카테고리 직접 입력</summary>
               <label><span>카테고리 이름</span><input value={draft.category} onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))} placeholder="예: 의료, 구독" /></label>
+              <small>계속 쓸 분류는 ‘분류·공유’ 탭에서 추가하면 다음 입력과 자동 가져오기에 바로 반영돼요.</small>
             </details>
           </>
         ) : null}
         <label><span>메모</span><input value={draft.memo} onChange={(event) => setDraft((current) => ({ ...current, memo: event.target.value }))} placeholder="간단한 메모" /></label>
-        <LifeHubButton type="submit" className="primary" icon="plus">거래 저장</LifeHubButton>
+        <LifeHubButton type="submit" className="primary" icon="plus">{editingEntryId ? '수정 저장' : '거래 저장'}</LifeHubButton>
       </form>
       <Section title={focusedFinanceDate ? `${compactDateLabel(focusedFinanceDate)} 거래` : '최근 거래'} eyebrow={`${visibleBudgetEntries.length}개`}>
         <div className="lifeHubTransactionList">
@@ -1615,9 +1800,10 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
                 <small>{budgetEntryMeta(entry)}</small>
               </div>
               <em>{entry.type === 'deposit' ? '+' : '-'}{money(entry.amount)}</em>
-              <button type="button" className="lifeHubInlineDelete" onClick={() => deleteEntry(entry)} aria-label={`${budgetEntryTitle(entry)} 거래 삭제`}>
-                삭제
-              </button>
+              <div className="lifeHubLedgerActions">
+                <button type="button" onClick={() => startEditEntry(entry)} aria-label={budgetEntryTitle(entry) + ' 거래 수정'}>수정</button>
+                <button type="button" className="danger" onClick={() => deleteEntry(entry)} aria-label={budgetEntryTitle(entry) + ' 거래 삭제'}>삭제</button>
+              </div>
             </article>
           ))}
           {visibleBudgetEntries.length > entryLimit ? (
@@ -1768,6 +1954,8 @@ function backupDataForModel(model, dailyBriefingSettings) {
 
 function MorePage({ model, session, refresh, onRestoreBackup }) {
   const [installPrompt, setInstallPrompt] = useState(null);
+  const [storageStatus, setStorageStatus] = useState(() => getOrbitStorageStatus());
+  const [storageEstimate, setStorageEstimate] = useState(null);
   const [standalone, setStandalone] = useState(() => (
     window.matchMedia?.('(display-mode: standalone)').matches
     || window.navigator.standalone === true
@@ -1790,6 +1978,13 @@ function MorePage({ model, session, refresh, onRestoreBackup }) {
     };
   }, []);
 
+  useEffect(() => {
+    const syncStorageStatus = (event) => setStorageStatus(event?.detail || getOrbitStorageStatus());
+    window.addEventListener(ORBIT_STORAGE_STATUS_EVENT, syncStorageStatus);
+    navigator.storage?.estimate?.().then((estimate) => setStorageEstimate(estimate)).catch(() => undefined);
+    return () => window.removeEventListener(ORBIT_STORAGE_STATUS_EVENT, syncStorageStatus);
+  }, []);
+
   const requestInstall = async () => {
     if (standalone) {
       window.alert('이미 앱으로 설치되어 있어요.');
@@ -1810,8 +2005,9 @@ function MorePage({ model, session, refresh, onRestoreBackup }) {
       <section className="lifeHubLocalStorageCard more-control-section" aria-label="저장 방식">
         <span><MemoNavIcon type="file" /></span>
         <div>
-          <strong>이 기기에 저장</strong>
-          <p>기록을 임의로 잘라내지 않으며, 저장공간이 부족하면 기존 데이터를 유지한 채 알려드려요.</p>
+          <strong>{storageStatus.mode === 'indexeddb' ? '기기 데이터베이스에 저장' : '이 기기에 저장'}</strong>
+          <p>{storageStatus.mode === 'indexeddb' ? '기존 기록을 유지하면서 IndexedDB에도 안전하게 보관하고 있어요.' : 'IndexedDB를 사용할 수 없어 호환 저장소에 기록하고 있어요.'} 저장공간이 부족하면 기존 데이터를 유지한 채 알려드려요.</p>
+          <small>{storageEstimate?.usage ? 'Orbit 사용량 약 ' + Math.max(0.1, storageEstimate.usage / 1048576).toFixed(1) + 'MB' : storageStatus.state === 'ready' ? '저장소 동기화 완료' : '로컬 저장 사용 중'}</small>
         </div>
       </section>
 
@@ -1828,7 +2024,7 @@ function MorePage({ model, session, refresh, onRestoreBackup }) {
         onRestore={onRestoreBackup}
       />
 
-      <Section title="더보기 메뉴" className="more-control-section more-settings-section">
+      <Section title="설정 메뉴" className="more-control-section more-settings-section">
         <div className="more-settings-list">
           <MoreSettingsRow
             icon="home"
@@ -1858,6 +2054,7 @@ export default function LifeHubApp({ path, navigate }) {
   const cardImport = useCardTransactionImport({
     owner: session?.username,
     budgetEntries: model.budgetEntries,
+    categorySettings: model.financeCategorySettings,
     today: model.today,
     readBudget: () => readBudget(session),
     normalizeBudget,

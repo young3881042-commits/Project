@@ -5,8 +5,10 @@ import {
   cardImportSummary,
   importCardTransactionBatch,
   readCardImportSources,
+  recategorizeImportedCardEntries,
   saveCardImportSources
 } from './cardTransactionImport.js';
+import { addFinanceCategory } from './financeCategories.js';
 
 const occurredAt = Date.parse('2026-08-19T01:23:45.000Z');
 
@@ -51,13 +53,36 @@ test('기존 삼성월렛 단일 opt-in은 업그레이드 뒤에도 그대로 �
   assert.deepEqual(readCardImportSources('Owner-1', storage), ['samsung-wallet']);
 });
 
-test('native category는 받지 않고 sanitized merchant로 보수적 기본 카테고리를 계산한다', () => {
-  assert.equal(cardBudgetEntry(candidate('wallet:v1:cafe')).category, '카페');
-  assert.equal(cardBudgetEntry(candidate('wallet:v1:bus', { merchant: '서울버스' })).category, '교통');
-  assert.equal(cardBudgetEntry(candidate('wallet:v1:mall', { merchant: '온라인쇼핑' })).category, '쇼핑');
-  assert.equal(cardBudgetEntry(candidate('wallet:v1:food', { merchant: '오비트편의점' })).category, '식비');
+test('native category는 받지 않고 sanitized merchant와 사용자 분류로 카테고리를 계산한다', () => {
+  assert.equal(cardBudgetEntry(candidate('wallet:v1:korail', { merchant: '코레일톡' })).category, '교통');
+  assert.equal(cardBudgetEntry(candidate('wallet:v1:tmoney', { merchant: '티머니' })).category, '교통');
+  assert.equal(cardBudgetEntry(candidate('wallet:v1:coffee', { merchant: '메가커피' })).category, '커피');
+  assert.equal(cardBudgetEntry(candidate('wallet:v1:daiso', { merchant: '다이소 강남점' })).category, '기타');
+  assert.equal(cardBudgetEntry(candidate('wallet:v1:food', { merchant: '오비트편의점' })).category, '기타');
   assert.equal(cardBudgetEntry(candidate('wallet:v1:other', { merchant: '오비트상사' })).category, '기타');
   assert.equal(cardBudgetEntry({ ...candidate('wallet:v1:raw'), rawText: '알림 원문' }), null);
+  const kakao = cardBudgetEntry(candidate('wallet:v1:kakao-clean', {
+    source: 'kakao-pay', merchant: '상호명을~ 메가커피 강남점 결제 완료'
+  }));
+  assert.equal(kakao.memo, '메가커피 강남점');
+  assert.equal(cardBudgetEntry(candidate('wallet:v1:kakao-placeholder', { source: 'kakao-pay', merchant: '카카오페이' })), null);
+});
+
+test('사용자 키워드 분류는 새 자동 가져오기와 기존 자동 가져오기 기록에 함께 적용한다', () => {
+  const categorySettings = addFinanceCategory(null, {
+    category: '구독',
+    keywords: '넷플릭스'
+  }).settings;
+  const imported = cardBudgetEntry(candidate('wallet:v1:subscription', { merchant: '넷플릭스 코리아' }), categorySettings);
+  assert.equal(imported.category, '구독');
+
+  const updated = recategorizeImportedCardEntries([
+    { ...imported, category: '기타' },
+    { id: 'manual', source: 'manual', memo: '넷플릭스 코리아', category: '식비' }
+  ], categorySettings);
+  assert.equal(updated.changed, 1);
+  assert.equal(updated.items[0].category, '구독');
+  assert.equal(updated.items[1].category, '식비');
 });
 
 test('batch는 여러 승인 결제를 한 번 저장한 뒤 saved로 ack한다', async () => {

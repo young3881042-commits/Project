@@ -1,3 +1,5 @@
+import { orbitStorage } from './orbitIndexedDbStorage.js';
+
 export function safeParse(raw, fallback) {
   try {
     if (raw === null || raw === undefined || raw === '') return fallback;
@@ -9,7 +11,7 @@ export function safeParse(raw, fallback) {
 
 export function safeSetItem(key, value) {
   try {
-    localStorage.setItem(key, value);
+    orbitStorage.setItem(key, value);
     return true;
   } catch (error) {
     console.warn('LifeHub storage write failed', error);
@@ -19,7 +21,7 @@ export function safeSetItem(key, value) {
 
 export function safeRemoveItem(key) {
   try {
-    localStorage.removeItem(key);
+    orbitStorage.removeItem(key);
   } catch (error) {
     console.warn('LifeHub storage cleanup failed', error);
   }

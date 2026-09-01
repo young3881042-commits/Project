@@ -16,6 +16,11 @@ import {
   hasNativeBackupDocumentApi,
   importNativeLifeHubBackup
 } from './nativeBackupDocuments.js';
+import {
+  backupHealth,
+  markBackupCreated,
+  readBackupStatus
+} from './backupStatus.js';
 
 const COLLECTION_LABELS = {
   schedules: '일정',
@@ -31,7 +36,7 @@ function backupFileName() {
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  return `lifehub-backup-${year}-${month}-${day}.json`;
+  return 'orbit-backup-' + year + '-' + month + '-' + day + '.json';
 }
 
 function downloadJson(json, fileName) {
@@ -57,7 +62,7 @@ function changedSingletonLabel(plan) {
 function errorMessage(error, fallback) {
   if (error?.code === 'cancelled' || error?.code === 'CANCELLED') return '';
   if (error?.code === 'UNSUPPORTED_FUTURE_VERSION') return '더 최신 버전의 LifeHub에서 만든 백업이에요. 앱을 업데이트한 뒤 다시 시도해주세요.';
-  if (error?.code === 'INVALID_PRODUCT') return 'LifeHub 백업 파일이 아니에요.';
+  if (error?.code === 'INVALID_PRODUCT') return 'Orbit 백업 파일이 아니에요.';
   if (error?.code === 'INVALID_JSON') return 'JSON 백업 파일을 읽을 수 없어요.';
   if (error?.code === 'SENSITIVE_STATE') return '보안상 백업할 수 없는 Bridge 또는 대화 상태가 포함되어 있어요.';
   return String(error?.message || fallback);
@@ -78,6 +83,8 @@ export default function LifeHubBackupPanel({
   const [snapshot, setSnapshot] = useState(null);
   const [plan, setPlan] = useState(null);
   const [mode, setMode] = useState('merge');
+  const [backupStatus, setBackupStatus] = useState(() => readBackupStatus(owner));
+  const health = backupHealth(currentData, backupStatus);
 
   useEffect(() => {
     if (!snapshot) return;
@@ -127,6 +134,8 @@ export default function LifeHubBackupPanel({
       } else {
         downloadJson(json, fileName);
       }
+      const marked = markBackupCreated(owner);
+      if (marked.saved) setBackupStatus(marked.status);
       setMessage('백업 파일을 저장했어요.');
     } catch (exportError) {
       const nextMessage = errorMessage(exportError, '백업 파일을 만들지 못했어요.');
@@ -229,6 +238,10 @@ export default function LifeHubBackupPanel({
           <p>일정·메모·가계부·정기 결제·여행 기록을 JSON 파일로 옮길 수 있어요.</p>
         </div>
       </header>
+      <div className={'lifeHubBackupHealth' + (health.due ? ' due' : '')} role="status">
+        <span>{health.records ? (health.lastExportedAt ? '마지막 백업 ' + new Date(health.lastExportedAt).toLocaleDateString('ko-KR') : '아직 백업한 적이 없어요.') : '기록을 시작하면 백업 상태를 알려드려요.'}</span>
+        <strong>{health.due ? '백업 권장' : health.records ? '안전' : '준비됨'}</strong>
+      </div>
       <div className="lifeHubBackupActions">
         <button type="button" onClick={exportBackup} disabled={Boolean(busy)}>
           {busy === 'export' ? '저장 중…' : '백업 파일 저장'}

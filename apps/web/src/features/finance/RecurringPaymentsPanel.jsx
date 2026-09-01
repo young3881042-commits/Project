@@ -5,6 +5,7 @@ import {
   RECURRING_PAYMENT_CATEGORIES,
   recurringPaymentOccurrences
 } from './recurringPayments.js';
+import { financeCategoriesForSelection } from './financeCategories.js';
 
 const FOCUSABLE = 'button:not(:disabled), input:not(:disabled), select:not(:disabled), summary, [tabindex]:not([tabindex="-1"])';
 const BILLING_DAYS = Array.from({ length: 31 }, (_, index) => String(index + 1));
@@ -21,13 +22,13 @@ function dateDayLabel(value) {
   return value ? `${Number(value.slice(-2))}일` : '날짜 없음';
 }
 
-function emptyDraft(today, cardImportActive) {
+function emptyDraft(today, cardImportActive, categories) {
   return {
     id: '',
     name: '',
     amount: '',
     billingDay: '1',
-    category: '구독',
+    category: categories.includes('구독') ? '구독' : categories[0] || '구독',
     startMonth: String(today || '').slice(0, 7),
     endMonth: '',
     autoPost: !cardImportActive,
@@ -39,6 +40,7 @@ function emptyDraft(today, cardImportActive) {
 export default function RecurringPaymentsPanel({
   budgetEntries = [],
   cardImportActive = false,
+  categories = [],
   onDelete,
   onPost,
   onSave,
@@ -49,9 +51,14 @@ export default function RecurringPaymentsPanel({
   const descriptionId = useId();
   const dialogRef = useRef(null);
   const closeRef = useRef(null);
+  const categoryOptions = financeCategoriesForSelection(
+    { categories },
+    '',
+    RECURRING_PAYMENT_CATEGORIES
+  );
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(() => emptyDraft(today, cardImportActive));
+  const [draft, setDraft] = useState(() => emptyDraft(today, cardImportActive, categoryOptions));
   const [error, setError] = useState('');
   const month = String(today || '').slice(0, 7);
   const occurrences = useMemo(() => recurringPaymentOccurrences(rules, budgetEntries, {
@@ -101,7 +108,7 @@ export default function RecurringPaymentsPanel({
 
   const resetEditor = () => {
     setEditing(false);
-    setDraft(emptyDraft(today, cardImportActive));
+    setDraft(emptyDraft(today, cardImportActive, categoryOptions));
     setError('');
   };
 
@@ -109,13 +116,13 @@ export default function RecurringPaymentsPanel({
     setOpen(true);
     setError('');
     if (!rules.length) {
-      setDraft(emptyDraft(today, cardImportActive));
+      setDraft(emptyDraft(today, cardImportActive, categoryOptions));
       setEditing(true);
     }
   };
 
   const startAdd = () => {
-    setDraft(emptyDraft(today, cardImportActive));
+    setDraft(emptyDraft(today, cardImportActive, categoryOptions));
     setError('');
     setEditing(true);
   };
@@ -260,7 +267,7 @@ export default function RecurringPaymentsPanel({
                     <label>
                       <span>카테고리</span>
                       <select value={draft.category} onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))}>
-                        {RECURRING_PAYMENT_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
+                        {financeCategoriesForSelection({ categories: categoryOptions }, draft.category).map((category) => <option key={category} value={category}>{category}</option>)}
                       </select>
                     </label>
                     <label>

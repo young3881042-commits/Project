@@ -1252,7 +1252,170 @@
   font-weight: 850;
 }
 
+.lifeHubFinanceCategories {
+  display: grid;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid #c9ddd9;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 7px 18px rgba(29, 48, 62, 0.045);
+}
+
+.lifeHubFinanceCategories > header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.lifeHubFinanceCategories strong {
+  color: #16343a;
+  font-size: 0.84rem;
+  font-weight: 950;
+}
+
+.lifeHubFinanceCategories p {
+  margin: 0;
+  color: #617084;
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+.lifeHubFinanceCategoryGuide {
+  padding: 9px 10px;
+  border-radius: 9px;
+  background: #f0fdfa;
+  color: #14532d !important;
+  font-weight: 750;
+}
+
+.lifeHubFinanceCategories form {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) auto;
+  align-items: end;
+  gap: 8px;
+}
+
+.lifeHubFinanceCategories form label {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.lifeHubFinanceCategories form label > span {
+  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.lifeHubFinanceCategories form label small {
+  color: #64748b;
+  font-size: 0.61rem;
+  font-weight: 700;
+}
+
+.lifeHubFinanceCategories form input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #fbfcfd;
+  color: #1e293b;
+  font: inherit;
+  font-size: 0.74rem;
+}
+
+.lifeHubFinanceCategories form button,
+.lifeHubFinanceCategoryList > article > button {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #0f766e;
+  border-radius: 9px;
+  background: #0f766e;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.lifeHubFinanceCategoryList {
+  display: grid;
+  gap: 7px;
+}
+
+.lifeHubFinanceCategoryList > article {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #f8fafc;
+}
+
+.lifeHubFinanceCategoryList > article > div {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.lifeHubFinanceCategoryList > article strong {
+  color: #334155;
+  font-size: 0.74rem;
+}
+
+.lifeHubFinanceCategoryList > article span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.lifeHubFinanceCategoryList > article span button {
+  min-height: 28px;
+  padding: 0 8px;
+  border: 1px solid #bae6fd;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+
+.lifeHubFinanceCategoryList > article small {
+  color: #64748b;
+  font-size: 0.65rem;
+}
+
+.lifeHubFinanceCategoryList > article > button.delete {
+  min-width: 44px;
+  min-height: 36px;
+  padding: 0 9px;
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #be123c;
+  font-size: 0.66rem;
+}
+
+.lifeHubFinanceCategoryMessage {
+  padding: 9px 10px;
+  border-radius: 9px;
+  background: #f1f5f9;
+  color: #334155 !important;
+  font-weight: 800;
+}
+
 @media (max-width: 699px) {
+  .lifeHubFinanceCategories form {
+    grid-template-columns: 1fr;
+  }
+
+  .lifeHubFinanceCategories form button {
+    width: 100%;
+  }
+
   .lifeHubFinanceShareBackdrop {
     place-items: end center;
     padding: 0;
@@ -1287,5 +1450,207 @@
   .lifeHubFinanceShareDates,
   .lifeHubFinanceShareActions {
     grid-template-columns: 1fr;
+  }
+}
+
+.lifeHubMonthlyBudgetPanel {
+  display: grid;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid #c9ddd9;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.lifeHubMonthlyBudgetPanel > header,
+.lifeHubMonthlyBudgetProgress > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.lifeHubMonthlyBudgetPanel > header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.lifeHubMonthlyBudgetPanel > header span,
+.lifeHubMonthlyBudgetPanel label span,
+.lifeHubMonthlyBudgetProgress small {
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.lifeHubMonthlyBudgetPanel > header strong,
+.lifeHubMonthlyBudgetProgress strong {
+  color: #16343a;
+  font-size: 0.86rem;
+  font-weight: 950;
+}
+
+.lifeHubMonthlyBudgetPanel button {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #b8d7d2;
+  border-radius: 9px;
+  background: #f4fbf9;
+  color: #0f766e;
+  font-weight: 900;
+}
+
+.lifeHubMonthlyBudgetPanel button.primary {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.lifeHubMonthlyBudgetPanel form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+}
+
+.lifeHubMonthlyBudgetPanel form label {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.lifeHubMonthlyBudgetPanel form input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #fbfcfd;
+  color: #1e293b;
+  font: inherit;
+}
+
+.lifeHubMonthlyBudgetPanel form > div {
+  display: flex;
+  gap: 6px;
+}
+
+.lifeHubMonthlyBudgetProgress {
+  display: grid;
+  gap: 7px;
+}
+
+.lifeHubMonthlyBudgetProgress > div[role="progressbar"] {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dfe9e7;
+}
+
+.lifeHubMonthlyBudgetProgress > div[role="progressbar"] span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #0f766e;
+}
+
+.lifeHubMonthlyBudgetPanel > p {
+  margin: 0;
+  color: #0f766e;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.lifeHubUndoBar {
+  position: sticky;
+  bottom: calc(82px + env(safe-area-inset-bottom));
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #99d5cb;
+  border-radius: 12px;
+  background: #16343a;
+  color: #ffffff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.22);
+}
+
+.lifeHubUndoBar span {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lifeHubUndoBar button,
+.lifeHubLedgerActions button {
+  min-width: 44px;
+  min-height: 40px;
+  padding: 0 9px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.lifeHubUndoBar button {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: #0f766e;
+}
+
+.lifeHubLedgerActions {
+  display: flex;
+  gap: 5px;
+}
+
+.lifeHubLedgerActions button.danger {
+  color: #b91c1c;
+}
+
+.lifeHubFastForm > header > button {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.lifeHubFinancePage.financeSection-automation > .lifeHubMonthlyBudgetPanel,
+.lifeHubFinancePage.financeSection-manage > .lifeHubMonthlyBudgetPanel {
+  display: none !important;
+}
+
+@media (max-width: 520px) {
+  .lifeHubMonthlyBudgetPanel form {
+    grid-template-columns: 1fr;
+  }
+
+  .lifeHubMonthlyBudgetPanel form > div,
+  .lifeHubMonthlyBudgetPanel form button {
+    width: 100%;
+  }
+
+  .lifeHubMonthlyBudgetPanel form button {
+    flex: 1;
+  }
+
+  .finance-ledger-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .lifeHubLedgerActions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
   }
 }

@@ -9,6 +9,7 @@
 @import './styles/lifehub-automation.css';
 @import './styles/lifehub-backup.css';
 @import './styles/lifehub-finance.css';
+@import './styles/lifehub-finance-navigation.css';
 
 :root {
   color-scheme: light;

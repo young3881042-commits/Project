@@ -166,6 +166,7 @@ export function ScheduleTimelineItem({ item, dateLabel = '', timeLabel, meta, st
 }
 
 export function FinanceWalletCard({ balance, income, expense, usage, message }) {
+  const hasBudget = Number.isFinite(usage);
   return (
     <section className="finance-wallet-card">
       <header>
@@ -173,10 +174,12 @@ export function FinanceWalletCard({ balance, income, expense, usage, message }) 
         <strong>{balance}</strong>
         <small className="finance-amount-row">수입 {income} · 지출 {expense}</small>
       </header>
-      <div className="lifeHubWalletMeter finance-budget-bar" role="progressbar" aria-label="월 지출 기준 사용률" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.min(100, usage)}>
-        <div><span style={{ width: `${usage}%` }} /></div>
-        <strong>{usage}%</strong>
-      </div>
+      {hasBudget ? (
+        <div className="lifeHubWalletMeter finance-budget-bar" role="progressbar" aria-label="월 예산 사용률" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.min(100, usage)}>
+          <div><span style={{ width: String(Math.min(100, usage)) + '%' }} /></div>
+          <strong>{usage}%</strong>
+        </div>
+      ) : null}
       <p>{message}</p>
     </section>
   );

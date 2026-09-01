@@ -136,6 +136,57 @@ public final class FinanceNotificationParserStaticTest {
                 kakaoLabeledMerchant.source
         ));
 
+        FinanceNotificationParser.Candidate kakaoBusinessNameOnly =
+                FinanceNotificationParser.parse(
+                        FinanceNotificationParser.KAKAO_PAY_PACKAGE,
+                        "kakao-business-name-only",
+                        occurredAt + 5L,
+                        Arrays.asList(
+                                "카카오페이 결제완료",
+                                "상호명: 커피룸 강남점 결제금액 5,800원"
+                        )
+                );
+        require(kakaoBusinessNameOnly != null);
+        require("커피룸 강남점".equals(kakaoBusinessNameOnly.merchant));
+        FinanceNotificationParser.Candidate kakaoParticleLabel =
+                FinanceNotificationParser.parse(
+                        FinanceNotificationParser.KAKAO_PAY_PACKAGE,
+                        "kakao-particle-label",
+                        occurredAt + 5L,
+                        Collections.singletonList(
+                                "상호명을~ 메가커피 강남점 결제금액 5,800원"
+                        )
+                );
+        require(kakaoParticleLabel != null);
+        require("메가커피 강남점".equals(kakaoParticleLabel.merchant));
+
+        FinanceNotificationParser.Candidate kakaoSeparatedLabel =
+                FinanceNotificationParser.parse(
+                        FinanceNotificationParser.KAKAO_PAY_PACKAGE,
+                        "kakao-separated-label",
+                        occurredAt + 5L,
+                        Arrays.asList(
+                                "카카오페이 결제완료",
+                                "상호명",
+                                "다이소 성수점",
+                                "결제금액 5,000원"
+                        )
+                );
+        require(kakaoSeparatedLabel != null);
+        require("다이소 성수점".equals(kakaoSeparatedLabel.merchant));
+
+        FinanceNotificationParser.Candidate kakaoUsageLabel =
+                FinanceNotificationParser.parse(
+                        FinanceNotificationParser.KAKAO_PAY_PACKAGE,
+                        "kakao-usage-label",
+                        occurredAt + 5L,
+                        Collections.singletonList(
+                                "사용처명: 스타벅스 결제금액 6,500원"
+                        )
+                );
+        require(kakaoUsageLabel != null);
+        require("스타벅스".equals(kakaoUsageLabel.merchant));
+
         FinanceNotificationParser.Candidate kakaoPurchase =
                 FinanceNotificationParser.parse(
                         FinanceNotificationParser.KAKAO_PAY_PACKAGE,
@@ -158,18 +209,12 @@ public final class FinanceNotificationParserStaticTest {
         require(kakaoCompact.amount == 6_500L);
         require("스타벅스".equals(kakaoCompact.merchant));
 
-        FinanceNotificationParser.Candidate kakaoFallback =
-                FinanceNotificationParser.parse(
-                        FinanceNotificationParser.KAKAO_PAY_PACKAGE,
-                        "kakao-fallback",
-                        occurredAt + 7L,
-                        Collections.singletonList("카카오페이 3,000원 결제가 완료되었습니다")
-                );
-        require(kakaoFallback != null);
-        require(kakaoFallback.fallbackMerchant);
-        require(FinanceNotificationParser.KAKAO_PAY_FALLBACK_MERCHANT.equals(
-                kakaoFallback.merchant
-        ));
+        require(FinanceNotificationParser.parse(
+                FinanceNotificationParser.KAKAO_PAY_PACKAGE,
+                "kakao-missing-merchant",
+                occurredAt + 7L,
+                Collections.singletonList("카카오페이 3,000원 결제가 완료되었습니다")
+        ) == null);
 
         FinanceNotificationParser.Candidate kakaoDuplicateAmount =
                 FinanceNotificationParser.parse(

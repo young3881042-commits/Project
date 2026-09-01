@@ -18,6 +18,7 @@ import {
   readCardImportSources,
   saveCardImportSources
 } from './cardTransactionImport.js';
+import { repairExistingKakaoPayEntries } from './kakaoPayMerchant.js';
 
 const AUTOMATIC_PULL_THROTTLE_MS = 30 * 1000;
 
@@ -48,6 +49,7 @@ function resultMessage(result) {
 export function useCardTransactionImport({
   owner,
   budgetEntries,
+  categorySettings,
   today,
   readBudget,
   normalizeBudget,
@@ -67,8 +69,9 @@ export function useCardTransactionImport({
   const mountedRef = useRef(true);
   const inFlightRef = useRef(null);
   const lastAutomaticPullRef = useRef(0);
+  const lastMerchantRepairSignatureRef = useRef('');
   const servicesRef = useRef(null);
-  servicesRef.current = { readBudget, normalizeBudget, saveBudget, onSaved };
+  servicesRef.current = { readBudget, normalizeBudget, saveBudget, onSaved, categorySettings };
   const enabled = selectedSources.length > 0;
 
   const summary = useMemo(
@@ -123,6 +126,7 @@ export function useCardTransactionImport({
       }
       const services = servicesRef.current;
       const result = await importCardTransactionBatch(peek.items, {
+        categorySettings: services.categorySettings,
         selectedSources: requestSources,
         readBudget: services.readBudget,
         normalizeBudget: services.normalizeBudget,
@@ -228,6 +232,46 @@ export function useCardTransactionImport({
     }
     return opened;
   }, [target]);
+
+  useEffect(() => {
+    const signature = JSON.stringify({
+      owner: normalizedOwner,
+      settings: categorySettings,
+      entries: (Array.isArray(budgetEntries) ? budgetEntries : []).map((entry) => [
+        entry?.id,
+        entry?.memo,
+        entry?.category,
+        entry?.source,
+        entry?.origin?.kind,
+        entry?.origin?.source
+      ])
+    });
+    if (lastMerchantRepairSignatureRef.current === signature) return;
+    lastMerchantRepairSignatureRef.current = signature;
+
+    const services = servicesRef.current;
+    let current;
+    try {
+      current = services.readBudget?.();
+    } catch {
+      return;
+    }
+    const repaired = repairExistingKakaoPayEntries(current, services.categorySettings);
+    if (!repaired.changed) return;
+    let result;
+    try {
+      result = services.saveBudget?.(repaired.items);
+    } catch {
+      result = null;
+    }
+    if (result?.saved === true) {
+      if (mountedRef.current) {
+        setMessage(`기존 카카오페이 상호명 ${repaired.changed}건을 정리했어요.`);
+        setMessageTone('success');
+      }
+      services.onSaved?.();
+    }
+  }, [budgetEntries, categorySettings, normalizedOwner]);
 
   useEffect(() => {
     mountedRef.current = true;

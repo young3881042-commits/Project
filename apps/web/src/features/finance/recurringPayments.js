@@ -1,3 +1,4 @@
+import { orbitStorage } from '../../utils/orbitIndexedDbStorage.js';
 export const RECURRING_PAYMENTS_STORAGE_KEY = 'lifehub-recurring-payments:v1';
 export const RECURRING_PAYMENT_SOURCE = 'recurring-payment';
 
@@ -90,7 +91,7 @@ export function normalizeRecurringPayment(value, index = 0, now = new Date()) {
   };
 }
 
-export function readRecurringPayments(owner, storage = globalThis.localStorage) {
+export function readRecurringPayments(owner, storage = orbitStorage) {
   try {
     const parsed = JSON.parse(storage?.getItem(recurringPaymentsStorageKey(owner)) || '[]');
     if (!Array.isArray(parsed)) return [];
@@ -100,7 +101,7 @@ export function readRecurringPayments(owner, storage = globalThis.localStorage) 
   }
 }
 
-export function saveRecurringPayments(owner, values, storage = globalThis.localStorage) {
+export function saveRecurringPayments(owner, values, storage = orbitStorage) {
   const items = (Array.isArray(values) ? values : [])
     .map(normalizeRecurringPayment)
     .filter(Boolean);

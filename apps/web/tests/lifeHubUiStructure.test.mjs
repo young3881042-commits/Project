@@ -276,7 +276,30 @@ test('홈과 더보기는 아침·저녁 브리핑 카드·설정과 예약 알�
   assert.match(lifeHub, /window\.addEventListener\('focus', resyncNotifications\)/);
 });
 
-test('v35 경량 캐시는 가계부 파일 공유·일반 텍스트 메모·정기 결제 스타일을 포함한다', async () => {
+test('IndexedDB 호환 저장과 거래 복구·월 예산·날짜 메모·백업 상태를 연결한다', async () => {
+  const [main, storage, lifeHub, budget, home, calendar, backup] = await Promise.all([
+    source('src/main.jsx'),
+    source('src/utils/orbitIndexedDbStorage.js'),
+    source('src/LifeHubApp.jsx'),
+    source('src/features/finance/monthlyBudget.js'),
+    source('src/features/home/HomePage.jsx'),
+    source('src/components/home/HomeMonthCalendar.jsx'),
+    source('src/features/backup/LifeHubBackupPanel.jsx')
+  ]);
+
+  assert.match(main, /await initializeOrbitIndexedDbStorage\(\)/);
+  assert.match(storage, /ORBIT_DATABASE_NAME = 'orbit-local-data'/);
+  assert.match(storage, /databaseRecords[\s\S]*storage\.setItem\(record\.key, record\.value\)/);
+  assert.doesNotMatch(storage, /bridge-token|device-token|authorization/i);
+  assert.match(lifeHub, /const \[editingEntryId, setEditingEntryId\]/);
+  assert.match(lifeHub, /setDeletedEntry\(entry\)[\s\S]*saveBudget\(session, \[deletedEntry, \.\.\.current\]\)/);
+  assert.match(lifeHub, /<MonthlyBudgetPanel/);
+  assert.match(budget, /if \(!normalizedAmount\)/);
+  assert.match(home, /className="orbitHomeCapture"/);
+  assert.match(calendar, /summary\.memoItems/);
+  assert.match(backup, /backupHealth\(currentData, backupStatus\)/);
+});
+test('v38 경량 캐시는 가계부 내부 메뉴·상호명 보정·분류 관리 스타일을 포함한다', async () => {
   const [serviceWorker, packageJson, entryCss, shell, home] = await Promise.all([
     source('public/sw.js'),
     source('package.json'),
@@ -285,13 +308,14 @@ test('v35 경량 캐시는 가계부 파일 공유·일반 텍스트 메모·정
     source('src/features/home/HomePage.jsx')
   ]);
 
-  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v35'/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v38'/);
   assert.match(packageJson, /"test:lifehub-data": "node --test src\/features\/automation\/\*\.test\.js src\/features\/backup\/\*\.test\.js src\/features\/finance\/\*\.test\.js src\/features\/life-records\/\*\.test\.js"/);
   assert.match(packageJson, /"test": "npm run test:lifehub-ai && npm run test:lifehub-data/);
   assert.match(entryCss, /@import '\.\/styles\/lifehub-automation\.css'/);
   assert.match(entryCss, /@import '\.\/styles\/lifehub-backup\.css'/);
   assert.match(entryCss, /@import '\.\/styles\/lifehub-finance\.css'/);
   assert.match(entryCss, /@import '\.\/styles\/lifehub-home\.css'/);
+  assert.match(entryCss, /@import '\.\/styles\/lifehub-finance-navigation\.css'/);
   assert.doesNotMatch(entryCss, /lifehub-ai\.css/);
   assert.match(shell, /PRIMARY_TABS = \['home', 'schedule', 'memo', 'finance'\]/);
   assert.doesNotMatch(entryCss, /workout-scheduler|lifehub-diet|lifehub-body-profile/);
@@ -572,6 +596,38 @@ test('가계부 빈 상태 버튼은 지출 카테고리를 정리하고 금액 
   assert.match(finance, /<input ref=\{amountInputRef\}/);
 });
 
+test('가계부는 월 지갑 아래를 내역·자동 기록·분류 공유 내부 메뉴로 정리한다', async () => {
+  const [lifeHub, tabs, navigationCss, review, merchantModel] = await Promise.all([
+    source('src/LifeHubApp.jsx'),
+    source('src/features/finance/FinanceSectionTabs.jsx'),
+    source('src/styles/lifehub-finance-navigation.css'),
+    source('src/features/finance/KakaoPayMerchantReviewPanel.jsx'),
+    source('src/features/finance/kakaoPayMerchant.js')
+  ]);
+  const finance = sectionBetween(lifeHub, 'function FinancePage(', 'function TravelPage(');
+  const walletIndex = finance.indexOf('<FinanceWalletCard');
+  const tabsIndex = finance.indexOf('<FinanceSectionTabs');
+  const shareIndex = finance.indexOf('<FinanceSharePanel');
+
+  assert.ok(walletIndex > -1 && tabsIndex > walletIndex && shareIndex > tabsIndex);
+  assert.match(finance, /financeSection-\$\{financeSection\}/);
+  assert.match(finance, /const \[financeSection, setFinanceSection\] = useState\('ledger'\)/);
+  assert.match(tabs, /내역/);
+  assert.match(tabs, /자동 기록/);
+  assert.match(tabs, /분류·공유/);
+  assert.match(tabs, /aria-label="가계부 내부 메뉴"/);
+  assert.match(tabs, /aria-pressed=\{selected\}/);
+  assert.match(navigationCss, /financeSection-ledger/);
+  assert.match(navigationCss, /financeSection-automation/);
+  assert.match(navigationCss, /financeSection-manage/);
+  assert.match(navigationCss, /min-height: 52px/);
+  assert.match(review, /당시 알림 원문은 보관하지 않아 실제 상호명을 직접 확인/);
+  assert.match(review, /placeholder="실제 상호명"/);
+  assert.match(merchantModel, /repairExistingKakaoPayEntries/);
+  assert.match(merchantModel, /replaceKakaoPayEntryMerchant/);
+  assert.match(lifeHub, /<KakaoPayMerchantReviewPanel/);
+});
+
 test('가계부는 정기 결제 예정과 실제 기록을 분리하고 월별 중복 없이 반영한다', async () => {
   const [lifeHub, panel, model, financeCss, backupCodec] = await Promise.all([
     source('src/LifeHubApp.jsx'),
@@ -699,7 +755,7 @@ test('허용한 결제 앱의 승인은 앱 전체 foreground에서 민감정보
   assert.match(panel, /오늘 자동 가져오기/);
   assert.match(panel, /누적 자동 가져오기/);
   assert.match(panel, /지금 가져오기/);
-  assert.match(panel, /잘못 인식된 결제는 아래 최근 거래에서 바로 삭제/);
+  assert.match(panel, /잘못 인식된 결제는 ‘내역’ 탭의 최근 거래에서 바로 삭제/);
   assert.match(panel, /이 브라우저에서는 다른 앱의 알림을 읽지 않아요/);
   assert.match(panel, /onClick=\{onManualEntry\}>지출 입력/);
 
@@ -724,7 +780,8 @@ test('허용한 결제 앱의 승인은 앱 전체 foreground에서 민감정보
   assert.ok(saveIndex > -1 && savedAckIndex > saveIndex, '새 거래는 저장 성공 뒤에만 ack해야 합니다.');
   assert.match(batch, /existingEventIds\.has\(candidate\.eventId\)[\s\S]*acknowledge\(acknowledgeDecisions, duplicateIds, 'duplicate'\)/);
   assert.match(batch, /if \(saveResult\?\.saved !== true\) \{[\s\S]*status: 'failed'/);
-  assert.match(batch, /memo: normalized\.merchant/);
+  assert.match(batch, /normalizeKakaoPayMerchant\(normalized\.merchant\)/);
+  assert.match(batch, /memo: merchant/);
   assert.doesNotMatch(batch, /rawText|balance|accountNumber|cardNumber/);
 
   assert.match(adapter, /const keys = \['eventId', 'source', 'amount', 'merchant', 'occurredAt'\]/);

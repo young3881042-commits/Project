@@ -112,6 +112,8 @@ final class FinanceNotificationPolicy {
         return candidate != null
                 && isValidEventId(candidate.eventId)
                 && FinanceNotificationParser.isSupportedSource(candidate.source)
+                && !(FinanceNotificationParser.KAKAO_PAY_SOURCE.equals(candidate.source)
+                        && candidate.fallbackMerchant)
                 && candidate.amount > 0L
                 && candidate.amount <= 999_999_999L
                 && candidate.merchant != null

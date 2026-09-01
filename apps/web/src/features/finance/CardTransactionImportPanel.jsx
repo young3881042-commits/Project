@@ -107,7 +107,7 @@ export default function CardTransactionImportPanel({
           <button type="button" className="primary" disabled={cardImport.syncing} onClick={cardImport.pull}>
             {cardImport.syncing ? '가져오는 중…' : '지금 가져오기'}
           </button>
-          <small>잘못 인식된 결제는 아래 최근 거래에서 바로 삭제할 수 있어요.</small>
+          <small>잘못 인식된 결제는 ‘내역’ 탭의 최근 거래에서 바로 삭제할 수 있어요.</small>
         </div>
       ) : null}
 

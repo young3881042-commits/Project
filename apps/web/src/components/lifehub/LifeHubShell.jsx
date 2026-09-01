@@ -8,7 +8,7 @@ export const ROUTE_META = {
   memo: { title: '메모', path: '/memo', icon: 'edit' },
   schedule: { title: '일정', path: '/schedule', icon: 'calendar' },
   finance: { title: '가계부', path: '/finance', icon: 'chart' },
-  more: { title: '더보기', path: '/more', icon: 'settings' }
+  more: { title: '설정', path: '/more', icon: 'settings' }
 };
 
 export const PRIMARY_TABS = ['home', 'schedule', 'memo', 'finance'];
@@ -38,14 +38,14 @@ export default function LifeHubShell({ route, path, model, navigate, children })
 
   return (
     <div className={`lifeHubRoot lifeHubRoute-${shellRoute}`}>
-      <main className={`lifeHubApp lifeHubApp-${route}`} aria-label="LifeHub 생활관리 앱">
+      <main className={`lifeHubApp lifeHubApp-${route}`} aria-label="Orbit 생활관리 앱">
         <header className="lifeHubTopBar">
           <div className="lifeHubTopTitle">
             <span className={route === 'home' ? 'lifeHubTopIcon pack' : 'lifeHubTopIcon'}>
               {route === 'home' ? <LifeHubPackIcon name="calendar" /> : <MemoNavIcon type={icon} />}
             </span>
             <div>
-              <span>{route === 'home' ? 'LifeHub' : fullDateLabel(model.today)}</span>
+              <span>{route === 'home' ? 'Orbit' : fullDateLabel(model.today)}</span>
               <h1>{title}</h1>
             </div>
           </div>
@@ -69,7 +69,7 @@ export default function LifeHubShell({ route, path, model, navigate, children })
           {children}
         </Suspense>
       </main>
-      <nav className="lifeHubBottomNav" aria-label="LifeHub 하단 메뉴">
+      <nav className="lifeHubBottomNav" aria-label="Orbit 하단 메뉴">
         {PRIMARY_TABS.map((tab) => {
           const meta = ROUTE_META[tab];
           const active = activeTab === tab || currentPath === meta.path;
