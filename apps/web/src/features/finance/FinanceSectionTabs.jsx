@@ -1,11 +1,13 @@
 export const FINANCE_SECTION_IDS = Object.freeze([
   'ledger',
+  'manual',
   'automation',
   'manage'
 ]);
 
 const FINANCE_SECTIONS = Object.freeze([
-  Object.freeze({ id: 'ledger', label: '내역', description: '입력·조회' }),
+  Object.freeze({ id: 'ledger', label: '내역', description: '조회' }),
+  Object.freeze({ id: 'manual', label: '수동 입력', description: '수입·지출' }),
   Object.freeze({ id: 'automation', label: '자동 기록', description: '결제·정기' }),
   Object.freeze({ id: 'manage', label: '분류·공유', description: '설정·파일' })
 ]);

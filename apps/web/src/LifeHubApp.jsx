@@ -43,6 +43,10 @@ import { planFinanceShareImport } from './features/finance/financeShare.js';
 import { recategorizeImportedCardEntries } from './features/finance/cardTransactionImport.js';
 import { replaceKakaoPayEntryMerchant } from './features/finance/kakaoPayMerchant.js';
 import {
+  financeEntriesForCategoryMonth,
+  financeMonthLabel
+} from './features/finance/financeCategoryLedger.js';
+import {
   RECURRING_PAYMENT_SOURCE,
   applyDueRecurringPayments,
   markRecurringPaymentsProcessed,
@@ -498,10 +502,11 @@ function budgetEntryTitle(entry) {
 }
 
 function budgetEntryMeta(entry) {
-  if (entry?.source === 'card-notification') return `${entry.date} · 카드 자동 · ${entry.category}`;
-  if (entry?.source === RECURRING_PAYMENT_SOURCE) return `${entry.date} · 정기 결제 · ${entry.category}`;
-  if (entry?.source === 'finance-share') return `${entry.date} · 받은 파일 · ${entry.category}`;
-  return `${entry?.date || ''} · ${entry?.memo || '메모 미입력'}`;
+  const dateLabel = isDateKey(entry?.date) ? fullDateLabel(entry.date) : '날짜 없음';
+  if (entry?.source === 'card-notification') return `${dateLabel} · 카드 자동 · ${entry.category}`;
+  if (entry?.source === RECURRING_PAYMENT_SOURCE) return `${dateLabel} · 정기 결제 · ${entry.category}`;
+  if (entry?.source === 'finance-share') return `${dateLabel} · 받은 파일 · ${entry.category}`;
+  return `${dateLabel} · ${entry?.memo || '메모 미입력'}`;
 }
 
 function normalizeExercise(exercise, index = 0) {
@@ -1429,6 +1434,7 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
   const [draft, setDraft] = useState({ type: 'withdraw', amount: '', category: '식비', memo: '', date: focusedFinanceDate || model.today });
   const [entryLimit, setEntryLimit] = useState(8);
   const [financeSection, setFinanceSection] = useState('ledger');
+  const [selectedFinanceCategory, setSelectedFinanceCategory] = useState('');
   const [editingEntryId, setEditingEntryId] = useState('');
   const [deletedEntry, setDeletedEntry] = useState(null);
   const formRef = useRef(null);
@@ -1443,11 +1449,16 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
     draft.category,
     existingBudgetCategories
   );
-  const visibleBudgetEntries = focusedFinanceDate
-    ? model.budgetEntries.filter((entry) => entry.date === focusedFinanceDate)
-    : model.budgetEntries;
+  const categoryMonth = model.today.slice(0, 7);
+  const visibleBudgetEntries = selectedFinanceCategory
+    ? financeEntriesForCategoryMonth(model.budgetEntries, selectedFinanceCategory, categoryMonth)
+    : focusedFinanceDate
+      ? model.budgetEntries.filter((entry) => entry.date === focusedFinanceDate)
+      : model.budgetEntries;
   useEffect(() => {
-    if (focusedFinanceDate) setFinanceSection('ledger');
+    if (!focusedFinanceDate) return;
+    setSelectedFinanceCategory('');
+    setFinanceSection('ledger');
   }, [focusedFinanceDate]);
 
   useEffect(() => {
@@ -1458,7 +1469,7 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
 
   useEffect(() => {
     if (scheduleParamsForPath(path).get('new') !== 'entry') return;
-    setFinanceSection('ledger');
+    setFinanceSection('manual');
     window.requestAnimationFrame(() => {
       formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       amountInputRef.current?.focus({ preventScroll: true });
@@ -1478,6 +1489,11 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
         amountInputRef.current?.focus({ preventScroll: true });
       });
     }
+  };
+
+  const openManualEntry = (type = 'withdraw') => {
+    setFinanceSection('manual');
+    selectEntryType(type, { focusAmount: true });
   };
 
   const submitEntry = (event) => {
@@ -1516,7 +1532,7 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
   };
 
   const startEditEntry = (entry) => {
-    setFinanceSection('ledger');
+    setFinanceSection('manual');
     setEditingEntryId(entry.id);
     setDraft({
       type: entry.type,
@@ -1735,10 +1751,7 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
       />
       <CardTransactionImportPanel
         cardImport={cardImport}
-        onManualEntry={() => {
-          setFinanceSection('ledger');
-          selectEntryType('withdraw', { focusAmount: true });
-        }}
+        onManualEntry={() => openManualEntry('withdraw')}
       />
       <FinanceCategorySettingsPanel
         settings={model.financeCategorySettings}
@@ -1754,15 +1767,29 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
           <p>이번 달 지출이 월 비교 기준의 {model.budget.usage}%입니다. 최근 거래를 한 번 확인해 보세요.</p>
         </article>
       ) : null}
-      <Section title="카테고리별 지출" eyebrow="이번 달">
+      <Section
+        className="finance-category-section"
+        title="카테고리별 지출"
+        eyebrow={financeMonthLabel(categoryMonth)}
+      >
         <div className="lifeHubCategoryBars">
           {categories.map(([category, amount]) => (
-            <article key={category} className="finance-category-bar">
+            <button
+              type="button"
+              key={category}
+              className={`finance-category-bar${selectedFinanceCategory === category ? ' active' : ''}`}
+              aria-pressed={selectedFinanceCategory === category}
+              aria-controls="finance-ledger-results"
+              onClick={() => {
+                setSelectedFinanceCategory((current) => current === category ? '' : category);
+                setEntryLimit(8);
+              }}
+            >
               <div><strong>{category}</strong><span>{money(amount)}</span></div>
               <div><span style={{ width: `${progressPercent((amount / Math.max(1, model.budget.expense)) * 100)}%` }} /></div>
-            </article>
+            </button>
           ))}
-          {categories.length ? null : <EmptyState title="이번 달 지출은 아직 없어요" text="오늘 사용한 금액을 남기면 카테고리 흐름을 보여드릴게요." actionLabel="지출 기록하기" icon="chart" onAction={() => selectEntryType('withdraw', { focusAmount: true })} />}
+          {categories.length ? null : <EmptyState title="이번 달 지출은 아직 없어요" text="오늘 사용한 금액을 남기면 카테고리 흐름을 보여드릴게요." actionLabel="지출 기록하기" icon="chart" onAction={() => openManualEntry('withdraw')} />}
         </div>
       </Section>
       <form ref={formRef} className="lifeHubFormCard lifeHubFastForm" onSubmit={submitEntry}>
@@ -1795,8 +1822,21 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
         <label><span>메모</span><input value={draft.memo} onChange={(event) => setDraft((current) => ({ ...current, memo: event.target.value }))} placeholder="간단한 메모" /></label>
         <LifeHubButton type="submit" className="primary" icon="plus">{editingEntryId ? '수정 저장' : '거래 저장'}</LifeHubButton>
       </form>
-      <Section title={focusedFinanceDate ? `${compactDateLabel(focusedFinanceDate)} 거래` : '최근 거래'} eyebrow={`${visibleBudgetEntries.length}개`}>
-        <div className="lifeHubTransactionList">
+      <Section
+        className="finance-ledger-section"
+        title={selectedFinanceCategory
+          ? `${selectedFinanceCategory} 내역`
+          : focusedFinanceDate
+            ? `${compactDateLabel(focusedFinanceDate)} 거래`
+            : '최근 거래'}
+        eyebrow={selectedFinanceCategory
+          ? `${financeMonthLabel(categoryMonth)} · ${visibleBudgetEntries.length}개`
+          : `${visibleBudgetEntries.length}개`}
+        action={selectedFinanceCategory ? (
+          <button type="button" className="lifeHubTextAction" onClick={() => setSelectedFinanceCategory('')}>전체 내역</button>
+        ) : null}
+      >
+        <div className="lifeHubTransactionList" id="finance-ledger-results" aria-live="polite">
           {visibleBudgetEntries.slice(0, entryLimit).map((entry) => (
             <article key={entry.id} className="finance-ledger-row">
               <span className={entry.type}>{entry.type === 'deposit' ? '수입' : '지출'}</span>
@@ -1816,7 +1856,7 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
               거래 더 보기 · {visibleBudgetEntries.length - entryLimit}개 남음
             </button>
           ) : null}
-          {visibleBudgetEntries.length ? null : <EmptyState title={focusedFinanceDate ? '이 날짜의 거래가 없어요' : '아직 기록한 거래가 없어요'} text="금액만 입력해도 이번 달 흐름에 바로 반영돼요." actionLabel="지출 기록하기" icon="chart" onAction={() => selectEntryType('withdraw', { focusAmount: true })} />}
+          {visibleBudgetEntries.length ? null : <EmptyState title={selectedFinanceCategory ? `${selectedFinanceCategory} 거래가 없어요` : focusedFinanceDate ? '이 날짜의 거래가 없어요' : '아직 기록한 거래가 없어요'} text="금액만 입력해도 이번 달 흐름에 바로 반영돼요." actionLabel="지출 기록하기" icon="chart" onAction={() => openManualEntry('withdraw')} />}
         </div>
       </Section>
     </div>

@@ -313,7 +313,7 @@ test('IndexedDB 호환 저장과 거래 복구·월 예산·날짜 메모·백�
   assert.match(calendar, /summary\.memoItems/);
   assert.match(backup, /backupHealth\(currentData, backupStatus\)/);
 });
-test('v42 경량 캐시는 남은 예산 지갑과 오늘 날짜 기록 버튼을 포함한다', async () => {
+test('v43 경량 캐시는 가계부 분리와 기존 생활 기록 화면을 포함한다', async () => {
   const [serviceWorker, packageJson, entryCss, shell, home] = await Promise.all([
     source('public/sw.js'),
     source('package.json'),
@@ -322,7 +322,7 @@ test('v42 경량 캐시는 남은 예산 지갑과 오늘 날짜 기록 버튼�
     source('src/features/home/HomePage.jsx')
   ]);
 
-  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v42'/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v43'/);
   assert.match(packageJson, /"test:lifehub-data": "node --test src\/features\/automation\/\*\.test\.js src\/features\/backup\/\*\.test\.js src\/features\/finance\/\*\.test\.js src\/features\/life-records\/\*\.test\.js"/);
   assert.match(packageJson, /"test": "npm run test:lifehub-ai && npm run test:lifehub-data/);
   assert.match(entryCss, /@import '\.\/styles\/lifehub-automation\.css'/);
@@ -596,7 +596,7 @@ test('홈 일정 추가는 커스텀 반복과 다중 요일 선택을 제공한
   assert.match(schedule, /repeatDays,/);
 });
 
-test('가계부 빈 상태 버튼은 지출 카테고리를 정리하고 금액 입력으로 이동한다', async () => {
+test('가계부 입력 진입은 수동 입력 탭에서 지출 카테고리를 정리하고 금액으로 이동한다', async () => {
   const lifeHub = await source('src/LifeHubApp.jsx');
   const finance = sectionBetween(lifeHub, 'function FinancePage(', 'function TravelPage(');
 
@@ -605,12 +605,13 @@ test('가계부 빈 상태 버튼은 지출 카테고리를 정리하고 금액 
   assert.match(finance, /const selectEntryType = [\s\S]*current\.category === '수입' \? '식비'/);
   assert.match(finance, /formRef\.current\?\.scrollIntoView/);
   assert.match(finance, /amountInputRef\.current\?\.focus/);
-  assert.equal((finance.match(/selectEntryType\('withdraw', \{ focusAmount: true \}\)/g) || []).length, 3);
+  assert.match(finance, /const openManualEntry = [\s\S]*setFinanceSection\('manual'\)[\s\S]*selectEntryType\(type, \{ focusAmount: true \}\)/);
+  assert.equal((finance.match(/openManualEntry\('withdraw'\)/g) || []).length, 3);
   assert.match(finance, /<form ref=\{formRef\}/);
   assert.match(finance, /<input ref=\{amountInputRef\}/);
 });
 
-test('가계부는 월 지갑 아래를 내역·자동 기록·분류 공유 내부 메뉴로 정리한다', async () => {
+test('가계부는 월 지갑 아래를 내역·수동 입력·자동 기록·분류 공유 내부 메뉴로 정리한다', async () => {
   const [lifeHub, tabs, navigationCss, review, merchantModel] = await Promise.all([
     source('src/LifeHubApp.jsx'),
     source('src/features/finance/FinanceSectionTabs.jsx'),
@@ -627,19 +628,40 @@ test('가계부는 월 지갑 아래를 내역·자동 기록·분류 공유 내
   assert.match(finance, /financeSection-\$\{financeSection\}/);
   assert.match(finance, /const \[financeSection, setFinanceSection\] = useState\('ledger'\)/);
   assert.match(tabs, /내역/);
+  assert.match(tabs, /수동 입력/);
   assert.match(tabs, /자동 기록/);
   assert.match(tabs, /분류·공유/);
   assert.match(tabs, /aria-label="가계부 내부 메뉴"/);
   assert.match(tabs, /aria-pressed=\{selected\}/);
   assert.match(navigationCss, /financeSection-ledger/);
+  assert.match(navigationCss, /financeSection-manual/);
   assert.match(navigationCss, /financeSection-automation/);
   assert.match(navigationCss, /financeSection-manage/);
+  assert.match(navigationCss, /grid-template-columns: repeat\(4,/);
   assert.match(navigationCss, /min-height: 52px/);
   assert.match(review, /당시 알림 원문은 보관하지 않아 실제 상호명을 직접 확인/);
   assert.match(review, /placeholder="실제 상호명"/);
   assert.match(merchantModel, /repairExistingKakaoPayEntries/);
   assert.match(merchantModel, /replaceKakaoPayEntryMerchant/);
   assert.match(lifeHub, /<KakaoPayMerchantReviewPanel/);
+});
+
+test('가계부 카테고리를 누르면 해당 월 거래만 날짜와 함께 보여준다', async () => {
+  const [lifeHub, categoryModel] = await Promise.all([
+    source('src/LifeHubApp.jsx'),
+    source('src/features/finance/financeCategoryLedger.js')
+  ]);
+  const finance = sectionBetween(lifeHub, 'function FinancePage(', 'function TravelPage(');
+
+  assert.match(finance, /const \[selectedFinanceCategory, setSelectedFinanceCategory\] = useState\(''\)/);
+  assert.match(finance, /financeEntriesForCategoryMonth\(model\.budgetEntries, selectedFinanceCategory, categoryMonth\)/);
+  assert.match(finance, /aria-pressed=\{selectedFinanceCategory === category\}/);
+  assert.match(finance, /aria-controls="finance-ledger-results"/);
+  assert.match(finance, /financeMonthLabel\(categoryMonth\)/);
+  assert.match(finance, /id="finance-ledger-results" aria-live="polite"/);
+  assert.match(lifeHub, /const dateLabel = isDateKey\(entry\?\.date\) \? fullDateLabel\(entry\.date\)/);
+  assert.match(categoryModel, /entry\?\.type !== 'deposit'/);
+  assert.match(categoryModel, /startsWith\(`\$\{month\}-`\)/);
 });
 
 test('가계부는 정기 결제 예정과 실제 기록을 분리하고 월별 중복 없이 반영한다', async () => {

@@ -4,7 +4,7 @@
 
 .lifeHubFinanceTabs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;
   padding: 4px;
   border: 1px solid #cbdad8;
@@ -63,7 +63,19 @@
   .lifeHubCardImportPanel,
   .lifeHubNotificationNotice,
   .lifeHubFinanceCategories,
-  .lifeHubKakaoMerchantReview
+  .lifeHubKakaoMerchantReview,
+  .lifeHubFastForm
+),
+.lifeHubFinancePage.financeSection-manual > :is(
+  .lifeHubFinanceShareSummary,
+  .lifeHubRecurringSummary,
+  .lifeHubCardImportPanel,
+  .lifeHubNotificationNotice,
+  .lifeHubFinanceCategories,
+  .lifeHubKakaoMerchantReview,
+  .finance-insight-card,
+  .finance-budget-bar,
+  .lifeHubSection
 ),
 .lifeHubFinancePage.financeSection-automation > :is(
   .lifeHubFinanceShareSummary,
