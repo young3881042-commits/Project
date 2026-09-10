@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import InteractiveTravelMap from './InteractiveTravelMap.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { travelApi } from './travelApi.js';
 import { validMapPoint } from './travelMapGeometry.js';
@@ -6,14 +8,15 @@ import { exportTravelImage } from './travelImageExport.js';
 const viewedDays = new Map();
 export default function TravelDayMap({ day, title, destination = '' }) {
   const root = useRef(null), [visible, setVisible] = useState(false), [rows, setRows] = useState([]), [loading, setLoading] = useState(false);
-  const [image, setImage] = useState(''), [notice, setNotice] = useState(''), [saving, setSaving] = useState(false), [revision, setRevision] = useState(0);
+  const [notice, setNotice] = useState(''), [saving, setSaving] = useState(false), [revision, setRevision] = useState(0);
   const alive = useRef(true), [searching, setSearching] = useState(false);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
+  const points = useMemo(() => rows.map(row => row.candidates[row.selected] || null), [rows]);
   const key = JSON.stringify([destination, day.date, day.items.map(item => item.place)]);
   useEffect(() => { const observer = new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) { setVisible(true); observer.disconnect(); } }); observer.observe(root.current); return () => observer.disconnect(); }, []);
   useEffect(() => {
     if (!visible) return;
-    let cancelled = false; setImage(''); setNotice('');
+    let cancelled = false; setNotice('');
     const cached = viewedDays.get(key);
     if (cached && !revision) { setRows(cached); return; }
     setLoading(true);
@@ -34,14 +37,6 @@ export default function TravelDayMap({ day, title, destination = '' }) {
     })();
     return () => { cancelled = true; };
   }, [visible, key, revision]);
-  useEffect(() => {
-    if (!visible || loading || !rows.length) return;
-    const controller = new AbortController(); setImage('');
-    createTravelDayImage({ title, day, points: rows.map(row => row.candidates[row.selected] || null), signal: controller.signal })
-      .then(result => { if (!controller.signal.aborted) { setImage(result.dataUrl); if (result.missingTiles) setNotice('지도 배경 일부를 불러오지 못했어요. 일정과 장소 번호는 확인할 수 있어요.'); } })
-      .catch(error => { if (!controller.signal.aborted) setNotice(error.message); });
-    return () => controller.abort();
-  }, [visible, loading, rows, title, key]);
   async function searchPlace(event, index) {
     event.preventDefault(); if (loading || searching) return;
     const query = String(new FormData(event.currentTarget).get('query') || '').trim();
@@ -55,9 +50,10 @@ export default function TravelDayMap({ day, title, destination = '' }) {
     finally { if (alive.current) setSearching(false); }
   }
   function choose(index, value) { const next = rows.map((row, i) => i === index ? { ...row, selected: Number(value) } : row); setRows(next); viewedDays.set(key, next); }
-  return <section className="orbitTravelDayMap" ref={root} aria-label={`${day.day}일차 지도와 일정 이미지`}>
-    <div className="orbitTravelMapHeading"><strong>🗺️ 오늘의 동선 한 장</strong><button type="button" disabled={!image || saving} onClick={async () => { setSaving(true); try { setNotice(await exportTravelImage(image) ? '일정 이미지를 저장했어요.' : '저장을 취소했어요.'); } catch (error) { setNotice(error.message); } finally { setSaving(false); } }}>이미지 저장</button></div>
-    {image ? <img className="orbitTravelMapImage" src={image} alt={`${day.day}일차 지도와 방문 순서, 시간표. 상세 일정은 아래 목록에서도 볼 수 있어요.`} /> : <p className="orbitTravelMapLoading" role="status">{loading ? '오늘 방문할 장소를 지도에서 찾고 있어요…' : '지도와 일정 이미지를 만들고 있어요…'}</p>}
+  return <section className="orbitTravelDayMap" ref={root} aria-label={`${day.day}일차 동선 지도`}>
+    <div className="orbitTravelMapHeading"><strong>🗺️ 오늘의 동선</strong><button type="button" disabled={loading || !points.some(validMapPoint) || saving} onClick={async () => { setSaving(true); try { const result = await createTravelDayImage({ title, day, points, mapOnly: true }); setNotice(await exportTravelImage(result.dataUrl) ? '지도 이미지를 저장했어요.' : '저장을 취소했어요.'); } catch (error) { setNotice(error.message); } finally { setSaving(false); } }}>지도 저장</button></div>
+    {visible ? <InteractiveTravelMap points={points} items={day.items} /> : null}
+    {loading ? <p className="orbitTravelMapHint" role="status">방문할 장소를 찾고 있어요…</p> : !points.some(validMapPoint) ? <p className="orbitTravelMapHint">아래에서 장소를 검색하면 동선이 표시돼요.</p> : null}
     <p className="orbitTravelMapHint">번호는 방문 순서예요. 점선은 실제 도로 경로가 아니에요.</p>
     {notice ? <p className="orbitTravelMapHint" role="status">{notice}</p> : null}
     <details className="orbitTravelMapLocations"><summary>검색된 위치 확인 · 수정</summary>

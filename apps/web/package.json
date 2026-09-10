@@ -34,6 +34,7 @@
     "@mantine/hooks": "^8.3.11",
     "@uiw/codemirror-theme-vscode": "^4.23.7",
     "@uiw/react-codemirror": "^4.23.7",
+    "leaflet": "1.9.4",
     "pdfjs-dist": "6.3.289",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

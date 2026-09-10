@@ -17,9 +17,9 @@ function line(ctx, value, x, y, width, font = '24px sans-serif', color = '#24493
   if (ctx.measureText(text).width > width) { while (text && ctx.measureText(text + '…').width > width) text = text.slice(0, -1); text += '…'; }
   ctx.fillText(text, x, y);
 }
-export async function createTravelDayImage({ title, day, points, signal }) {
+export async function createTravelDayImage({ title, day, points, signal, mapOnly = false }) {
   await document.fonts?.ready;
-  const canvas = document.createElement('canvas'); canvas.width = 720; canvas.height = 720 + day.items.length * 100;
+  const canvas = document.createElement('canvas'); canvas.width = 720; canvas.height = mapOnly ? 720 : 720 + day.items.length * 100;
   const ctx = canvas.getContext('2d'); if (!ctx) throw new Error('이미지를 만들지 못했어요.');
   ctx.fillStyle = '#f7f6ef'; ctx.fillRect(0, 0, canvas.width, canvas.height);
   line(ctx, `ORBIT  /  ${day.day}일차 · ${day.date}`, 40, 49, 640, 'bold 20px sans-serif', '#53786a');
@@ -45,7 +45,7 @@ export async function createTravelDayImage({ title, day, points, signal }) {
   const missingTiles = images.some(image => !image);
   line(ctx, `${layout.points.length}/${day.items.length}곳 표시 · 점선은 방문 순서예요 (실제 도로 경로 아님)`, 40, 620, 640, '19px sans-serif');
   line(ctx, missingTiles ? '지도 배경 일부를 불러오지 못했어요 · 검색 위치 확인 필요' : '검색된 위치 기준 · 출발 전 장소와 이동 시간을 확인하세요', 40, 649, 640, '18px sans-serif', '#6a716a');
-  day.items.forEach((item, index) => {
+  if (!mapOnly) day.items.forEach((item, index) => {
     const y = 696 + index * 100;
     ctx.fillStyle = index % 2 ? '#f0f2ea' : '#fffef9'; ctx.fillRect(30, y - 26, 660, 94);
     line(ctx, `${index + 1}`, 44, y + 6, 35, 'bold 24px sans-serif'); line(ctx, item.time, 90, y + 6, 100, 'bold 24px sans-serif', '#16765c');

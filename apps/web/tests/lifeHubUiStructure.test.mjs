@@ -328,7 +328,7 @@ test('v55 경량 캐시는 거래 검색과 기존 생활 기록 화면을 포�
     source('src/features/home/HomePage.jsx')
   ]);
 
-  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v61'/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v62'/);
   assert.match(packageJson, /"test:lifehub-data": "node --test src\/features\/automation\/\*\.test\.js src\/features\/backup\/\*\.test\.js src\/features\/finance\/\*\.test\.js src\/features\/life-records\/\*\.test\.js src\/features\/travel\/\*\.test\.js src\/features\/ai-chat\/\*\.test\.js"/);
   assert.match(packageJson, /"test": "npm run test:lifehub-ai && npm run test:lifehub-data/);
   assert.match(entryCss, /@import '\.\/styles\/lifehub-automation\.css'/);
@@ -466,8 +466,8 @@ test('Android WebView는 Orbit 이름·중앙 O 아이콘과 내장 웹 버전 �
   assert.match(manifest, /android\.permission\.SCHEDULE_EXACT_ALARM/);
   assert.match(manifest, /android\.permission\.VIBRATE/);
   assert.match(manifest, /SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED/);
-  assert.match(manifest, /android:versionName="0\.9\.2-debug"/);
-  assert.match(manifest, /android:versionCode="43"/);
+  assert.match(manifest, /android:versionName="0\.9\.3-debug"/);
+  assert.match(manifest, /android:versionCode="44"/);
   assert.match(manifest, /android:name="\.FinanceNotificationListenerService"/);
   assert.match(manifest, /android:permission="android\.permission\.BIND_NOTIFICATION_LISTENER_SERVICE"/);
   assert.match(manifest, /android:name="android\.service\.notification\.NotificationListenerService"/);

@@ -124,3 +124,8 @@
 .orbitChatQuota > summary { justify-content: space-between; gap: 8px; flex-wrap: wrap; background: #f3f7f4; }
 .orbitChatQuota > summary > span { display: inline-flex; gap: 6px; align-items: baseline; }
 .orbitChatQuota > summary b { font-size: 12px; }
+
+.orbitWorkspaceConnection { margin: 16px 0; padding: 14px; border: 1px solid #d2e1d6; border-radius: 14px; }
+.orbitWorkspaceConnection h3 { margin: 0 0 10px; font-size: 16px; }
+.orbitWorkspaceConnection > div { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.orbitWorkspaceConnection small { display: block; color: #5d6c62; line-height: 1.6; }

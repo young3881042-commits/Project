@@ -1,3 +1,4 @@
+import { WORKSPACE_TOOLS } from './workspace-mcp.mjs';
 import { duplicateTravelStops } from '../../apps/web/src/features/travel/travelDuplicateStops.js';
 import { validChatEffort } from '../../apps/web/src/features/ai-chat/chatModelOptions.js';
 import { travelResearchInstructions } from './travel-research.mjs';
@@ -14,7 +15,7 @@ export function resolveRuntimeCodex() {
   return resolveCodexCommand();
 }
 
-export function travelCodexArgs(schema, directory, model = '', instructions = '', effort = '') {
+export function travelCodexArgs(schema, directory, model = '', instructions = '', effort = '', workspace = false) {
   if (!validChatEffort(effort)) throw new Error('추론 강도를 확인해주세요.');
   const args = ['exec', '--ignore-user-config', '--ignore-rules', '--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only', '--cd', directory, '--json', '--output-schema', schema, '--color', 'never'];
   const config = {
@@ -27,6 +28,13 @@ export function travelCodexArgs(schema, directory, model = '', instructions = ''
     if (key === 'features') {
       for (const [feature, enabled] of Object.entries(value)) args.push('-c', `features.${feature}=${enabled}`);
     } else args.push('-c', `${key}=${JSON.stringify(value)}`);
+  }
+  if (workspace && process.env.ORBIT_EMBEDDED === '1' && isAbsolute(process.env.ORBIT_NODE_BINARY || '') && basename(process.env.ORBIT_NODE_BINARY) === 'liborbit_node.so') {
+    args.push('-c', 'mcp_servers.orbit_local.command="/system/bin/linker64"');
+    args.push('-c', `mcp_servers.orbit_local.args=${JSON.stringify([process.env.ORBIT_NODE_BINARY, join(process.env.HOME, 'runtime.mjs'), '--workspace-mcp'])}`);
+    args.push('-c', `mcp_servers.orbit_local.enabled_tools=${JSON.stringify(WORKSPACE_TOOLS)}`);
+    args.push('-c', 'mcp_servers.orbit_local.tool_timeout_sec=110');
+    args.push('-c', 'mcp_servers.orbit_local.env.ORBIT_EMBEDDED="1"');
   }
   if (model) args.push('--model', model);
   args.push('-');
@@ -50,7 +58,7 @@ export async function generateTravelPlan(input, options = {}) {
   }
 }
 
-export async function runStructuredCodex({ schemaValue, prompt, validate, instructions = '', signal, onProgress = () => {}, model = '', effort = '', resolveCommand = resolveRuntimeCodex, spawnProcess = spawn }) {
+export async function runStructuredCodex({ schemaValue, prompt, validate, instructions = '', signal, onProgress = () => {}, model = '', effort = '', workspace = false, resolveCommand = resolveRuntimeCodex, spawnProcess = spawn }) {
   const directory = await mkdtemp(join(tmpdir(), 'orbit-travel-'));
   try {
     const schema = join(directory, 'output.schema.json');
@@ -63,7 +71,7 @@ export async function runStructuredCodex({ schemaValue, prompt, validate, instru
     const result = await new Promise((resolve, reject) => {
       if (signal?.aborted) { reject(new Error('생성을 취소했어요.')); return; }
       const ownProcessGroup = process.platform !== 'win32';
-      const child = spawnProcess(target.command, [...target.argsPrefix, ...travelCodexArgs(schema, directory, model, instructions, effort)], { cwd: directory, env: environment, shell: false, detached: ownProcessGroup, stdio: ['pipe', 'pipe', 'pipe'] });
+      const child = spawnProcess(target.command, [...target.argsPrefix, ...travelCodexArgs(schema, directory, model, instructions, effort, workspace)], { cwd: directory, env: environment, shell: false, detached: ownProcessGroup, stdio: ['pipe', 'pipe', 'pipe'] });
       let buffer = '', finalText = '', bytes = 0, failure = '', closed = false, killTimer;
       const kill = signalName => {
         // The Termux launcher spawns a native grandchild and does not forward signals.
@@ -89,6 +97,7 @@ export async function runStructuredCodex({ schemaValue, prompt, validate, instru
         if (event.type === 'turn.failed' || event.type === 'error') { stop('Codex 요청을 완료하지 못했어요. AI 로그인과 사용 한도를 확인해주세요.'); return; }
         const item = event.item;
         if (!item) return;
+        if (item.type === 'mcp_tool_call' && workspace && process.env.ORBIT_EMBEDDED === '1' && item.server === 'orbit_local' && WORKSPACE_TOOLS.includes(item.tool)) return;
         if (['command_execution', 'file_change', 'mcp_tool_call'].includes(item.type)) { stop('여행 생성 범위 밖의 도구 요청을 차단했어요.'); return; }
         if (item.type === 'web_search') onProgress('여행 장소와 참고 정보를 확인하고 있어요.');
         if (item.type === 'agent_message' && event.type === 'item.completed') finalText = item.text;

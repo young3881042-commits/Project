@@ -1,3 +1,4 @@
+import WorkspaceConnection from './WorkspaceConnection.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { travelApi } from '../travel/travelApi.js';
 
@@ -58,6 +59,7 @@ export default function CodexConnection({ onConnected }) {
         {pending ? <button type="button" disabled={busy} onClick={() => run('auth-cancel')}>로그인 취소</button> : null}
       </>}
       <p className="orbitChatHint">요청할 때 실행하고, 작업이 끝나면 Codex를 종료해요. 내부 서버는 요청 없이 1분이 지나면 종료되며, 아직 확인하지 않은 여행 결과가 있으면 잠시 유지돼요. 로그인 중에는 연결을 유지해요.</p>
+      {runtime.embeddedSupported ? <WorkspaceConnection /> : null}
       <details><summary>기존 Termux 대화 사용</summary><p>기존 대화 파일은 Termux에 그대로 있어요. 내장 AI의 대화 파일과 별도로 보관돼요.</p><button type="button" disabled={busy || pending} onClick={() => run('runtime-legacy')}>Termux 연결로 전환</button></details>
     </> : <>
       <p>현재 기존 Termux 연결을 사용하고 있어요.</p>

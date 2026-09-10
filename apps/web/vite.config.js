@@ -36,6 +36,7 @@ const litePublicAssets = {
   name: 'lite-public-assets',
   apply: 'build',
   async buildStart() {
+    this.emitFile({ type: 'asset', fileName: 'assets/leaflet-LICENSE.txt', source: await readFile(new URL('./node_modules/leaflet/LICENSE', import.meta.url)) });
     for (const file of ['LICENSE', 'standard_fonts/LICENSE_FOXIT', 'standard_fonts/LICENSE_LIBERATION']) {
       this.emitFile({ type: 'asset', fileName: `assets/pdfjs-${file.replaceAll('/', '-')}.txt`, source: await readFile(new URL(`./node_modules/pdfjs-dist/${file}`, import.meta.url)) });
     }

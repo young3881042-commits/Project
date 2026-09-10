@@ -89,6 +89,7 @@ public final class MainActivity extends Activity {
     private volatile TravelApiCoordinator travelApiCoordinator;
     private AiChatExportCoordinator aiChatExportCoordinator;
     private TravelImageExportCoordinator travelImageExportCoordinator;
+    private WorkspaceBridge workspaceBridge;
 
     @Override
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
@@ -168,6 +169,10 @@ public final class MainActivity extends Activity {
                 webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('orbit:travel-image-export',{detail:" + detail.toString() + "}));", null);
             }
         });
+        workspaceBridge = new WorkspaceBridge(this, preferences, new WorkspaceBridge.Host() {
+            public boolean trusted() { return webView != null && isTrustedNativeCaller() && !isFinishing(); }
+            public void deliver(JSONObject detail) { webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('orbit:workspace-result',{detail:" + detail.toString() + "}));", null); }
+        });
         clearLegacyCardImportState();
         AppNotificationCoordinator.ensureChannel(getApplicationContext());
         AppNotificationCoordinator.restoreScheduled(getApplicationContext());
@@ -176,7 +181,7 @@ public final class MainActivity extends Activity {
         localAssetResponder = new LocalAssetResponder(getAssets());
 
         webView = new WebView(this);
-        webView.getSettings().setUserAgentString(webView.getSettings().getUserAgentString() + " Orbit/0.9.2");
+        webView.getSettings().setUserAgentString(webView.getSettings().getUserAgentString() + " Orbit/0.9.3");
         WebView.setWebContentsDebuggingEnabled(false);
         webView.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -505,6 +510,7 @@ public final class MainActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == WorkspaceBridge.REQUEST_CODE && workspaceBridge != null) { workspaceBridge.onResult(resultCode, data); return; }
         if (requestCode == TravelImageExportCoordinator.REQUEST_CODE && travelImageExportCoordinator != null) { travelImageExportCoordinator.onResult(resultCode, data); return; }
         if (requestCode == AiChatExportCoordinator.REQUEST_CODE && aiChatExportCoordinator != null) { aiChatExportCoordinator.onResult(resultCode, data); return; }
         if (backupDocumentCoordinator != null
@@ -597,6 +603,7 @@ public final class MainActivity extends Activity {
     protected void onDestroy() {
         if (aiChatExportCoordinator != null) aiChatExportCoordinator.destroy();
         if (travelImageExportCoordinator != null) travelImageExportCoordinator.destroy();
+        if (workspaceBridge != null) workspaceBridge.destroy();
         if (travelApiCoordinator != null) {
             travelApiCoordinator.destroy();
             travelApiCoordinator = null;
@@ -678,6 +685,11 @@ public final class MainActivity extends Activity {
             return isTrustedNativeCaller() && coordinator != null ? coordinator.runtimeMode() : "standby";
         }
         @JavascriptInterface
+        public void requestWorkspaceAction(String requestId, String action) {
+            if (isTrustedNativeCaller() && workspaceBridge != null) workspaceBridge.request(requestId, action);
+        }
+
+        @JavascriptInterface
         public void exportTravelImage(String requestId, String content) {
             if (isTrustedNativeCaller() && travelImageExportCoordinator != null) travelImageExportCoordinator.request(requestId, content);
         }
@@ -689,7 +701,10 @@ public final class MainActivity extends Activity {
         @JavascriptInterface
         public void requestTravelAction(String requestId, String action, String payload) {
             TravelApiCoordinator coordinator = travelApiCoordinator;
-            if (isTrustedNativeCaller() && coordinator != null) coordinator.request(requestId, action, payload);
+            if (isTrustedNativeCaller() && coordinator != null) {
+                if (("chat-cancel".equals(action) || "runtime-legacy".equals(action)) && workspaceBridge != null) workspaceBridge.cancelTools();
+                coordinator.request(requestId, action, payload);
+            }
         }
         @JavascriptInterface
         public boolean exportLifeHubBackup(
@@ -1100,6 +1115,10 @@ public final class MainActivity extends Activity {
         }
 
         private boolean shouldBlockNavigation(Uri uri) {
+            if ("https://www.openstreetmap.org/copyright".equals(uri.toString()) && isTrustedNativeCaller()) {
+                try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); } catch (android.content.ActivityNotFoundException ignored) { }
+                return true;
+            }
             if ("https://auth.openai.com/codex/device".equals(uri.toString()) && isTrustedNativeCaller()) {
                 try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); }
                 catch (android.content.ActivityNotFoundException ignored) { Toast.makeText(MainActivity.this, "브라우저에서 auth.openai.com/codex/device를 열어주세요.", Toast.LENGTH_LONG).show(); }

@@ -103,6 +103,7 @@ final class EmbeddedAiRuntime {
         env.put("ANDROID_ROOT", "/system"); env.put("ANDROID_DATA", "/data");
         env.put("LD_LIBRARY_PATH", library); env.put("SSL_CERT_FILE", certificates.getAbsolutePath());
         env.put("NODE_EXTRA_CA_CERTS", certificates.getAbsolutePath());
+        env.put("ORBIT_NODE_BINARY", new File(library, "liborbit_node.so").getAbsolutePath());
         env.put("ORBIT_EMBEDDED", "1"); env.put("ORBIT_CODEX_BINARY", new File(library, "liborbit_codex.so").getAbsolutePath());
         if (destroyed) throw new IOException("앱 연결이 종료됐어요.");
         final Process child = builder.start(); process = child;

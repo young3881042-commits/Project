@@ -1,9 +1,11 @@
+import { runWorkspaceMcp } from './workspace-mcp.mjs';
 // Standalone Termux helper, also bundled in the APK. Never exports the bearer token.
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { loadTravelToken, startTravelServer } from './server.mjs';
 
 async function main() {
+  if (process.argv.includes('--workspace-mcp')) { await runWorkspaceMcp(); return; }
   if (process.argv.includes('--embedded')) {
     await startTravelServer({ quiet: true, idleMs: 60000, port: 4320, embedded: true });
     return;

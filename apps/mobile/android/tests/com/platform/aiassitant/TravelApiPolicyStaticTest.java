@@ -12,6 +12,15 @@ public final class TravelApiPolicyStaticTest {
         require(!AiChatAttachmentPolicy.allowedName("program.apk"));
         require("map/search".equals(TravelApiPolicy.path("map-search", "")));
         require("POST".equals(TravelApiPolicy.method("map-search")));
+        require(WorkspaceDocuments.criticalPath("project/.env"));
+        require(!WorkspaceDocuments.criticalPath("notes/memo.txt"));
+        require(WorkspaceDocuments.parts("").length == 0);
+        require(WorkspaceDocuments.parts("폴더/하위/기록.txt").length == 3);
+        for (String unsafe : new String[] { "../auth", "/absolute", "a/../b", "a//b", "a\\b", "a/", "a/./b", "a\nb" }) {
+            boolean rejected = false;
+            try { WorkspaceDocuments.parts(unsafe); } catch (IllegalArgumentException expected) { rejected = true; }
+            require(rejected);
+        }
         String id = "01234567-89ab-4def-8123-456789abcdef";
         require(TravelApiPolicy.validRequestId(id));
         require("auth/status".equals(TravelApiPolicy.path("auth-status", "")));
