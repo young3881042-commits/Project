@@ -25,14 +25,21 @@ public final class FinanceNotificationPolicyStaticTest {
         requireSources("[]");
         requireSources("[\"samsung-wallet\"]", "samsung-wallet");
         requireSources("[  \"kakao-pay\"  ]", "kakao-pay");
+        requireSources("[\"toss\"]", "toss");
         requireSources(
                 "[\n\"kakao-pay\",\t\"samsung-wallet\"\r]",
                 "samsung-wallet",
                 "kakao-pay"
         );
+        requireSources(
+                "[\"toss\",\"kakao-pay\",\"samsung-wallet\"]",
+                "samsung-wallet",
+                "kakao-pay",
+                "toss"
+        );
         requireSources("[\"kakao\\u002dpay\"]", "kakao-pay");
         require(Boolean.TRUE.equals(FinanceNotificationPolicy.selectedSourceEnabled(
-                "[\"samsung-wallet\",\"kakao-pay\"]"
+                "[\"samsung-wallet\",\"kakao-pay\",\"toss\"]"
         )));
         require(Boolean.FALSE.equals(FinanceNotificationPolicy.selectedSourceEnabled("[]")));
         for (String rejectedSources : new String[]{
@@ -44,6 +51,7 @@ public final class FinanceNotificationPolicyStaticTest {
                 "[\"samsung-wallet\",\"mobile-tmoney\"]",
                 "[\"com.samsung.android.spay\"]",
                 "[\"com.kakaopay.app\"]",
+                "[\"viva.republica.toss\"]",
                 "[\"samsung -wallet\"]",
                 "[true]",
                 "[1]",
@@ -92,6 +100,21 @@ public final class FinanceNotificationPolicyStaticTest {
                 FinanceNotificationParser.KAKAO_PAY_SOURCE,
                 "스타벅스"
         )));
+        require(FinanceNotificationPolicy.isValidCandidate(candidate(
+                902,
+                FinanceNotificationParser.TOSS_SOURCE,
+                "편의점"
+        )));
+        require(!FinanceNotificationPolicy.isValidCandidate(
+                new FinanceNotificationParser.Candidate(
+                        eventId(902),
+                        FinanceNotificationParser.TOSS_SOURCE,
+                        1_902L,
+                        "토스",
+                        1_750_000_000_902L,
+                        true
+                )
+        ));
         require(!FinanceNotificationPolicy.isValidCandidate(
                 new FinanceNotificationParser.Candidate(
                         eventId(901),

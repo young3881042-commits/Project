@@ -41,7 +41,8 @@ final class FinanceNotificationPolicy {
             return null;
         }
         LinkedHashSet<String> parsed = new JsonStringArrayParser(sourcesJson).parse();
-        if (parsed == null || parsed.size() > 2) {
+        if (parsed == null
+                || parsed.size() > FinanceNotificationParser.supportedSources().size()) {
             return null;
         }
         LinkedHashSet<String> canonical = FinanceNotificationParser.supportedSources();
@@ -112,7 +113,8 @@ final class FinanceNotificationPolicy {
         return candidate != null
                 && isValidEventId(candidate.eventId)
                 && FinanceNotificationParser.isSupportedSource(candidate.source)
-                && !(FinanceNotificationParser.KAKAO_PAY_SOURCE.equals(candidate.source)
+                && !((FinanceNotificationParser.KAKAO_PAY_SOURCE.equals(candidate.source)
+                        || FinanceNotificationParser.TOSS_SOURCE.equals(candidate.source))
                         && candidate.fallbackMerchant)
                 && candidate.amount > 0L
                 && candidate.amount <= 999_999_999L
@@ -150,7 +152,8 @@ final class FinanceNotificationPolicy {
                 if (item == null
                         || !FinanceNotificationParser.isSupportedSource(item)
                         || !values.add(item)
-                        || values.size() > 2) {
+                        || values.size()
+                                > FinanceNotificationParser.supportedSources().size()) {
                     return null;
                 }
                 skipWhitespace();

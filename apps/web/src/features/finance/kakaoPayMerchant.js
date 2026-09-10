@@ -82,7 +82,8 @@ export function repairExistingKakaoPayEntries(entries, categorySettings) {
       reviewRequired += 1;
       return entry;
     }
-    const category = financeCategoryForMerchant(merchant, categorySettings);
+    const category = entry.memo === merchant && entry.category && entry.category !== '기타'
+      ? entry.category : financeCategoryForMerchant(merchant, categorySettings);
     if (entry.memo === merchant && entry.category === category) return entry;
     changed += 1;
     return { ...entry, memo: merchant, category };

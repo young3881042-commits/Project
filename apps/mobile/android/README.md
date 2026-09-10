@@ -4,6 +4,14 @@ This directory contains the Android WebView shell for Orbit. The APK embeds the 
 
 ## Build
 
+### Travel planning connection
+
+Orbit 0.7.0 adds a travel-only Termux Codex client (Android 7+). Run `node tools/orbit-travel/server.mjs` from the repository in Termux, then enter its one-time code under the app's travel connection panel. Re-running the command while the server is active issues a fresh code. See [the local service guide](../../../tools/orbit-travel/README.md).
+
+The native adapter exposes only fixed status/pair/create/poll/cancel actions. Its token stays in private preferences. Network security permits cleartext only for `127.0.0.1`; the WebView's mixed-content prohibition, trusted embedded origin, and CSP remain unchanged. No generic Bridge or remote command proxy is restored.
+
+### APK build
+
 개발할 때 APK를 압축 해제하거나 다시 압축할 필요는 없습니다.
 
 1. 평소 UI 수정은 `apps/web`에서 `npm run dev`로 확인합니다.
@@ -96,12 +104,13 @@ Notification paths are restricted to `/app` and `/schedule`. The wrapper restore
 
 ## Approved payment-notification import
 
-Orbit can import new purchase approvals after the user explicitly enables Android **Notification access** and selects one or both supported sources:
+Orbit can import new purchase approvals after the user explicitly enables Android **Notification access** and selects supported sources:
 
 - Samsung Wallet: source `samsung-wallet`, exact package `com.samsung.android.spay`
 - standalone KakaoPay: source `kakao-pay`, exact package `com.kakaopay.app`
+- Toss: source `toss`, exact package `viva.republica.toss`
 
-KakaoTalk (`com.kakao.talk`), Tmoney apps, and every unknown package are rejected before notification text is read. Each source uses conservative approval wording and requires one unambiguous won amount. Transfers, deposits, withdrawals, top-ups, balances, cancellations, refunds, declines, failures, rewards, and promotions are rejected. Because payment apps do not publish a stable notification schema, wording changes or Android sensitive-content redaction can leave some purchases for manual entry.
+KakaoTalk (`com.kakao.talk`), Tmoney apps, and every unknown package are rejected before notification text is read. Each source uses conservative approval wording and requires one unambiguous won amount. KakaoPay and Toss also require an identifiable merchant instead of using the app name as a fallback. Transfers, deposits, withdrawals, top-ups, balances, cancellations, refunds, declines, failures, rewards, promotions, and future billing notices are rejected. Because payment apps do not publish a stable notification schema, wording changes or Android sensitive-content redaction can leave some purchases for manual entry.
 
 Parsing happens in native memory. Only an opaque event ID, amount, sanitized merchant, source ID, and timestamp enter the owner-hashed private queue. Notification text, card/account numbers, and balances are never persisted, logged, sent to the WebView, or transmitted over a network. Unknown or unselected sources are checked again before enqueue and dequeue. Disabling a source purges its unprocessed rows so old purchases do not appear after re-enabling it.
 
@@ -116,3 +125,63 @@ Notification access is a broad special permission. Sideloaded Android 13+ builds
 - Schedule reminders retain only the native synchronization window; reopening the app refreshes it.
 - Optional payment import covers only new, parseable notifications from selected supported apps.
 - The APK is debug-signed for direct testing. A store release requires a protected release key, managed versions, store assets, and policy review.
+
+### 여행 대기 연결 (0.7.2-debug)
+
+Play스토어 Termux의 미지원 RUN_COMMAND 권한을 제거했습니다. 기존 Termux에서 가벼운 연결만 대기하고 Codex는 요청 시 실행합니다. 최초 페어링 뒤 인증은 재사용하며 새로 설치할 APK는 Orbit 하나입니다. [준비·복구 안내](../../../tools/orbit-travel/README.md)를 따릅니다.
+
+### AI 대화 (0.8.0-debug)
+
+여행 옆 AI 탭에서 목적별 대화를 저장하고 이어갑니다. JSON/Markdown은 기존 Termux에 자동 저장하며, Markdown 내보내기는 Android 문서 저장 창을 사용합니다. 추가 권한이나 앱 설치는 필요하지 않습니다.
+
+### APK 내장 Codex (0.8.7-debug)
+
+내장 AI 빌드는 Android 11 이상 arm64용 Node·Codex ELF와 의존 라이브러리를 APK의
+`lib/arm64-v8a`에 포함한다. 사용 시 별도 Termux 설치나 API 키는 필요하지 않다.
+`AI → AI 사용하기 → 앱 안에서 AI 사용하기 → ChatGPT 로그인`에서 기기 인증 코드를
+받아 브라우저에서 로그인한다. 앱으로 돌아오면 완료 여부를 확인한다.
+기존 Termux 연결이 있으면 업데이트 후에도 그 모드를 유지하며 사용자가 전환한다.
+
+- 인증과 대화는 앱 전용 `files/orbit-ai` 아래에 저장한다. 인증 토큰은 WebView에 전달하지 않는다.
+- 기존 Termux 로그인·대화는 복사하거나 삭제하지 않는다. 연결 설정에서 이전 모드로 돌아갈 수 있다.
+- 내장 서버는 고정 loopback 4320 포트에 bearer/Host/Origin 검사를 적용한다. 외부 프록시나 임의 명령 API는 없다.
+- 질문마다 Codex를 실행/종료한다. 서버는 유휴 60초 후 종료하고 다음 요청에 재시작한다.
+  로그인 중, 실행 중, 확인하지 않은 여행 결과가 있을 때는 종료를 지연한다.
+- 로그인·진행 중인 작업의 지속은 Android 프로세스 생존에 의존한다. 강제 종료 뒤 로그인은 다시 시작할 수 있다.
+- 대화와 SQLite 검색 색인은 재시작 후 유지된다. 앱 삭제 전 필요한 대화는 파일 내보내기로 보관한다.
+
+빌드 준비(산출물은 Git 외부 디렉터리 사용):
+
+```sh
+python scripts/prepare_android_codex.py "$STAGING_DIR" "$TERMUX_PREFIX" "$CODEX_PACKAGE_DIR"
+ORBIT_NATIVE_RUNTIME_DIR="$STAGING_DIR" bash scripts/build_android_apk.sh
+```
+
+준비 스크립트는 `patchelf`로 의존 라이브러리 이름/SONAME/RPATH를 APK 전용으로 변경하고
+런타임 해시 목록, CA 인증서 및 라이선스 고지를 포함한다. Codex 패키지의 설정이나
+개인 HOME/인증 파일은 패키징 대상이 아니다. 실행에는 Android의 고정 시스템 링커와
+설치된 APK의 nativeLibraryDir만 사용한다. 런타임 다운로드/자동 업데이트는 하지 않는다.
+
+검증: 별도 빈 HOME·시스템 PATH·APK용 라이브러리만으로 서버, SQLite 및 Codex
+미로그인 상태 조회를 확인했다. 실제 Orbit 앱 UID에서 실행, 브라우저 로그인 완료 및
+실제 AI 답변은 사용자 기기 실행으로 확인해야 한다. 현재 경량 SDK에는 Android Lint가 없어
+명시적으로 건너뛰며 Java 컴파일·네이티브 정책 테스트·APK 서명 검증은 수행한다.
+
+
+## 2026-09-10 — 0.9.0-debug AI 첨부·모델·사용 한도
+
+AI 채팅에 PDF/TXT/Markdown/CSV/JSON/LOG 첨부와 추출 내용 미리보기·삭제를 추가했다.
+한 메시지 3개, 텍스트 파일 200KB/PDF 5MB, 파일당 추출 12,000자/합계 24,000자로 제한하며
+PDF는 최대 30쪽의 텍스트만 읽는다. 스캔/OCR·암호 PDF는 지원하지 않는다. 일부 추출은 UI에 표시한다.
+추출 내용은 대화 JSON/Markdown과 같은 폴더 검색 색인에 남고, 전송 시 AI에 제공된다.
+원본 파일을 복제 보관하지 않으며 Android 파일 선택은 사용자가 고른 문서 URI만 허용한다.
+PDF.js 워커·CMap·기본 글꼴과 라이선스를 APK에 포함하여 외부 CDN 없이 읽는다.
+
+로그인한 Codex의 model/list 결과로 모델을 선택하고 실제 요청에 반영한다. 자동 모델은 기존 설정을 따른다.
+account/rateLimits/read의 잔여율·초기화 시각·조회 시각을 표시한다. 정확한 잔여 토큰 수는 제공되지 않으므로
+추정하지 않는다. 한도는 계정 기준이며 선택 모델의 별도 한도와 다를 수 있다.
+화면 진입·답변 완료·수동 새로고침 때만 조회하고 주기적인 폴링은 하지 않는다.
+기존 대화·인증을 유지하며, 첨부/모델을 지원하지 않는 구형 실행 환경은 전송 전에 안내한다.
+
+검증: 웹/로컬 서버 회귀 테스트, 실제 PDF와 번들 글꼴 추출, 로그인된 Codex의 모델/한도 조회.
+Android 파일 선택 및 업데이트 APK의 실제 화면·전송은 설치 후 기기 확인이 필요하다.

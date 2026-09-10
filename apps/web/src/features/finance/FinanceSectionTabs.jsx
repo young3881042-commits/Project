@@ -1,3 +1,5 @@
+import MemoNavIcon from '../../components/MemoNavIcon.jsx';
+
 export const FINANCE_SECTION_IDS = Object.freeze([
   'ledger',
   'manual',
@@ -6,10 +8,10 @@ export const FINANCE_SECTION_IDS = Object.freeze([
 ]);
 
 const FINANCE_SECTIONS = Object.freeze([
-  Object.freeze({ id: 'ledger', label: '내역', description: '조회' }),
-  Object.freeze({ id: 'manual', label: '수동 입력', description: '수입·지출' }),
-  Object.freeze({ id: 'automation', label: '자동 기록', description: '결제·정기' }),
-  Object.freeze({ id: 'manage', label: '분류·공유', description: '설정·파일' })
+  Object.freeze({ id: 'ledger', label: '내역', description: '조회', icon: 'list' }),
+  Object.freeze({ id: 'manual', label: '수동 입력', description: '수입·지출', icon: 'edit' }),
+  Object.freeze({ id: 'automation', label: '자동 기록', description: '결제·정기', icon: 'bell' }),
+  Object.freeze({ id: 'manage', label: '분류·공유', description: '설정·파일', icon: 'settings' })
 ]);
 
 function nextSectionIndex(key, currentIndex) {
@@ -52,6 +54,7 @@ export default function FinanceSectionTabs({ active, onChange }) {
               onClick={() => onChange?.(section.id)}
               onKeyDown={(event) => selectFromKeyboard(event, index)}
             >
+              <MemoNavIcon type={section.icon} />
               <strong>{section.label}</strong>
               <small>{section.description}</small>
             </button>

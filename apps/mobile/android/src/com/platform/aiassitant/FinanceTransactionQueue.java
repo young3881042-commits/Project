@@ -376,6 +376,11 @@ final class FinanceTransactionQueue {
         if (FinanceNotificationParser.KAKAO_PAY_SOURCE.equals(source)) {
             return LEGACY_KAKAO_PAY_FALLBACK_MERCHANT.equals(merchant);
         }
+        if (FinanceNotificationParser.TOSS_SOURCE.equals(source)) {
+            return "토스".equals(merchant)
+                    || "토스페이".equals(merchant)
+                    || "토스뱅크".equals(merchant);
+        }
         return false;
     }
 

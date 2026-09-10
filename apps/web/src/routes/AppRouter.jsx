@@ -8,6 +8,8 @@ const LIFEHUB_PATHS = new Set([
   '/memo',
   '/schedule',
   '/finance',
+  '/travel',
+  '/ai',
   '/more'
 ]);
 
@@ -50,6 +52,9 @@ function normalizeRoutePath(routePath) {
 function redirectPathForRoute(routePath) {
   if (routePath === '/') return DEFAULT_APP_PATH;
   const root = routePath.split('/').filter(Boolean)[0] || '';
+  if (['planner', 'plans'].includes(root)) return '/travel';
+  if (root === 'travel' && routePath !== '/travel') return '/travel';
+  if (routePath === '/travel' || routePath === '/ai') return '';
   if (LEGACY_ROUTE_ROOTS.has(root)) return DEFAULT_APP_PATH;
   return '';
 }

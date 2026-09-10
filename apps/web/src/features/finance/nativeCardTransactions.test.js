@@ -79,7 +79,7 @@ test('native 카드 capability와 설정 API는 정확한 메서드 집합에서
   assert.equal(hasNativeCardImportApi({ AiAssistantNative: {} }), false);
 });
 
-test('native capability는 두 source의 정확한 ID, 순서, label 외에는 fail-closed 한다', () => {
+test('native capability는 세 source의 정확한 ID, 순서, label 외에는 fail-closed 한다', () => {
   const capabilities = {
     schemaVersion: 1,
     nativeCardImport: true,
@@ -131,6 +131,10 @@ test('candidate는 허용된 최소 필드만 받고 원문·잔액·계좌처�
     'kakao-pay'
   );
   assert.equal(normalizeNativeCardCandidate({ ...candidate(), rawText: '원문' }), null);
+  assert.deepEqual(
+    normalizeNativeCardCandidate(candidate({ source: 'toss' })).source,
+    'toss'
+  );
   assert.equal(normalizeNativeCardCandidate(candidate({ merchant: '잔액 12,000원' })), null);
   assert.equal(normalizeNativeCardCandidate(candidate({ merchant: '계좌 110-123-456789' })), null);
   assert.equal(normalizeNativeCardCandidate(candidate({ merchant: 'Available balance' })), null);
@@ -172,7 +176,7 @@ test('peek은 matching requestId의 strict batch만 반환한다', async () => {
   });
   const result = await requestPendingCardTransactions({
     owner: 'GuestUser',
-    sources: ['kakao-pay', 'samsung-wallet'],
+    sources: ['toss', 'kakao-pay', 'samsung-wallet'],
     target,
     timeoutMs: 1000
   });

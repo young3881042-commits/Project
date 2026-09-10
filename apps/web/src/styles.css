@@ -59,6 +59,10 @@
 @import './styles/lifehub-home-calendar.css';
 @import './styles/lifehub-finance.css';
 @import './styles/lifehub-finance-navigation.css';
+@import './styles/lifehub-polish.css';
+@import './styles/orbit-travel.css';
+@import './styles/orbit-chat.css';
+@import './styles/orbit-refinements.css';
 
 @media (max-width: 900px) {
 #root {

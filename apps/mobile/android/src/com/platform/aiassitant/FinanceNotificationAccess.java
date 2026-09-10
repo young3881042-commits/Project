@@ -81,11 +81,13 @@ final class FinanceNotificationAccess {
         try {
             String[] sourceIds = {
                     FinanceNotificationParser.SAMSUNG_WALLET_SOURCE,
-                    FinanceNotificationParser.KAKAO_PAY_SOURCE
+                    FinanceNotificationParser.KAKAO_PAY_SOURCE,
+                    FinanceNotificationParser.TOSS_SOURCE
             };
             String[] sourceLabels = {
                     "삼성월렛",
-                    "카카오페이 앱"
+                    "카카오페이 앱",
+                    "토스 앱"
             };
             Set<String> selectedSourceIds = FinanceTransactionQueue.selectedSources(context);
             for (int index = 0; index < sourceIds.length; index += 1) {

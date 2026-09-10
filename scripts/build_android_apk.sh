@@ -133,28 +133,14 @@ run_android_security_tests() {
   java \
     -classpath "${test_classes_dir}:${BUILD_DIR}/classes:${platform_dir}/android.jar" \
     com.platform.aiassitant.FinanceSharePolicyStaticTest
+  java \
+    -classpath "${test_classes_dir}:${BUILD_DIR}/classes:${platform_dir}/android.jar" \
+    com.platform.aiassitant.TravelApiPolicyStaticTest
 }
 
 scan_apk_credentials() {
-  local apk_path="$1"
-  local entry_pattern='(^|/)(auth\.json|credentials?\.json|secrets?\.json|[^/]*\.(keystore|jks|p12|pfx)|\.env([^/]*)?)$'
-  local value_pattern='(sk-(proj-)?[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}|lhb_[A-Za-z0-9._-]{4,}\.[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|"(access_token|refresh_token|id_token|api_key)"[[:space:]]*:[[:space:]]*"[^"$]{16,}")'
-
   log "Scanning APK for embedded credential files and values."
-  if ! unzip -tqq "${apk_path}"; then
-    echo "APK credential scan could not validate the archive." >&2
-    exit 2
-  fi
-  if unzip -Z1 "${apk_path}" | LC_ALL=C grep -E "${entry_pattern}" >/dev/null; then
-    echo "APK credential scan rejected a sensitive file entry." >&2
-    exit 2
-  fi
-  # Do not use grep -q here: consuming the complete stream avoids SIGPIPE ambiguity
-  # under pipefail, and matching credential values are never printed to logs.
-  if unzip -p "${apk_path}" | strings -a -n 8 | LC_ALL=C grep -E "${value_pattern}" >/dev/null; then
-    echo "APK credential scan rejected a value that looks like a real credential." >&2
-    exit 2
-  fi
+  python3 "${ROOT_DIR}/scripts/scan_android_credentials.py" "$1"
 }
 
 verify_apk_finance_notification_capability() {
@@ -192,7 +178,8 @@ verify_apk_finance_notification_capability() {
   fi
   for approved_package in \
       'com.samsung.android.spay' \
-      'com.kakaopay.app'; do
+      'com.kakaopay.app' \
+      'viva.republica.toss'; do
     if ! unzip -p "${apk_path}" classes.dex \
         | strings -a -n 8 \
         | LC_ALL=C grep -c "${approved_package}" >/dev/null; then
@@ -301,7 +288,8 @@ audit_android_source_security() {
   fi
   for approved_package in \
       'com.samsung.android.spay' \
-      'com.kakaopay.app'; do
+      'com.kakaopay.app' \
+      'viva.republica.toss'; do
     if ! LC_ALL=C grep -F "${approved_package}" \
         "${java_dir}/com/platform/aiassitant/FinanceNotificationParser.java" >/dev/null; then
       echo "Android source audit requires every approved finance package in the exact allowlist." >&2
@@ -333,11 +321,24 @@ audit_android_source_security() {
     exit 2
   fi
   if LC_ALL=C grep -E \
-      'ACCESS_NETWORK_STATE|android:networkSecurityConfig|android:usesCleartextTraffic="true"' \
+      'ACCESS_NETWORK_STATE|android:usesCleartextTraffic="true"' \
       "${APP_DIR}/AndroidManifest.xml" >/dev/null \
       || ! LC_ALL=C grep -F 'android:usesCleartextTraffic="false"' \
           "${APP_DIR}/AndroidManifest.xml" >/dev/null; then
-    echo "Android source security audit requires the Bridge-free cleartext-disabled manifest." >&2
+    echo "Android source security audit requires cleartext disabled by default." >&2
+    exit 2
+  fi
+  local travel_network_expected='<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+    </domain-config>
+</network-security-config>'
+  if ! LC_ALL=C grep -F 'android:networkSecurityConfig="@xml/travel_network_security"' "${APP_DIR}/AndroidManifest.xml" >/dev/null \
+      || [[ ! -f "${APP_DIR}/res/xml/travel_network_security.xml" ]] \
+      || [[ "$(< "${APP_DIR}/res/xml/travel_network_security.xml")" != "${travel_network_expected}" ]]; then
+    echo "Android travel networking must allow only the explicit loopback exception." >&2
     exit 2
   fi
   if [[ -f "${backup_source}" ]] \
@@ -457,6 +458,10 @@ build_raw_apk() {
 
   log "Embedding apps/web/dist into the APK."
   cp -R "${WEB_DIR}/dist/." "${BUILD_DIR}/assets/www/"
+  if [[ -n "${ORBIT_NATIVE_RUNTIME_DIR:-}" ]]; then
+    cp -R "${ORBIT_NATIVE_RUNTIME_DIR}/assets/." "${BUILD_DIR}/assets/"
+  fi
+  node "${ROOT_DIR}/scripts/build_travel_runtime.mjs" "${BUILD_DIR}/assets/orbit-travel-runtime.mjs"
 
   local embedded_web_build_id embedded_web_build_source
   embedded_web_build_id="$({
@@ -527,6 +532,13 @@ build_raw_apk() {
     cd "${BUILD_DIR}/dex"
     zip -q "${BUILD_DIR}/ai-assitant-with-dex.apk" classes.dex
   )
+
+  if [[ -n "${ORBIT_NATIVE_RUNTIME_DIR:-}" ]]; then
+    if [[ ! -f "${ORBIT_NATIVE_RUNTIME_DIR}/lib/arm64-v8a/liborbit_codex.so" ]]; then
+      echo "Missing staged Android Codex engine." >&2; exit 2
+    fi
+    (cd "${ORBIT_NATIVE_RUNTIME_DIR}" && zip -qr "${BUILD_DIR}/ai-assitant-with-dex.apk" lib)
+  fi
 
   local keystore keystore_password key_alias key_password
   keystore="${ANDROID_KEYSTORE:-${APP_DIR}/.debug/ai-assitant-debug.keystore}"

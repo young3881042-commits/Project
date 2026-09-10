@@ -36,6 +36,9 @@ const litePublicAssets = {
   name: 'lite-public-assets',
   apply: 'build',
   async buildStart() {
+    for (const file of ['LICENSE', 'standard_fonts/LICENSE_FOXIT', 'standard_fonts/LICENSE_LIBERATION']) {
+      this.emitFile({ type: 'asset', fileName: `assets/pdfjs-${file.replaceAll('/', '-')}.txt`, source: await readFile(new URL(`./node_modules/pdfjs-dist/${file}`, import.meta.url)) });
+    }
     await Promise.all(LITE_PUBLIC_FILES.map(async (fileName) => {
       const source = await readFile(new URL(`./public/${fileName}`, import.meta.url));
       this.emitFile({ type: 'asset', fileName, source });
@@ -44,6 +47,8 @@ const litePublicAssets = {
 };
 
 export default defineConfig(({ command }) => ({
+  // Keep PDF binary data on the app origin; data: fetches are excluded by the CSP.
+  build: { assetsInlineLimit: (file) => file.includes('/pdfjs-dist/') ? false : undefined },
   cacheDir: process.env.VITE_CACHE_DIR || 'node_modules/.vite-ai-assitant',
   publicDir: command === 'build' ? false : 'public',
   plugins: [htmlRouteFallback, react(), litePublicAssets],

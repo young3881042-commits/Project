@@ -1,0 +1,135 @@
+/* Current six-tab Orbit UI: shared rhythm, readable forms and clear actions.
+   Keep calendar grids and editor positioning under their owning styles. */
+.lifeHubRoot {
+  --lh-bg: #f6f8f6;
+  --lh-surface: #fff;
+  --lh-border: #dce6df;
+  --lh-muted: #586c62;
+  --lh-ink: #203b32;
+  --lh-text: #263d34;
+  --lh-green: #17685b;
+  --lifehub-border: var(--lh-border);
+  --lifehub-muted: var(--lh-muted);
+  --lifehub-surface: var(--lh-surface);
+  font-family: "Pretendard Variable", "SUIT", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.lifeHubRoot :is(p, label, h2, h3, summary) { word-break: keep-all; overflow-wrap: anywhere; }
+.lifeHubRoot :is(input, select, textarea, [contenteditable="true"]) { scroll-margin-block: 112px; }
+.lifeHubRoot .lifeHubPage { gap: 20px; }
+.lifeHubRoot .lifeHubTopBar { background: #f6f8f6; padding-bottom: 12px; }
+.lifeHubRoot .lifeHubTopTitle h1 { font-size: 25px; line-height: 1.25; letter-spacing: -.035em; }
+.lifeHubRoot .lifeHubTopTitle span { color: #586c62; line-height: 1.5; }
+.lifeHubRoot .lifeHubTopAction { border-radius: 50%; border-color: #dde7e0; color: #406555; }
+.lifeHubRoot .lifeHubBottomNav { border-color: #dce6df; background: #fff; padding-top: 8px; }
+.lifeHubRoot .lifeHubBottomNav button { gap: 4px; padding: 7px 2px; border-radius: 14px; font-size: 12px; font-weight: 650; color: #5c6f65; }
+.lifeHubRoot .lifeHubBottomNav button.active { background: #e5f1e9; color: #155c4f; font-weight: 750; }
+.lifeHubRoot .lifeHubBottomNav .memoNavIcon { width: 21px; height: 21px; }
+.lifeHubRoot .lifeHubSectionHeader { align-items: center; gap: 12px; }
+.lifeHubRoot .lifeHubSectionHeader h2 { font-size: 18px; line-height: 1.4; letter-spacing: -.025em; }
+.lifeHubRoot .lifeHubSectionHeader > div > span { font-size: 12px; line-height: 1.6; }
+.lifeHubRoot :is(.lifeHubButton, .lifeHubTextAction, .lifeHubActionButtons button, .lifeHubEmpty button) {
+  min-height: 46px; border-radius: 13px; padding: 11px 16px;
+  font-size: 14px; line-height: 1.5; font-weight: 650;
+}
+.lifeHubRoot :is(.lifeHubButton.primary, .lifeHubActionButtons button.primary, .lifeHubEmpty button) {
+  border: 1px solid #17685b; background: #17685b; color: #fff;
+}
+.lifeHubRoot :is(.lifeHubButton:not(.primary), .lifeHubTextAction) { border: 1px solid #d6e4db; background: #f2f7f3; color: #28564a; }
+.lifeHubRoot :is(.lifeHubFormCard, .lifeHubDetailsCard, .lifeHubProgressCard) { padding: 18px; gap: 16px; border-radius: 18px; border-color: #dce6df; }
+.lifeHubRoot :is(.lifeHubFormCard, .lifeHubDetailsCard) label { gap: 8px; }
+.lifeHubRoot :is(.lifeHubFormCard, .lifeHubDetailsCard) label > span { font-size: 13px; font-weight: 650; line-height: 1.5; }
+.lifeHubRoot :is(.lifeHubFormCard, .lifeHubDetailsCard) :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  min-height: 48px; border-radius: 12px; border-color: #cdded3; background: #fbfdfb;
+  padding: 12px; font-size: 16px; line-height: 1.5; min-width: 0; max-width: 100%;
+}
+.lifeHubRoot :is(.lifeHubFormCard, .lifeHubDetailsCard) small { font-size: 12px; line-height: 1.65; }
+.lifeHubRoot :is(.lifeHubChoiceGroup > div, .lifeHubChipRow, .lifeHubLedgerFilters) { gap: 8px; }
+.lifeHubRoot :is(.lifeHubChoiceGroup button, .lifeHubChipRow button) { min-height: 44px; border-radius: 12px; font-size: 13px; padding: 10px 13px; }
+.lifeHubRoot :is(.lifeHubChoiceGroup button.active, .lifeHubChipRow button.active) { background: #17685b; border-color: #17685b; color: #fff; }
+.lifeHubRoot .lifeHubEmpty { padding: 30px 18px; gap: 12px; border: 1px dashed #cadcd0; border-radius: 18px; background: #fbfdfb; text-align: center; }
+.lifeHubRoot .lifeHubEmpty strong { font-size: 16px; line-height: 1.5; }
+.lifeHubRoot .lifeHubEmpty p { max-width: 30ch; margin-inline: auto; font-size: 13px; line-height: 1.75; }
+.lifeHubRoot .lifeHubToast { border-radius: 16px; padding: 12px 14px; gap: 12px; font-size: 14px; line-height: 1.6; }
+.lifeHubToast > span { min-width: 0; overflow-wrap: anywhere; }
+.lifeHubToast > button { flex-shrink: 0; }
+
+/* Home: existing creation routes, reachable in one tap. */
+.orbitHomeQuickActions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.orbitHomeQuickActions button { display: grid; justify-items: center; align-content: center; gap: 9px; min-height: 94px; padding: 14px 6px; border: 1px solid #dce6df; border-radius: 18px; background: white; color: #28564a; }
+.orbitHomeQuickActions button > span { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; background: #eaf4ee; }
+.orbitHomeQuickActions button:nth-child(2) > span { background: #f7f0df; color: #78612e; }
+.orbitHomeQuickActions button:nth-child(3) > span { background: #eaf0f8; color: #3f6188; }
+.orbitHomeQuickActions .memoNavIcon { width: 20px; height: 20px; }
+.orbitHomeQuickActions strong { font-size: 13px; font-weight: 650; line-height: 1.4; }
+.lifeHubRoot .lifeHubHomeGreeting { padding: 22px 18px; border-radius: 20px; }
+.lifeHubRoot .lifeHubHomeGreeting h2 { font-size: 22px; }
+.lifeHubRoot .lifeHubHomeGreeting p { font-size: 13px; line-height: 1.7; }
+.lifeHubRoot .lifeHubWeeklyStats button { min-height: 120px; border-radius: 16px; }
+.lifeHubRoot .lifeHubBriefingItems strong { line-height: 1.5; }
+.lifeHubRoot .lifeHubBriefingItems small { font-size: 12px; line-height: 1.6; }
+
+/* Schedule: legible status, wrapping titles and comfortable action rows. */
+.lifeHubRoot .lifeHubAgendaHero { padding: 18px; gap: 16px; border-radius: 18px; border-color: #d5e4da; background: #edf5ef; }
+.lifeHubRoot .lifeHubAgendaHero h2 { font-size: 20px; line-height: 1.5; }
+.lifeHubRoot .lifeHubAgendaHero p { font-size: 13px; line-height: 1.6; }
+.lifeHubRoot .lifeHubAgendaCounts { gap: 8px; }
+.lifeHubRoot .lifeHubAgendaCounts article { padding: 12px 6px; border-radius: 12px; text-align: center; }
+.lifeHubRoot .lifeHubAgendaCounts strong { font-size: 20px; font-variant-numeric: tabular-nums; }
+.lifeHubRoot .lifeHubAgendaCounts span { font-size: 12px; font-weight: 600; }
+.lifeHubRoot .lifeHubCalendarStrip button { min-height: 62px; border-radius: 13px; }
+.lifeHubRoot .lifeHubNotificationNotice { border-radius: 14px; padding: 14px; gap: 10px; }
+.lifeHubRoot .lifeHubNotificationNotice :is(strong, span) { white-space: normal; overflow: visible; line-height: 1.65; }
+.lifeHubRoot .lifeHubNotificationNotice button { min-height: 44px; border-radius: 12px; }
+.lifeHubRoot .schedule-timeline-item > div { min-width: 0; border-radius: 16px; padding: 15px; }
+.lifeHubRoot .schedule-timeline-item header { flex-wrap: wrap; gap: 8px; }
+.lifeHubRoot .schedule-timeline-item header strong { white-space: normal; overflow-wrap: anywhere; line-height: 1.55; font-size: 15px; }
+.lifeHubRoot .schedule-timeline-item p { font-size: 13px; line-height: 1.7; }
+.lifeHubRoot .schedule-timeline-item footer { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.lifeHubRoot .schedule-timeline-item footer button { min-height: 44px; border-radius: 11px; padding: 10px 13px; font-size: 13px; }
+.lifeHubRoot .schedule-timeline-item footer button.quiet { color: #9a4035; background: #fff4f0; }
+
+/* Memo retains its paper palette and editor layout. */
+.lifeHubRoot .dailyMemoArchiveHeader { gap: 12px; flex-wrap: wrap; }
+.lifeHubRoot .dailyMemoGrid { gap: 14px; }
+.lifeHubRoot .dailyMemoCard { padding: 16px; border-radius: 17px; box-shadow: 0 3px 12px rgb(34 65 47 / 3%); }
+.lifeHubRoot .dailyMemoCardTitle strong { font-size: 16px; line-height: 1.55; }
+.lifeHubRoot .dailyMemoPlainBody.isCompact { font-size: 14px; line-height: 1.8; }
+.lifeHubRoot :is(.dailyMemoArchiveHeader button, .dailyMemoCardMenu > button, .dailyMemoComposerFooter button, .dailyMemoFolderPanel > header button) { min-height: 44px; }
+.lifeHubRoot .dailyMemoSearch input { font-size: 16px; }
+.lifeHubRoot .dailyMemoSearch { min-height: 48px; border-radius: 13px; }
+.lifeHubRoot .dailyMemoDraftStatus { font-size: 12px; line-height: 1.5; }
+
+/* Finance / settings: readable numbers and less cramped secondary actions. */
+.lifeHubRoot .lifeHubFinanceTabs button { min-height: 72px; border-radius: 12px; }
+.lifeHubRoot .lifeHubFinanceTabs button small { font-size: 11px; }
+.lifeHubRoot .lifeHubLedgerSearch input { font-size: 16px; }
+.lifeHubRoot .finance-ledger-row > div > strong { overflow-wrap: anywhere; line-height: 1.55; }
+.lifeHubRoot .finance-ledger-row > em { font-size: 18px; line-height: 1.5; }
+.lifeHubRoot .lifeHubLedgerActions { gap: 8px; }
+.lifeHubRoot .lifeHubLedgerActions button { padding: 10px 13px; border-radius: 11px; font-size: 13px; }
+.lifeHubRoot .lifeHubLedgerActions .danger { color: #9a4035; background: #fff4f0; border-color: #f0dcd4; }
+.lifeHubRoot .lifeHubBackupActions button { min-height: 48px; padding: 12px; border-radius: 13px; font-size: 14px; }
+.lifeHubRoot .lifeHubLocalStorageCard p { line-height: 1.75; font-size: 13px; }
+.lifeHubRoot .more-settings-list > button { min-height: 66px; border-radius: 14px; }
+
+/* Long results and chat notices remain readable on narrow displays. */
+.lifeHubRoot .orbitTravelResultHeading { flex-wrap: wrap; gap: 12px; }
+.lifeHubRoot .orbitTravelTimeline :is(p, summary), .lifeHubRoot .orbitTravelNotice { font-size: 13px; line-height: 1.8; }
+.lifeHubRoot .orbitTravelTimeline span { font-size: 12px; }
+.lifeHubRoot .orbitTravelFormHint { font-size: 12px; }
+.lifeHubRoot .orbitChatNotice { align-items: flex-start; padding: 12px; margin-block: 8px; border-radius: 13px; background: #fff4ec; font-size: 13px; line-height: 1.6; }
+.lifeHubRoot .orbitChatNotice > span { overflow-wrap: anywhere; padding-block: 6px; }
+.lifeHubRoot .orbitChatNotice button { text-decoration: none; border: 1px solid #ead8c9; background: #fffaf6; }
+.lifeHubRoot .orbitChatToolbar { gap: 6px; padding-bottom: 10px; }
+.lifeHubRoot .orbitChatMessages { scroll-padding-block: 16px; }
+.lifeHubRoot .orbitChatDialog { padding: 22px; max-height: calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+@media (max-width: 359px) {
+  .lifeHubRoot .lifeHubFormCard { padding: 14px; }
+  .lifeHubRoot .lifeHubNotificationNotice { grid-template-columns: 28px minmax(0, 1fr); }
+  .lifeHubRoot .lifeHubNotificationNotice button { grid-column: 1 / -1; }
+  .lifeHubRoot .lifeHubAgendaCounts { gap: 5px; }
+  .lifeHubRoot .lifeHubBackupActions { grid-template-columns: minmax(0, 1fr); }
+  .lifeHubRoot .orbitChatToolbar { flex-wrap: wrap; }
+  .lifeHubRoot .orbitChatToolbar select { flex-basis: calc(100% - 50px); }
+  .lifeHubRoot .orbitChatAiButton { margin-left: auto; }
+}

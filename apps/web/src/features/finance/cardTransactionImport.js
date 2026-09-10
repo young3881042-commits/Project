@@ -5,7 +5,7 @@ import {
   normalizeCardImportSources,
   normalizeNativeCardCandidate
 } from './nativeCardTransactions.js';
-import { financeCategoryForMerchant } from './financeCategories.js';
+import { categoryFromExistingData } from './merchantCategoryModel.js';
 import { normalizeKakaoPayMerchant } from './kakaoPayMerchant.js';
 
 export const CARD_IMPORT_SOURCE_STORAGE_KEY = 'lifehub-card-import-sources:v1';
@@ -52,7 +52,7 @@ function importedEventId(entry) {
     : '';
 }
 
-export function cardBudgetEntry(candidate, categorySettings) {
+export function cardBudgetEntry(candidate, categorySettings, existingEntries = []) {
   const normalized = normalizeNativeCardCandidate(candidate);
   if (!normalized) return null;
   const merchant = normalized.source === 'kakao-pay'
@@ -64,7 +64,7 @@ export function cardBudgetEntry(candidate, categorySettings) {
     type: 'withdraw',
     amount: normalized.amount,
     date: localDateKey(normalized.occurredAt),
-    category: financeCategoryForMerchant(merchant, categorySettings),
+    category: categoryFromExistingData(merchant, existingEntries, categorySettings),
     memo: merchant,
     createdAt: new Date(normalized.occurredAt).toISOString(),
     source: 'card-notification',
@@ -81,10 +81,10 @@ export function recategorizeImportedCardEntries(entries, categorySettings) {
   const items = (Array.isArray(entries) ? entries : []).map((entry) => {
     if (entry?.source !== 'card-notification'
         || entry?.origin?.kind !== 'card-notification'
-        || typeof entry?.memo !== 'string') {
+        || typeof entry?.memo !== 'string' || (entry.category && entry.category !== '기타')) {
       return entry;
     }
-    const category = financeCategoryForMerchant(entry.memo, categorySettings);
+    const category = categoryFromExistingData(entry.memo, entries, categorySettings);
     if (entry.category === category) return entry;
     changed += 1;
     return { ...entry, category };
@@ -160,7 +160,7 @@ export async function importCardTransactionBatch(candidates, {
   }
 
   const entries = newCandidates
-    .map((candidate) => cardBudgetEntry(candidate, categorySettings))
+    .map((candidate) => cardBudgetEntry(candidate, categorySettings, current))
     .map(normalizeBudget);
   if (entries.some((entry) => !entry)) {
     return {

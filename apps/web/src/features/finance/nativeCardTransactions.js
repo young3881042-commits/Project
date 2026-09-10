@@ -3,7 +3,8 @@ export const CARD_IMPORT_SCHEMA_VERSION = 1;
 
 export const CARD_IMPORT_SOURCES = Object.freeze([
   Object.freeze({ id: 'samsung-wallet', label: '삼성월렛' }),
-  Object.freeze({ id: 'kakao-pay', label: '카카오페이 앱' })
+  Object.freeze({ id: 'kakao-pay', label: '카카오페이 앱' }),
+  Object.freeze({ id: 'toss', label: '토스 앱' })
 ]);
 
 export const CARD_IMPORT_SOURCE_IDS = Object.freeze(

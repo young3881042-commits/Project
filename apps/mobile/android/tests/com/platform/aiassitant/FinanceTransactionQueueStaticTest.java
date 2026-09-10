@@ -24,6 +24,7 @@ public final class FinanceTransactionQueueStaticTest {
     public static void main(String[] args) {
         verifyLegacySelectionMigration();
         verifySelectionQueueAndResolutionBoundaries();
+        verifyTossSelectionAndPurge();
     }
 
     private static void verifyLegacySelectionMigration() {
@@ -193,6 +194,42 @@ public final class FinanceTransactionQueueStaticTest {
         require(resolvedKakao != null);
         require(resolvedKakao.equals(Collections.singletonList(secondKakao.eventId)));
         require(FinanceTransactionQueue.pendingCount(context) == 0);
+    }
+
+    private static void verifyTossSelectionAndPurge() {
+        TestContext context = new TestContext();
+        String owner = "toss-owner";
+        FinanceNotificationParser.Candidate toss = candidate(
+                20,
+                FinanceNotificationParser.TOSS_SOURCE,
+                "토스상점"
+        );
+
+        require(FinanceTransactionQueue.configure(
+                context,
+                owner,
+                "[\"toss\"]"
+        ));
+        require(FinanceTransactionQueue.selectedSources(context).equals(
+                Collections.singleton(FinanceNotificationParser.TOSS_SOURCE)
+        ));
+        require(FinanceTransactionQueue.isSourceSelected(
+                context,
+                FinanceNotificationParser.TOSS_SOURCE
+        ));
+        require(FinanceTransactionQueue.enqueue(context, toss));
+        List<FinanceNotificationParser.Candidate> pending =
+                FinanceTransactionQueue.peek(context, owner, "[\"toss\"]");
+        require(pending != null && pending.size() == 1);
+        require(toss.eventId.equals(pending.get(0).eventId));
+
+        require(FinanceTransactionQueue.configure(context, owner, "[]"));
+        require(FinanceTransactionQueue.pendingCount(context) == 0);
+        require(!FinanceTransactionQueue.isSourceSelected(
+                context,
+                FinanceNotificationParser.TOSS_SOURCE
+        ));
+        require(!FinanceTransactionQueue.enqueue(context, toss));
     }
 
     private static FinanceNotificationParser.Candidate candidate(

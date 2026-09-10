@@ -1,0 +1,356 @@
+/* Shared finishing layer for the current four-tab app. */
+.lifeHubRoot {
+  --lh-bg: #f5f8f8;
+  --lh-muted: #596b7b;
+  --lh-border: #e1e9e8;
+}
+
+.lifeHubTopBar {
+  background: rgba(245, 248, 248, 0.96);
+}
+
+.lifeHubTopTitle h1 {
+  letter-spacing: -0.045em;
+}
+
+.lifeHubBottomNav button {
+  font-size: 0.74rem;
+  gap: 5px;
+}
+
+.lifeHubBottomNav button.active {
+  border-color: transparent;
+  background: #e3f3ef;
+  color: #08685d;
+}
+
+.lifeHubHomeGreeting,
+.lifeHubWeeklySummary,
+.lifeHubBriefingCard,
+.homeMonthCalendarCard {
+  box-shadow: 0 4px 18px rgba(25, 54, 49, 0.035);
+}
+
+.lifeHubHomeGreeting {
+  border-color: #d4e9e3;
+  background: linear-gradient(120deg, #e6f5ef, #f8fcfa);
+}
+
+.lifeHubHomeGreeting h2 {
+  line-height: 1.35;
+  letter-spacing: -0.04em;
+}
+
+.lifeHubWeeklyStats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.lifeHubWeeklyStats button {
+  place-items: start;
+  padding: 18px 14px;
+  gap: 9px;
+  border: 0;
+  background: #f0f7f5;
+}
+
+.lifeHubWeeklyStats button:last-child {
+  background: #f1f5fb;
+}
+
+.lifeHubWeeklyStats strong {
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: clamp(1.05rem, 4.3vw, 1.45rem);
+  line-height: 1.25;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.lifeHubBriefingCard > header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.lifeHubBriefingCard > header > div:last-child {
+  width: auto;
+  flex-shrink: 0;
+}
+
+.lifeHubBriefingCard > header > div:last-child button {
+  min-height: 44px;
+}
+
+.lifeHubBriefingItems > button {
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 9px;
+  background: #fff;
+  border-color: #e5ecea;
+}
+
+.lifeHubBriefingItems strong {
+  font-size: 0.86rem;
+}
+
+.lifeHubBriefingItems small {
+  font-size: 0.73rem;
+}
+
+.lifeHubBriefingItems em {
+  max-width: 135px;
+  overflow-wrap: anywhere;
+  text-align: right;
+  font-size: 0.87rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.lifeHubFinancePage > .finance-wallet-card {
+  padding: 18px;
+  gap: 16px;
+  border-color: #d5e6e1;
+  background: #fff;
+  box-shadow: 0 5px 22px rgba(25, 54, 49, 0.045);
+}
+
+.finance-wallet-card > .financeWalletHero {
+  gap: 10px;
+  margin: -18px -18px 0;
+  padding: 24px 20px;
+  border-radius: 19px 19px 0 0;
+  background: linear-gradient(120deg, #115b53, #137769);
+}
+
+.financeWalletHero > span {
+  color: #ddf4ee;
+  font-size: 0.83rem;
+}
+
+.financeWalletHero > strong {
+  color: #fff;
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  line-height: 1.25;
+  letter-spacing: -0.045em;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.finance-wallet-card .financeWalletHero > small {
+  color: #e4f4ef;
+  font-size: 0.74rem;
+}
+
+.financeWalletFigures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.financeWalletFigures > div {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.financeWalletFigures > div + div {
+  padding-left: 12px;
+  border-left: 1px solid var(--lh-border);
+}
+
+.financeWalletFigures dt {
+  color: var(--lh-muted);
+  font-size: 0.75rem;
+}
+
+.financeWalletFigures dd {
+  margin: 0;
+  color: var(--lh-ink);
+  font-size: 0.95rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.finance-wallet-card .lifeHubWalletMeter > strong {
+  font-size: 0.83rem;
+}
+
+.finance-wallet-card.is-warning .lifeHubWalletMeter > div > span {
+  background: #b45309;
+}
+
+.finance-wallet-card.is-warning .lifeHubWalletMeter > strong {
+  color: #92400e;
+}
+
+.lifeHubFinanceTabs {
+  gap: 4px;
+  padding: 5px;
+  background: #eaf0ee;
+  border-color: #dce6e2;
+}
+
+.lifeHubFinanceTabs button {
+  min-height: 76px;
+  justify-items: center;
+  gap: 5px;
+  padding-inline: 3px;
+}
+
+.lifeHubFinanceTabs .memoNavIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.lifeHubFinanceTabs button strong {
+  font-size: 0.81rem;
+}
+
+.lifeHubFinanceTabs button small {
+  color: #52675f;
+  font-size: 0.68rem;
+}
+
+.lifeHubLedgerToolbar {
+  display: grid;
+  gap: 10px;
+}
+
+.lifeHubLedgerSearch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 10px;
+  border: 1px solid #cadbd5;
+  border-radius: 12px;
+  background: #fff;
+  color: #526b61;
+}
+
+.lifeHubLedgerSearch .memoNavIcon {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+}
+
+.lifeHubLedgerSearch input {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 8px 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--lh-ink);
+  font: inherit;
+  font-size: 0.86rem;
+}
+
+.lifeHubLedgerSearch input::placeholder {
+  color: #65766e;
+}
+
+.lifeHubLedgerSearch input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.lifeHubLedgerSearch button {
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #526b61;
+}
+
+.lifeHubLedgerFilters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lifeHubLedgerFilters button {
+  min-width: 50px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #dce6e2;
+  border-radius: 11px;
+  background: #fff;
+  color: #52675f;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.lifeHubLedgerFilters button[aria-pressed="true"] {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #fff;
+}
+
+.lifeHubLedgerFilters > span {
+  margin-left: auto;
+  color: var(--lh-muted);
+  font-size: 0.76rem;
+}
+
+.finance-ledger-section .finance-ledger-row {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px 10px;
+  padding: 14px;
+  border-radius: 14px;
+}
+
+.finance-ledger-row > div:not(.lifeHubLedgerActions) {
+  grid-column: 2 / -1;
+  min-width: 0;
+}
+
+.finance-ledger-section .finance-ledger-row strong {
+  font-size: 0.9rem;
+}
+
+.finance-ledger-section .finance-ledger-row small {
+  margin-top: 4px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  font-size: 0.74rem;
+}
+
+.finance-ledger-section .finance-ledger-row > em {
+  grid-column: 1 / 3;
+  min-width: 0;
+  font-size: 1.05rem;
+  text-align: left;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.finance-ledger-row > em.deposit {
+  color: #087f72;
+}
+
+.finance-ledger-section .lifeHubLedgerActions {
+  grid-column: 3;
+  justify-content: flex-end;
+}
+
+.lifeHubLedgerActions button {
+  min-height: 44px;
+}
+
+@media (max-width: 350px) {
+  .lifeHubFinanceTabs button strong {
+    font-size: 0.76rem;
+  }
+
+  .lifeHubBriefingItems em {
+    max-width: 100px;
+  }
+}

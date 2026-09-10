@@ -146,16 +146,16 @@ export function ScheduleTimelineItem({ item, dateLabel = '', timeLabel, meta, st
         </header>
         <p>{meta}</p>
         <footer>
-          <button type="button" onClick={() => onToggle(item)}>
+          <button type="button" aria-label={`${item.title} ${item.done ? '완료 취소' : '완료'}`} onClick={() => onToggle(item)}>
             {item.done ? '완료 취소' : '완료'}
           </button>
           {onOpen ? (
-            <button type="button" onClick={() => onOpen(item)}>
+            <button type="button" aria-label={`${item.title} 일정 수정`} onClick={() => onOpen(item)}>
               수정
             </button>
           ) : null}
           {onDelete ? (
-            <button type="button" className="quiet" onClick={() => onDelete(item)}>
+            <button type="button" className="quiet" aria-label={`${item.title} 일정 삭제`} onClick={() => onDelete(item)}>
               삭제
             </button>
           ) : null}
@@ -168,14 +168,18 @@ export function ScheduleTimelineItem({ item, dateLabel = '', timeLabel, meta, st
 export function FinanceWalletCard({ remaining, budget, expense, usage, message, children }) {
   const hasBudget = Number.isFinite(usage);
   return (
-    <section className="finance-wallet-card">
-      <header>
-        <span>월간 지갑 · 남은 예산</span>
-        <strong>{remaining}</strong>
-        <small className="finance-amount-row">월 예산 {budget} · 지출 {expense}</small>
+    <section className={`finance-wallet-card${hasBudget && usage >= 80 ? ' is-warning' : ''}`}>
+      <header className="financeWalletHero">
+        <span>{hasBudget ? (usage > 100 ? '월간 지갑 · 예산 초과' : '월간 지갑 · 남은 예산') : '월간 지갑 · 이번 달 지출'}</span>
+        <strong>{hasBudget ? remaining : expense}</strong>
+        <small>{hasBudget ? '내가 정한 예산을 기준으로 보여드려요' : '기록한 지출을 한눈에 확인하세요'}</small>
       </header>
+      <dl className="financeWalletFigures">
+        <div><dt>월 예산</dt><dd>{budget}</dd></div>
+        <div><dt>이번 달 지출</dt><dd>{expense}</dd></div>
+      </dl>
       {hasBudget ? (
-        <div className="lifeHubWalletMeter finance-budget-bar" role="progressbar" aria-label="월 예산 사용률" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.min(100, usage)}>
+        <div className="lifeHubWalletMeter finance-budget-bar" role="progressbar" aria-label="월 예산 사용률" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.min(100, usage)} aria-valuetext={`${usage}% 사용`}>
           <div><span style={{ width: String(Math.min(100, usage)) + '%' }} /></div>
           <strong>{usage}%</strong>
         </div>

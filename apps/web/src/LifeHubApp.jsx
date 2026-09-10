@@ -24,6 +24,7 @@ import {
 import CardTransactionImportPanel from './features/finance/CardTransactionImportPanel.jsx';
 import FinanceCategorySettingsPanel from './features/finance/FinanceCategorySettingsPanel.jsx';
 import FinanceSectionTabs from './features/finance/FinanceSectionTabs.jsx';
+import FinanceLedger from './features/finance/FinanceLedger.jsx';
 import KakaoPayMerchantReviewPanel from './features/finance/KakaoPayMerchantReviewPanel.jsx';
 import FinanceSharePanel from './features/finance/FinanceSharePanel.jsx';
 import RecurringPaymentsPanel from './features/finance/RecurringPaymentsPanel.jsx';
@@ -130,6 +131,8 @@ import {
 } from './features/lifehub-ai/nativeNotifications.js';
 
 const DailyMemoPage = lazy(() => import('./components/notes/daily/DailyMemoPage.jsx'));
+const AiChatPage = lazy(() => import('./features/ai-chat/AiChatPage.jsx'));
+const TravelPage = lazy(() => import('./features/travel/TravelPage.jsx'));
 
 const AUTH_KEY = 'codex-workspace-auth';
 const LIFEHUB_OWNER_KEY = 'ai-assistant-lifehub-local-owner';
@@ -147,6 +150,8 @@ const ROUTE_ALIASES = {
   '/memo': 'memo',
   '/schedule': 'schedule',
   '/finance': 'finance',
+  '/travel': 'travel',
+  '/ai': 'ai',
   '/more': 'more'
 };
 
@@ -1432,7 +1437,6 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
   const requestedFinanceDate = scheduleParamsForPath(path).get('date');
   const focusedFinanceDate = isDateKey(requestedFinanceDate) ? requestedFinanceDate : '';
   const [draft, setDraft] = useState({ type: 'withdraw', amount: '', category: '식비', memo: '', date: focusedFinanceDate || model.today });
-  const [entryLimit, setEntryLimit] = useState(8);
   const [financeSection, setFinanceSection] = useState('ledger');
   const [selectedFinanceCategory, setSelectedFinanceCategory] = useState('');
   const [editingEntryId, setEditingEntryId] = useState('');
@@ -1782,7 +1786,6 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
               aria-controls="finance-ledger-results"
               onClick={() => {
                 setSelectedFinanceCategory((current) => current === category ? '' : category);
-                setEntryLimit(8);
               }}
             >
               <div><strong>{category}</strong><span>{money(amount)}</span></div>
@@ -1822,8 +1825,9 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
         <label><span>메모</span><input value={draft.memo} onChange={(event) => setDraft((current) => ({ ...current, memo: event.target.value }))} placeholder="간단한 메모" /></label>
         <LifeHubButton type="submit" className="primary" icon="plus">{editingEntryId ? '수정 저장' : '거래 저장'}</LifeHubButton>
       </form>
-      <Section
-        className="finance-ledger-section"
+      <FinanceLedger
+        key={`${focusedFinanceDate}:${selectedFinanceCategory}`}
+        entries={visibleBudgetEntries}
         title={selectedFinanceCategory
           ? `${selectedFinanceCategory} 내역`
           : focusedFinanceDate
@@ -1832,156 +1836,18 @@ function FinancePage({ model, path, session, refresh, cardImport }) {
         eyebrow={selectedFinanceCategory
           ? `${financeMonthLabel(categoryMonth)} · ${visibleBudgetEntries.length}개`
           : `${visibleBudgetEntries.length}개`}
-        action={selectedFinanceCategory ? (
-          <button type="button" className="lifeHubTextAction" onClick={() => setSelectedFinanceCategory('')}>전체 내역</button>
-        ) : null}
-      >
-        <div className="lifeHubTransactionList" id="finance-ledger-results" aria-live="polite">
-          {visibleBudgetEntries.slice(0, entryLimit).map((entry) => (
-            <article key={entry.id} className="finance-ledger-row">
-              <span className={entry.type}>{entry.type === 'deposit' ? '수입' : '지출'}</span>
-              <div>
-                <strong>{budgetEntryTitle(entry)}</strong>
-                <small>{budgetEntryMeta(entry)}</small>
-              </div>
-              <em>{entry.type === 'deposit' ? '+' : '-'}{money(entry.amount)}</em>
-              <div className="lifeHubLedgerActions">
-                <button type="button" onClick={() => startEditEntry(entry)} aria-label={budgetEntryTitle(entry) + ' 거래 수정'}>수정</button>
-                <button type="button" className="danger" onClick={() => deleteEntry(entry)} aria-label={budgetEntryTitle(entry) + ' 거래 삭제'}>삭제</button>
-              </div>
-            </article>
-          ))}
-          {visibleBudgetEntries.length > entryLimit ? (
-            <button type="button" className="finance-ledger-more" onClick={() => setEntryLimit((current) => current + 20)}>
-              거래 더 보기 · {visibleBudgetEntries.length - entryLimit}개 남음
-            </button>
-          ) : null}
-          {visibleBudgetEntries.length ? null : <EmptyState title={selectedFinanceCategory ? `${selectedFinanceCategory} 거래가 없어요` : focusedFinanceDate ? '이 날짜의 거래가 없어요' : '아직 기록한 거래가 없어요'} text="금액만 입력해도 이번 달 흐름에 바로 반영돼요." actionLabel="지출 기록하기" icon="chart" onAction={() => openManualEntry('withdraw')} />}
-        </div>
-      </Section>
+        emptyTitle={selectedFinanceCategory ? `${selectedFinanceCategory} 거래가 없어요` : focusedFinanceDate ? '이 날짜의 거래가 없어요' : '아직 기록한 거래가 없어요'}
+        onClearCategory={selectedFinanceCategory ? () => setSelectedFinanceCategory('') : undefined}
+        onAddEntry={() => openManualEntry('withdraw')}
+        onEdit={startEditEntry}
+        onDelete={deleteEntry}
+        titleForEntry={budgetEntryTitle}
+        metaForEntry={budgetEntryMeta}
+      />
     </div>
   );
 }
 
-function TravelPage({ model, session, refresh, navigate }) {
-  const [draft, setDraft] = useState({ title: '', startDate: '', endDate: '', memo: '' });
-  const { feedback, notify, clearFeedback } = useLifeHubFeedback();
-  const nextTrip = model.trips.find((trip) => !trip.startDate || trip.startDate >= model.today) || model.trips[0] || null;
-
-  const submitTrip = (event) => {
-    event.preventDefault();
-    if (!draft.title.trim()) {
-      notify('여행 이름을 입력해주세요.', 'error');
-      return;
-    }
-    const trip = normalizeTrip({
-      id: `trip-${Date.now()}`,
-      ...draft,
-      checklist: [
-        { text: '예약 확인', done: false },
-        { text: '교통 확인', done: false },
-        { text: '숙소 확인', done: false },
-        { text: '일정 메모', done: false }
-      ],
-      createdAt: new Date().toISOString()
-    });
-    if (!trip) return;
-    const result = saveTrips(session, [trip, ...readTrips(session)]);
-    if (!result.saved) {
-      notify('여행 계획을 저장하지 못했어요. 입력 내용은 그대로 두었어요.', 'error');
-      return;
-    }
-    setDraft({ title: '', startDate: '', endDate: '', memo: '' });
-    notify('여행 계획을 추가했어요.', 'success');
-    refresh();
-  };
-
-  const toggleChecklist = (trip, checkId) => {
-    const result = saveTrips(session, readTrips(session).map((item) => (
-      item.id === trip.id
-        ? { ...item, checklist: item.checklist.map((check) => check.id === checkId ? { ...check, done: !check.done } : check) }
-        : item
-    )));
-    notify(result.saved ? '준비 상태를 업데이트했어요.' : '준비 상태 저장에 실패했어요.', result.saved ? 'success' : 'error');
-    if (result.saved) refresh();
-  };
-
-  const deleteTrip = (trip) => {
-    if (!window.confirm('이 여행 계획을 삭제할까요?')) return;
-    const result = saveTrips(session, readTrips(session).filter((item) => item.id !== trip.id));
-    notify(result.saved ? '여행 계획을 삭제했어요.' : '여행 삭제를 저장하지 못했어요.', result.saved ? 'success' : 'error');
-    if (result.saved) refresh();
-  };
-
-  return (
-    <div className="lifeHubPage lifeHubTravelPage">
-      <FeedbackToast feedback={feedback} onClose={clearFeedback} />
-      <TravelBoardingPass
-        className="travel-dday-hero"
-        eyebrow={nextTrip?.startDate ? dDayLabel(nextTrip.startDate) : 'AI TRIP'}
-        title={nextTrip ? nextTrip.title : 'AI로 여행 코스를 만들어보세요'}
-        meta={nextTrip ? [nextTrip.startDate, nextTrip.endDate].filter(Boolean).join(' - ') || '날짜 미정' : '지역과 날짜를 넣으면 기존 AI 여행 플래너가 코스를 생성합니다.'}
-        badge={nextTrip ? `${nextTrip.checklist.filter((item) => item.done).length}/${nextTrip.checklist.length}` : 'AI'}
-      >
-        <div className="lifeHubTravelActions">
-          <button type="button" className="primary" onClick={() => navigate('/planner')}>AI 여행 만들기</button>
-          <button type="button" onClick={() => navigate('/plans')}>저장 코스</button>
-        </div>
-      </TravelBoardingPass>
-
-      {nextTrip ? (
-        <article className="lifeHubTripFocus travel-boarding-pass">
-          <div>
-            <span>{nextTrip.startDate ? dDayLabel(nextTrip.startDate) : '날짜 미정'}</span>
-            <strong>{nextTrip.title}</strong>
-            <p>{nextTrip.checklist.filter((item) => !item.done).length}개 준비 항목이 남았어요.</p>
-          </div>
-          <div className="lifeHubProgress"><span style={{ width: `${progressPercent((nextTrip.checklist.filter((item) => item.done).length / Math.max(1, nextTrip.checklist.length)) * 100)}%` }} /></div>
-        </article>
-      ) : null}
-
-      <div className="lifeHubTripList">
-        {model.trips.map((trip) => (
-          <article key={trip.id} className="travel-boarding-pass travel-itinerary-row">
-            <header>
-              <div>
-                <span>{trip.startDate ? dDayLabel(trip.startDate) : '날짜 미정'}</span>
-                <strong>{trip.title}</strong>
-                <small>{[trip.startDate, trip.endDate].filter(Boolean).join(' - ') || '일정을 정해보세요.'}</small>
-              </div>
-              <button type="button" className="lifeHubInlineDelete" onClick={() => deleteTrip(trip)} aria-label={`${trip.title} 삭제`}>
-                삭제
-              </button>
-            </header>
-            <p>{trip.memo || '예약/교통/숙소 상태를 확인하세요.'}</p>
-            <div className="lifeHubTripChecks travel-checklist-strip">
-              {trip.checklist.map((check) => (
-                <button type="button" key={check.id} className={check.done ? 'done' : ''} onClick={() => toggleChecklist(trip, check.id)}>
-                  {check.done ? '완료' : '대기'} · {check.text}
-                </button>
-              ))}
-            </div>
-          </article>
-        ))}
-        {model.trips.length ? null : <div className="travel-empty-state"><EmptyState title="예정된 여행이 아직 없어요" text="여행을 추가하면 예약, 교통, 숙소 체크리스트가 함께 만들어져요." actionLabel="여행 계획 추가" icon="trip" onAction={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })} /></div>}
-      </div>
-
-      <form className="lifeHubFormCard lifeHubFastForm" onSubmit={submitTrip}>
-        <header><strong>여행 체크리스트 추가</strong><small>AI 코스와 별개로 예약, 교통, 숙소 준비를 관리합니다.</small></header>
-        <label><span>여행 이름</span><input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="예: 제주 주말 여행" /></label>
-        <div className="lifeHubTwoCol">
-          <label><span>출발</span><input type="date" value={draft.startDate} onChange={(event) => setDraft((current) => ({ ...current, startDate: event.target.value }))} /></label>
-          <label><span>도착</span><input type="date" value={draft.endDate} onChange={(event) => setDraft((current) => ({ ...current, endDate: event.target.value }))} /></label>
-        </div>
-        <details className="lifeHubInlineDetails">
-          <summary>예약/교통/숙소 메모 더하기</summary>
-          <label><span>메모</span><input value={draft.memo} onChange={(event) => setDraft((current) => ({ ...current, memo: event.target.value }))} placeholder="예약 번호, 교통편, 일정 메모" /></label>
-        </details>
-        <LifeHubButton type="submit" className="primary" icon="plus">체크리스트 저장</LifeHubButton>
-      </form>
-    </div>
-  );
-}
 
 function backupDataForModel(model, dailyBriefingSettings) {
   return {
@@ -2050,8 +1916,8 @@ function MorePage({ model, session, refresh, onRestoreBackup }) {
       <section className="lifeHubLocalStorageCard more-control-section" aria-label="저장 방식">
         <span><MemoNavIcon type="file" /></span>
         <div>
-          <strong>{storageStatus.mode === 'indexeddb' ? '기기 데이터베이스에 저장' : '이 기기에 저장'}</strong>
-          <p>{storageStatus.mode === 'indexeddb' ? '기존 기록을 유지하면서 IndexedDB에도 안전하게 보관하고 있어요.' : 'IndexedDB를 사용할 수 없어 호환 저장소에 기록하고 있어요.'} 저장공간이 부족하면 기존 데이터를 유지한 채 알려드려요.</p>
+          <strong>이 기기에 기록을 보관해요</strong>
+          <p>일정·메모·가계부는 이 기기에 저장돼요. 기기를 바꾸기 전에는 아래에서 백업 파일을 저장해주세요. 저장공간이 부족하면 기존 데이터를 유지한 채 알려드려요.</p>
           <small>{storageEstimate?.usage ? 'Orbit 사용량 약 ' + Math.max(0.1, storageEstimate.usage / 1048576).toFixed(1) + 'MB' : storageStatus.state === 'ready' ? '저장소 동기화 완료' : '로컬 저장 사용 중'}</small>
         </div>
       </section>
@@ -2246,6 +2112,8 @@ export default function LifeHubApp({ path, navigate }) {
       cardImport={cardImport}
     />
   );
+  else if (route === 'ai') content = <AiChatPage key={storageUsername(session)} owner={storageUsername(session)} />;
+  else if (route === 'travel') content = <TravelPage key={storageUsername(session)} model={model} owner={storageUsername(session)} readTrips={() => readTrips(session)} saveTrips={items => saveTrips(session, items)} refresh={refresh} />;
   else if (route === 'more') content = (
     <MorePage
       model={model}

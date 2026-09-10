@@ -1,5 +1,119 @@
 # 프로젝트 변경 기록
 
+## 2026-09-09 알림 사용처 자동 분류 · v37
+
+- 같은 사용처의 기존 분류를 알림 가져오기에 재사용한다. 이미 정한 카테고리를 반복 카카오페이 정리나 분류 설정 저장이 기타로 되돌리는 경로를 수정했다.
+- 결제 저장/ack 뒤 선택 소스의 기타 사용처 최대 8개를 검색한다. 금액·알림 원문·잔액·계좌·이벤트 ID를 검색에 보내지 않는다. 최신 기록 재조회와 ID/사용처/기타 검사로 사용자 수정·삭제·소유자 전환을 보호한다.
+- 기존 로컬 서버와 Native 고정 create/poll 액션을 추가했고 여행/대화와 동시 실행을 제한했다. 실제 검색 증거·높은 확신·공개 출처가 있어야 분류하며 미확인은 기타 유지, 결과 캐시와 실패 대기로 반복 검색을 줄인다.
+- 웹 288개, 서버/검색/adapter 25개 통과. 실제 공개 테스트 사용처 스타벅스를 웹 검색해 커피로 분류하고 공식 기업 출처를 확인했다. 테스트 과정에서 Markdown 링크를 원시 URL로 해석하지 못하는 문제를 고쳐 회귀 검증했다. 사용자 실제 거래는 이 생성 테스트에 사용하지 않았다.
+- production build, Android compile/native smoke, 서명 v1/v2/v3, 민감정보 검사 통과. 경량 SDK의 Android Lint는 제외했으며 실기기 알림 수신부터 자동 분류까지의 화면 왕복은 미실행이다.
+- 기존 standby에 최신 코드를 설치·재시작하고 기존 인증과 merchantClassification capability를 확인했다. orbit-web-v55, Android 0.8.6-debug(37), APK 268053 bytes. /sdcard/Download/Orbit-latest.apk와 원본 SHA-256 2ac86e41245325f58cf6c25da7427058309dd14b4fa93c488e2d4aed3525fb5c 일치.
+
+
+## 2026-09-07 네이버 한국어 여행 자료 우선 · v36
+
+- 여행 생성 검색 지시를 `travel-research.mjs`로 분리했다. 한국어 검색·네이버 통합검색 시도·접근 불가 시 네이버 도메인 검색, 실제 출처만 표시, 공식 자료 교차 확인, 네이버 자료 부족 안내를 명시했다. 검색 API 교체나 별도 인증/서비스 추가는 아니다.
+- 일정 입력 안내를 갱신하고 기존 10~22시/이모지/여백을 유지했다. 기존 standby를 유휴 상태에서 교체·재시작하고 인증 유지와 API 200을 확인했다.
+- 여행/서버/화면 68개 테스트, production build, Android compile/native smoke/서명 v1/v2/v3/민감정보 검사를 통과했다. 경량 SDK의 Android Lint와 실제 APK 설치/터치 확인은 미실행이다.
+- orbit-web-v54, Android 0.8.5-debug(36), APK 268138 bytes, SHA-256 8cc739d903ecbca36f2fb65320e5214128beb5ca81f01918f69dfb000ce50790. /sdcard/Download/Orbit-latest.apk 복사 및 내장된 네이버 검색 지시를 확인했다.
+
+
+## 2026-09-07 여행 이모지·여백·10~22시 · v35
+
+- 여행 입력/일정 카드에 이모지를 추가하고 필드 간격 22px, 카드 간격 22px, 설명 행간과 이동/비용 구분을 넓혔다.
+- 새 여행 생성은 매일 10:00~22:00, 식사·휴식·귀환을 포함하도록 지시한다. 생성 결과 검증이 09:59/22:01을 거부하며 기존 저장 여행은 이전 시간도 그대로 읽는다. 화면에 시간 범위를 표시한다.
+- 여행/서버 36개 및 UI·버전 32개 테스트 통과, 최종 생성 지시 수정 후 adapter 4개 재검증 통과. 웹 build, Android compile/native smoke/서명 v1/v2/v3/민감정보 검사를 통과했다. 경량 SDK의 Lint는 제외했으며 실제 Android 화면 터치는 미실행이다.
+- 기존 standby 번들을 교체하고 유휴 프로세스를 재시작해 인증 유지와 API 200을 확인했다. APK 안의 새 UI와 10~22시 생성 지시도 확인했다.
+- orbit-web-v53, Android 0.8.4-debug(35), APK 268138 bytes. /sdcard/Download/Orbit-latest.apk와 원본 SHA-256 330bfdc8078616a2d70a64afdf5f09400d37867107ff77ca88f43da74eb373aa 일치.
+- 실제 Codex로 종로 1일 일정을 생성해 10:00 시작과 22:00 종료를 확인했다. 검증용 일정은 사용자 저장 여행에 추가하지 않았다.
+
+
+## 2026-09-07 여행 입력·일정 읽기 개선 · v34
+
+- 큰 소개 영역을 제거하고 여행지·날짜/기간·인원을 앞에 모았다. 종료일 안내, 인원 증감, 여행 속도 선택 버튼을 추가하고 취향/요청은 접힌 영역에 유지했다. 연결 도움말은 입력/결과 뒤로 이동했다.
+- 생성 중 입력폼을 숨기고 진행·취소를 보여준다. 완료된 미리보기는 일정부터 열리며 조건 수정/결과 돌아가기와 저장 버튼을 제공한다. 기존 초안·저장·인증·RAG 서버를 유지했다.
+- 날짜별 일정은 시간·장소를 먼저 보여주고 상세 설명·이동·비용은 개별/전체 펼침으로 읽는다. 이전/다음 날 이동과 상단 저장 동작, 360px 이하 날짜 입력 한 열 배치를 추가했다.
+- 웹 전체 281개 통과 후 최종 변경에 여행 관련 12개(결과 복원/생성 중 입력 숨김 추가 포함)를 재검증했다. production build 98 modules, Java/native smoke/서명 v1/v2/v3/민감정보 검사 통과. 경량 SDK의 Android Lint는 제외했으며 실제 기기의 터치·키보드·스크롤은 미확인이다.
+- orbit-web-v52, Android 0.8.3-debug(34). /sdcard/Download/Orbit-latest.apk 268138 bytes, SHA-256 1653c20eb746f53a692e90ceb69958eb54f6c311eb7bb96fc71d91f71ea37cd0. 원본과 복사본 일치 및 APK의 새 여행 번들을 확인했다.
+
+
+## 2026-09-07 같은 폴더의 대화 검색 · v33
+
+- 기존 대기 프로세스에 SQLite FTS5 검색을 추가했다. JSON 원본을 유지하며 질문/AI 답변/출처를 파싱하고 새 메시지만 증분 색인한다. 별도 서비스·임베딩 API·백그라운드 색인 타이머는 없다.
+- 질문 시 같은 폴더에서 최대 4개 관련 발췌를 전달하고 최근 20개와 중복되는 항목을 제외한다. 답변의 접힌 출처에서 원문으로 이동한다. 역할 구분, 현재 수정 우선, 검색된 기록의 지시 무시를 생성기에 명시했다.
+- SQLite 복구/0600/심볼릭 링크 거부, 증분 쓰기/재시작/폴더 이동·범위/중복 요청/색인 장애 시 일반 채팅 지속을 검증했다. 웹 281/281, 서버·검색·adapter 23/23, production build 98 modules, Android compile/native smoke/민감정보 검사/서명 v1/v2/v3 통과. 경량 SDK의 Android Lint는 제외했다.
+- 임시 데이터로 실제 Codex HTTP 생성 테스트를 수행했다. 새 대화에서 이전 사용자 예산 37만원을 검색하고 AI 제안 99만원과 구분하며 [기억 1] 출처 및 JSON 저장을 확인했다. 테스트 데이터는 사용자 대화에 넣지 않았다.
+- 기존 private standby bundle을 교체하고 유휴 상태에서 해당 프로세스만 재시작했다. 기존 인증 유지, chat API 200, 검색 DB 생성 및 권한을 확인했다. orbit-web-v51, Android 0.8.2-debug(33), APK 264042 bytes, SHA-256 90ec853caabc98839a6b014a2673795191cc4072945c30bb25d0d1a8169c6a14. /sdcard/Download/Orbit-latest.apk와 원본 일치 및 새 번들 포함 확인.
+- 키워드 기반 검색이며 의미 임베딩/이 Codex 대화 자동 가져오기는 포함하지 않는다. 실제 Android 터치·키보드·출처 이동 및 APK 설치는 미실행이다.
+
+
+## 2026-09-06 AI 채팅 중심 화면 · v32
+
+- 사용자 요청에 따라 큰 안내와 분리된 목록 화면을 없애고, 폴더 탭과 채팅창을 기본 화면으로 구성했다. 폴더별 저장 대화는 제목 선택에서 바꾸며 새 폴더 추가·제목 수정·폴더 이동·파일 내보내기를 지원한다.
+- 첫 메시지 전송 시 대화를 자동 생성한다. 생성 직후 전송은 반환된 대화 ID를 명시적으로 사용하고, 마지막 선택·폴더별 새 대화 초안·기존 대화 초안을 로컬 캐시에 보존한다. 관리와 연결은 네이티브 dialog 안에 모았다.
+- 웹 280/280, production build 98 modules, Android compile/native smoke, 서명 v1/v2/v3, 민감정보 검사 통과. 경량 SDK에 없는 Android Lint는 제외했다. 실제 Android 화면의 키보드/TalkBack/터치 확인은 미실행이다.
+- orbit-web-v50, Android 0.8.1-debug(32). /sdcard/Download/Orbit-latest.apk 264042 bytes, SHA-256 1e30bf2b1d3555830028badd66f8160b5c48e3ba541d79d9a4d2c45387ad341b. 원본과 복사본 일치 및 APK 내 새 AI 번들 포함을 확인했다.
+
+
+## 2026-09-06 여행 초안 정리와 Termux Codex 여행 탭
+
+변경 내용:
+
+- 기존 여행 플래너를 기본 입력/접힌 취향/날짜별 결과로 정리하고, 5번째 여행 탭과 `계획 만들기·내 여행`을 추가했습니다. 오래된 `/planner`, `/plans` 링크를 새 화면에 연결했습니다.
+- 기존 초안은 사용자가 불러올 때만 복사하며 원본은 보존합니다. 생성 중 탭 이동·취소·재조회, 입력/미리보기 보관, 명시적인 저장과 기존 체크리스트·v2 백업 호환을 추가했습니다.
+- `tools/orbit-travel` 전용 Node API가 Termux의 로그인된 Codex를 실행합니다. 일회 코드·bearer 인증·loopback/Host/Origin 제한, 입력/결과 검증, 한 작업 제한, 요청 ID 중복 방지, 타임아웃·프로세스 그룹 취소를 적용했습니다.
+- Android는 고정 여행 액션만 제공하며 인증은 private preferences에 보관합니다. 네트워크 예외는 `127.0.0.1` 한 호스트로 제한하고 기존 WebView mixed-content/CSP와 비활성 AI Bridge 경계를 유지했습니다.
+- `orbit-web-v46`, Android `0.7.0-debug`(versionCode 28). 로컬 보조 서비스 사용법은 `tools/orbit-travel/README.md`에 정리했습니다.
+
+검증:
+
+- Termux Node 26.3.1 기준 웹 275개, 여행 API/실행기 10개 테스트 통과. 폼/결과 SSR 렌더, 문자열 escaping, 이전 초안/백업 왕복, 인증/만료/입력 제한, 중복 요청과 취소를 포함합니다.
+- 실제 로그인된 Codex로 종로 하루 여행 생성 성공(5개 방문 일정, 5개 참고 출처). 앱의 다른 개인 기록은 테스트에 사용하지 않았습니다.
+- 실제 HTTP API의 페어링 → 생성 → 진행 조회 → 완료까지 종로 2일 여행으로 확인했습니다. 날짜별 5개 일정과 5개 출처가 검증을 통과했으며 테스트 서버는 종료했습니다.
+- production build: 95 modules, 초기 JS 351.54kB(gzip 114.91kB), 여행 지연 청크 17.91kB(gzip 7.46kB), CSS 128.36kB(gzip 21.99kB).
+- Android compile, native smoke(여행 액션 정책 포함), 기존 결제 알림/공유 capability, APK 민감정보 검사 및 v1/v2/v3 서명 검증 통과. 현재 경량 SDK 환경에서 Android Lint는 제외했습니다.
+- `/sdcard/Download/Orbit-latest.apk`: 243,314바이트, SHA-256 `b24a411580a5db09c2bb91e7da9d2ec2d8b49d562f6eb7b33d4154b817f555d2`.
+- 실제 Android 화면 터치·회전·업데이트 설치와 native 페어링은 별도 기기 확인이 필요합니다. 기존 사용자 변경은 보존했고 commit/push는 하지 않았습니다.
+
+## 2026-09-05 홈·가계부 UI 개선과 거래 검색
+
+변경 내용:
+
+- 홈 활동 요약을 두 지표에 맞춘 2열로 정리하고 숫자·브리핑 버튼·하단 탭의 가독성을 높였습니다.
+- 월간 지갑에 청록색 금액 영역과 월 예산/지출 비교를 적용했습니다. 예산 미설정 시 이번 달 지출을 먼저 보여주고 예산 초과는 제목과 실제 사용률로 구분합니다.
+- 가계부 4개 내부 메뉴에 아이콘을 추가하고 거래의 날짜·메모·긴 금액과 수정/삭제 버튼 배치를 정리했습니다.
+- 사용처·메모·분류·날짜·금액 검색과 전체/지출/수입 필터를 추가했습니다. 선택한 날짜·월별 카테고리 범위를 유지하고 검색 결과 수와 초기화를 제공합니다.
+- 거래 목록과 검색 계산을 `features/finance/FinanceLedger.jsx`, `financeLedgerSearch.js`로 분리했습니다. 기존 저장·삭제 후 되돌리기·처음 8건/추가 20건 동작은 유지합니다.
+- 별도 `styles/lifehub-polish.css`와 `orbit-web-v45` 캐시로 배포하며 기존 데이터와 토스 알림 변경을 보존했습니다.
+
+검증:
+
+- Termux Node 26.3.1에서 웹 전체 테스트 스크립트에 해당하는 265개 테스트 통과. 거래 검색의 범위·금액·문자 정규화·원본 보존 테스트 7개를 추가했습니다.
+- React 서버 렌더링으로 홈, 예산 미설정/초과, 거래 8건과 더 보기, 빈 목록, 가계부 4개 메뉴를 확인했습니다.
+- 새 주요 글자/배경 5쌍의 명암비는 4.72:1 이상입니다. production build는 88 modules, 초기 JS 351.14kB(gzip 114.77kB), CSS 119.74kB(gzip 20.36kB)입니다.
+- Android Java compile·native security smoke·v1/v2/v3 서명·결제 알림 allowlist·파일 공유·민감정보 검사를 통과했습니다. 경량 SDK에 없는 Android Lint는 기존 문서대로 제외했습니다.
+- Node 20에서는 기존 아이콘 PNG의 압축 바이트 재생성 비교 1건이 다릅니다. 아이콘 파일은 변경하지 않았으며 현행 Termux Node 26에서는 통과했습니다.
+- 360px/430px 실제 브라우저 화면, 기기 키보드·업데이트 설치는 미실행입니다. 설치 파일은 `/sdcard/Download/Orbit-latest.apk`로 전달합니다.
+- 최종 APK는 230,859바이트이며 SHA-256은 `cf3ba3a5d36cd4de35f82d97d88a588fd6f3a7a1f62b84a47aa4e8fb459a4e54`입니다. 다운로드 폴더 복사본의 동일성을 확인했습니다.
+
+## 2026-09-05 토스 결제 알림 가져오기
+
+변경 내용:
+
+- 가계부 자동 기록의 선택 소스에 토스를 추가했습니다. Android는 공식 앱의 exact package `viva.republica.toss`만 허용하고 Web/native 공개 source ID는 `toss`로 고정했습니다.
+- 토스 알림은 결제 완료·승인 표현, 하나의 원화 금액, 식별 가능한 사용처가 모두 있을 때만 후보로 만듭니다. 송금·입출금·충전·잔액·취소·환불·실패·카드값·결제 예정 알림은 제외합니다.
+- 앱 이름을 사용처로 대신 저장하지 않고 알림 원문·계좌·카드번호·잔액을 저장하지 않는 private queue 경계를 유지했습니다. 기존 사용자의 선택 범위도 자동으로 넓히지 않아 토스를 직접 선택해야 합니다.
+- 설치형 웹 캐시를 `orbit-web-v44`로 갱신하고 APK의 허용 패키지 보안 검사에도 토스를 추가했습니다.
+
+검증:
+
+- 웹 전체 회귀 258/258 통과
+- Vite production build 86 modules 통과: 초기 JS 348.78kB(gzip 113.82kB), CSS 114.52kB(gzip 19.29kB), 메모 지연 청크 28.74kB(gzip 10.06kB)
+- Ubuntu PRoot에서 Android Java compile·native security smoke·APK v1/v2/v3 서명·결제 알림 allowlist·grant-only 파일 공유·민감정보 검사 통과
+- 경량 SDK에 Android Lint가 없어 문서화된 방식으로 Lint만 제외
+- 설치 파일은 `/sdcard/Download/Orbit-latest.apk`, 226,763바이트, SHA-256 `b4cb7565336df4f5b15b208eb8000e3f8be74fea735a7df28b3fea598927a4aa`입니다.
+- 실제 Android 기기의 토스 결제·송금·입출금 알림 문구 확인은 이번 자동검증 환경에서 미실행
+
 ## 2026-09-02 가계부 수동 입력 분리·월별 카테고리 내역
 
 변경 내용:
@@ -505,3 +619,78 @@
 - `npm --prefix apps/web run build`
 - API Gradle build 또는 Docker build
 - 내부 IP/오타 잔여 검색
+
+## 2026-09-06 여행 서버 APK 내장·자동 인증·요청 시 실행
+
+- 서버 단일 ESM(약 22KB)을 APK에 포함하고 고정 Termux RUN_COMMAND + non-exported 일회용 PendingIntent로 준비·시작·인증을 처리한다. 최초 시스템 권한 이후 연결 코드 입력은 자동 경로에서 필요 없다. Codex/Node는 기존 Termux 환경을 사용한다.
+- 탭 진입은 로컬 상태만 확인하고 실제 요청 때 서버를 깨운다. active 작업·미조회 결과를 보호하고, 조회 후 2분 유휴 시 종료한다. 웹 hidden polling을 멈추고 복귀 시 재개한다.
+- 웹 276/276, 여행 서버/Codex adapter 12/12, production build 95 modules, Java compile/native smoke, APK 민감정보 검사와 v1/v2/v3 서명 통과. 경량 SDK에 없는 Android Lint만 제외했다.
+- APK가 사용하는 실제 stdin 설치 코드 → 번들 서버 시작 → 인증 HTTP 200 → 실제 123초 대기 후 종료 → 재시작 시 같은 인증값 유지까지 확인했다. 현재 Codex 로그인도 확인했다.
+- Android 0.7.1-debug(29), orbit-web-v47. 설치 파일 /sdcard/Download/Orbit-latest.apk, 255679 bytes, SHA-256 efea25794ac72a451895483dc380bd26d89ce2e0bb6d78ca0851f1dd2bab9a2f.
+- 실제 APK 업데이트 설치·시스템 권한 승인·Android 앱과 Termux 간 PendingIntent 왕복·배터리 계측은 미실행이다. 이 기기의 Termux allow-external-apps 설정은 반영했다.
+
+## 2026-09-06 Play스토어 Termux 호환 대기 연결 (v30)
+
+- 실제 설치 Termux googleplay.2026.06.21(141)에 RUN_COMMAND 권한과 RunCommandService가 없음을 확인했다. v29의 해당 권한·launcher·receiver를 제거하고 8자리 최초 연결 뒤 기존 native 인증을 재사용한다.
+- 별도 APK를 추가하지 않는다. 기존 Termux에 경량 loopback 서버만 대기시키고 실제 생성 때 Codex를 실행한다. 상태 조회는 Codex를 실행하지 않는다. private bundle/helper와 interactive Bash 시작 시 --ensure 한 번을 준비했다.
+- 웹 276/276, 여행 서버/Codex adapter 12/12, production build, Android native smoke와 v1/v2/v3 서명·민감정보 검사 통과. 실제 대기 25초 CPU 증가 0틱을 확인했다 (배터리 계측은 아님). 실제 Codex 요청으로 1일·5개 방문 일정 생성 완료와 서버 busy=false 복귀를 확인했다.
+- orbit-web-v48, Android 0.7.2-debug(30), APK 251583 bytes. /sdcard/Download/Orbit-latest.apk와 원본 SHA-256 8d49c94ea1cead3b4d3bd579ee9f36df4d0edcd60e6593e5131dff8ee159b569 일치.
+- APK 업데이트 설치와 WebView 최초 페어링은 사용자 기기 화면에서 남아 있다. 재부팅/Android의 Termux 종료 후에는 새 Termux 터미널 또는 orbit-travel 실행으로 연결을 복구하며 인증은 유지된다.
+
+## 2026-09-06 목적별 AI 대화 · v31
+
+- 여행 옆 AI 탭, 목적별 대화 목록·사용자 목적·제목 변경·저장한 대화 이어가기·중단/재시도를 추가했다. 보관 앱 수정/PC Bridge는 재활성화하지 않았다.
+- Termux private chats 폴더에 UUID별 JSON·Markdown 자동 저장, 재시작 복구, 원본 파일 보존 및 idempotent 메시지 재시도를 검증했다. Android의 명시적인 문서 저장 창으로 Markdown을 내보낸다. 대화 파일은 생활 기록 백업과 별도다.
+- 웹 280/280, 서버/adapter 17/17, 98-module production build, Android compile/native smoke, v1/v2/v3 서명과 민감정보 검사를 통과했다. 경량 SDK의 Android Lint만 제외했다.
+- 실제 Codex로 두 번 대화해 이전 단어를 기억하는 응답을 확인했고, 사용자/AI 메시지 4개와 Markdown 저장도 확인했다. 실제 테스트 파일은 임시 폴더에서 정리했다. 현재 기기의 대기 서버를 업데이트하고 기존 인증으로 status/chat 목록 HTTP 200을 확인했다.
+- orbit-web-v49, 0.8.0-debug(31), APK 264042 bytes. /sdcard/Download/Orbit-latest.apk와 원본 SHA-256 4a9e8769411c0538e09fa341c5f0c01540f05dd5e14539ce70e1c89bf82647dd 일치.
+- 실제 APK 업데이트 설치·Android 키보드/TalkBack·문서 선택기 저장 왕복은 기기 화면에서 확인해야 한다.
+
+## 2026-09-09 — 0.8.7-debug: APK 내장 AI 연결
+
+- 서버·Codex·SQLite 실행 환경을 APK에 포함하는 선택 빌드 추가.
+- AI/여행에서 ChatGPT 로그인과 저장된 인증 사용, 유휴 서버 종료, 기존 Termux 모드 복귀 제공.
+- 개인 인증 파일을 포함하지 않는 패키징과 앱 전용 저장소를 적용.
+- 빈 HOME의 패키지 실행 환경 및 인증 상태/취소/만료/라우팅 테스트 확인.
+  실제 설치·로그인·응답은 사용자 기기 검증 대상.
+
+## 2026-09-09 — 0.8.9-debug 전체 화면 정리
+
+공통 버튼·입력창·섹션 간격과 작은 화면 줄바꿈 개선. 홈 빠른 기록으로 일정·메모·지출
+작성에 직접 진입하고, AI 연결 오류 원인을 바로 보여준다. 일정 동작의 접근성 이름과
+메모 검색 지우기 후 포커스를 보완했다. 기록/인증 데이터 형식은 변경하지 않는다.
+
+
+## 2026-09-10 — 0.9.0-debug AI 첨부·모델·사용 한도
+
+AI 채팅에 PDF/TXT/Markdown/CSV/JSON/LOG 첨부와 추출 내용 미리보기·삭제를 추가했다.
+한 메시지 3개, 텍스트 파일 200KB/PDF 5MB, 파일당 추출 12,000자/합계 24,000자로 제한하며
+PDF는 최대 30쪽의 텍스트만 읽는다. 스캔/OCR·암호 PDF는 지원하지 않는다. 일부 추출은 UI에 표시한다.
+추출 내용은 대화 JSON/Markdown과 같은 폴더 검색 색인에 남고, 전송 시 AI에 제공된다.
+원본 파일을 복제 보관하지 않으며 Android 파일 선택은 사용자가 고른 문서 URI만 허용한다.
+PDF.js 워커·CMap·기본 글꼴과 라이선스를 APK에 포함하여 외부 CDN 없이 읽는다.
+
+로그인한 Codex의 model/list 결과로 모델을 선택하고 실제 요청에 반영한다. 자동 모델은 기존 설정을 따른다.
+account/rateLimits/read의 잔여율·초기화 시각·조회 시각을 표시한다. 정확한 잔여 토큰 수는 제공되지 않으므로
+추정하지 않는다. 한도는 계정 기준이며 선택 모델의 별도 한도와 다를 수 있다.
+화면 진입·답변 완료·수동 새로고침 때만 조회하고 주기적인 폴링은 하지 않는다.
+기존 대화·인증을 유지하며, 첨부/모델을 지원하지 않는 구형 실행 환경은 전송 전에 안내한다.
+
+검증: 웹/로컬 서버 회귀 테스트, 실제 PDF와 번들 글꼴 추출, 로그인된 Codex의 모델/한도 조회.
+Android 파일 선택 및 업데이트 APK의 실제 화면·전송은 설치 후 기기 확인이 필요하다.
+
+
+## 2026-09-10 — 0.9.1-debug 모델별 추론 강도·두 사용 한도
+
+모델 옆에서 실제 model/list가 제공한 추론 강도를 선택한다. GPT-6 Astra 연결에서
+Low/Medium/High/Extra High/Max/Ultra 6단계를 확인했다. 모델을 바꾸면 강도는 기본으로
+돌아가며 선택값은 초안·대화·재시도에 보존된다. 전송 전 해당 모델의 지원 여부를 확인하고
+Codex의 model_reasoning_effort에 선택값을 전달한다. 도구 접근 제한은 기존 정책을 따른다.
+
+채팅 상단에서 5시간·주간 잔여율을 함께 보여준다. 실제 300분/10080분 응답만 대응시키며
+조회 실패·누락을 0%로 표시하지 않고 다른 한도 그룹의 값을 섞지 않는다. 상세에서
+초기화 시각·조회 시각과 수동 새로고침을 제공한다. 정확한 잔여 토큰 개수는 추정하지 않는다.
+공식 API 구조: https://learn.chatgpt.com/docs/app-server
+
+검증: 웹 관련 테스트 105개, 서버 테스트 34개 통과. 모델별 옵션 정제, CLI 인수 전달,
+저장/재시도, 한도 구분을 포함한다. APK 화면·실제 응답은 설치 후 기기 확인 대상이다.

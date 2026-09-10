@@ -37,12 +37,14 @@ test('owner별 source opt-in은 허용된 순서와 값만 보관한다', () => 
   assert.equal(saveCardImportSources('Owner-1', [
     'bad',
     'samsung-wallet',
+    'toss',
     'kakao-pay',
     'kakao-pay'
   ], storage).saved, true);
   assert.deepEqual(readCardImportSources('Owner-1', storage), [
     'samsung-wallet',
-    'kakao-pay'
+    'kakao-pay',
+    'toss'
   ]);
   assert.deepEqual(readCardImportSources('Owner-2', storage), []);
 });
@@ -128,6 +130,26 @@ test('batch는 선택한 카카오페이 승인만 가져온다', async () => {
   assert.deepEqual(rows.map((entry) => entry.origin.source), ['kakao-pay']);
   assert.deepEqual(decisions, [
     { eventId: 'kakao:v1:pay', status: 'saved' }
+  ]);
+});
+
+test('batch는 선택한 토스 결제 승인만 가져온다', async () => {
+  let rows = [];
+  const decisions = [];
+  const result = await importCardTransactionBatch([
+    candidate('wallet:v1:samsung'),
+    candidate('toss:v1:pay', { source: 'toss', merchant: '토스카페' })
+  ], {
+    selectedSources: ['toss'],
+    readBudget: () => rows,
+    normalizeBudget: (entry) => entry,
+    saveBudget: (items) => { rows = items; return { saved: true }; },
+    acknowledgeDecisions: async (items) => { decisions.push(...items); return { ok: true }; }
+  });
+  assert.equal(result.imported, 1);
+  assert.deepEqual(rows.map((entry) => entry.origin.source), ['toss']);
+  assert.deepEqual(decisions, [
+    { eventId: 'toss:v1:pay', status: 'saved' }
   ]);
 });
 

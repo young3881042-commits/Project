@@ -14,6 +14,9 @@ public final class FinanceNotificationParserStaticTest {
         require(FinanceNotificationParser.isSupportedPackage(
                 FinanceNotificationParser.KAKAO_PAY_PACKAGE
         ));
+        require(FinanceNotificationParser.isSupportedPackage(
+                FinanceNotificationParser.TOSS_PACKAGE
+        ));
         require(FinanceNotificationParser.SAMSUNG_WALLET_SOURCE.equals(
                 FinanceNotificationParser.sourceForPackage(
                         FinanceNotificationParser.SAMSUNG_WALLET_PACKAGE
@@ -24,15 +27,24 @@ public final class FinanceNotificationParserStaticTest {
                         FinanceNotificationParser.KAKAO_PAY_PACKAGE
                 )
         ));
+        require(FinanceNotificationParser.TOSS_SOURCE.equals(
+                FinanceNotificationParser.sourceForPackage(
+                        FinanceNotificationParser.TOSS_PACKAGE
+                )
+        ));
         require(FinanceNotificationParser.sourceForPackage("com.kakao.talk") == null);
         require(FinanceNotificationParser.sourceForPackage("com.lgt.tmoney") == null);
         require(FinanceNotificationParser.sourceForPackage("kr.co.tmoney.tia") == null);
         require(!FinanceNotificationParser.isSupportedPackage("com.kakaopay.app.fake"));
+        require(!FinanceNotificationParser.isSupportedPackage("viva.republica.toss.fake"));
         require("삼성페이".equals(FinanceNotificationParser.labelForSource(
                 FinanceNotificationParser.SAMSUNG_WALLET_SOURCE
         )));
         require("카카오페이".equals(FinanceNotificationParser.labelForSource(
                 FinanceNotificationParser.KAKAO_PAY_SOURCE
+        )));
+        require("토스".equals(FinanceNotificationParser.labelForSource(
+                FinanceNotificationParser.TOSS_SOURCE
         )));
         require(FinanceNotificationParser.labelForSource("unknown") == null);
 
@@ -230,6 +242,41 @@ public final class FinanceNotificationParserStaticTest {
         require(kakaoDuplicateAmount != null);
         require(kakaoDuplicateAmount.amount == 2_400L);
 
+        FinanceNotificationParser.Candidate tossCoffee =
+                FinanceNotificationParser.parse(
+                        FinanceNotificationParser.TOSS_PACKAGE,
+                        "0|viva.republica.toss|payment-1",
+                        occurredAt + 9L,
+                        Arrays.asList("토스", "스타벅스 8,900원 카드 결제 승인")
+                );
+        require(tossCoffee != null);
+        require(tossCoffee.amount == 8_900L);
+        require("스타벅스".equals(tossCoffee.merchant));
+        require(FinanceNotificationParser.TOSS_SOURCE.equals(tossCoffee.source));
+        require(!tossCoffee.fallbackMerchant);
+
+        FinanceNotificationParser.Candidate tossLabeledMerchant =
+                FinanceNotificationParser.parse(
+                        FinanceNotificationParser.TOSS_PACKAGE,
+                        "toss-labeled-merchant",
+                        occurredAt + 10L,
+                        Arrays.asList(
+                                "토스페이 결제 완료",
+                                "사용처: 올리브영",
+                                "결제금액 32,000원"
+                        )
+                );
+        require(tossLabeledMerchant != null);
+        require(tossLabeledMerchant.amount == 32_000L);
+        require("올리브영".equals(tossLabeledMerchant.merchant));
+
+        require(FinanceNotificationParser.parse(
+                FinanceNotificationParser.TOSS_PACKAGE,
+                "toss-missing-merchant",
+                occurredAt + 11L,
+                Collections.singletonList("토스 3,000원 결제가 완료되었습니다")
+        ) == null);
+
         require(FinanceNotificationParser.parse(
                 "com.example.wallet",
                 "unsupported-1",
@@ -287,6 +334,50 @@ public final class FinanceNotificationParserStaticTest {
                     Collections.singletonList(rejected)
             ) == null);
         }
+
+        for (String rejected : new String[]{
+                "토스머니 10,000원 충전 완료",
+                "토스뱅크에서 10,000원 송금 완료",
+                "토스페이 10,000원 결제 취소",
+                "토스 카드값 10,000원 결제 완료",
+                "토스 10,000원 결제 예정"
+        }) {
+            require(FinanceNotificationParser.parse(
+                    FinanceNotificationParser.TOSS_PACKAGE,
+                    "toss-rejected-" + rejected.hashCode(),
+                    occurredAt,
+                    Collections.singletonList(rejected)
+            ) == null);
+        }
+
+        require(FinanceNotificationParser.parse(
+                FinanceNotificationParser.TOSS_PACKAGE,
+                "toss-ambiguous-payment",
+                occurredAt,
+                Collections.singletonList("토스 결제 금액 10,000원 사용처 스타벅스")
+        ) == null);
+        require(FinanceNotificationParser.parse(
+                FinanceNotificationParser.TOSS_PACKAGE,
+                "toss-message-says-samsung",
+                occurredAt,
+                Collections.singletonList("삼성페이 결제완료 스타벅스 10,000원")
+        ) == null);
+        require(FinanceNotificationParser.parse(
+                FinanceNotificationParser.SAMSUNG_WALLET_PACKAGE,
+                "samsung-message-says-toss",
+                occurredAt,
+                Collections.singletonList("토스페이 결제완료 스타벅스 10,000원")
+        ) == null);
+
+        FinanceNotificationParser.Candidate tossNamedMerchant =
+                FinanceNotificationParser.parse(
+                        FinanceNotificationParser.SAMSUNG_WALLET_PACKAGE,
+                        "samsung-toss-named-merchant",
+                        occurredAt,
+                        Collections.singletonList("토스트럭 5,000원 결제 승인")
+                );
+        require(tossNamedMerchant != null);
+        require("토스트럭".equals(tossNamedMerchant.merchant));
 
         require(FinanceNotificationParser.parse(
                 FinanceNotificationParser.KAKAO_PAY_PACKAGE,

@@ -1,0 +1,78 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, rm, stat, writeFile, symlink, readFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { openChatMemory, parseChatTurns } from './chat-memory.mjs';
+import { chatPrompt } from './chat.mjs';
+const message = (role, text) => ({ id: randomUUID(), role, text, createdAt: '2026-09-07T00:00:00.000Z' });
+const thread = (purpose, user, assistant = '') => ({ id: randomUUID(), title: '기억할 대화', purpose, createdAt: '2026-09-07T00:00:00.000Z', messages: [message('user', user), ...(assistant ? [message('assistant', assistant)] : [])] });
+async function fixture(t) {
+  const directory = await mkdtemp(join(tmpdir(), 'orbit-memory-'));
+  const memory = await openChatMemory(directory);
+  t.after(async () => { try { memory.close(); } catch {} await rm(directory, { recursive: true, force: true }); });
+  return { directory, memory };
+}
+test('indexes only changed turns, preserving user/AI roles and restart search', async t => {
+  const { directory, memory } = await fixture(t);
+  const saved = thread('공부', '영어 공부는 매주 수요일에 해요.', '금요일도 연습해보세요.');
+  assert.equal(parseChatTurns(saved)[0].assistant, '금요일도 연습해보세요.');
+  assert.equal(memory.sync(saved), 1);
+  const before = await stat(join(directory, 'search-v1.sqlite'));
+  assert.equal(memory.sync({ ...saved, state: 'running' }), 0);
+  assert.equal((await stat(join(directory, 'search-v1.sqlite'))).mtimeMs, before.mtimeMs);
+  assert.equal(before.mode & 0o777, 0o600);
+  saved.messages.push(message('user', '회화 숙제도 있어요.'));
+  assert.equal(memory.sync(saved), 1);
+  saved.messages.push(message('assistant', '숙제를 정리해볼게요.'));
+  assert.equal(memory.sync(saved), 1);
+  memory.close(); const reopened = await openChatMemory(directory); t.after(() => reopened.close());
+  assert.equal(reopened.sync(saved), 0);
+  const hits = reopened.search(thread('공부', '영어 공부 요일 기억해?'));
+  assert.equal(hits.length, 1); assert.equal(hits[0].threadId, saved.id);
+  assert.match(hits[0].user, /수요일/); assert.match(hits[0].assistant, /금요일/);
+});
+test('same-folder retrieval handles Korean particles and excludes recent self context', async t => {
+  const { memory } = await fixture(t);
+  const saved = thread('일상', '배터리를 아끼려고 알림은 저녁에만 받아요.');
+  const privateThread = thread('업무', '배터리 비밀 프로젝트');
+  memory.sync(saved); memory.sync(privateThread);
+  const query = thread('일상', '배터리 설정은?'); memory.sync(query);
+  const hits = memory.search(query); assert.equal(hits.length, 1); assert.equal(hits[0].threadId, saved.id);
+  assert.equal(memory.sync({ ...saved, title: '옮김', purpose: '업무' }), 0);
+  assert.equal(memory.search(query).length, 0);
+  const moved = memory.search(thread('업무', '배터리'));
+  assert.ok(moved.some(hit => hit.title === '옮김'));
+  memory.reconcile([query.id]); assert.equal(memory.search(thread('업무', '배터리')).length, 0);
+});
+test('older turns in current thread are searchable and retrieved prompt is bounded', async t => {
+  const { memory } = await fixture(t);
+  const saved = thread('일상', '달빛 여행 예산은 37만원이에요.', '확인했어요.');
+  for (let i = 0; i < 11; i++) saved.messages.push(message('user', `다른 이야기 ${i}`), message('assistant', '알겠습니다.'));
+  saved.messages.push(message('user', '달빛 여행 예산 알려줘'));
+  memory.sync(saved);
+  const hits = memory.search(saved); assert.equal(hits.length, 1); assert.equal(hits[0].messageId, saved.messages[0].id);
+  const prompt = JSON.parse(chatPrompt(saved, hits));
+  assert.equal(prompt.conversation.length, 20); assert.match(prompt.retrievedHistory[0].user, /37만원/);
+  for (let i = 0; i < 8; i++) memory.sync(thread('일상', '달빛 '.repeat(1000), '달빛 답변 '.repeat(1000)));
+  const limited = memory.search(saved); assert.equal(limited.length, 4);
+  assert.ok(JSON.stringify(limited).length < 7500);
+  assert.deepEqual(memory.search(thread('일상', '" OR * NOT ( ) --')), []);
+  assert.deepEqual(memory.search(thread('일상', '완전히없는단어XYZ')), []);
+});
+test('damaged derived SQLite is rebuilt without modifying JSON; symlinks rejected', async t => {
+  const { memory, directory } = await fixture(t); memory.close();
+  const original = thread('일상', '산책은 오후 3시에 해요.');
+  const jsonPath = join(directory, original.id + '.json'); const bytes = JSON.stringify(original);
+  await writeFile(jsonPath, bytes);
+  const dbPath = join(directory, 'search-v1.sqlite');
+  await writeFile(dbPath, 'not a database');
+  const rebuilt = await openChatMemory(directory); t.after(() => rebuilt.close());
+  rebuilt.sync(original);
+  assert.match(rebuilt.search(thread('일상', '산책 시간'))[0].user, /3시/);
+  assert.equal(await readFile(jsonPath, 'utf8'), bytes);
+  rebuilt.close(); await rm(dbPath); await symlink(jsonPath, dbPath);
+  await assert.rejects(openChatMemory(directory), /Invalid memory index/);
+  assert.equal(await readFile(jsonPath, 'utf8'), bytes);
+});

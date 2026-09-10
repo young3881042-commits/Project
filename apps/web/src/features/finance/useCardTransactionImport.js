@@ -18,6 +18,7 @@ import {
   readCardImportSources,
   saveCardImportSources
 } from './cardTransactionImport.js';
+import { enrichImportedCategories } from './merchantCategorySearch.js';
 import { repairExistingKakaoPayEntries } from './kakaoPayMerchant.js';
 
 const AUTOMATIC_PULL_THROTTLE_MS = 30 * 1000;
@@ -71,7 +72,7 @@ export function useCardTransactionImport({
   const lastAutomaticPullRef = useRef(0);
   const lastMerchantRepairSignatureRef = useRef('');
   const servicesRef = useRef(null);
-  servicesRef.current = { readBudget, normalizeBudget, saveBudget, onSaved, categorySettings };
+  servicesRef.current = { owner: normalizedOwner, readBudget, normalizeBudget, saveBudget, onSaved, categorySettings };
   const enabled = selectedSources.length > 0;
 
   const summary = useMemo(
@@ -125,6 +126,8 @@ export function useCardTransactionImport({
         } : current);
       }
       const services = servicesRef.current;
+      const isCurrent = () => mountedRef.current && servicesRef.current.owner === normalizedOwner;
+      if (!isCurrent()) return { status: 'disabled', imported: 0 };
       const result = await importCardTransactionBatch(peek.items, {
         categorySettings: services.categorySettings,
         selectedSources: requestSources,
@@ -142,6 +145,19 @@ export function useCardTransactionImport({
         setLastCheckedAt(new Date().toISOString());
         setMessage(resultMessage(result));
         setMessageTone(result.status === 'failed' ? 'error' : result.status === 'ack_failed' ? 'warning' : 'success');
+      }
+      if (isCurrent() && ['imported', 'duplicates', 'empty', 'ack_failed'].includes(result.status)) {
+        try {
+          const enriched = await enrichImportedCategories({ owner: normalizedOwner, selectedSources: requestSources,
+            readBudget: services.readBudget, saveBudget: services.saveBudget,
+            getSettings: () => servicesRef.current.categorySettings, isCurrent, onSaved: services.onSaved,
+            onSearching: count => { if (isCurrent()) setMessage(`결제는 저장했어요. 미분류 사용처 ${count}곳을 검색하고 있어요…`); }
+          });
+          if (isCurrent()) {
+            setMessage(`${resultMessage(result)}${enriched.changed ? ` 분류 ${enriched.changed}건을 반영했어요.` : ''}${enriched.deferred ? ' 검색 연결이 어려워 남은 항목은 기타로 보관했어요.' : enriched.failed ? ' 분류 변경을 저장하지 못했어요.' : ''}`);
+            if (enriched.deferred || enriched.failed) setMessageTone('warning');
+          }
+        } catch { if (isCurrent()) setMessage(`${resultMessage(result)} 분류는 다음에 다시 확인해주세요.`); }
       }
       return result;
     }).catch((error) => {

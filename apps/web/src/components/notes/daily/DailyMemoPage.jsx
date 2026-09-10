@@ -645,7 +645,7 @@ export default function DailyMemoPage({ notes = [], path, refresh, session }) {
                 aria-label="메모 검색어"
               />
               {query ? (
-                <button type="button" onClick={() => setQuery('')} aria-label="검색어 지우기">
+                <button type="button" onClick={() => { setQuery(''); searchInputRef.current?.focus(); }} aria-label="검색어 지우기">
                   <DailyMemoIcon name="close" size={17} />
                 </button>
               ) : null}

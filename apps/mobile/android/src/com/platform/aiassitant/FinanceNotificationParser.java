@@ -17,6 +17,8 @@ final class FinanceNotificationParser {
     static final String SAMSUNG_WALLET_FALLBACK_MERCHANT = "삼성월렛";
     static final String KAKAO_PAY_PACKAGE = "com.kakaopay.app";
     static final String KAKAO_PAY_SOURCE = "kakao-pay";
+    static final String TOSS_PACKAGE = "viva.republica.toss";
+    static final String TOSS_SOURCE = "toss";
 
     private static final long MAX_TRANSACTION_AMOUNT = 999_999_999L;
     private static final int MAX_TEXT_PARTS = 12;
@@ -43,14 +45,14 @@ final class FinanceNotificationParser {
             ".*(?:[0-9０-９]{4,}|[*#xX•·-]{2,}[0-9０-９]{2,}"
                     + "|[0-9０-９]{2,}[*#xX•·-]{2,}).*"
     );
-    private static final Pattern KAKAO_MERCHANT_LABEL_PATTERN = Pattern.compile(
+    private static final Pattern PAYMENT_MERCHANT_LABEL_PATTERN = Pattern.compile(
             "(?i)(?:상호명|가맹점명|가맹점|결제처|사용처명|사용처|매장명|매장|merchant)"
                     + "(?:은|는|을|를)?\\s*(?:[:：=~|-])?\\s*(.{2,80}?)"
                     + "(?=\\s*(?:결제\\s*금액|결제금액|금액|결제\\s*(?:완료|승인)|"
                     + "결제수단|결제일시|승인일시|승인번호|거래번호|주문번호|"
                     + "[₩￦]|[0-9][0-9,]{0,14}\\s*(?:원|krw)|$))"
     );
-    private static final Pattern KAKAO_MERCHANT_LABEL_ONLY_PATTERN = Pattern.compile(
+    private static final Pattern PAYMENT_MERCHANT_LABEL_ONLY_PATTERN = Pattern.compile(
             "(?i)^\\s*[\\[【(<]?\\s*(?:상호명|가맹점명|가맹점|결제처|"
                     + "사용처명|사용처|매장명|매장|merchant)(?:은|는|을|를)?"
                     + "\\s*[\\]】)>]?\\s*[:：=~|-]?\\s*$"
@@ -58,6 +60,7 @@ final class FinanceNotificationParser {
     private static final Pattern MERCHANT_NOISE_PATTERN = Pattern.compile(
             "(?i)(삼성\\s*월렛|삼성\\s*페이|samsung\\s*(?:wallet|pay)|"
                     + "카카오\\s*페이(?:머니)?|kakao\\s*pay|"
+                    + "(?<![가-힣])토스(?:\\s*(?:페이|뱅크))?(?![가-힣])|toss\\s*(?:pay|bank)?|"
                     + "가맹점명(?:은|는|을|를)?|가맹점(?:은|는|을|를)?|"
                     + "결제처(?:은|는|을|를)?|사용처명(?:은|는|을|를)?|사용처(?:은|는|을|를)?|"
                     + "상호명(?:은|는|을|를)?|상호(?:은|는|을|를)?|매장명(?:은|는|을|를)?|매장(?:은|는|을|를)?|merchant|"
@@ -75,6 +78,12 @@ final class FinanceNotificationParser {
             "결제승인", "결제 승인", "결제했", "결제됐", "결제되었습니다",
             "payment approved", "payment complete", "payment completed"
     };
+    private static final String[] TOSS_STRONG_POSITIVE_TERMS = {
+            "결제완료", "결제 완료", "결제가 완료", "결제를 완료",
+            "결제승인", "결제 승인", "결제했", "결제됐", "결제되었습니다",
+            "카드결제", "카드 결제",
+            "payment approved", "payment complete", "payment completed"
+    };
     private static final String[] COMMON_NEGATIVE_TERMS = {
             "승인취소", "승인 취소", "결제취소", "결제 취소", "취소",
             "환불", "거절", "실패", "미승인", "승인실패", "승인 실패",
@@ -88,6 +97,17 @@ final class FinanceNotificationParser {
             "결제방법", "결제 방법", "결제요청", "결제 요청",
             "결제한도", "결제 한도", "결제하면", "결제 시", "할인"
     };
+    private static final String[] TOSS_NEGATIVE_TERMS = {
+            "충전", "포인트 적립", "리워드", "송금받기",
+            "결제예정", "결제 예정", "결제안내", "결제 안내",
+            "결제방법", "결제 방법", "결제요청", "결제 요청",
+            "결제한도", "결제 한도", "결제하면", "결제 시", "할인",
+            "카드값", "결제대금", "청구예정", "청구 예정"
+    };
+    private static final Pattern TOSS_BRAND_PATTERN = Pattern.compile(
+            "(?i)(?:^|[^가-힣a-z0-9])(?:토스(?:\\s*(?:페이|뱅크))?"
+                    + "|toss(?:\\s*(?:pay|bank))?)(?:$|[^가-힣a-z0-9])"
+    );
     private static final Set<String> GENERIC_MERCHANTS = new LinkedHashSet<>();
 
     static {
@@ -101,6 +121,9 @@ final class FinanceNotificationParser {
         GENERIC_MERCHANTS.add("완료");
         GENERIC_MERCHANTS.add("되었습니다");
         GENERIC_MERCHANTS.add("처리되었습니다");
+        GENERIC_MERCHANTS.add("토스");
+        GENERIC_MERCHANTS.add("토스페이");
+        GENERIC_MERCHANTS.add("토스뱅크");
     }
 
     private FinanceNotificationParser() {}
@@ -116,6 +139,9 @@ final class FinanceNotificationParser {
         if (KAKAO_PAY_SOURCE.equals(source)) {
             return "카카오페이";
         }
+        if (TOSS_SOURCE.equals(source)) {
+            return "토스";
+        }
         return null;
     }
 
@@ -126,18 +152,23 @@ final class FinanceNotificationParser {
         if (KAKAO_PAY_PACKAGE.equals(packageName)) {
             return KAKAO_PAY_SOURCE;
         }
+        if (TOSS_PACKAGE.equals(packageName)) {
+            return TOSS_SOURCE;
+        }
         return null;
     }
 
     static boolean isSupportedSource(String source) {
         return SAMSUNG_WALLET_SOURCE.equals(source)
-                || KAKAO_PAY_SOURCE.equals(source);
+                || KAKAO_PAY_SOURCE.equals(source)
+                || TOSS_SOURCE.equals(source);
     }
 
     static LinkedHashSet<String> supportedSources() {
         LinkedHashSet<String> sources = new LinkedHashSet<>();
         sources.add(SAMSUNG_WALLET_SOURCE);
         sources.add(KAKAO_PAY_SOURCE);
+        sources.add(TOSS_SOURCE);
         return sources;
     }
 
@@ -174,9 +205,10 @@ final class FinanceNotificationParser {
         }
         String merchant = merchantFrom(source, normalizedParts);
         boolean fallbackMerchant = merchant == null;
-        // 카카오페이는 상호명을 확인할 수 있는 결제만 기록한다. 앱 이름을
+        // 카카오페이와 토스는 상호명을 확인할 수 있는 결제만 기록한다. 앱 이름을
         // 대체 상호로 저장하면 사용처가 아닌 정보가 가계부에 남기 때문이다.
-        if (KAKAO_PAY_SOURCE.equals(source) && fallbackMerchant) {
+        if ((KAKAO_PAY_SOURCE.equals(source) || TOSS_SOURCE.equals(source))
+                && fallbackMerchant) {
             return null;
         }
         if (fallbackMerchant) {
@@ -203,6 +235,9 @@ final class FinanceNotificationParser {
             return containsAny(searchable, KAKAO_PAY_STRONG_POSITIVE_TERMS)
                     || searchable.contains("결제");
         }
+        if (TOSS_SOURCE.equals(source)) {
+            return containsAny(searchable, TOSS_STRONG_POSITIVE_TERMS);
+        }
         return false;
     }
 
@@ -216,11 +251,15 @@ final class FinanceNotificationParser {
         boolean mentionsKakao = searchable.contains("카카오페이")
                 || searchable.contains("카카오 페이")
                 || searchable.contains("kakao pay");
+        boolean mentionsToss = TOSS_BRAND_PATTERN.matcher(searchable).find();
         if (SAMSUNG_WALLET_SOURCE.equals(source)) {
-            return !mentionsKakao || mentionsSamsung;
+            return (!mentionsKakao && !mentionsToss) || mentionsSamsung;
         }
         if (KAKAO_PAY_SOURCE.equals(source)) {
-            return !mentionsSamsung || mentionsKakao;
+            return (!mentionsSamsung && !mentionsToss) || mentionsKakao;
+        }
+        if (TOSS_SOURCE.equals(source)) {
+            return (!mentionsSamsung && !mentionsKakao) || mentionsToss;
         }
         return false;
     }
@@ -228,6 +267,9 @@ final class FinanceNotificationParser {
     private static boolean containsSourceNegativeTerm(String source, String searchable) {
         if (KAKAO_PAY_SOURCE.equals(source)) {
             return containsAny(searchable, KAKAO_PAY_NEGATIVE_TERMS);
+        }
+        if (TOSS_SOURCE.equals(source)) {
+            return containsAny(searchable, TOSS_NEGATIVE_TERMS);
         }
         return false;
     }
@@ -312,8 +354,8 @@ final class FinanceNotificationParser {
     }
 
     private static String merchantFrom(String source, List<String> parts) {
-        if (KAKAO_PAY_SOURCE.equals(source)) {
-            String labeled = kakaoMerchantFromLabel(parts);
+        if (KAKAO_PAY_SOURCE.equals(source) || TOSS_SOURCE.equals(source)) {
+            String labeled = paymentMerchantFromLabel(parts);
             if (labeled != null) {
                 return labeled;
             }
@@ -321,17 +363,17 @@ final class FinanceNotificationParser {
         return merchantFrom(parts);
     }
 
-    private static String kakaoMerchantFromLabel(List<String> parts) {
+    private static String paymentMerchantFromLabel(List<String> parts) {
         for (int index = 0; index < parts.size(); index += 1) {
             String part = parts.get(index);
-            Matcher matcher = KAKAO_MERCHANT_LABEL_PATTERN.matcher(part);
+            Matcher matcher = PAYMENT_MERCHANT_LABEL_PATTERN.matcher(part);
             while (matcher.find()) {
                 String candidate = cleanedMerchantCandidate(matcher.group(1));
                 if (isSafeMerchant(candidate)) {
                     return candidate;
                 }
             }
-            if (KAKAO_MERCHANT_LABEL_ONLY_PATTERN.matcher(part).matches()) {
+            if (PAYMENT_MERCHANT_LABEL_ONLY_PATTERN.matcher(part).matches()) {
                 for (int offset = 1; offset <= 2 && index + offset < parts.size(); offset += 1) {
                     String adjacent = parts.get(index + offset);
                     String candidate = cleanedMerchantCandidate(adjacent);

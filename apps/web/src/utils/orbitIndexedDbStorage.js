@@ -14,6 +14,7 @@ const DATA_KEY_PREFIXES = Object.freeze([
   'ai-assistant-workout-logs',
   'ai-assistant-diet-entries',
   'ai-assistant-lifehub-trips',
+  'orbit-travel-workspace:v1',
   'ai-assistant-lifehub-local-owner',
   'lifehub-card-import-sources:v1',
   'lifehub-finance-category-settings:v1',

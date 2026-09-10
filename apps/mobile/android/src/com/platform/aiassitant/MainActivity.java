@@ -86,6 +86,8 @@ public final class MainActivity extends Activity {
     private final Object documentPickerLock = new Object();
     private volatile LifeHubBackupDocumentCoordinator backupDocumentCoordinator;
     private volatile FinanceShareCoordinator financeShareCoordinator;
+    private volatile TravelApiCoordinator travelApiCoordinator;
+    private AiChatExportCoordinator aiChatExportCoordinator;
 
     @Override
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
@@ -139,6 +141,26 @@ public final class MainActivity extends Activity {
         );
 
         preferences = getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        travelApiCoordinator = new TravelApiCoordinator(this, preferences, new TravelApiCoordinator.Host() {
+            @Override
+            public void deliver(final JSONObject detail) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (webView != null && isTrustedNativeCaller() && !isFinishing()) {
+                            webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('orbit:travel-result',{detail:"
+                                    + detail.toString() + "}));", null);
+                        }
+                    }
+                });
+            }
+        });
+        aiChatExportCoordinator = new AiChatExportCoordinator(this, new AiChatExportCoordinator.Host() {
+            public boolean trusted() { return webView != null && isTrustedNativeCaller() && !isFinishing(); }
+            public void deliver(JSONObject detail) {
+                webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('orbit:chat-export',{detail:" + detail.toString() + "}));", null);
+            }
+        });
         clearLegacyCardImportState();
         AppNotificationCoordinator.ensureChannel(getApplicationContext());
         AppNotificationCoordinator.restoreScheduled(getApplicationContext());
@@ -475,12 +497,13 @@ public final class MainActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == AiChatExportCoordinator.REQUEST_CODE && aiChatExportCoordinator != null) { aiChatExportCoordinator.onResult(resultCode, data); return; }
         if (backupDocumentCoordinator != null
                 && backupDocumentCoordinator.handlesActivityResult(requestCode)) {
             backupDocumentCoordinator.handleActivityResult(requestCode, resultCode, data);
             return;
         }
-        if (requestCode != JSON_FILE_CHOOSER_REQUEST_CODE) {
+        if (requestCode != JSON_FILE_CHOOSER_REQUEST_CODE && requestCode != AiChatAttachmentPolicy.REQUEST_CODE) {
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }
@@ -498,9 +521,11 @@ public final class MainActivity extends Activity {
             return;
         }
         Uri selected = resultCode == Activity.RESULT_OK ? singleSelectedUri(data) : null;
-        boolean allowed = backupDocumentCoordinator != null
-                && backupDocumentCoordinator.isAllowedImportDocument(selected);
+        boolean attachment = requestCode == AiChatAttachmentPolicy.REQUEST_CODE;
+        boolean allowed = attachment ? isTrustedNativeCaller() && AiChatAttachmentPolicy.allowedDocument(this, selected)
+                : backupDocumentCoordinator != null && backupDocumentCoordinator.isAllowedImportDocument(selected);
         if (!allowed) {
+            if (attachment && resultCode == Activity.RESULT_OK) Toast.makeText(this, "PDF·텍스트 문서(최대 5MB)를 선택해주세요.", Toast.LENGTH_LONG).show();
             callback.onReceiveValue(null);
             return;
         }
@@ -530,6 +555,17 @@ public final class MainActivity extends Activity {
         }
     }
 
+    private boolean launchChatAttachmentPicker() {
+        Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        picker.addCategory(Intent.CATEGORY_OPENABLE);
+        picker.setType("*/*");
+        picker.putExtra(Intent.EXTRA_MIME_TYPES, AiChatAttachmentPolicy.MIME_TYPES);
+        picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
+        picker.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        try { startActivityForResult(picker, AiChatAttachmentPolicy.REQUEST_CODE); return true; }
+        catch (ActivityNotFoundException | SecurityException unavailable) { return false; }
+    }
+
     private boolean launchJsonFilePicker() {
         if (backupDocumentCoordinator != null
                 && backupDocumentCoordinator.hasPendingOperation()) {
@@ -550,6 +586,11 @@ public final class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        if (aiChatExportCoordinator != null) aiChatExportCoordinator.destroy();
+        if (travelApiCoordinator != null) {
+            travelApiCoordinator.destroy();
+            travelApiCoordinator = null;
+        }
         clearPendingWebFileCallback();
         financeShareCoordinator = null;
         if (backupDocumentCoordinator != null) {
@@ -585,11 +626,15 @@ public final class MainActivity extends Activity {
             String[] acceptTypes = fileChooserParams == null
                     ? null
                     : fileChooserParams.getAcceptTypes();
+            boolean attachmentRequest = isTrustedNativeCaller()
+                    && requestingWebView != null && requestingWebView.getUrl() != null
+                    && "/ai".equals(Uri.parse(requestingWebView.getUrl()).getPath())
+                    && AiChatAttachmentPolicy.acceptsRequestedTypes(acceptTypes);
             boolean jsonRequest = LifeHubBackupDocumentPolicy.acceptsRequestedTypes(acceptTypes);
             if (requestingWebView != MainActivity.this.webView
                     || !isTrustedPage()
                     || !singleOpenRequest
-                    || !jsonRequest
+                    || (!jsonRequest && !attachmentRequest)
                     || captureRequested) {
                 filePathCallback.onReceiveValue(null);
                 return true;
@@ -601,14 +646,14 @@ public final class MainActivity extends Activity {
                         && backupDocumentCoordinator.hasPendingOperation();
                 if (!backupBusy) {
                     pendingWebFileCallback = filePathCallback;
-                    pendingWebFileRequestCode = JSON_FILE_CHOOSER_REQUEST_CODE;
+                    pendingWebFileRequestCode = attachmentRequest ? AiChatAttachmentPolicy.REQUEST_CODE : JSON_FILE_CHOOSER_REQUEST_CODE;
                 }
             }
             if (backupBusy) {
                 filePathCallback.onReceiveValue(null);
                 return true;
             }
-            boolean launched = launchJsonFilePicker();
+            boolean launched = attachmentRequest ? launchChatAttachmentPicker() : launchJsonFilePicker();
             if (!launched) {
                 clearPendingWebFileCallback();
             }
@@ -617,6 +662,20 @@ public final class MainActivity extends Activity {
     }
 
     private final class NativeBridge {
+        @JavascriptInterface
+        public String getAiRuntimeMode() {
+            TravelApiCoordinator coordinator = travelApiCoordinator;
+            return isTrustedNativeCaller() && coordinator != null ? coordinator.runtimeMode() : "standby";
+        }
+        @JavascriptInterface
+        public void exportAiConversation(String requestId, String content) {
+            if (isTrustedNativeCaller() && aiChatExportCoordinator != null) aiChatExportCoordinator.request(requestId, content);
+        }
+        @JavascriptInterface
+        public void requestTravelAction(String requestId, String action, String payload) {
+            TravelApiCoordinator coordinator = travelApiCoordinator;
+            if (isTrustedNativeCaller() && coordinator != null) coordinator.request(requestId, action, payload);
+        }
         @JavascriptInterface
         public boolean exportLifeHubBackup(
                 String requestId,
@@ -1026,6 +1085,11 @@ public final class MainActivity extends Activity {
         }
 
         private boolean shouldBlockNavigation(Uri uri) {
+            if ("https://auth.openai.com/codex/device".equals(uri.toString()) && isTrustedNativeCaller()) {
+                try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); }
+                catch (android.content.ActivityNotFoundException ignored) { Toast.makeText(MainActivity.this, "브라우저에서 auth.openai.com/codex/device를 열어주세요.", Toast.LENGTH_LONG).show(); }
+                return true;
+            }
             if (isAllowedTopLevelUri(uri)) {
                 return false;
             }

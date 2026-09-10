@@ -1,3 +1,4 @@
+import HomeQuickActions from './HomeQuickActions.jsx';
 import { useMemo, useState } from 'react';
 import MemoNavIcon from '../../components/MemoNavIcon.jsx';
 import HomeMonthCalendar from '../../components/home/HomeMonthCalendar.jsx';
@@ -83,6 +84,8 @@ export default function HomePage({ model, navigate }) {
         <LifeHubPackIcon name="habit" />
       </section>
 
+      <HomeQuickActions navigate={navigate} />
+
       <DailyBriefingCard model={model} navigate={navigate} />
 
       <HomeMonthCalendar
@@ -103,14 +106,13 @@ export default function HomePage({ model, navigate }) {
         eyebrow={activityPeriod === 'all' ? '첫 기록부터 오늘까지' : `${activityRange.start.replaceAll('-', '.')} - ${activityRange.end.replaceAll('-', '.')}`}
         className="lifeHubWeeklySummary"
       >
-        <div className="lifeHubActivityPeriodTabs" role="tablist" aria-label="활동 요약 기간">
+        <div className="lifeHubActivityPeriodTabs" role="group" aria-label="활동 요약 기간">
           {HOME_ACTIVITY_PERIODS.map((period) => (
             <button
               type="button"
-              role="tab"
               key={period.value}
               className={activityPeriod === period.value ? 'active' : ''}
-              aria-selected={activityPeriod === period.value}
+              aria-pressed={activityPeriod === period.value}
               onClick={() => setActivityPeriod(period.value)}
             >
               {period.label}

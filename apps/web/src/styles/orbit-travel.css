@@ -1,0 +1,179 @@
+.lifeHubRoot .lifeHubBottomNav { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.orbitTravelPage { --trip-ink: #173c39; --trip-muted: #58706e; --trip-line: #dce8e3; display: grid; gap: 18px; }
+.orbitTravelPage * { min-width: 0; }
+.orbitTravelPage h2, .orbitTravelPage h3, .orbitTravelPage p { margin: 0; }
+.orbitTravelPage button, .orbitTravelPage input, .orbitTravelPage select, .orbitTravelPage textarea { font: inherit; }
+.orbitTravelPage button { min-height: 44px; padding: 10px 14px; border: 1px solid var(--trip-line); border-radius: 12px; background: #fff; color: var(--trip-ink); font-size: 13px; font-weight: 750; cursor: pointer; }
+.orbitTravelPage button:disabled { opacity: .55; cursor: default; }
+.orbitTravelPage button.primary { border-color: #17685b; background: #17685b; color: #fff; }
+.orbitTravelHero { position: relative; display: flex; align-items: center; justify-content: space-between; overflow: hidden; padding: 27px 24px; border-radius: 24px; background: #173c39; color: #fff; }
+.orbitTravelEyebrow { display: block; margin-bottom: 14px; font-size: 10px; font-weight: 800; letter-spacing: .16em; }
+.orbitTravelHero .orbitTravelEyebrow { color: #b6d9c1; }
+.orbitTravelHero h2 { font-size: clamp(24px, 6vw, 31px); line-height: 1.38; letter-spacing: -.055em; }
+.orbitTravelHero p { margin-top: 14px; color: #d0e2d9; font-size: 12px; line-height: 1.8; }
+.orbitTravelHero > svg { flex-shrink: 0; width: 76px; height: 76px; margin-left: 10px; color: #c3dd9f; transform: rotate(-10deg); stroke-width: 1; }
+.orbitTravelSwitch { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: #e9efec; border-radius: 15px; }
+.orbitTravelSwitch button { border: 0; background: transparent; }
+.orbitTravelSwitch button[aria-pressed="true"] { background: #fff; box-shadow: 0 2px 6px #173c390d; }
+.orbitTravelSwitch span { margin-left: 4px; color: var(--trip-muted); font-size: 11px; }
+.orbitTravelForm, .orbitTravelPlan, .orbitTravelSavedCard { padding: 22px; border: 1px solid var(--trip-line); border-radius: 20px; background: #fff; }
+.orbitTravelForm header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; margin-bottom: 20px; }
+.orbitTravelForm header h2 { color: var(--trip-ink); font-size: 19px; letter-spacing: -.04em; }
+.orbitTravelForm header button { border: 0; padding: 6px 0; color: var(--trip-muted); font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+.orbitTravelForm fieldset { display: grid; gap: 18px; padding: 0; margin: 0; border: 0; }
+.orbitTravelPage label { display: grid; gap: 8px; color: var(--trip-ink); font-size: 12px; font-weight: 750; }
+.orbitTravelPage input:not([type="checkbox"]), .orbitTravelPage select, .orbitTravelPage textarea { box-sizing: border-box; width: 100%; min-height: 48px; padding: 12px; border: 1px solid #d3dfd9; border-radius: 12px; background: #fafcfb; color: #183733; font-size: 16px; }
+.orbitTravelPage input[type="date"] { display: block; max-width: 100%; min-width: 0; }
+.orbitTravelPage textarea { resize: vertical; line-height: 1.6; }
+.orbitTravelPage textarea::placeholder, .orbitTravelPage input::placeholder { color: #6c7d76; font-size: 13px; }
+.orbitTravelTwoCol { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.orbitTravelPage summary { min-height: 44px; padding: 12px 0; color: var(--trip-ink); font-size: 13px; font-weight: 750; cursor: pointer; }
+.orbitTravelPreferences { border-top: 1px solid var(--trip-line); border-bottom: 1px solid var(--trip-line); }
+.orbitTravelPreferences summary small { color: var(--trip-muted); font-size: 11px; font-weight: 500; margin-left: 5px; }
+.orbitTravelPreferences[open] { padding-bottom: 18px; }
+.orbitTravelInterests { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0; }
+.orbitTravelInterests button { min-height: 44px; padding: 8px 13px; border-radius: 24px; font-size: 12px; }
+.orbitTravelInterests button[aria-pressed="true"] { border-color: #17685b; background: #e8f3ec; color: #12584d; }
+.orbitTravelGenerate { width: 100%; min-height: 52px !important; font-size: 14px !important; }
+.orbitTravelFormHint { color: var(--trip-muted); font-size: 11px; line-height: 1.7; text-align: center; }
+.orbitTravelConnection { padding: 0 14px; border: 1px solid var(--trip-line); border-radius: 14px; background: #f6f9f7; }
+.orbitTravelConnection summary { font-size: 12px; }
+.orbitTravelConnection summary small { float: right; color: var(--trip-muted); font-weight: 500; }
+.orbitTravelStatus { display: inline-block; width: 7px; height: 7px; margin: 0 6px; border-radius: 50%; background: #977140; }
+.orbitTravelStatus.connected { background: #17685b; }
+.orbitTravelConnection p { margin: 10px 0; color: var(--trip-muted); font-size: 12px; line-height: 1.7; }
+.orbitTravelConnection code { display: block; padding: 12px; border-radius: 10px; background: #e5ede7; color: #244a3e; font-size: 11px; overflow-wrap: anywhere; user-select: text; -webkit-user-select: text; }
+.orbitTravelConnection form > div { display: flex; gap: 8px; margin-top: 8px; }
+.orbitTravelConnection form button { flex-shrink: 0; }
+.orbitTravelConnection > button { margin: 12px 0; }
+.orbitTravelError, .orbitTravelFeedback { padding: 12px 15px; border-radius: 12px; font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
+.orbitTravelError { background: #fff0eb; color: #8d3825; }
+.orbitTravelFeedback { background: #eaf4ee; color: #255d47; }
+.orbitTravelGenerating { padding: 18px; border: 1px solid #c5d8c6; border-radius: 16px; background: #edf4e9; color: #244c31; }
+.orbitTravelGenerating p { font-size: 14px; font-weight: 750; }
+.orbitTravelGenerating small { display: block; margin: 10px 0; font-size: 12px; line-height: 1.7; }
+.orbitTravelGenerating > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.orbitTravelResultHeading { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--trip-muted); font-size: 12px; }
+.orbitTravelResultHeading button { flex-shrink: 0; }
+.orbitTravelPlan { overflow-wrap: anywhere; }
+.orbitTravelPlan .orbitTravelEyebrow { color: #587148; }
+.orbitTravelPlan h2 { color: var(--trip-ink); font-size: 21px; line-height: 1.4; letter-spacing: -.04em; }
+.orbitTravelPlan header p { margin-top: 12px; color: var(--trip-muted); font-size: 13px; line-height: 1.8; }
+.orbitTravelDays { display: flex; gap: 8px; overflow-x: auto; margin: 22px -2px 18px; padding: 2px 2px 8px; }
+.orbitTravelDays button { flex: 0 0 67px; min-height: 63px; padding: 10px 8px; }
+.orbitTravelDays button[aria-pressed="true"] { background: #173c39; border-color: #173c39; color: #fff; }
+.orbitTravelDays small { display: block; margin-top: 4px; font-size: 10px; font-weight: 500; }
+.orbitTravelDayTitle { margin-bottom: 22px !important; color: var(--trip-ink); font-size: 16px; line-height: 1.5; }
+.orbitTravelTimeline { list-style: none; padding: 0; margin: 0; }
+.orbitTravelTimeline > li { position: relative; display: grid; grid-template-columns: 42px 1fr; gap: 12px; padding-bottom: 26px; }
+.orbitTravelTimeline > li:not(:last-child)::after { content: ''; position: absolute; top: 27px; bottom: 5px; left: 19px; width: 1px; background: var(--trip-line); }
+.orbitTravelTimeline time { padding-top: 3px; color: #59715a; font-size: 11px; font-weight: 750; }
+.orbitTravelTimeline strong { display: block; color: var(--trip-ink); font-size: 15px; line-height: 1.5; }
+.orbitTravelTimeline span { display: block; margin-top: 3px; color: #52685d; font-size: 11px; }
+.orbitTravelTimeline p { margin-top: 8px; color: #536860; font-size: 12px; line-height: 1.8; }
+.orbitTravelTimeline summary { color: #49664c; font-size: 11px; }
+.orbitTravelNotice { padding: 14px; border-radius: 12px; background: #f4f5ed; color: #5b6248; font-size: 11px; line-height: 1.8; }
+.orbitTravelReferences { margin-top: 10px; color: var(--trip-muted); font-size: 12px; line-height: 1.8; }
+.orbitTravelReferences ul { padding-left: 18px; }
+.orbitTravelReferences p { margin: 10px 0; }
+.orbitTravelSource { user-select: text; -webkit-user-select: text; overflow-wrap: anywhere; }
+.orbitTravelSaved { display: grid; gap: 16px; }
+.orbitTravelSavedCard > header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.orbitTravelSavedCard > header small { color: var(--trip-muted); font-size: 11px; }
+.orbitTravelSavedCard > header h2 { margin-top: 8px; color: var(--trip-ink); font-size: 19px; overflow-wrap: anywhere; }
+.orbitTravelSavedCard > header button { flex-shrink: 0; color: #895449; }
+.orbitTravelSavedCard > p { margin-top: 14px; color: var(--trip-muted); font-size: 12px; line-height: 1.8; }
+.orbitTravelChecks { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 18px 0; }
+.orbitTravelChecks label { display: flex; align-items: center; min-height: 44px; gap: 8px; font-size: 12px; font-weight: 500; }
+.orbitTravelChecks input { width: 18px; height: 18px; margin: 0; accent-color: #17685b; }
+.orbitTravelChecks input:checked + span { color: var(--trip-muted); text-decoration: line-through; }
+.orbitTravelSavedCard .orbitTravelPlan { padding: 16px 0 0; border: 0; border-radius: 0; }
+.orbitTravelEmpty { display: grid; justify-items: center; gap: 16px; padding: 48px 20px; text-align: center; }
+.orbitTravelEmpty > svg { width: 50px; height: 50px; color: #507953; }
+.orbitTravelEmpty h2 { color: var(--trip-ink); font-size: 18px; }
+.orbitTravelEmpty p { color: var(--trip-muted); font-size: 12px; line-height: 1.7; }
+@media (max-width: 360px) {
+  .orbitTravelForm, .orbitTravelPlan, .orbitTravelSavedCard { padding: 17px; }
+  .orbitTravelHero { padding: 23px 20px; }
+  .orbitTravelHero > svg { width: 58px; height: 58px; }
+  .orbitTravelResultHeading { flex-wrap: wrap; }
+}
+
+/* Input and itinerary are separate views in the same preserved workspace. */
+.orbitTravelPage { gap: 14px; }
+.orbitTravelPage :focus-visible { outline: 3px solid #488d7c; outline-offset: 3px; }
+.orbitTravelForm, .orbitTravelPlan, .orbitTravelSavedCard { padding: 18px; }
+.orbitTravelForm header { display: grid; gap: 6px; margin-bottom: 20px; }
+.orbitTravelForm header p { color: var(--trip-muted); font-size: 13px; }
+.orbitTravelForm fieldset { gap: 16px; }
+.orbitTravelPage label { font-size: 13px; }
+.orbitTravelDateHint { color: var(--trip-muted); font-size: 12px; margin-top: -7px !important; }
+.orbitTravelPeople { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.orbitTravelStepper { display: flex; align-items: center; gap: 3px; }
+.orbitTravelStepper button { width: 44px; padding: 8px; font-size: 20px; }
+.orbitTravelPage .orbitTravelStepper input { width: 44px; padding: 8px 0; text-align: center; border: 0; background: transparent; appearance: textfield; }
+.orbitTravelStepper input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.orbitTravelStepper > span { color: var(--trip-muted); font-size: 13px; margin-right: 5px; }
+.orbitTravelPace > span { display: block; font-size: 13px; font-weight: 750; margin-bottom: 9px; color: var(--trip-ink); }
+.orbitTravelPace > div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.orbitTravelPace button { padding: 10px 5px; font-size: 12px; }
+.orbitTravelPace button[aria-pressed="true"] { background: #e6f2ec; border-color: #42816c; color: #12584d; }
+.orbitTravelForm .orbitTravelImport { border: 0; color: var(--trip-muted); text-decoration: underline; background: transparent; font-size: 12px; }
+.orbitTravelPreferences summary { display: flex; align-items: center; justify-content: space-between; }
+.orbitTravelPreferences summary::after { content: '＋'; margin-left: 8px; }
+.orbitTravelPreferences[open] summary::after { content: '−'; }
+.orbitTravelPreferences summary small { margin-left: auto; }
+.orbitTravelGenerating { padding: 24px 18px; }
+.orbitTravelGenerating h2 { font-size: 19px; margin-bottom: 14px; }
+.orbitTravelGenerating p { font-size: 13px; font-weight: 500; }
+.orbitTravelResultHeading { position: sticky; top: 0; z-index: 3; padding: 10px 0; background: #f5f8f8; }
+.orbitTravelResultHeading strong { display: block; color: var(--trip-ink); font-size: 14px; }
+.orbitTravelResultHeading small { display: block; margin-top: 5px; font-size: 11px; }
+.orbitTravelResultHeading > div:last-child { display: flex; gap: 6px; }
+.orbitTravelResultHeading button { padding: 9px 10px; }
+.orbitTravelOverview summary { font-size: 12px; color: var(--trip-muted); }
+.orbitTravelPlan header p { font-size: 14px; margin: 0 0 12px; }
+.orbitTravelDays { margin: 10px -2px 16px; }
+.orbitTravelDays button { flex-basis: 62px; min-height: 60px; }
+.orbitTravelDayHeading { display: flex; justify-content: space-between; align-items: start; gap: 10px; }
+.orbitTravelDayHeading .orbitTravelDayTitle { margin: 0 !important; }
+.orbitTravelDayHeading > span { flex: none; color: var(--trip-muted); font-size: 12px; padding-top: 3px; }
+.orbitTravelReadHint { margin: 7px 0 18px !important; font-size: 11px; color: var(--trip-muted); }
+.orbitTravelTimeline > li { grid-template-columns: 42px minmax(0, 1fr); gap: 8px; padding-bottom: 14px; }
+.orbitTravelTimeline time { font-size: 12px; padding-top: 15px; }
+.orbitTravelTimeline > li:not(:last-child)::after { top: 38px; bottom: 0; left: 18px; }
+.orbitTravelStop { border: 1px solid var(--trip-line); border-radius: 14px; background: #fbfcfb; padding: 0 12px; }
+.orbitTravelTimeline .orbitTravelStop summary { position: relative; padding: 12px 18px 12px 0; list-style: none; }
+.orbitTravelStop summary::-webkit-details-marker { display: none; }
+.orbitTravelStop summary::after { content: '＋'; position: absolute; right: 0; top: 15px; color: var(--trip-muted); }
+.orbitTravelStop[open] summary::after { content: '−'; }
+.orbitTravelTimeline .orbitTravelStop span { font-size: 12px; font-weight: 500; }
+.orbitTravelTimeline .orbitTravelStop p { margin: 0 0 12px; font-size: 14px; line-height: 1.75; }
+.orbitTravelStopMeta b { display: block; font-size: 11px; color: var(--trip-muted); font-weight: 650; }
+.orbitTravelDayPager { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 4px 0 20px; }
+.orbitTravelDayPager span { color: var(--trip-muted); font-size: 12px; }
+@media (max-width: 360px) {
+  .orbitTravelForm .orbitTravelTwoCol { grid-template-columns: 1fr; }
+  .orbitTravelResultHeading { gap: 8px; }
+}
+
+.orbitTravelReading { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin: 4px 0 12px; }
+.orbitTravelReading .orbitTravelReadHint { margin: 0 !important; }
+.orbitTravelReading button { flex: none; border: 0; padding: 8px 0 8px 8px; font-size: 11px; text-decoration: underline; }
+.orbitTravelDays button { scroll-margin-top: 90px; }
+
+.orbitTravelForm fieldset { gap: 22px; }
+.orbitTravelForm label { gap: 10px; }
+.orbitTravelForm header { margin-bottom: 25px; }
+.orbitTravelPeople > label { display: flex; align-items: center; gap: 5px; }
+.orbitTravelHours { display: flex; align-items: center; gap: 12px; padding: 15px; border-radius: 14px; background: #edf5ee; color: var(--trip-ink); }
+.orbitTravelHours > span:first-child { font-size: 24px; }
+.orbitTravelHours strong { display: block; font-size: 14px; }
+.orbitTravelHours small { display: block; margin-top: 7px; color: var(--trip-muted); font-size: 12px; line-height: 1.6; }
+.orbitTravelTimeline > li { padding-bottom: 22px; gap: 12px; }
+.orbitTravelTimeline .orbitTravelStop summary { padding-top: 16px; padding-bottom: 16px; }
+.orbitTravelTimeline .orbitTravelStop p { margin-bottom: 18px; line-height: 1.9; }
+.orbitTravelTimeline .orbitTravelStop .orbitTravelStopEmoji { display: inline; font-size: 15px; margin-right: 6px; }
+.orbitTravelStopMeta b { margin-bottom: 6px; }
+.orbitTravelDayHeading { margin-top: 8px; }
+.orbitTravelReading { margin-bottom: 20px; }

@@ -53,12 +53,12 @@ export default function CardTransactionImportPanel({
       </header>
 
       <p className="lifeHubCardImportPrivacy">
-        선택한 앱의 알림은 기기 안에서만 확인해요. 알림 원문·잔액·계좌·카드번호는 표시하거나 저장하지 않고, 검증된 금액·사용처·시각만 이 기기의 가계부에 저장합니다.
+        선택한 앱의 알림은 기기 안에서만 확인해요. 알림 원문·잔액·계좌·카드번호는 표시하거나 저장하지 않고, 검증된 금액·사용처·시각만 이 기기의 가계부에 저장합니다. 기존 사용처 분류를 먼저 적용하고, 기타인 사용처는 이름만 AI 검색에 보내 분류해요. 금액·알림 원문은 검색에 보내지 않아요.
       </p>
 
       <div className="lifeHubCardImportPermission lifeHubCardImportSources" role="group" aria-labelledby="cardImportSourcesTitle">
         <strong id="cardImportSourcesTitle">가져올 결제 앱</strong>
-        <p>삼성월렛과 카카오페이 앱 중 사용할 앱만 선택하세요. 카카오톡 알림톡은 읽지 않아요.</p>
+        <p>삼성월렛·카카오페이·토스 앱 중 사용할 앱만 선택하세요. 카카오톡 알림톡은 읽지 않아요.</p>
         <div>
           {cardImport.sources.map((source) => (
             <label key={source.id}>
@@ -77,7 +77,7 @@ export default function CardTransactionImportPanel({
       {cardImport.enabled && !accessEnabled ? (
         <div className="lifeHubCardImportPermission">
           <strong>Android 알림 접근이 필요해요</strong>
-          <p>알림 접근은 모든 앱의 알림을 볼 수 있는 넓은 특수 권한입니다. Orbit은 선택한 삼성월렛·카카오페이 알림만 기기 안에서 확인해 실제 결제 승인만 가져옵니다.</p>
+          <p>알림 접근은 모든 앱의 알림을 볼 수 있는 넓은 특수 권한입니다. Orbit은 선택한 삼성월렛·카카오페이·토스 알림만 기기 안에서 확인해 실제 결제 승인만 가져옵니다.</p>
           <p>권한을 허용하기 전의 과거 결제 내역은 가져올 수 없어요.</p>
           <div>
             <button type="button" className="primary" onClick={cardImport.openAccessSettings}>알림 접근 설정</button>
