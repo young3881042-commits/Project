@@ -88,6 +88,7 @@ public final class MainActivity extends Activity {
     private volatile FinanceShareCoordinator financeShareCoordinator;
     private volatile TravelApiCoordinator travelApiCoordinator;
     private AiChatExportCoordinator aiChatExportCoordinator;
+    private TravelImageExportCoordinator travelImageExportCoordinator;
 
     @Override
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
@@ -161,6 +162,12 @@ public final class MainActivity extends Activity {
                 webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('orbit:chat-export',{detail:" + detail.toString() + "}));", null);
             }
         });
+        travelImageExportCoordinator = new TravelImageExportCoordinator(this, new TravelImageExportCoordinator.Host() {
+            public boolean trusted() { return webView != null && isTrustedNativeCaller() && !isFinishing(); }
+            public void deliver(JSONObject detail) {
+                webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('orbit:travel-image-export',{detail:" + detail.toString() + "}));", null);
+            }
+        });
         clearLegacyCardImportState();
         AppNotificationCoordinator.ensureChannel(getApplicationContext());
         AppNotificationCoordinator.restoreScheduled(getApplicationContext());
@@ -169,6 +176,7 @@ public final class MainActivity extends Activity {
         localAssetResponder = new LocalAssetResponder(getAssets());
 
         webView = new WebView(this);
+        webView.getSettings().setUserAgentString(webView.getSettings().getUserAgentString() + " Orbit/0.9.2");
         WebView.setWebContentsDebuggingEnabled(false);
         webView.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -497,6 +505,7 @@ public final class MainActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == TravelImageExportCoordinator.REQUEST_CODE && travelImageExportCoordinator != null) { travelImageExportCoordinator.onResult(resultCode, data); return; }
         if (requestCode == AiChatExportCoordinator.REQUEST_CODE && aiChatExportCoordinator != null) { aiChatExportCoordinator.onResult(resultCode, data); return; }
         if (backupDocumentCoordinator != null
                 && backupDocumentCoordinator.handlesActivityResult(requestCode)) {
@@ -587,6 +596,7 @@ public final class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (aiChatExportCoordinator != null) aiChatExportCoordinator.destroy();
+        if (travelImageExportCoordinator != null) travelImageExportCoordinator.destroy();
         if (travelApiCoordinator != null) {
             travelApiCoordinator.destroy();
             travelApiCoordinator = null;
@@ -667,6 +677,11 @@ public final class MainActivity extends Activity {
             TravelApiCoordinator coordinator = travelApiCoordinator;
             return isTrustedNativeCaller() && coordinator != null ? coordinator.runtimeMode() : "standby";
         }
+        @JavascriptInterface
+        public void exportTravelImage(String requestId, String content) {
+            if (isTrustedNativeCaller() && travelImageExportCoordinator != null) travelImageExportCoordinator.request(requestId, content);
+        }
+
         @JavascriptInterface
         public void exportAiConversation(String requestId, String content) {
             if (isTrustedNativeCaller() && aiChatExportCoordinator != null) aiChatExportCoordinator.request(requestId, content);

@@ -6,6 +6,7 @@ final class TravelApiPolicy {
         return id != null && id.matches("[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}");
     }
     static String path(String action, String id) {
+        if ("map-search".equals(action)) return "map/search";
         if ("auth-info".equals(action)) return "auth/info";
         if ("auth-status".equals(action)) return "auth/status";
         if ("auth-login".equals(action)) return "auth/login";
@@ -26,7 +27,7 @@ final class TravelApiPolicy {
         return null;
     }
     static String method(String action) {
-        if ("auth-login".equals(action) || "auth-cancel".equals(action)) return "POST";
+        if ("map-search".equals(action) || "auth-login".equals(action) || "auth-cancel".equals(action)) return "POST";
         if ("chat-create".equals(action) || "chat-send".equals(action) || "chat-update".equals(action) || "chat-cancel".equals(action)) return "POST";
         if ("pair".equals(action) || "create".equals(action) || "merchant-create".equals(action)) return "POST";
         return "cancel".equals(action) ? "DELETE" : "GET";

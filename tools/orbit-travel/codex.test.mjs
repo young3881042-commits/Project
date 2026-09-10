@@ -57,3 +57,10 @@ test('selected reasoning effort is passed verbatim without overriding model defa
   assert.ok(!travelCodexArgs('/tmp/schema', '/tmp/isolated', 'gpt-6-astra').some(arg => arg.startsWith('model_reasoning_effort=')));
   assert.throws(() => travelCodexArgs('/tmp/schema', '/tmp/isolated', 'gpt-6-astra', '', '--bad'), /추론 강도/);
 });
+test('duplicate venues trigger one complete repair and are never silently saved', async () => {
+  let calls=0;
+  const duplicate={...result,days:[{day:1,title:'하루',items:[...result.days[0].items,{...result.days[0].items[0],time:'12:00',title:'다른 활동'}]}]};
+  const options={ resolveCommand:()=>({command:'fake',argsPrefix:[]}), spawnProcess:(...args)=>{calls++;return fakeSpawn([{type:'item.completed',item:{type:'agent_message',text:JSON.stringify(calls===1?duplicate:result)}}])(...args);} };
+  const plan=await generateTravelPlan(input,options);assert.equal(calls,2);assert.equal(plan.days[0].items.length,1);
+  await assert.rejects(generateTravelPlan(input,{...options,spawnProcess:fakeSpawn([{type:'item.completed',item:{type:'agent_message',text:JSON.stringify(duplicate)}}])}),/같은 장소가 반복/);
+});

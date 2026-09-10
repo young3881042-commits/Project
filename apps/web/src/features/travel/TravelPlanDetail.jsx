@@ -1,7 +1,8 @@
+import TravelDayMap from './TravelDayMap.jsx';
 import { useRef, useState } from 'react';
 import { publicTravelSource } from './travelModel.js';
 
-export default function TravelPlanDetail({ plan, label = '여행 일정' }) {
+export default function TravelPlanDetail({ plan, destination = '', label = '여행 일정' }) {
   const [selected, setSelected] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const tabs = useRef(null);
@@ -16,6 +17,7 @@ export default function TravelPlanDetail({ plan, label = '여행 일정' }) {
       {plan.days.map((item, index) => <button type="button" key={item.day} aria-pressed={selected === index} onClick={() => choose(index)}>{item.day}일차<small>{item.date.slice(5).replace('-', '.')}</small></button>)}
     </div>
     <div className="orbitTravelDayHeading"><h3 className="orbitTravelDayTitle">{day.title}</h3><span>{day.items.length}곳</span></div>
+    <TravelDayMap key={day.day} day={day} title={plan.title} destination={destination} />
     <div className="orbitTravelReading"><p className="orbitTravelReadHint">장소를 누르면 자세히 볼 수 있어요.</p><button type="button" aria-pressed={expanded} onClick={() => setExpanded(value => !value)}>{expanded ? '모두 접기' : '모두 펼치기'}</button></div>
     <ol className="orbitTravelTimeline" key={day.day}>
       {day.items.map((item, index) => <li key={`${item.time}-${index}`}><time>{item.time}</time><details className="orbitTravelStop" open={expanded}><summary><strong><span className="orbitTravelStopEmoji" aria-hidden="true">📍</span>{item.title}</strong><span>{item.place}</span></summary><p>{item.description}</p>{item.transport ? <p className="orbitTravelStopMeta"><b>🚶 이동</b>{item.transport}</p> : null}{item.estimatedCost ? <p className="orbitTravelStopMeta"><b>💳 예상 비용</b>{item.estimatedCost}</p> : null}</details></li>)}

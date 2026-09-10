@@ -1,7 +1,7 @@
 import { TRAVEL_PORT } from './travelModel.js';
 
 export const TRAVEL_RESULT_EVENT = 'orbit:travel-result';
-const ACTIONS = new Set(['auth-info', 'runtime-enable', 'runtime-legacy', 'auth-status', 'auth-login', 'auth-cancel', 'availability', 'status', 'pair', 'create', 'poll', 'cancel', 'chat-list', 'chat-create', 'chat-thread', 'chat-send', 'chat-update', 'chat-cancel', 'merchant-create', 'merchant-poll']);
+const ACTIONS = new Set(['map-search', 'auth-info', 'runtime-enable', 'runtime-legacy', 'auth-status', 'auth-login', 'auth-cancel', 'availability', 'status', 'pair', 'create', 'poll', 'cancel', 'chat-list', 'chat-create', 'chat-thread', 'chat-send', 'chat-update', 'chat-cancel', 'merchant-create', 'merchant-poll']);
 const TOKEN_KEY = 'orbit-travel-session-token'; // Browser development only; never part of an Orbit backup.
 export class TravelApiError extends Error {
   constructor(message, status = 0) { super(message); this.status = status; }
@@ -39,10 +39,10 @@ async function browserTravelApi(action, payload, target) {
   const chatSuffix = { 'chat-thread': '', 'chat-send': '/messages', 'chat-update': '/meta', 'chat-cancel': '/cancel' };
   if (action in chatSuffix && !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(payload.id || '')) throw new TravelApiError('대화 ID가 올바르지 않아요.');
   const chatPath = ['chat-list', 'chat-create'].includes(action) ? 'chat/threads' : action in chatSuffix ? 'chat/threads/' + payload.id + chatSuffix[action] : '';
-  const post = ['merchant-create', 'create', 'pair', 'chat-create', 'chat-send', 'chat-update', 'chat-cancel'].includes(action);
+  const post = ['map-search', 'merchant-create', 'create', 'pair', 'chat-create', 'chat-send', 'chat-update', 'chat-cancel'].includes(action);
   if (action === 'merchant-poll' && !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(payload.id || '')) throw new TravelApiError('분류 요청 ID가 올바르지 않아요.');
   const merchantPath = action === 'merchant-create' ? 'merchant/jobs' : action === 'merchant-poll' ? `merchant/jobs/${payload.id}` : '';
-  const path = merchantPath || chatPath || (job ? `jobs/${payload.id}` : action === 'create' ? 'jobs' : action);
+  const path = (action === 'map-search' ? 'map/search' : '') || merchantPath || chatPath || (job ? `jobs/${payload.id}` : action === 'create' ? 'jobs' : action);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 15000);
   try {

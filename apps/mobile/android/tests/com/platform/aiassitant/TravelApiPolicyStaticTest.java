@@ -10,6 +10,8 @@ public final class TravelApiPolicyStaticTest {
         require(AiChatAttachmentPolicy.allowedName("여행 자료.PDF"));
         require(!AiChatAttachmentPolicy.allowedName("../private.txt"));
         require(!AiChatAttachmentPolicy.allowedName("program.apk"));
+        require("map/search".equals(TravelApiPolicy.path("map-search", "")));
+        require("POST".equals(TravelApiPolicy.method("map-search")));
         String id = "01234567-89ab-4def-8123-456789abcdef";
         require(TravelApiPolicy.validRequestId(id));
         require("auth/status".equals(TravelApiPolicy.path("auth-status", "")));

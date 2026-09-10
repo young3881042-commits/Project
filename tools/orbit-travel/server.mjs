@@ -1,3 +1,4 @@
+import { createMapSearch } from './map-search.mjs';
 import { createCodexInfo } from './codex-info.mjs';
 import { createEmbeddedAuth } from './embedded-auth.mjs';
 import { createMerchantClassifier } from './merchant-classifier.mjs';
@@ -19,6 +20,7 @@ export function createTravelServer({ token, pairingCode, generate = generateTrav
   if (!/^[a-f0-9]{64}$/.test(token) || !/^\d{8}$/.test(pairingCode)) throw new Error('Invalid local credentials');
   const jobs = new Map();
   const codexInfo = createCodexInfo();
+  const mapSearch = createMapSearch();
   let active = null, paired = false, attempts = 0;
   const chat = createChatService({ directory: chatDirectory, reply: chatReply, otherBusy: () => Boolean(active) || merchant.busy });
   const merchant = createMerchantClassifier({ classify: merchantClassify, otherBusy: () => Boolean(active) || chat.busy, now });
@@ -30,7 +32,7 @@ export function createTravelServer({ token, pairingCode, generate = generateTrav
     idleTimer = setTimeout(() => {
       prune();
       const unread = [...jobs.values()].some(job => !job.delivered);
-      if (!active && !chat.busy && !merchant.busy && !embeddedAuth?.busy && !codexInfo.busy && !unread && now() - lastRequest >= idleMs) {
+      if (!active && !chat.busy && !merchant.busy && !embeddedAuth?.busy && !codexInfo.busy && !mapSearch.busy && !unread && now() - lastRequest >= idleMs) {
         server.close(); server.closeIdleConnections();
       } else armIdle();
     }, idleMs);
@@ -86,6 +88,10 @@ export function createTravelServer({ token, pairingCode, generate = generateTrav
       if (!equal(body.code, pairingCode)) { send(401, { error: '8자리 연결 코드를 확인해주세요.' }); return; }
       paired = true;
       send(200, { token }); return;
+    }
+    if (req.url === '/api/travel/map/search' && req.method === 'POST') {
+      try { send(200, await mapSearch.search(body.query)); } catch (error) { send(error.status || 400, { error: /^[가-힣]/.test(error.message) ? error.message : '지도 검색에 실패했어요. 연결을 확인해주세요.' }); }
+      return;
     }
     if (req.url === '/api/travel/auth/info' && req.method === 'GET') {
       if (embeddedAuth?.busy) { send(409, { error: '로그인을 마친 뒤 모델·사용 한도를 확인해주세요.' }); return; }
@@ -146,7 +152,7 @@ export function createTravelServer({ token, pairingCode, generate = generateTrav
   server.headersTimeout = 10000;
   server.maxConnections = 16;
   server.on('listening', armIdle);
-  server.on('close', () => { clearTimeout(idleTimer); active?.controller.abort(); chat.close(); merchant.close(); embeddedAuth?.close(); codexInfo.close(); });
+  server.on('close', () => { clearTimeout(idleTimer); active?.controller.abort(); chat.close(); merchant.close(); embeddedAuth?.close(); codexInfo.close(); mapSearch.close(); });
   return server;
 }
 
