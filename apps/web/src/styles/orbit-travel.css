@@ -200,3 +200,8 @@
 .orbitTravelMapStopChips { display: flex; gap: 7px; overflow-x: auto; padding: 12px 0 4px; }
 .orbitTravelMapStopChips button { flex: none; min-height: 44px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid #d5e2d8; border-radius: 20px; background: white; padding: 8px 12px; }
 .orbitTravelDayMap .leaflet-control-zoom a { width: 44px; height: 44px; line-height: 44px; }
+
+.orbitTravelDailyImage { margin: 12px 0 20px; }
+.orbitTravelSavedDayImage { display: block; width: 100%; height: auto; border-radius: 14px; }
+.orbitTravelImageActions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 12px; }
+.orbitTravelImageActions button { min-height: 44px; padding: 8px 14px; border: 1px solid #d4e1d7; border-radius: 12px; background: white; }

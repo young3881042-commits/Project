@@ -27,7 +27,7 @@ test('travel form/page render a compact accessible flow without archived destina
     assert.ok(!page.includes('accessToken')); assert.ok(!page.includes('apiKey'));
   } finally { await vite.close(); }
 });
-test('itinerary rendering escapes generated content and exposes dates/uncertainty without raw HTML', async () => {
+test('itinerary rendering exposes date tabs and a single image panel without raw generated HTML', async () => {
   const vite = await createServer({ root: new URL('../../../', import.meta.url).pathname, server: { middlewareMode: true }, appType: 'custom' });
   try {
     const { default: Detail } = await vite.ssrLoadModule('/src/features/travel/TravelPlanDetail.jsx');
@@ -35,9 +35,10 @@ test('itinerary rendering escapes generated content and exposes dates/uncertaint
     const plan = validateTravelPlan({ title: '<script>bad()</script>', summary: '산책', days: [{ day: 1, title: '첫날', items: [{ time: '10:00', title: '공원', place: '서울', description: '<img onerror=bad()>', transport: '도보', estimatedCost: '확인 필요' }] }], tips: [], sources: [] }, input);
     const html = renderToStaticMarkup(React.createElement(Detail, { plan }));
     assert.ok(!html.includes('<script>')); assert.ok(!html.includes('<img'));
-    assert.ok(html.includes('&lt;script&gt;')); assert.ok(html.includes('10.10'));
-    assert.ok(html.includes('orbitTravelStop')); assert.ok(html.includes('장소를 누르면'));
-    assert.ok(html.includes('AI가 만든 초안')); assert.ok(html.includes('aria-pressed="true"'));
+    assert.ok(html.includes('10.10')); assert.ok(html.includes('aria-pressed="true"'));
+    assert.equal((html.match(/class="orbitTravelDailyImage"/g) || []).length, 1);
+    assert.ok(!html.includes('orbitTravelStop')); assert.ok(!html.includes('orbitTravelTimeline'));
+    assert.ok(html.includes('이미지 저장')); assert.ok(html.includes('이미지 만들기'));
   } finally { await vite.close(); }
 });
 test('Android travel adapter permits only fixed loopback actions and leaves WebView restrictions intact', async () => {
@@ -51,7 +52,7 @@ test('Android travel adapter permits only fixed loopback actions and leaves WebV
   assert.ok(native.includes('http://127.0.0.1:4319/api/travel/')); assert.ok(native.includes('setInstanceFollowRedirects(false)'));
   assert.ok(native.includes('data = new JSONObject().put("connected", true)'));
   assert.ok(!native.includes('new URL(payload)')); assert.ok(!policy.includes('pair-code'));
-  assert.match(main, /isTrustedNativeCaller\(\) && coordinator != null\) coordinator.request/);
+  assert.match(main, /if \(isTrustedNativeCaller\(\) && coordinator != null\) \{\s*if \([^\n]+\) workspaceBridge.cancelTools\(\);\s*coordinator.request\(requestId, action, payload\);\s*\}/);
   assert.ok(main.includes('MIXED_CONTENT_NEVER_ALLOW'));
   assert.ok(manifest.includes('android:usesCleartextTraffic="false"'));
   assert.ok(config.includes('<base-config cleartextTrafficPermitted="false" />'));
@@ -91,7 +92,7 @@ test('restored result opens directly into itinerary; pending work shows progress
     const props = { owner: 'stage', model: { today: '2026-10-10', trips: [] }, readTrips: () => [], saveTrips: () => ({ saved: true }), refresh() {} };
     const html = renderToStaticMarkup(React.createElement(Page, props));
     assert.ok(html.includes('여행 일정 완성')); assert.ok(html.includes('조건 수정')); assert.ok(html.includes('저장하기'));
-    assert.ok(html.includes('모두 펼치기')); assert.ok(!html.includes('id="travel-destination"'));
+    assert.ok(html.includes('1일차 일정 이미지')); assert.ok(!html.includes('모두 펼치기')); assert.ok(!html.includes('orbitTravelTimeline')); assert.ok(!html.includes('id="travel-destination"'));
     workspace.result = null;
     const pending = renderToStaticMarkup(React.createElement(Page, props));
     assert.ok(pending.includes('여행 생성 진행 상태')); assert.ok(pending.includes('생성 취소'));
