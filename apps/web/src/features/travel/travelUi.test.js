@@ -76,7 +76,7 @@ test('standby connection needs no unsupported Termux service or runtime permissi
   assert.match(native, /runtime\.availability\(\)/);
   assert.match(native, /putString\(TOKEN_KEY, credential\)\.commit\(\)/);
   assert.match(hook, /info\.authenticated/);
-  assert.match(hook, /document\.visibilityState === 'hidden'/);
+  assert.match(hook, /document\.visibilityState !== 'hidden'/);
   assert.doesNotMatch(page, /권한을 허용|2분 동안/);
 });
 

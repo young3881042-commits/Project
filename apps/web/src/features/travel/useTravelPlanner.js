@@ -3,6 +3,7 @@ import { orbitStorage } from '../../utils/orbitIndexedDbStorage.js';
 import { safeParse, safeSetItem } from '../../utils/lifeHubStorage.js';
 import { importLegacyTravelDraft, validateTravelInput, validateTravelPlan } from './travelModel.js';
 import { travelApi } from './travelApi.js';
+import { watchTravelJob } from './travelJobPolling.js';
 import { restoreTravelWorkspace } from './travelWorkspace.js';
 
 function readWorkspace(key, today) {
@@ -28,12 +29,10 @@ export function useTravelPlanner({ owner, today }) {
   useEffect(() => { let live = true; travelApi('availability').then(async info => { if (!live) return; if (info.authenticated) { const state = await travelApi(info.mode === 'embedded' ? 'auth-status' : 'status'); if (live) setConnection(state.connected ? 'connected' : 'pair'); } else setConnection('pair'); }).catch(error => { if (live) setConnection(error.status === 401 ? 'pair' : 'offline'); }); return () => { live = false; }; }, []);
   useEffect(() => {
     if (!pending || submitting) return undefined;
-    let live = true, timer;
-    async function poll() {
-      if (!live || document.visibilityState === 'hidden') return;
-      try {
-        const job = await travelApi('poll', { id: workspace.jobId });
-        if (!live) return;
+    const watcher = watchTravelJob({
+      read: () => travelApi('poll', { id: workspace.jobId }),
+      isVisible: () => document.visibilityState !== 'hidden',
+      onJob(job) {
         setConnection('connected'); setMessage(job.message || '일정을 구성하고 있어요.'); setError('');
         if (job.state === 'completed') {
           const result = validateTravelPlan(job.result, workspace.input);
@@ -41,20 +40,18 @@ export function useTravelPlanner({ owner, today }) {
         } else if (job.state === 'failed' || job.state === 'cancelled') {
           setWorkspace(current => ({ ...current, jobId: '' }));
           if (job.state === 'failed') setError(job.message);
-        } else timer = setTimeout(poll, 1800);
-      } catch (error) {
-        if (!live) return;
-        setError(error.message);
+        }
+      },
+      onError(error, retrying) {
+        setError(retrying ? '연결 응답이 늦어 진행 상태를 다시 확인하고 있어요.' : error.message);
         if (error.status === 404) setWorkspace(current => ({ ...current, jobId: '' }));
         if (error.status === 401) setConnection('pair');
         else if (!error.status) setConnection('offline');
       }
-    }
-    const resume = () => { clearTimeout(timer); if (document.visibilityState !== 'hidden') poll(); };
-    document.addEventListener('visibilitychange', resume);
-    window.addEventListener('online', resume);
-    poll();
-    return () => { live = false; clearTimeout(timer); document.removeEventListener('visibilitychange', resume); window.removeEventListener('online', resume); };
+    });
+    document.addEventListener('visibilitychange', watcher.resume);
+    window.addEventListener('online', watcher.resume);
+    return () => { watcher.stop(); document.removeEventListener('visibilitychange', watcher.resume); window.removeEventListener('online', watcher.resume); };
   }, [workspace.jobId, workspace.result, pending, retry, submitting]);
 
   async function connect(code) {

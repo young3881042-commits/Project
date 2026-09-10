@@ -71,7 +71,9 @@ final class EmbeddedAiRuntime {
     synchronized String ensure() throws Exception {
         if (destroyed) throw new IOException("앱 연결이 종료됐어요.");
         if (!supported()) throw new IOException("내장 AI 실행 파일이 없거나 지원하지 않는 기기예요. Android 11 이상 arm64용 APK를 확인해주세요.");
-        if (alive() && ready()) return credential;
+        // A slow health response must never kill a live generation or discard its in-memory job.
+        // The actual request has its own timeout; only restart an exited process.
+        if (alive()) return credential;
         stop();
         File state = new File(home, ".local/state/orbit-travel");
         File temp = new File(home, "tmp");
