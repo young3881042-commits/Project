@@ -1,4 +1,4 @@
-const CACHE_NAME = 'orbit-web-v64';
+const CACHE_NAME = 'orbit-web-v65';
 const APP_SHELL_URL = '/app';
 const APP_ICON_URL = '/assets/lifehub-icons/app-icon-192.png';
 const APP_SHELL = [
@@ -142,7 +142,7 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin || hasPathPrefix(url.pathname, '/api') || hasPathPrefix(url.pathname, '/ws')) return;
+  if (url.origin !== self.location.origin || hasPathPrefix(url.pathname, '/orbit-workspace') || hasPathPrefix(url.pathname, '/api') || hasPathPrefix(url.pathname, '/ws')) return;
 
   if (isNavigationRequest(request) && isAppNavigationPath(url.pathname)) {
     event.respondWith(handleNavigation(request));

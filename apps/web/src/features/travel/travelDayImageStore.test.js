@@ -12,13 +12,20 @@ test('saved daily image is reused without geocoding or drawing again', async () 
 test('one generated PNG is stored, and explicit regeneration replaces that same day key', async () => {
   const writes = [], options = { read: async () => null, search: async () => ({ candidates: [{ lat: 37.5, lon: 127 }] }), render: async () => ({ dataUrl: image.dataUrl, missingTiles: false }), save: async (...args) => writes.push(args) };
   assert.equal((await ensureTravelDayImage(input, options)).persisted, true);
-  await ensureTravelDayImage(input, { ...options, force: true, read: () => assert.fail('forced rebuild') });
+  await ensureTravelDayImage(input, { ...options, force: true, read: async () => image });
   assert.equal(writes.length, 2); assert.equal(writes[0][0], writes[1][0]);
 });
 test('incomplete map regeneration preserves the saved image and storage failure is reported', async () => {
-  const options = { force: true, search: async () => ({ candidates: [{ lat: 37, lon: 127 }] }), render: async () => ({ ...image, missingTiles: true }), save: () => assert.fail('must preserve old image') };
-  await assert.rejects(ensureTravelDayImage(input, options), /지도 배경/);
-  await assert.rejects(ensureTravelDayImage(input, { ...options, search: async () => ({ candidates: [] }) }), /장소 위치/);
+  const options = { force: true, read: async () => image, search: async () => ({ candidates: [{ lat: 37, lon: 127 }] }), render: async () => ({ ...image, missingTiles: true }), save: () => assert.fail('must preserve old image') };
+  assert.equal((await ensureTravelDayImage(input, options)).dataUrl, image.dataUrl);
+  assert.equal((await ensureTravelDayImage(input, { ...options, search: async () => ({ candidates: [] }) })).dataUrl, image.dataUrl);
   const value = await ensureTravelDayImage(input, { ...options, render: async () => ({ ...image, missingTiles: false }), save: async () => { throw new Error('저장 공간 부족'); } });
   assert.equal(value.persisted, false); assert.match(value.storageError, /저장 공간/);
+});
+
+test('missing coordinates do not hide a newly generated itinerary image', async () => {
+  let stored;
+  const value = await ensureTravelDayImage(input, { read: async () => null, search: async () => ({ candidates: [] }), render: async () => ({ ...image, missingTiles: false }), save: async (_, image) => { stored = image; return { dataUrl: 'stored-file-url' }; } });
+  assert.ok(stored.dataUrl); assert.equal(stored.itinerary.day.day, 1);
+  assert.equal(value.dataUrl, 'stored-file-url'); assert.equal(value.persisted, true); assert.match(value.storageError, /일정만 이미지/);
 });

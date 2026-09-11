@@ -136,6 +136,9 @@ run_android_security_tests() {
   java \
     -classpath "${test_classes_dir}:${BUILD_DIR}/classes:${platform_dir}/android.jar" \
     com.platform.aiassitant.TravelApiPolicyStaticTest
+  java \
+    -classpath "${test_classes_dir}:${BUILD_DIR}/classes:${platform_dir}/android.jar" \
+    com.platform.aiassitant.OrbitWorkspaceFilesStaticTest
 }
 
 scan_apk_credentials() {

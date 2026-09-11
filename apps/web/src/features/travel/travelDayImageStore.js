@@ -1,3 +1,4 @@
+import { hasTravelImageFiles, travelImageFile } from './travelImageFile.js';
 const DATABASE = 'orbit-travel-images';
 const STORE = 'days';
 export async function travelImageKey({ owner = 'local', title, destination, day }) {
@@ -12,9 +13,11 @@ async function database() {
     request.onupgradeneeded = () => request.result.createObjectStore(STORE, { keyPath: 'key' });
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(new Error('일정 이미지 저장소를 열지 못했어요.'));
+    request.onblocked = () => reject(new Error('이미지 저장소가 사용 중이에요. 앱을 다시 열어주세요.'));
   });
 }
 export async function readTravelDayImage(key) {
+  if (hasTravelImageFiles()) { const file = await travelImageFile('read', key); if (file) return file; }
   const db = await database();
   try { return await new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, 'readonly'), request = tx.objectStore(STORE).get(key);
@@ -23,6 +26,7 @@ export async function readTravelDayImage(key) {
   }); } finally { db.close(); }
 }
 export async function saveTravelDayImage(key, image) {
+  if (hasTravelImageFiles()) return travelImageFile('save', key, image.dataUrl, window, image.itinerary || {});
   if (!/^data:image\/png;base64,/.test(image.dataUrl) || image.dataUrl.length > 5600000) throw new Error('일정 이미지가 너무 커서 저장하지 못했어요.');
   const db = await database();
   try { await new Promise((resolve, reject) => {
@@ -35,11 +39,12 @@ export async function saveTravelDayImage(key, image) {
 // Cache lookup happens before any location or tile requests. Failed regeneration preserves the old image.
 export async function ensureTravelDayImage(input, { force = false, signal, read = readTravelDayImage, save = saveTravelDayImage, search, render } = {}) {
   const key = await travelImageKey(input);
-  let storageError = '';
-  if (!force) {
-    try { const existing = await read(key); if (existing) return { ...existing, persisted: true }; }
-    catch (error) { storageError = error.message; }
-  }
+  let storageError = '', existing = null;
+  try { existing = await read(key); if (existing && !force) {
+    if (hasTravelImageFiles() && existing.dataUrl.startsWith('data:')) { try { return { ...existing, ...await save(key, existing), persisted: true }; } catch { /* Keep the original available for viewing. */ } }
+    return { ...existing, persisted: true };
+  } }
+  catch (error) { storageError = error.message; }
   signal?.throwIfAborted();
   const points = [], failed = [];
   for (const item of input.day.items) {
@@ -51,11 +56,11 @@ export async function ensureTravelDayImage(input, { force = false, signal, read 
     } catch { points.push(null); failed.push(item.place); }
   }
   signal?.throwIfAborted();
-  if (!points.some(Boolean)) throw new Error('장소 위치를 찾지 못해 이미지를 만들지 않았어요. AI 연결과 인터넷을 확인한 뒤 다시 눌러주세요.');
   const result = await render({ ...input, points, signal });
   signal?.throwIfAborted();
-  if (result.missingTiles) throw new Error('지도 배경을 불러오지 못해 이미지를 저장하지 않았어요. 잠시 후 다시 만들어주세요.');
-  const value = { dataUrl: result.dataUrl, missingPlaces: failed };
-  try { await save(key, value); return { ...value, persisted: true }; }
+  const warning = !points.some(Boolean) ? '장소 위치를 확인하지 못해 일정만 이미지로 표시했어요. 지도는 다시 만들기로 재시도할 수 있어요.' : result.missingTiles ? '지도 배경 일부를 불러오지 못했어요. 일정 이미지는 표시하며 지도를 다시 만들 수 있어요.' : '';
+  if (warning && existing) return { ...existing, persisted: true, storageError: '새 지도 조회에 실패해 기존 이미지를 유지했어요.' };
+  const value = { dataUrl: result.dataUrl, missingPlaces: failed, itinerary: input };
+  try { const stored = await save(key, value); return { ...value, ...(stored || {}), persisted: true, storageError: warning }; }
   catch (error) { return { ...value, persisted: false, storageError: error.message || storageError }; }
 }
