@@ -17,7 +17,13 @@ test('local MCP is scoped to embedded chat; travel defaults still expose no file
  try {process.env.ORBIT_EMBEDDED='1';process.env.ORBIT_NODE_BINARY='/native/liborbit_node.so';
  const args=travelCodexArgs('/tmp/schema','/tmp/task','','','',true);
  assert.ok(args.includes('mcp_servers.orbit_local.command="/system/bin/linker64"'));
+ assert.equal(args[args.indexOf('--sandbox')+1],'workspace-write');
+ assert.ok(args.some(x=>x.startsWith('sandbox_workspace_write.writable_roots=')&&x.includes('/workspace')));
+ for(const tool of workspaceTools)assert.ok(args.includes(`mcp_servers.orbit_local.tools.${tool.name}.approval_mode="approve"`));
+ assert.ok(!args.some(x=>x.startsWith('apps._default.')||x.includes('default_tools_approval_mode')));
  assert.ok(args.includes('features.shell_tool=false'));
+ const isolated=travelCodexArgs('/tmp/schema','/tmp/task');
+ assert.equal(isolated[isolated.indexOf('--sandbox')+1],'read-only');
  assert.ok(args.some(x=>x.includes('liborbit_node.so')&&x.includes('--workspace-mcp')));
  assert.ok(!travelCodexArgs('/tmp/schema','/tmp/task').some(x=>x.startsWith('mcp_servers.orbit_local.')));
  }finally{for(const [key,value]of [['ORBIT_EMBEDDED',previous.embedded],['ORBIT_NODE_BINARY',previous.node]]){if(value===undefined)delete process.env[key];else process.env[key]=value;}}

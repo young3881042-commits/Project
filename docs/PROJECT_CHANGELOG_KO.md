@@ -1,5 +1,13 @@
 # 프로젝트 변경 기록
 
+## 2026-09-11 Codex 작업공간 읽기·쓰기 권한 정합성 · v50
+
+- 연결된 내장 채팅은 `workspace-write`와 기본 작업공간 writable root를 전달한다. 파일 도구가 없는 실행은 기존 read-only를 유지한다. 기본/외부 폴더 파일 변경은 계속 native orbit_local 도구로만 수행한다.
+- 실제 Codex 실험에서 MCP 쓰기 호출이 도구별 승인 기본값과 non-interactive never 정책 때문에 실행 전에 차단되는 것을 재현했다. 사용자가 허용한 orbit_local의 명시적 파일 도구 5개에만 `approval_mode=approve`를 설정했다. 다른 MCP/apps는 추가 승인하지 않으며 삭제·중요 파일의 native 확인, 경로 제한, 기존 파일 해시 검사는 그대로 유지한다.
+- 실제 Codex + 패키지 Node MCP + 격리된 검증용 loopback bridge에서 write_file 1회/read_file 1회를 수행해 파일 내용 ORBIT_WRITE_OK를 확인했다. 검증용 임시 파일은 종료 후 정리했다. 이는 앱의 실제 SAF 문서 제공자에서 수행한 실기기 왕복 검증은 아니다.
+- 연결·대화·화면 테스트 113개 및 최종 도구 설정 재검증 통과. UI에 읽기·쓰기 상태를 표시한다. Android 0.9.9-debug(50), 웹 캐시 v68. 웹 build·Android 컴파일·native smoke·서명·APK 민감정보 검사 통과. /sdcard/Download/Orbit-latest.apk 복사와 원본 체크섬 일치를 확인했다. 경량 SDK의 Android Lint와 실제 APK 설치 후 외부 폴더 조작은 미실행이다.
+- 도구별 승인 설정은 [OpenAI 공식 설정 문서](https://learn.chatgpt.com/docs/config-file/config-reference)를 확인했다.
+
 ## 2026-09-11 채팅 사진 첨부·Codex 이미지 입력 · v49
 
 - JPG/JPEG·PNG·WebP 사진을 기존 문서 선택 경로에 추가했다. 원본 10MB까지 읽고 긴 변 1600px 이하·JPEG 160KB 이하의 전송용 사진으로 변환해 미리보기와 대화에 보관한다. 문서와 사진 합계 최대 3개이며 별도 광역 사진/저장소 권한은 추가하지 않는다.
