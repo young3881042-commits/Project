@@ -37,13 +37,13 @@ final class ChatAttachmentCoordinator {
                 try(Cursor cursor=activity.getContentResolver().query(uri,new String[]{OpenableColumns.DISPLAY_NAME},null,null,null)){
                     if(cursor==null||!cursor.moveToFirst())throw new IOException("파일 이름을 읽지 못했어요.");name=cursor.getString(0);
                 }
-                if(!AiChatAttachmentPolicy.allowedName(name))throw new IOException("PDF·TXT·MD·CSV·JSON·LOG 문서를 선택해주세요. 사진·워드·엑셀 파일은 아직 지원하지 않아요.");
-                int limit=name.toLowerCase(Locale.ROOT).endsWith(".pdf")?5242880:204800;
+                if(!AiChatAttachmentPolicy.allowedName(name))throw new IOException("JPG·PNG·WebP 사진 또는 PDF·텍스트 문서를 선택해주세요.");
+                int limit=name.toLowerCase(Locale.ROOT).matches(".*\\.(jpg|jpeg|png|webp)")?10485760:name.toLowerCase(Locale.ROOT).endsWith(".pdf")?5242880:204800;
                 clear();String token=UUID.randomUUID().toString();file=new File(directory,token);
                 long size=0;
                 try(InputStream input=activity.getContentResolver().openInputStream(uri);OutputStream out=new FileOutputStream(file)){
                     if(input==null)throw new IOException("선택한 파일을 읽지 못했어요.");byte[] buffer=new byte[8192];int count;
-                    while((count=input.read(buffer))!=-1){if(destroyed)throw new IOException();size+=count;if(size>limit)throw new IOException(limit==5242880?"PDF는 5MB까지 첨부할 수 있어요.":"텍스트 문서는 200KB까지 첨부할 수 있어요.");out.write(buffer,0,count);}
+                    while((count=input.read(buffer))!=-1){if(destroyed)throw new IOException();size+=count;if(size>limit)throw new IOException(limit==10485760?"사진은 10MB까지 첨부할 수 있어요.":limit==5242880?"PDF는 5MB까지 첨부할 수 있어요.":"텍스트 문서는 200KB까지 첨부할 수 있어요.");out.write(buffer,0,count);}
                 }
                 if(size==0)throw new IOException("파일에 읽을 내용이 없어요.");
                 artifact=token;

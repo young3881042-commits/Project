@@ -1,4 +1,4 @@
-const CACHE_NAME = 'orbit-web-v66';
+const CACHE_NAME = 'orbit-web-v67';
 const APP_SHELL_URL = '/app';
 const APP_ICON_URL = '/assets/lifehub-icons/app-icon-192.png';
 const APP_SHELL = [

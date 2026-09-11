@@ -136,3 +136,15 @@ test('chat attachment payload limit expands only the message route and rejects i
     assert.equal((await f.call(`threads/${id}/messages`, { requestId: randomUUID(), text: 'test', ...extra })).status, 400);
   }
 });
+
+test('photo bytes reach the reply runner, survive restart and stay outside textual prompts/exports', async t => {
+  const {photo}=await import('../../apps/web/src/features/ai-chat/chatPhotoFixture.test-data.js');
+  const {chatPrompt,chatVisionImages}=await import('./chat.mjs');
+  let supplied;
+  const f=await fixture(t,{chatReply:async thread=>{supplied=thread;return '사진 확인';}}),id=randomUUID();
+  await f.call('threads',{id});
+  assert.equal((await f.call(`threads/${id}/messages`,{requestId:randomUUID(),text:'사진 설명',attachments:[photo]})).status,202);
+  await f.done(id);assert.equal(chatVisionImages(supplied)[0].dataUrl,photo.dataUrl);assert.doesNotMatch(chatPrompt(supplied),/base64/);
+  assert.doesNotMatch(await readFile(join(f.directory,id+'.md'),'utf8'),/base64/);
+  const restored=await fixture(t,{chatDirectory:f.directory});assert.equal((await restored.call('threads/'+id)).value.messages[0].attachments[0].dataUrl,photo.dataUrl);
+});

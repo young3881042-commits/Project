@@ -191,7 +191,7 @@ public final class MainActivity extends Activity {
         localAssetResponder = new LocalAssetResponder(getAssets());
 
         webView = new WebView(this);
-        webView.getSettings().setUserAgentString(webView.getSettings().getUserAgentString() + " Orbit/0.9.7");
+        webView.getSettings().setUserAgentString(webView.getSettings().getUserAgentString() + " Orbit/0.9.8");
         WebView.setWebContentsDebuggingEnabled(false);
         webView.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,

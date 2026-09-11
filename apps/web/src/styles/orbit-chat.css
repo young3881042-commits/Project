@@ -129,3 +129,5 @@
 .orbitWorkspaceConnection h3 { margin: 0 0 10px; font-size: 16px; }
 .orbitWorkspaceConnection > div { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
 .orbitWorkspaceConnection small { display: block; color: #5d6c62; line-height: 1.6; }
+
+.orbitChatPhoto { display: block; max-width: 100%; width: 220px; max-height: 240px; object-fit: contain; border-radius: 12px; background: #f3f4f0; }

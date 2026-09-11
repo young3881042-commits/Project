@@ -18,7 +18,7 @@ final class AiChatAttachmentPolicy {
             for (String type : raw.split(",")) {
                 String value = type.trim().toLowerCase(Locale.ROOT);
                 if (value.isEmpty()) continue;
-                if (!(value.matches("\\.(pdf|txt|md|markdown|csv|json|log)")
+                if (!(value.matches("\\.(pdf|txt|md|markdown|csv|json|log|jpg|jpeg|png|webp)")
                         || value.matches("(application/(pdf|json)|text/(plain|markdown|csv))"))) return false;
                 found = true;
             }
@@ -27,7 +27,7 @@ final class AiChatAttachmentPolicy {
     }
     static boolean allowedName(String name) {
         return name != null && name.length() <= 160 && !name.matches(".*[\\p{Cntrl}/\\\\].*")
-                && name.toLowerCase(Locale.ROOT).matches(".+\\.(pdf|txt|md|markdown|csv|json|log)");
+                && name.toLowerCase(Locale.ROOT).matches(".+\\.(pdf|txt|md|markdown|csv|json|log|jpg|jpeg|png|webp)");
     }
     static boolean allowedDocument(Context context, Uri uri) {
         if (uri == null || !"content".equals(uri.getScheme())) return false;

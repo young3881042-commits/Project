@@ -1,3 +1,4 @@
+import { isPhotoName, MAX_PHOTO_BYTES } from './chatImageRules.js';
 import { attachmentName, MAX_PDF_BYTES, MAX_TEXT_BYTES } from './chatAttachments.js';
 export async function pickNativeChatAttachment(target = window) {
   const file = await new Promise((resolve, reject) => {
@@ -13,7 +14,7 @@ export async function pickNativeChatAttachment(target = window) {
     try { target.AiAssistantNative.pickChatAttachment(id); } catch { cleanup(); reject(new Error('파일 선택 창을 열지 못했어요.')); }
   });
   if (!file) return null;
-  const name = attachmentName(file.name), max = name.toLowerCase().endsWith('.pdf') ? MAX_PDF_BYTES : MAX_TEXT_BYTES;
+  const name = attachmentName(file.name), max = isPhotoName(name) ? MAX_PHOTO_BYTES : name.toLowerCase().endsWith('.pdf') ? MAX_PDF_BYTES : MAX_TEXT_BYTES;
   if (!Number.isSafeInteger(file.size) || file.size < 1 || file.size > max || !/^https:\/\/appassets\.androidplatform\.net\/orbit-chat-attachment\/[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(file.url || '')) throw new Error('첨부 파일 정보가 올바르지 않아요.');
   const response = await target.fetch(file.url, { cache: 'no-store', signal: AbortSignal.timeout(20000) });
   if (!response.ok) throw new Error('선택한 파일을 읽지 못했어요. 다시 첨부해주세요.');

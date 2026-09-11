@@ -37,7 +37,7 @@ final class TravelApiCoordinator {
 
     void request(final String requestId, final String action, final String payload) {
         if (destroyed || !TravelApiPolicy.validRequestId(requestId)) return;
-        if (payload == null || payload.getBytes(StandardCharsets.UTF_8).length > ("chat-send".equals(action) ? 131072 : 16384)) {
+        if (payload == null || payload.getBytes(StandardCharsets.UTF_8).length > ("chat-send".equals(action) ? 1048576 : 16384)) {
             emit(requestId, 400, null, "여행 요청이 너무 길어요."); return;
         }
         try {
@@ -98,7 +98,7 @@ final class TravelApiCoordinator {
             try (InputStream source = stream) {
                 byte[] buffer = new byte[4096]; int count;
                 while ((count = source.read(buffer)) != -1) {
-                    if (output.size() + count > (action.startsWith("chat-") ? 1048576 : 196608)) throw new IllegalStateException();
+                    if (output.size() + count > (action.startsWith("chat-") ? 10485760 : 196608)) throw new IllegalStateException();
                     output.write(buffer, 0, count);
                 }
             }

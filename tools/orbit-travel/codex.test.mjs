@@ -64,3 +64,12 @@ test('duplicate venues trigger one complete repair and are never silently saved'
   const plan=await generateTravelPlan(input,options);assert.equal(calls,2);assert.equal(plan.days[0].items.length,1);
   await assert.rejects(generateTravelPlan(input,{...options,spawnProcess:fakeSpawn([{type:'item.completed',item:{type:'agent_message',text:JSON.stringify(duplicate)}}])}),/같은 장소가 반복/);
 });
+
+test('image input becomes a private JPEG argument and is removed after execution', async()=>{
+ const {photo}=await import('../../apps/web/src/features/ai-chat/chatPhotoFixture.test-data.js');
+ const {runStructuredCodex}=await import('./codex.mjs');const {readFileSync,statSync,existsSync}=await import('node:fs');let path;
+ await runStructuredCodex({schemaValue:{},prompt:'inspect image',images:[photo],validate:x=>x,resolveCommand:()=>({command:'fake',argsPrefix:[]}),
+ spawnProcess:fakeSpawn([{type:'item.completed',item:{type:'agent_message',text:'{"ok":true}'}}],(_,args)=>{
+ path=args[args.indexOf('--image')+1];assert.equal(readFileSync(path).toString('base64'),photo.dataUrl.slice(23));assert.equal(statSync(path).mode&0o777,0o600);assert.equal(args.at(-1),'-');})});
+ assert.equal(existsSync(path),false);
+});

@@ -1,3 +1,4 @@
+import { validateChatImage } from '../../apps/web/src/features/ai-chat/chatImageRules.js';
 import { WORKSPACE_TOOLS } from './workspace-mcp.mjs';
 import { duplicateTravelStops } from '../../apps/web/src/features/travel/travelDuplicateStops.js';
 import { validChatEffort } from '../../apps/web/src/features/ai-chat/chatModelOptions.js';
@@ -58,11 +59,17 @@ export async function generateTravelPlan(input, options = {}) {
   }
 }
 
-export async function runStructuredCodex({ schemaValue, prompt, validate, instructions = '', signal, onProgress = () => {}, model = '', effort = '', workspace = false, resolveCommand = resolveRuntimeCodex, spawnProcess = spawn }) {
+export async function runStructuredCodex({ schemaValue, prompt, validate, instructions = '', signal, onProgress = () => {}, model = '', effort = '', workspace = false, images = [], resolveCommand = resolveRuntimeCodex, spawnProcess = spawn }) {
   const directory = await mkdtemp(join(tmpdir(), 'orbit-travel-'));
   try {
     const schema = join(directory, 'output.schema.json');
     await writeFile(schema, JSON.stringify(schemaValue), { mode: 0o600 });
+    if (!Array.isArray(images) || images.length > 3) throw new Error('사진은 한 번에 3개까지 보낼 수 있어요.');
+    const imagePaths = [];
+    for (const [index, raw] of images.entries()) {
+      const photo = validateChatImage(raw), path = join(directory, `photo-${index + 1}.jpg`);
+      await writeFile(path, Buffer.from(photo.dataUrl.slice(23), 'base64'), { mode: 0o600 }); imagePaths.push(path);
+    }
     const target = resolveCommand();
     const environment = {};
     for (const key of ['PATH', 'HOME', 'USER', 'LOGNAME', 'SHELL', 'TMPDIR', 'TMP', 'TEMP', 'LANG', 'LC_ALL', 'TERM', 'CODEX_HOME', 'ANDROID_ROOT', 'ANDROID_DATA', 'PREFIX', 'LD_PRELOAD', 'LD_LIBRARY_PATH', 'SSL_CERT_FILE', 'SSL_CERT_DIR', 'NODE_EXTRA_CA_CERTS']) {
@@ -71,7 +78,9 @@ export async function runStructuredCodex({ schemaValue, prompt, validate, instru
     const result = await new Promise((resolve, reject) => {
       if (signal?.aborted) { reject(new Error('생성을 취소했어요.')); return; }
       const ownProcessGroup = process.platform !== 'win32';
-      const child = spawnProcess(target.command, [...target.argsPrefix, ...travelCodexArgs(schema, directory, model, instructions, effort, workspace)], { cwd: directory, env: environment, shell: false, detached: ownProcessGroup, stdio: ['pipe', 'pipe', 'pipe'] });
+      const args = travelCodexArgs(schema, directory, model, instructions, effort, workspace);
+      args.splice(args.length - 1, 0, ...imagePaths.flatMap(path => ['--image', path]));
+      const child = spawnProcess(target.command, [...target.argsPrefix, ...args], { cwd: directory, env: environment, shell: false, detached: ownProcessGroup, stdio: ['pipe', 'pipe', 'pipe'] });
       let buffer = '', finalText = '', bytes = 0, failure = '', closed = false, killTimer;
       const kill = signalName => {
         // The Termux launcher spawns a native grandchild and does not forward signals.

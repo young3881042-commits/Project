@@ -87,6 +87,7 @@ export function useAiConversations(owner) {
       const capability = attachments.length || model || effort ? await travelApi('status') : null;
       if (effort && !capability?.chatReasoning) throw new Error('추론 강도 선택은 최신 AI 연결에서 사용할 수 있어요.');
       if (model && !capability?.chatModels) throw new Error('모델 선택은 최신 AI 연결에서 사용할 수 있어요.');
+      if (attachments.some(file => file.kind === 'image') && capability.chatImages !== 'jpeg-v1') throw new Error('사진 전송은 최신 앱의 내장 AI에서 사용할 수 있어요. AI 연결을 업데이트해주세요.');
       if (attachments.length && capability.chatAttachments !== 'text-pdf-v1') throw new Error('현재 AI 연결은 파일 첨부를 지원하지 않아요. 최신 앱의 내장 AI로 전환하거나 연결 서버를 업데이트해주세요.');
       if (effort) {
         const info = await travelApi('auth-info');
