@@ -90,6 +90,7 @@ public final class MainActivity extends Activity {
     private AiChatExportCoordinator aiChatExportCoordinator;
     private TravelImageExportCoordinator travelImageExportCoordinator;
     private WorkspaceBridge workspaceBridge;
+    private ChatAttachmentCoordinator chatAttachmentCoordinator;
     private TravelImageWorkspace travelImageWorkspace;
 
     @Override
@@ -174,6 +175,10 @@ public final class MainActivity extends Activity {
             public boolean trusted() { return webView != null && isTrustedNativeCaller() && !isFinishing(); }
             public void deliver(JSONObject detail) { webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('orbit:travel-image-file',{detail:" + detail.toString() + "}));", null); }
         });
+        chatAttachmentCoordinator = new ChatAttachmentCoordinator(this, new ChatAttachmentCoordinator.Host() {
+            public boolean trusted() { return webView != null && isTrustedNativeCaller() && !isFinishing(); }
+            public void deliver(JSONObject detail) { webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('orbit:chat-attachment',{detail:" + detail.toString() + "}));", null); }
+        });
         workspaceBridge = new WorkspaceBridge(this, preferences, new WorkspaceBridge.Host() {
             public boolean trusted() { return webView != null && isTrustedNativeCaller() && !isFinishing(); }
             public void deliver(JSONObject detail) { webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('orbit:workspace-result',{detail:" + detail.toString() + "}));", null); }
@@ -186,7 +191,7 @@ public final class MainActivity extends Activity {
         localAssetResponder = new LocalAssetResponder(getAssets());
 
         webView = new WebView(this);
-        webView.getSettings().setUserAgentString(webView.getSettings().getUserAgentString() + " Orbit/0.9.6");
+        webView.getSettings().setUserAgentString(webView.getSettings().getUserAgentString() + " Orbit/0.9.7");
         WebView.setWebContentsDebuggingEnabled(false);
         webView.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -272,6 +277,8 @@ public final class MainActivity extends Activity {
         ServiceWorkerController.getInstance().setServiceWorkerClient(new ServiceWorkerClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebResourceRequest request) {
+                WebResourceResponse attachment = chatAttachmentCoordinator == null ? null : chatAttachmentCoordinator.respond(request.getUrl());
+                if (attachment != null) return attachment;
                 WebResourceResponse image = travelImageWorkspace == null ? null : travelImageWorkspace.respond(request.getUrl());
                 if (image != null) return image;
                 return localAssetResponder.respond(request.getUrl());
@@ -517,6 +524,7 @@ public final class MainActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ChatAttachmentCoordinator.REQUEST_CODE && chatAttachmentCoordinator != null) { chatAttachmentCoordinator.onResult(resultCode, data); return; }
         if (requestCode == WorkspaceBridge.REQUEST_CODE && workspaceBridge != null) { workspaceBridge.onResult(resultCode, data); return; }
         if (requestCode == TravelImageExportCoordinator.REQUEST_CODE && travelImageExportCoordinator != null) { travelImageExportCoordinator.onResult(resultCode, data); return; }
         if (requestCode == AiChatExportCoordinator.REQUEST_CODE && aiChatExportCoordinator != null) { aiChatExportCoordinator.onResult(resultCode, data); return; }
@@ -611,6 +619,7 @@ public final class MainActivity extends Activity {
         if (aiChatExportCoordinator != null) aiChatExportCoordinator.destroy();
         if (travelImageExportCoordinator != null) travelImageExportCoordinator.destroy();
         if (workspaceBridge != null) workspaceBridge.destroy();
+        if (chatAttachmentCoordinator != null) chatAttachmentCoordinator.destroy();
         if (travelImageWorkspace != null) travelImageWorkspace.destroy();
         if (travelApiCoordinator != null) {
             travelApiCoordinator.destroy();
@@ -695,6 +704,10 @@ public final class MainActivity extends Activity {
         @JavascriptInterface
         public void requestTravelImageFile(String requestId, String action, String key, String content, String metadata) {
             if (isTrustedNativeCaller() && travelImageWorkspace != null) travelImageWorkspace.request(requestId, action, key, content, metadata);
+        }
+        @JavascriptInterface
+        public void pickChatAttachment(String requestId) {
+            if (isTrustedNativeCaller() && chatAttachmentCoordinator != null) chatAttachmentCoordinator.request(requestId);
         }
         @JavascriptInterface
         public void requestWorkspaceAction(String requestId, String action) {
@@ -1103,6 +1116,8 @@ public final class MainActivity extends Activity {
                         "This origin is not allowed in the ai-assitant WebView"
                 );
             }
+            WebResourceResponse attachment = chatAttachmentCoordinator == null ? null : chatAttachmentCoordinator.respond(request.getUrl());
+            if (attachment != null) return attachment;
             WebResourceResponse image = travelImageWorkspace == null ? null : travelImageWorkspace.respond(request.getUrl());
             if (image != null) return image;
             return localAssetResponder.respond(request.getUrl());
@@ -1111,6 +1126,8 @@ public final class MainActivity extends Activity {
         @Override
         @SuppressWarnings("deprecation")
         public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+            WebResourceResponse attachment = chatAttachmentCoordinator == null ? null : chatAttachmentCoordinator.respond(Uri.parse(url));
+            if (attachment != null) return attachment;
             WebResourceResponse image = travelImageWorkspace == null ? null : travelImageWorkspace.respond(Uri.parse(url));
             if (image != null) return image;
             return localAssetResponder.respond(Uri.parse(url));

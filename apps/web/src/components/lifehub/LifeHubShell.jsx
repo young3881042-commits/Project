@@ -8,12 +8,11 @@ export const ROUTE_META = {
   memo: { title: '메모', path: '/memo', icon: 'edit' },
   schedule: { title: '일정', path: '/schedule', icon: 'calendar' },
   finance: { title: '가계부', path: '/finance', icon: 'chart' },
-  travel: { title: '여행', path: '/travel', icon: 'trip' },
   ai: { title: 'AI', path: '/ai', icon: 'message' },
   more: { title: '설정', path: '/more', icon: 'settings' }
 };
 
-export const PRIMARY_TABS = ['home', 'schedule', 'memo', 'finance', 'travel', 'ai'];
+export const PRIMARY_TABS = ['home', 'schedule', 'memo', 'finance', 'ai'];
 
 export function routeTitle(route) {
   return ROUTE_META[route]?.title || '홈';

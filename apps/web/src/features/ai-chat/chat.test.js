@@ -30,7 +30,7 @@ test('AI page opens directly into chat with folder tabs and tucked-away manageme
     assert.match(html, /<textarea/);
     assert.doesNotMatch(html, /나만의 대화 보관함|대화 제목|대화 목적|대화 시작|<aside/);
     const { PRIMARY_TABS, ROUTE_META } = await vite.ssrLoadModule('/src/components/lifehub/LifeHubShell.jsx');
-    assert.deepEqual(PRIMARY_TABS.slice(-2), ['travel', 'ai']); assert.equal(ROUTE_META.ai.path, '/ai');
+    assert.deepEqual(PRIMARY_TABS.slice(-2), ['finance', 'ai']); assert.equal(ROUTE_META.ai.path, '/ai');
   } finally { await vite.close(); }
 });
 test('Markdown export is an explicit document save with no arbitrary path or storage permission', async () => {

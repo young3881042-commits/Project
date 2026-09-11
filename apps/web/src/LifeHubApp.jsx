@@ -132,7 +132,6 @@ import {
 
 const DailyMemoPage = lazy(() => import('./components/notes/daily/DailyMemoPage.jsx'));
 const AiChatPage = lazy(() => import('./features/ai-chat/AiChatPage.jsx'));
-const TravelPage = lazy(() => import('./features/travel/TravelPage.jsx'));
 
 const AUTH_KEY = 'codex-workspace-auth';
 const LIFEHUB_OWNER_KEY = 'ai-assistant-lifehub-local-owner';
@@ -150,7 +149,7 @@ const ROUTE_ALIASES = {
   '/memo': 'memo',
   '/schedule': 'schedule',
   '/finance': 'finance',
-  '/travel': 'travel',
+  '/travel': 'home',
   '/ai': 'ai',
   '/more': 'more'
 };
@@ -2113,7 +2112,6 @@ export default function LifeHubApp({ path, navigate }) {
     />
   );
   else if (route === 'ai') content = <AiChatPage key={storageUsername(session)} owner={storageUsername(session)} />;
-  else if (route === 'travel') content = <TravelPage key={storageUsername(session)} model={model} owner={storageUsername(session)} readTrips={() => readTrips(session)} saveTrips={items => saveTrips(session, items)} refresh={refresh} />;
   else if (route === 'more') content = (
     <MorePage
       model={model}

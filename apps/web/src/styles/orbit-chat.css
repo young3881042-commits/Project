@@ -1,4 +1,4 @@
-.lifeHubRoot .lifeHubBottomNav { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.lifeHubRoot .lifeHubBottomNav { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .lifeHubRoot .lifeHubApp-ai { display: flex; flex-direction: column; height: 100dvh; min-height: 0; }
 .lifeHubApp-ai > .lifeHubTopBar { flex: none; margin-bottom: 8px; }
 .orbitChatPage { display: flex; flex-direction: column; flex: 1; min-height: 0; color: #203b39; }

@@ -44,7 +44,7 @@ test('LifeHub 홈은 생활 요약을 유지하고 AI 진입점을 렌더링하�
   assert.match(home, /aria-pressed=\{activityPeriod === period.value\}/);
   assert.match(activitySummary, /이번 주|이번 달|올해|전체/);
   assert.match(lifeHub, /import HomePage from '\.\/features\/home\/HomePage\.jsx'/);
-  assert.match(shell, /PRIMARY_TABS = \['home', 'schedule', 'memo', 'finance', 'travel', 'ai'\]/);
+  assert.match(shell, /PRIMARY_TABS = \['home', 'schedule', 'memo', 'finance', 'ai'\]/);
 });
 
 test('홈 월 캘린더는 날짜별 금액과 일정 예정/미완료/완료를 모바일 7열로 표시한다', async () => {
@@ -97,7 +97,7 @@ test('홈 월 캘린더는 날짜별 금액과 일정 예정/미완료/완료를
   assert.doesNotMatch(activitySummary, /isWorkoutSchedule|\/workout|\/diet|섭취 합계|운동 기록/);
 });
 
-test('여행과 AI를 포함한 6개 핵심 탭을 유지하고 데이터 관리 화면은 상단에서 연다', async () => {
+test('AI를 포함한 5개 핵심 탭을 유지하고 데이터 관리 화면은 상단에서 연다', async () => {
   const [lifeHub, home, shell, router, mobileTabs, mobileShell, memoPage, memoCard, lifeHubCss, lifeHubAiCss] = await Promise.all([
     source('src/LifeHubApp.jsx'),
     source('src/features/home/HomePage.jsx'),
@@ -110,10 +110,10 @@ test('여행과 AI를 포함한 6개 핵심 탭을 유지하고 데이터 관리
     source('src/styles/lifehub.css'),
     source('src/styles/lifehub-ai.css')
   ]);
-  for (const marker of ['홈', '일정', '메모', '가계부', '여행']) {
+  for (const marker of ['홈', '일정', '메모', '가계부', 'AI']) {
     assert.match(shell, new RegExp(marker));
   }
-  assert.match(shell, /PRIMARY_TABS = \['home', 'schedule', 'memo', 'finance', 'travel', 'ai'\]/);
+  assert.match(shell, /PRIMARY_TABS = \['home', 'schedule', 'memo', 'finance', 'ai'\]/);
   assert.match(lifeHubCss, /\.lifeHubBottomNav \{[\s\S]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
   assert.doesNotMatch(lifeHubAiCss, /\.lifeHubRoot \.lifeHubBottomNav/);
   assert.doesNotMatch(shell, /workout:|diet:|\/workout|\/diet|운동|식단/);
@@ -328,7 +328,7 @@ test('v55 경량 캐시는 거래 검색과 기존 생활 기록 화면을 포�
     source('src/features/home/HomePage.jsx')
   ]);
 
-  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v65'/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v66'/);
   assert.match(packageJson, /"test:lifehub-data": "node --test src\/features\/automation\/\*\.test\.js src\/features\/backup\/\*\.test\.js src\/features\/finance\/\*\.test\.js src\/features\/life-records\/\*\.test\.js src\/features\/travel\/\*\.test\.js src\/features\/ai-chat\/\*\.test\.js"/);
   assert.match(packageJson, /"test": "npm run test:lifehub-ai && npm run test:lifehub-data/);
   assert.match(entryCss, /@import '\.\/styles\/lifehub-automation\.css'/);
@@ -337,7 +337,7 @@ test('v55 경량 캐시는 거래 검색과 기존 생활 기록 화면을 포�
   assert.match(entryCss, /@import '\.\/styles\/lifehub-home\.css'/);
   assert.match(entryCss, /@import '\.\/styles\/lifehub-finance-navigation\.css'/);
   assert.doesNotMatch(entryCss, /lifehub-ai\.css/);
-  assert.match(shell, /PRIMARY_TABS = \['home', 'schedule', 'memo', 'finance', 'travel', 'ai'\]/);
+  assert.match(shell, /PRIMARY_TABS = \['home', 'schedule', 'memo', 'finance', 'ai'\]/);
   assert.doesNotMatch(entryCss, /workout-scheduler|lifehub-diet|lifehub-body-profile/);
   assert.doesNotMatch(home, /빠른 기록|lifeHubHomeQuickActions/);
 });
@@ -466,8 +466,8 @@ test('Android WebView는 Orbit 이름·중앙 O 아이콘과 내장 웹 버전 �
   assert.match(manifest, /android\.permission\.SCHEDULE_EXACT_ALARM/);
   assert.match(manifest, /android\.permission\.VIBRATE/);
   assert.match(manifest, /SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED/);
-  assert.match(manifest, /android:versionName="0\.9\.6-debug"/);
-  assert.match(manifest, /android:versionCode="47"/);
+  assert.match(manifest, /android:versionName="0\.9\.7-debug"/);
+  assert.match(manifest, /android:versionCode="48"/);
   assert.match(manifest, /android:name="\.FinanceNotificationListenerService"/);
   assert.match(manifest, /android:permission="android\.permission\.BIND_NOTIFICATION_LISTENER_SERVICE"/);
   assert.match(manifest, /android:name="android\.service\.notification\.NotificationListenerService"/);

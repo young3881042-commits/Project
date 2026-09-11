@@ -1,3 +1,4 @@
+import { pickNativeChatAttachment } from './chatNativeAttachment.js';
 import { EFFORT_LABELS } from './chatModelOptions.js';
 import ChatAttachments from './ChatAttachments.jsx';
 import ChatModelControls from './ChatModelControls.jsx';
@@ -53,7 +54,7 @@ export default function AiChatPage({ owner }) {
     if (chat.selected) {
       const selected = chat.threads.find(row => row.id === chat.selected);
       if (selected) setFolder(selected.purpose);
-    } else if (!blankRequested.current && !text && rows.length) chat.choose(rows[0].id);
+    } else if (!blankRequested.current && !text && !files.length && !readingFile && rows.length) chat.choose(rows[0].id);
   }, [chat.threads, chat.selected]);
   function switchFolder(value) {
     blankRequested.current = true;
@@ -64,12 +65,22 @@ export default function AiChatPage({ owner }) {
     setFiles(validated);
     if (!chat.saveAttachmentDraft(draftId, validated)) setNotice('첨부 초안을 저장하지 못했어요. 이 화면에서 전송해주세요.');
   }
+  async function chooseAttachment() {
+    if (busy) return;
+    if (!window.AiAssistantNative?.pickChatAttachment) { picker.current?.click(); return; }
+    await attachFile(() => pickNativeChatAttachment());
+  }
   async function attach(event) {
     const file = event.target.files?.[0]; event.target.value = '';
     if (!file || busy) return;
+    await attachFile(async () => file);
+  }
+  async function attachFile(select) {
     const ticket = ++fileTicket.current;
     setReadingFile(true); setNotice('');
     try {
+      const file = await select();
+      if (!file || ticket !== fileTicket.current) return;
       const value = await readChatAttachment(file, async bytes => (await import('./chatPdf.js')).readPdfText(bytes));
       if (ticket === fileTicket.current) updateFiles([...files, value]);
     } catch (error) { if (ticket === fileTicket.current) setNotice(error.message); }
@@ -120,7 +131,7 @@ export default function AiChatPage({ owner }) {
     {files.length ? <p className="orbitChatAttachmentHint">전송하면 위 내용이 AI에 전달되고 대화와 함께 저장돼요.</p> : null}
     <input className="orbitChatFileInput" ref={picker} type="file" accept={CHAT_ATTACHMENT_ACCEPT} onChange={attach} tabIndex={-1} aria-label="첨부할 문서 선택" />
     <form className="orbitChatComposer" onSubmit={submit}>
-      <button type="button" className="orbitChatAttachButton" aria-label="파일 첨부" title="PDF·텍스트 파일 첨부" disabled={busy || running || files.length >= 3} onClick={() => picker.current?.click()}>＋</button>
+      <button type="button" className="orbitChatAttachButton" aria-label="파일 첨부" title="PDF·텍스트 파일 첨부" disabled={busy || running || files.length >= 3} onClick={chooseAttachment}>＋</button>
       <textarea aria-label="메시지" value={text} onChange={e => { setText(e.target.value); chat.saveDraft(draftId, e.target.value); }} maxLength={4000} rows={2} placeholder={files.length ? "파일에 대해 물어보세요" : "메시지 보내기"} required={!files.length} disabled={sending} onKeyDown={e => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); e.currentTarget.form.requestSubmit(); } }} />
       <button className="primary" aria-label="보내기" disabled={running || busy || (!text.trim() && !files.length)}>↑</button>
     </form>
