@@ -5,6 +5,7 @@
 - Keep the repository focused on Jenkins, Docker, `apps/api`, `apps/web`, the minimal Android wrapper, and project documentation.
 - The public repository keeps Android wrapper sources only. Generated APKs, checksum files, rollback bundles, and signing material are delivered through GitHub Release or a separate private channel, never Git.
 - When working inside Android/Termux, copy the installable APK to the phone-visible path `/sdcard/Download/Orbit-latest.apk`; `/root/Downloads` is not the Android shared Download folder.
+- Standard Orbit APK builds require `ORBIT_NATIVE_RUNTIME_DIR` with staged Node/Codex, dependencies, TLS certificates and licenses. Run the embedded-runtime stage/APK verification; a Java compile or signature pass alone does not verify AI availability. `ORBIT_WITHOUT_NATIVE_RUNTIME=1` is only for an explicitly intended legacy-only build.
 - Never commit Android build directories, keystores, release signing credentials, private endpoints, or personal data.
 - Before changing this repo, read `docs/NEXT_CHECKLIST_PLAN_KO.md` and `docs/LIFEHUB_MAINTENANCE_KO.md`. For the current LifeHub UI, the maintenance guide and `docs/WEB_UI_UX_AUDIT_KO.md` override older historical screen handoffs.
 - If `/data/ai-assistant` exists, inspect it for durable runtime context before changing source. Treat `/data/ai-assistant` as local runtime data, not source.

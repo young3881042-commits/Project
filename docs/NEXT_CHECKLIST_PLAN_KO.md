@@ -1,6 +1,6 @@
 # Orbit 작업 체크리스트
 
-> 현행 Orbit/LifeHub 화면과 개발 흐름은 `LIFEHUB_MAINTENANCE_KO.md`와 `WEB_UI_UX_AUDIT_KO.md`를 우선한다. 아래 공개 포트폴리오 정리 이력은 현재의 4탭 UI, 운동·식단 제외, 빠른 기록 제거, AI·Bridge 비활성화를 되돌리는 근거로 사용하지 않는다.
+> 현행 Orbit/LifeHub 화면과 개발 흐름은 `LIFEHUB_MAINTENANCE_KO.md`와 `WEB_UI_UX_AUDIT_KO.md`를 우선한다. 아래 공개 포트폴리오 정리 이력은 현재의 홈·일정·메모·가계부·AI 5탭, 빠른 기록과 내장 AI, 여행·운동·식단 보류, 구형 Bridge 비활성화를 되돌리는 근거로 사용하지 않는다.
 
 ## 운영 기준
 

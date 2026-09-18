@@ -1,3 +1,4 @@
+import { AssistantActivitySummary } from '../assistant-actions/AssistantActionCard.jsx';
 import HomeQuickActions from './HomeQuickActions.jsx';
 import { useMemo, useState } from 'react';
 import MemoNavIcon from '../../components/MemoNavIcon.jsx';
@@ -83,6 +84,8 @@ export default function HomePage({ model, navigate }) {
         </div>
         <LifeHubPackIcon name="habit" />
       </section>
+
+      <AssistantActivitySummary />
 
       <HomeQuickActions navigate={navigate} />
 

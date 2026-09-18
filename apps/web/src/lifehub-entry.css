@@ -1,3 +1,4 @@
+@import './styles/orbit-assistant.css';
 /* Lightweight production entry for the local Orbit/LifeHub app.
  * Legacy workspace styles remain in styles.css but are not bundled into the APK. */
 @import './styles/core-foundation.css';

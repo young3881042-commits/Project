@@ -380,6 +380,10 @@ run_in_android_container() {
     exit 2
   fi
 
+  local -a runtime_mount=()
+  if [[ -n "${ORBIT_NATIVE_RUNTIME_DIR:-}" ]]; then
+    runtime_mount=(--volume "${ORBIT_NATIVE_RUNTIME_DIR}:/opt/orbit-native:ro" --env ORBIT_NATIVE_RUNTIME_DIR=/opt/orbit-native)
+  fi
   local uid gid
   uid="$(id -u)"
   gid="$(id -g)"
@@ -389,6 +393,8 @@ run_in_android_container() {
     --env HOME=/tmp/android-home \
     --env ANDROID_CONTAINER_BUILD=1 \
     --env SKIP_WEB_BUILD=1 \
+    --env ORBIT_WITHOUT_NATIVE_RUNTIME="${ORBIT_WITHOUT_NATIVE_RUNTIME:-0}" \
+    "${runtime_mount[@]}" \
     --env ANDROID_TARGET_API="${TARGET_API}" \
     --env ANDROID_MIN_API="${MIN_API}" \
     --volume "${ROOT_DIR}:/workspace" \
@@ -599,6 +605,10 @@ build_raw_apk() {
     fi
   fi
 
+  if [[ "${ORBIT_WITHOUT_NATIVE_RUNTIME:-0}" != "1" ]]; then
+    python3 "${ROOT_DIR}/scripts/verify_android_runtime.py" --apk "${BUILD_DIR}/ai-assitant-debug.apk"
+  fi
+
   cp "${BUILD_DIR}/ai-assitant-debug.apk" "${RELEASE_DIR}/ai-assitant-debug.apk"
   log "APK ready: ${RELEASE_DIR}/ai-assitant-debug.apk"
   if command -v sha256sum >/dev/null 2>&1; then
@@ -608,6 +618,14 @@ build_raw_apk() {
     )
   fi
 }
+
+if [[ "${ORBIT_WITHOUT_NATIVE_RUNTIME:-0}" != "1" ]]; then
+  if [[ -z "${ORBIT_NATIVE_RUNTIME_DIR:-}" ]]; then
+    echo "ORBIT_NATIVE_RUNTIME_DIR is required for Orbit's embedded AI. Stage the runtime with scripts/prepare_android_codex.py. Use ORBIT_WITHOUT_NATIVE_RUNTIME=1 only for an intentional legacy-only APK." >&2
+    exit 2
+  fi
+  python3 "${ROOT_DIR}/scripts/verify_android_runtime.py" --stage "${ORBIT_NATIVE_RUNTIME_DIR}"
+fi
 
 build_web
 

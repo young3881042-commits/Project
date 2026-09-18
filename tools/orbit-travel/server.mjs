@@ -105,7 +105,7 @@ export function createTravelServer({ token, pairingCode, generate = generateTrav
     if (await merchant.handle(req, body, send)) return;
     if (await chat.handle(req, body, send)) return;
     prune();
-    if (req.url === '/api/travel/status' && req.method === 'GET') { send(200, { connected: true, busy: Boolean(active) || chat.busy || merchant.busy, merchantClassification: true, service: 'orbit-travel', chatMemory: 'sqlite-fts-v1', chatAttachments: 'text-pdf-v1', chatImages: 'jpeg-v1', chatModels: true, chatReasoning: true, runtimeMode: idleMs ? 'on-demand' : 'standby' }); return; }
+    if (req.url === '/api/travel/status' && req.method === 'GET') { send(200, { connected: true, busy: Boolean(active) || chat.busy || merchant.busy, merchantClassification: true, service: 'orbit-travel', scheduleActions: 'schedule-create-v1', chatMemory: 'sqlite-fts-v1', chatAttachments: 'text-pdf-v1', chatImages: 'jpeg-v1', chatModels: true, chatReasoning: true, runtimeMode: idleMs ? 'on-demand' : 'standby' }); return; }
     // Terminal-only administration: Android's action allowlist never exposes this route.
     if (req.url === '/api/travel/pair-code' && req.method === 'POST') {
       pairingCode = String(randomInt(10000000, 100000000)); started = now(); paired = false; attempts = 0;

@@ -148,3 +148,33 @@ test('photo bytes reach the reply runner, survive restart and stay outside textu
   assert.doesNotMatch(await readFile(join(f.directory,id+'.md'),'utf8'),/base64/);
   const restored=await fixture(t,{chatDirectory:f.directory});assert.equal((await restored.call('threads/'+id)).value.messages[0].attachments[0].dataUrl,photo.dataUrl);
 });
+
+test('schedule capability returns a request-bound action, persists it, and rejects changed retry context', async t => {
+  const { generateChatReply } = await import('./chat.mjs');
+  const f = await fixture(t, { chatReply: generateChatReply }), id = randomUUID(), requestId = randomUUID();
+  await f.call('threads', { id });
+  const assistantContext = { version: 1, today: '2026-09-17', timeZone: 'Asia/Seoul', pending: null };
+  const body = { requestId, text: '내일 오전 9시 회의 등록해줘', assistantContext };
+  assert.equal((await f.call(`threads/${id}/messages`, body)).status, 202);
+  const thread = await f.done(id), result = thread.messages.at(-1);
+  assert.equal(result.requestId, requestId);
+  assert.equal(result.actions[0].type, 'schedule.create');
+  assert.equal(result.actions[0].draft.date, '2026-09-18');
+  assert.equal(result.actions[0].draft.time, '09:00');
+  assert.doesNotMatch(result.text, /추가했어요|저장했어요/);
+  assert.equal((await f.call(`threads/${id}/messages`, body)).value.messages.length, 2);
+  assert.equal((await f.call(`threads/${id}/messages`, {...body,assistantContext:{...assistantContext,today:'2026-09-18'}})).status,409);
+  const restored = await fixture(t,{chatDirectory:f.directory});
+  assert.deepEqual((await restored.call('threads/'+id)).value.messages.at(-1).actions,result.actions);
+});
+test('ambiguous schedule asks only for meridiem and does not produce an action until clarified', async t => {
+  const { generateChatReply } = await import('./chat.mjs');
+  const f = await fixture(t,{chatReply:generateChatReply}), id=randomUUID();
+  await f.call('threads',{id});
+  const context={version:1,today:'2026-09-17',timeZone:'Asia/Seoul',pending:null};
+  await f.call(`threads/${id}/messages`,{requestId:randomUUID(),text:'내일 9시 회의 등록해줘',assistantContext:context});
+  const question=(await f.done(id)).messages.at(-1);
+  assert.deepEqual(question.actions,[]);assert.match(question.text,/오전인가요/);
+  await f.call(`threads/${id}/messages`,{requestId:randomUUID(),text:'오후',assistantContext:{...context,pending:question.clarification}});
+  const answer=(await f.done(id)).messages.at(-1);assert.equal(answer.actions[0].draft.time,'21:00');
+});

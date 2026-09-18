@@ -1,0 +1,10 @@
+.orbitActionCard { border: 1px solid #bed6c8; background: #fff; border-radius: 12px; padding: 12px; margin: 10px 0; overflow-wrap: anywhere; }
+.orbitActionCard p { margin: 6px 0; font-size: 14px; }
+.orbitActionCard > div { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.orbitActionCard a, .orbitActionCard button, .orbitAssistantSummary > a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px; color: #155c4f; border-radius: 10px; border: 1px solid #ccdcd6; background: white; font: inherit; }
+.orbitAssistantSummary { padding: 14px; border-radius: 16px; background: #f1f5f2; margin-bottom: 14px; }
+.orbitAssistantSummary h3 { margin: 0 0 8px; font-size: 16px; }
+.orbitChatConnection { font-size: 12px; color: #506a5d; padding: 6px 2px; }
+.orbitChatModelDetails { flex: none; }
+.orbitChatModelDetails > summary { min-height: 44px; padding: 10px 2px; cursor: pointer; font-size: 13px; }
+.orbitChatModelDetails[open] { max-height: 35dvh; overflow-y: auto; }

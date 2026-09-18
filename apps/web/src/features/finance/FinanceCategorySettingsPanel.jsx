@@ -1,3 +1,4 @@
+import { MERCHANT_CATALOG, MERCHANT_CATALOG_DATE } from './merchantCatalog.js';
 import { useState } from 'react';
 import {
   DEFAULT_FINANCE_CATEGORIES,
@@ -65,6 +66,12 @@ export default function FinanceCategorySettingsPanel({ settings, onSave }) {
           <p>새 분류는 직접 입력과 정기 결제에서 바로 고를 수 있어요. 키워드를 넣으면 결제 알림 자동 가져오기에도 적용합니다.</p>
         </div>
       </header>
+      <details className="financeMerchantCatalog">
+        <summary>기본 사용처 자료 {MERCHANT_CATALOG.length}개 · {MERCHANT_CATALOG_DATE} 확인</summary>
+        <p>기존 거래 분류와 직접 만든 키워드를 먼저 사용해요. 아래 분류는 업체 업종 기준이며 구입 품목을 확인한 결과는 아니에요. 편의점·슈퍼는 쇼핑으로 제안해요.</p>
+        <ul>{MERCHANT_CATALOG.map(brand => <li key={brand.name}><a href={brand.source} target="_blank" rel="noopener noreferrer">{brand.name}</a> · {brand.category}</li>)}</ul>
+      </details>
+
       <p className="lifeHubFinanceCategoryGuide">기본 자동 분류: 코레일·티머니는 교통, ‘커피’가 들어가면 커피, 다이소와 그 밖의 사용처는 기타예요.</p>
       <form onSubmit={submit}>
         <label>

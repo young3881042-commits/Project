@@ -1,3 +1,4 @@
+import { scheduleActionReply, validateActionContext } from '../../apps/web/src/features/assistant-actions/actionSchema.js';
 import { workspaceConnection } from './workspace-mcp.mjs';
 import { validChatEffort } from '../../apps/web/src/features/ai-chat/chatModelOptions.js';
 import { validChatModel } from './codex-info.mjs';
@@ -26,6 +27,9 @@ export function chatPrompt(thread, memory = []) {
 }
 
 export async function generateChatReply(thread, { signal, memory = [] } = {}) {
+  const last = thread.messages.at(-1);
+  const actionReply = scheduleActionReply(last.text, last.assistantContext);
+  if (actionReply) return actionReply;
   const { runStructuredCodex } = await import('./codex.mjs');
   const workspace = Boolean(await workspaceConnection());
   return runStructuredCodex({ signal, workspace, images: chatVisionImages(thread), model: thread.messages.at(-1)?.model || '', effort: thread.messages.at(-1)?.effort || '',
@@ -101,11 +105,13 @@ export function createChatService({ directory = join(homedir(), '.local', 'share
     const memoryNotice = memoryError;
     const memorySources = memories.map(({ user, assistant, ...source }) => source);
     Promise.resolve().then(() => reply(thread, { signal: controller.signal, memory: memories }))
-      .then(text => locked(async () => {
+      .then(result => locked(async () => {
+        const text = typeof result === 'string' ? result : result?.reply;
+        const actionResult = scheduleActionReply(thread.messages.at(-1).text, thread.messages.at(-1).assistantContext);
         const current = threads.get(thread.id);
         if (current.state !== 'running') return;
         if (typeof text !== 'string' || !text.trim() || text.length > 8000) throw fail('AI 응답을 읽지 못했어요.');
-        await save({ ...current, state: 'idle', error: '', updatedAt: new Date().toISOString(), messages: [...current.messages, { id: randomUUID(), role: 'assistant', text, ...(thread.messages.at(-1)?.model ? { model: thread.messages.at(-1).model, ...(thread.messages.at(-1).effort ? { effort: thread.messages.at(-1).effort } : {}) } : {}), createdAt: new Date().toISOString(), memorySources, ...(memoryNotice ? { memoryNotice } : {}) }] });
+        await save({ ...current, state: 'idle', error: '', updatedAt: new Date().toISOString(), messages: [...current.messages, { id: randomUUID(), role: 'assistant', text, requestId: thread.messages.at(-1).id, ...(actionResult ? { actions: actionResult.actions, clarification: actionResult.clarification, processing: 'local-schedule' } : {}), ...(!actionResult && thread.messages.at(-1)?.model ? { model: thread.messages.at(-1).model, ...(thread.messages.at(-1).effort ? { effort: thread.messages.at(-1).effort } : {}) } : {}), createdAt: new Date().toISOString(), memorySources: actionResult ? [] : memorySources, ...(!actionResult && memoryNotice ? { memoryNotice } : {}) }] });
       }))
       .catch(error => locked(async () => {
         const current = threads.get(thread.id);
@@ -156,16 +162,18 @@ export function createChatService({ directory = join(homedir(), '.local', 'share
           if (body.effort !== undefined && !validChatEffort(body.effort)) throw fail('추론 강도를 확인해주세요.');
           const effort = body.effort || '';
           if (effort && !model) throw fail('추론 강도를 고르려면 모델을 먼저 선택해주세요.');
+          let assistantContext;
+          try { assistantContext = validateActionContext(body.assistantContext); } catch (error) { throw fail(error.message); }
           let attachments;
           try { attachments = validateAttachments(body.attachments); } catch (error) { throw fail(error.message); }
           const previous = thread.messages.find(m => m.id === body.requestId);
-          if (previous && (previous.text !== body.text.trim() || JSON.stringify(previous.attachments || []) !== JSON.stringify(attachments) || (previous.model || '') !== model || (previous.effort || '') !== effort)) throw fail('재시도 메시지가 달라요.', 409);
+          if (previous && (previous.text !== body.text.trim() || JSON.stringify(previous.assistantContext || null) !== JSON.stringify(assistantContext) || JSON.stringify(previous.attachments || []) !== JSON.stringify(attachments) || (previous.model || '') !== model || (previous.effort || '') !== effort)) throw fail('재시도 메시지가 달라요.', 409);
           if (previous && (thread.state !== 'failed' || thread.messages.at(-1)?.id !== previous.id)) { send(200, thread); return; }
           if (active || otherBusy()) throw fail('다른 답변이나 여행을 생성 중이에요. 완료 후 보내주세요.', 409);
           if (thread.messages.length >= 98 || Buffer.byteLength(JSON.stringify(thread)) > 7000000) throw fail('대화가 길어졌어요. 새 대화를 만들어주세요.', 413);
           await prepareMemory();
           const now = new Date().toISOString();
-          const next = await save({ ...thread, state: 'running', error: '', updatedAt: now, messages: previous ? thread.messages : [...thread.messages, { id: body.requestId, role: 'user', text: body.text.trim(), createdAt: now, ...(model ? { model } : {}), ...(effort ? { effort } : {}), ...(attachments.length ? { attachments } : {}) }] });
+          const next = await save({ ...thread, state: 'running', error: '', updatedAt: now, messages: previous ? thread.messages : [...thread.messages, { id: body.requestId, role: 'user', text: body.text.trim(), createdAt: now, ...(assistantContext ? { assistantContext } : {}), ...(model ? { model } : {}), ...(effort ? { effort } : {}), ...(attachments.length ? { attachments } : {}) }] });
           start(next); send(202, next);
         });
       } catch (error) { send(error.status || 500, { error: error.status ? error.message : '대화 파일을 읽거나 저장하지 못했어요. 저장 공간을 확인해주세요.' }); }

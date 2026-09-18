@@ -77,3 +77,17 @@ test('embedded mode restores only its own cached conversation and preserves the 
     assert.equal(JSON.stringify(values), snapshot);
   } finally { globalThis.localStorage = previousStorage; globalThis.window = previousWindow; await vite.close(); }
 });
+
+test('assistant action cards distinguish verified save, conflict and disabled undo', async () => {
+  const vite = await createServer({ root: new URL('../../../', import.meta.url).pathname, server: { middlewareMode: true }, appType: 'custom' });
+  try {
+    const { default: Card } = await vite.ssrLoadModule('/src/features/assistant-actions/AssistantActionCard.jsx');
+    const draft={title:'회의',date:'2026-09-18',time:'09:00'};
+    const row={id:'test',status:'done',expected:{actions:[{draft}]},item:{...draft,id:'schedule-1'},undoUntil:Date.now()+10000};
+    const saved=renderToStaticMarkup(React.createElement(Card,{row}));
+    assert.match(saved,/일정 저장 완료/);assert.match(saved,/되돌리기/);assert.match(saved,/schedule\?edit=schedule-1/);assert.match(saved,/알림은 설정되지/);
+    const conflict=renderToStaticMarkup(React.createElement(Card,{row:{...row,status:'conflict',error:'사용자가 수정했어요'}}));
+    assert.doesNotMatch(conflict,/일정 저장 완료|>되돌리기</);assert.match(conflict,/사용자가 수정했어요/);
+    const expired=renderToStaticMarkup(React.createElement(Card,{row:{...row,undoUntil:1}}));assert.doesNotMatch(expired,/>되돌리기</);
+  } finally { await vite.close(); }
+});

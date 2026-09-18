@@ -1,3 +1,5 @@
+import { persistSchedules } from './features/schedule/scheduleRepository.js';
+import { AssistantActionsContext, useAssistantActions } from './features/assistant-actions/useAssistantActions.js';
 import { lazy, useEffect, useMemo, useRef, useState } from 'react';
 import MemoNavIcon from './components/MemoNavIcon.jsx';
 import {
@@ -318,14 +320,16 @@ function readSchedules(session) {
 
 function saveSchedules(session, items) {
   const key = scopedKey(SCHEDULER_KEY, session);
-  const normalized = items.map(normalizeSchedule).filter(Boolean).sort(compareDateTime);
-  const saved = safeSetItem(key, JSON.stringify(normalized));
-  if (saved) {
-    safeRemoveItem(SCHEDULER_KEY);
-    window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { items: normalized, storageKey: key } }));
-    emitDataChanged({ key });
-  }
-  return { items: normalized, saved };
+  return persistSchedules(items, {
+    normalize: normalizeSchedule, compare: compareDateTime,
+    write: normalized => safeSetItem(key, JSON.stringify(normalized)),
+    read: () => readSchedules(session),
+    onSaved: normalized => {
+      safeRemoveItem(SCHEDULER_KEY);
+      window.dispatchEvent(new CustomEvent('codex:scheduler-items-updated', { detail: { items: normalized, storageKey: key } }));
+      emitDataChanged({ key });
+    }
+  });
 }
 
 function isLegacyWorkoutSchedule(item) {
@@ -1953,6 +1957,11 @@ export default function LifeHubApp({ path, navigate }) {
   const [session] = useState(() => readLifeHubOwner());
   const [refreshSeed, setRefreshSeed] = useState(0);
   const recurringAutoPostSignatureRef = useRef('');
+  const assistantRepository = useMemo(() => ({
+    read: () => readSchedules(session), normalize: normalizeSchedule,
+    save: items => saveSchedules(session, items)
+  }), [session]);
+  const assistantActions = useAssistantActions(storageUsername(session), assistantRepository);
   const route = routeForPath(path);
   const storedModel = useMemo(
     () => readLifeHubData(session),
@@ -2006,6 +2015,7 @@ export default function LifeHubApp({ path, navigate }) {
     refresh();
   }, [model.budgetEntries, model.recurringPayments, model.today, session?.username]);
   const restoreLifeHubBackup = (plan) => {
+    assistantActions.invalidate();
     return applyLifeHubBackupPlan(plan, {
       readCurrent: () => ({
         schedules: readSchedules(session),
@@ -2129,7 +2139,7 @@ export default function LifeHubApp({ path, navigate }) {
       model={model}
       navigate={go}
     >
-      {content}
+      <AssistantActionsContext.Provider value={assistantActions}>{content}</AssistantActionsContext.Provider>
     </LifeHubShell>
   );
 }

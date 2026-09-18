@@ -1,3 +1,4 @@
+import { matchMerchantCatalog } from './merchantCatalog.js';
 import { orbitStorage } from '../../utils/orbitIndexedDbStorage.js';
 export const FINANCE_CATEGORY_SETTINGS_STORAGE_KEY = 'lifehub-finance-category-settings:v1';
 
@@ -233,6 +234,9 @@ export function financeCategoryForMerchant(merchant, settings) {
     .sort((left, right) => right.keyword.length - left.keyword.length);
   const matchedRule = rules.find((rule) => text.includes(keywordKey(rule.keyword)));
   if (matchedRule) return matchedRule.category;
+
+  const known = matchMerchantCatalog(merchant);
+  if (known) return known.category;
 
   if (text.includes('코레일') || text.includes('티머니')) return '교통';
   if (text.includes('커피')) return '커피';

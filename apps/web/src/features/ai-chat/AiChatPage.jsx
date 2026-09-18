@@ -1,3 +1,5 @@
+import AssistantActionCard from '../assistant-actions/AssistantActionCard.jsx';
+import { useAssistantContext } from '../assistant-actions/useAssistantActions.js';
 import { pickNativeChatAttachment } from './chatNativeAttachment.js';
 import { EFFORT_LABELS } from './chatModelOptions.js';
 import ChatAttachments from './ChatAttachments.jsx';
@@ -18,6 +20,7 @@ function ChatDialog({ title, onClose, children }) {
 
 export default function AiChatPage({ owner }) {
   const chat = useAiConversations(owner);
+  const assistant = useAssistantContext();
   const [folder, setFolder] = useState(chat.thread?.purpose || '일상');
   const [text, setText] = useState(() => chat.draft(chat.selected || `new:${folder}`));
   const [dialog, setDialog] = useState('');
@@ -114,14 +117,18 @@ export default function AiChatPage({ owner }) {
         <option value="">새 대화</option>{rows.map(row => <option key={row.id} value={row.id}>{row.title}</option>)}
       </select>
       <button type="button" aria-label="새 대화" title="새 대화" disabled={busy} onClick={() => { blankRequested.current = true; chat.choose(''); }}>＋</button>
-      <button type="button" className="orbitChatAiButton" onClick={() => setDialog('connection')}><span aria-hidden="true">✦</span> AI 사용하기</button>
+      <button type="button" className="orbitChatAiButton" onClick={() => setDialog('connection')}><span aria-hidden="true">✦</span> {chat.status === 'connected' ? '연결됨' : 'AI 연결'}</button>
       <button type="button" aria-label="대화 메뉴" title="대화 메뉴" onClick={() => setDialog('menu')}>⋯</button>
     </header>
+    <p className="orbitChatConnection" role="status">{{ checking: 'AI 연결 확인 중…', connected: chat.scheduleAvailable === false ? 'AI 연결됨 · 일정 자동 등록은 실행 환경 업데이트가 필요해요' : 'AI 연결됨 · 일정 요청은 저장 결과 카드로 확인하세요', pair: '로그인이 필요해요', offline: '오프라인 · 저장된 대화와 초안을 보고 있어요' }[chat.status]}</p>
+    <details className="orbitChatModelDetails"><summary>{model || '자동 모델'} · 모델 및 사용 한도</summary>
     <ChatModelControls model={model} onModel={value => { setModel(value); chat.saveDraft('model', value); setEffort(''); chat.saveDraft('effort', ''); }} effort={effort} onEffort={value => { setEffort(value); chat.saveDraft('effort', value); }} disabled={busy || running} revision={`${chat.runtimeMode}:${chat.thread?.messages.filter(message => message.role === 'assistant').at(-1)?.id || ''}`} />
-    {chat.error ? <div className="orbitChatNotice" role="alert"><span>{chat.error}</span><button type="button" onClick={() => setDialog('connection')}>연결 설정</button></div> : null}
+    </details>
+    {assistant?.error ? <p className="orbitChatNotice" role="status">{assistant.error}</p> : null}
+    {chat.error ? <div className="orbitChatNotice" role="alert"><span>{chat.error}</span>{['pair', 'offline'].includes(chat.status) ? <button type="button" onClick={() => chat.status === 'pair' ? setDialog('connection') : chat.refresh()}>{chat.status === 'pair' ? '연결 설정' : '연결 다시 확인'}</button> : null}</div> : null}
     {notice ? <p className="orbitChatHint" role="status">{notice}</p> : null}
-    <div className="orbitChatMessages" aria-label="대화 내용">
-      {chat.thread?.messages.map(message => <article className={`orbitChatMessage ${message.role}`} key={message.id} id={`orbit-message-${message.id}`} tabIndex={-1}><span>{message.role === 'user' ? '나' : 'AI'}</span><p>{message.text}</p><ChatAttachments files={message.attachments} />{message.model ? <small className="orbitChatHint">{message.model}{message.effort ? ` · ${EFFORT_LABELS[message.effort] || message.effort}` : ''}</small> : null}{message.memorySources?.length ? <details className="orbitChatSources"><summary>참고한 이전 대화 {message.memorySources.length}개</summary>{message.memorySources.map(source => <button type="button" key={`${source.threadId}:${source.messageId}`} disabled={busy} onClick={() => { sourceTarget.current = source.messageId; blankRequested.current = true; chat.choose(source.threadId); }}>{source.label} · {source.title}</button>)}</details> : null}{message.memoryNotice ? <small className="orbitChatHint">{message.memoryNotice}</small> : null}</article>)}
+    <div className="orbitChatMessages" role="log" aria-live="polite" aria-relevant="additions" aria-label="대화 내용">
+      {chat.thread?.messages.map(message => <article className={`orbitChatMessage ${message.role}`} key={message.id} id={`orbit-message-${message.id}`} tabIndex={-1}><span>{message.role === 'user' ? '나' : 'AI'}</span><p>{message.text}</p>{message.role === 'assistant' ? <AssistantActionCard row={assistant?.rows.find(row => row.requestId === message.requestId && row.threadId === chat.selected && row.runtime === chat.runtimeMode)} /> : null}<ChatAttachments files={message.attachments} />{message.model ? <small className="orbitChatHint">{message.model}{message.effort ? ` · ${EFFORT_LABELS[message.effort] || message.effort}` : ''}</small> : null}{message.memorySources?.length ? <details className="orbitChatSources"><summary>참고한 이전 대화 {message.memorySources.length}개</summary>{message.memorySources.map(source => <button type="button" key={`${source.threadId}:${source.messageId}`} disabled={busy} onClick={() => { sourceTarget.current = source.messageId; blankRequested.current = true; chat.choose(source.threadId); }}>{source.label} · {source.title}</button>)}</details> : null}{message.memoryNotice ? <small className="orbitChatHint">{message.memoryNotice}</small> : null}</article>)}
       {!chat.thread?.messages.length ? <p className="orbitChatEmpty">무엇을 도와드릴까요?</p> : null}<div ref={end} />
     </div>
     {running ? <div className="orbitChatProgress"><span role="status">답변 작성 중…</span><button type="button" disabled={busy} onClick={chat.cancel}>중단</button></div> : null}

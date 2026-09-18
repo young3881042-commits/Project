@@ -1,8 +1,29 @@
 # Orbit LifeHub 유지보수 기준
 
-마지막 갱신: 2026-09-09
+마지막 갱신: 2026-09-17
 
 이 문서는 같은 요구를 다시 해석하거나 이미 끝난 UI를 되돌리는 일을 막기 위한 현행 기준서다. 작업 전 `AGENTS.md`, 이 문서, `docs/WEB_UI_UX_AUDIT_KO.md`, `git diff` 순서로 읽는다. 오래된 화면 인수인계 문서보다 이 문서의 현재 기준을 우선한다.
+
+## 2026-09-17 내장 AI 누락 수정·사용처 기본 자료 (현행)
+
+- 0.10.0(51) APK는 ORBIT_NATIVE_RUNTIME_DIR 없이 빌드되어 Node/Codex native libraries가 빠졌다. Java compile/native policy smoke/signature 검사는 통과했지만 실제 내장 AI 실행 가능성을 검증하지 못했다. 이전 버전의 검사 통과를 AI 연결 검증으로 해석하지 않는다.
+- 일반 빌드에는 ORBIT_NATIVE_RUNTIME_DIR을 필수로 요구한다. `verify_android_runtime.py`가 stage와 최종 APK의 두 엔진/모든 manifest 의존 파일, arm64 ELF, SHA-256, TLS 인증서와 라이선스를 검증한다. 기존 의도적 legacy-only 빌드는 ORBIT_WITHOUT_NATIVE_RUNTIME=1로만 생성한다.
+- Android 호스트의 `smoke_android_apk_runtime.py APK`는 APK에서 추출한 Node/Codex를 격리된 임시 HOME에서 실행하고 실제 bundled MCP의 initialize/tools 응답을 확인한다. 사용자 인증·대화·파일을 읽거나 외부 서버에 접속하지 않는다. 실제 ChatGPT 로그인 검증과는 구분한다.
+- `features/finance/merchantCatalog.json`에 공식 출처를 확인한 24개 브랜드/61개 표기를 추가했다. 커피·식비·쇼핑·교통과 기존 다이소 기타 정책을 사용한다. 상세 기준과 CSV는 ORBIT_MERCHANT_CATALOG_KO.md를 따른다.
+- 기존 기록의 분류 → 사용자 키워드 → 기본 브랜드 자료 → 기존 키워드/검색 순서를 유지한다. 기타인 알림 거래만 보강하며 기존 사용자 분류는 덮지 않는다. 짧은 영문 브랜드 부분 일치와 PG 이름만 있는 거래는 기본 자료에서 제외한다.
+- 가계부 분류 관리에서 기본 자료 수/확인일/각 공식 출처를 볼 수 있다. 이는 업체 업종 자료이며 실제 구입 품목이나 사용자의 거래를 수집한 자료가 아니다.
+- orbit-web-v70, Android 0.10.1-debug(52). 웹 325/325, 런타임 43/43, 실행 파일 검증 회귀 5개, production build, Android compile/native smoke, credential scan, APK v1/v2/v3 서명 통과. 최종 APK에서 추출한 Node v26.3.1/Codex 0.153.2 실행과 bundled MCP 시작도 통과했다. 실제 사용자 ChatGPT 로그인·답변은 기기에서 확인할 항목이다. 검증 APK를 /sdcard/Download/Orbit-latest.apk에 복사하고 SHA-256 일치를 확인했다. 일반 빌드 명령에는 아래 ORBIT_NATIVE_RUNTIME_DIR을 반드시 포함한다.
+
+## 2026-09-17 개인비서 1차: 일정 생성·실행 기록 (현행)
+
+- 현행 `features/ai-chat`에서 날짜·시간·제목이 명확한 단일 일정 생성 요청을 연결했다. `scheduleActions: schedule-create-v1` capability가 있는 실행 환경에만 요청 문맥을 보내며 구형 환경은 대화를 유지하고 업데이트 필요를 표시한다.
+- 기존 `scheduleChatAction` 파서를 재사용한다. P1 일정 해석은 로컬 규칙으로 처리하며 추가 모델 호출을 하지 않는다. 오전/오후 질문은 10분 이내 같은 대화에서 이어갈 수 있다. 날짜/제목 누락, 반복, 첨부에서의 추출, 수정·삭제는 자동 실행 범위 밖이다. 일반 대화와 파일 도구는 기존 Codex 경로를 유지한다.
+- `features/assistant-actions`가 owner/실행 환경/요청별 영속 기록, 구조화 결과 대조, 중복 방지, 저장값 재조회, 7일 되돌리기와 재시작 복구를 담당한다. 사용자 수정 시 전체 내용 비교로 되돌리기를 거부한다. 저장 결과가 불명확한 중단은 확인 필요 상태로 남긴다.
+- 요청 등록은 네트워크 전송보다 먼저 한다. 동일 요청 재전송은 내용 지문으로 ID를 재사용하며 취소/복원 이후 늦은 결과와 과거 대화 열람은 실행하지 않는다. 실행 관리자는 앱 수준에 있어 AI 탭을 벗어나도 화면이 살아 있는 동안 결과를 처리한다. 앱 종료 중 AI 지속 실행 기능은 아니다.
+- 수동 일정과 AI는 `features/schedule/scheduleRepository.js`의 공통 저장·재조회 계약을 사용한다. 기존 정규화/읽기와 현재-session 저장 콜백은 `LifeHubApp`에서 연결한다. localStorage와 IndexedDB 복제의 다중 키 원자성을 새로 보장한 것은 아니다.
+- AI에 저장 결과/일정 열기/되돌리기 카드, 연결 상태, 접힌 모델 설정과 결과 접근성 안내를 추가했다. 홈에서 최근 일정 처리 결과를 확인한다. 생성 일정은 알림 없음이며 카드에 명시한다. 알림/반복은 기존 일정 화면에서 설정한다.
+- 새 실행 이력 키를 IndexedDB 복제 허용 목록에 추가했다. 생활 백업에는 실행 이력·되돌리기·AI 대화·workspace가 포함되지 않음을 설정에 표시한다. 백업 복원을 시작하면 기존 미완료 실행을 취소한다. 완료 기록은 최근 30일 이후 최소 중복 방지 표식으로 축약하며 2,000개 상한에 도달하면 새 실행 등록을 거부한다.
+- orbit-web-v69, Android 0.10.0-debug(51). 웹 321/321, 런타임 43/43, production build, Android Java compile/native smoke, capability/credential 검사 및 APK v1/v2/v3 서명을 통과했다. 경량 SDK에 없는 Lint는 문서화된 옵션으로 생략했다. 설치 후 키보드·TalkBack·실제 화면/업데이트 동작은 미검증이다.
 
 ## 2026-09-11 Codex 파일 쓰기 (현행)
 
@@ -287,6 +308,7 @@ npm --prefix apps/web run dev
 ```bash
 proot-distro login ubuntu -- bash -lc \
   'cd /data/data/com.termux/files/home/Project && \
+  ORBIT_NATIVE_RUNTIME_DIR=/data/data/com.termux/files/usr/tmp/orbit-native \
   ANDROID_HOME=/data/data/com.termux/files/home/.android-sdk-termux \
   ANDROID_SDK_ROOT=/data/data/com.termux/files/home/.android-sdk-termux \
   ANDROID_BUILD_TOOLS_DIR=/data/data/com.termux/files/usr/bin \

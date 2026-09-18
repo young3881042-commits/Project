@@ -4,6 +4,7 @@ export const ORBIT_DATABASE_STORE = 'records';
 export const ORBIT_STORAGE_STATUS_EVENT = 'orbit:storage-status';
 
 const DATA_KEY_PREFIXES = Object.freeze([
+  'orbit.assistant-actions:v1',
   'codex-ai-note-blocks',
   'codex-ai-note-boards',
   'codex-personal-scheduler-items',

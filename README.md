@@ -8,7 +8,7 @@
 | App | `apps/mobile/android` | Web 결과물을 포함하는 Android WebView 앱 |
 | API | `apps/api` | 선택형 Spring Boot API |
 
-Web과 Android App은 실행 방식이 다릅니다. UI를 수정·확인할 때는 Web 개발 서버를 사용하고, 실제 기기에서 확인할 때만 Android APK를 빌드합니다. 현재 제품에서는 운동·식단 기록, 음식 사진 AI 분석과 AI Bridge 연결 화면을 제공하지 않습니다.
+Web과 Android App은 실행 방식이 다릅니다. UI를 수정·확인할 때는 Web 개발 서버를 사용하고, 실제 기기에서 확인할 때만 Android APK를 빌드합니다. 현재 하단은 홈·일정·메모·가계부·AI 5탭입니다. Android 내장 AI는 대화·사진/문서 첨부·작업공간 파일 도구를 제공하며, 최신 실행 환경에서는 명확한 일정 생성 요청을 실제 생활 기록에 연결합니다. 여행·운동·식단과 구형 PC Bridge는 보류 상태입니다.
 
 ## 시작 전 준비
 
@@ -33,6 +33,7 @@ npm --prefix apps/web run dev -- --host 127.0.0.1 --port 5173
 
 브라우저에서 [http://127.0.0.1:5173/app](http://127.0.0.1:5173/app)을 엽니다.
 
+- AI 대화·일정 요청: `/ai`
 - 메모: `/memo`
 - 정기 결제: `/finance`
 - 설정·백업: `/more`
@@ -40,6 +41,8 @@ npm --prefix apps/web run dev -- --host 127.0.0.1 --port 5173
 홈에서는 일정·메모·지출을 바로 남길 수 있고, 월 달력의 날짜를 선택하면 그날의 일정과 메모를 함께 확인할 수 있습니다. 설정에서는 기기 데이터베이스 상태, 대략적인 사용량, 마지막 백업 시각을 확인합니다.
 
 메모는 데스크톱에서 좌측 폴더 사이드바, 모바일에서 폴더 서랍으로 관리합니다. 작성 화면은 일반 텍스트 입력 하나만 제공하고 폴더·제목·태그는 필요할 때 펼칩니다. `Ctrl/Command+Enter`로 저장할 수 있으며, 이전 rich 메모는 원본을 바꾸지 않고 텍스트 사본으로 편집할 수 있습니다.
+
+AI에서는 “내일 오전 9시 회의 등록해줘”처럼 날짜·시간·제목을 말하면 실제 저장 결과 카드가 표시됩니다. 오전/오후가 애매하면 먼저 질문하며, 등록 후 7일 안에 일정이 바뀌지 않았다면 되돌릴 수 있습니다. 이번 단계는 단일 일정 생성만 지원하고 알림·반복은 일정 화면에서 설정합니다. AI 실행 이력과 되돌리기 자료는 생활 기록 백업에 포함되지 않습니다.
 
 일정은 완료하지 않은 지난 날짜와 오늘 시간이 지난 항목을 `미완료`로 분류하며, 일정 화면·홈 달력·아침 브리핑에 같은 기준을 사용합니다. `예정` 목록은 날짜와 시간을 함께 표시합니다.
 
@@ -53,7 +56,10 @@ npm --prefix apps/web run dev -- --host 127.0.0.1 --port 5173
 
 Android App은 Web 개발 서버를 읽지 않고 현재 `apps/web/dist`를 APK에 포함합니다. 따라서 평소 UI 작업은 Web에서 확인하고, 기기 확인이 필요할 때만 APK를 빌드합니다.
 
+일반 Orbit APK에는 내장 AI 실행 파일이 필요합니다. `scripts/prepare_android_codex.py`로 준비한 비공개 runtime 폴더를 지정하세요. 빌드는 실행 파일·의존 라이브러리·TLS 인증서·라이선스 누락을 검사하며 Docker 실행에도 해당 폴더를 읽기 전용으로 전달합니다.
+
 ```bash
+export ORBIT_NATIVE_RUNTIME_DIR=/absolute/path/to/staged-orbit-runtime
 bash scripts/build_android_apk.sh
 
 adb install -r apps/mobile/android/release/ai-assitant-debug.apk

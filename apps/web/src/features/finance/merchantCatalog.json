@@ -1,0 +1,260 @@
+{
+  "version": 1,
+  "checkedAt": "2026-09-17",
+  "classificationBasis": "업체의 업종을 Orbit 기본 분류에 연결한 제안값이며 실제 구입 품목의 확인은 아님. 편의점/슈퍼는 쇼핑, 다이소는 기존 기타 정책 유지. 별칭은 검색용 정규화/표기 변형이며 실제 결제 알림 수집값이 아님.",
+  "brands": [
+    {
+      "name": "스타벅스",
+      "category": "커피",
+      "sector": "커피전문점",
+      "aliases": [
+        "스타벅스",
+        "starbucks"
+      ],
+      "source": "https://www.starbucks.co.kr/coffee/productFinder.do"
+    },
+    {
+      "name": "메가MGC커피",
+      "category": "커피",
+      "sector": "커피전문점",
+      "aliases": [
+        "메가MGC커피",
+        "메가커피",
+        "mega mgc coffee"
+      ],
+      "source": "https://www.mega-mgccoffee.com/"
+    },
+    {
+      "name": "이디야",
+      "category": "커피",
+      "sector": "커피전문점",
+      "aliases": [
+        "이디야커피",
+        "이디야",
+        "ediya"
+      ],
+      "source": "https://www.ediya.com/"
+    },
+    {
+      "name": "투썸플레이스",
+      "category": "커피",
+      "sector": "디저트 카페",
+      "aliases": [
+        "투썸플레이스",
+        "a twosome place",
+        "twosome place"
+      ],
+      "source": "https://dd-mo.twosome.co.kr/main.do?storeChk=Y"
+    },
+    {
+      "name": "할리스",
+      "category": "커피",
+      "sector": "커피전문점",
+      "aliases": [
+        "할리스커피",
+        "할리스",
+        "hollys"
+      ],
+      "source": "https://www.hollys.co.kr/"
+    },
+    {
+      "name": "빽다방",
+      "category": "커피",
+      "sector": "커피전문점",
+      "aliases": [
+        "빽다방",
+        "paik's coffee"
+      ],
+      "source": "https://paikdabang.com/"
+    },
+    {
+      "name": "커피빈",
+      "category": "커피",
+      "sector": "커피전문점",
+      "aliases": [
+        "커피빈",
+        "coffee bean",
+        "the coffee bean"
+      ],
+      "source": "https://www.coffeebeankorea.com/main/main.asp"
+    },
+    {
+      "name": "맥도날드",
+      "category": "식비",
+      "sector": "음식점",
+      "aliases": [
+        "맥도날드",
+        "mcdonald's",
+        "mcdonalds"
+      ],
+      "source": "https://www.mcdonalds.co.kr/kor/"
+    },
+    {
+      "name": "롯데리아",
+      "category": "식비",
+      "sector": "음식점",
+      "aliases": [
+        "롯데리아",
+        "lotteria"
+      ],
+      "source": "https://www.lotteeatz.com/brand/ria"
+    },
+    {
+      "name": "파리바게뜨",
+      "category": "식비",
+      "sector": "베이커리",
+      "aliases": [
+        "파리바게뜨",
+        "파리바게트",
+        "paris baguette"
+      ],
+      "source": "https://www.paris.co.kr/"
+    },
+    {
+      "name": "뚜레쥬르",
+      "category": "식비",
+      "sector": "베이커리",
+      "aliases": [
+        "뚜레쥬르",
+        "tous les jours"
+      ],
+      "source": "https://www.tlj.co.kr/index.asp"
+    },
+    {
+      "name": "배스킨라빈스",
+      "category": "식비",
+      "sector": "아이스크림",
+      "aliases": [
+        "배스킨라빈스",
+        "베스킨라빈스",
+        "baskin robbins"
+      ],
+      "source": "https://www.baskinrobbins.co.kr/"
+    },
+    {
+      "name": "써브웨이",
+      "category": "식비",
+      "sector": "음식점",
+      "aliases": [
+        "써브웨이",
+        "서브웨이",
+        "subway"
+      ],
+      "source": "https://www.subway.co.kr/"
+    },
+    {
+      "name": "홍콩반점",
+      "category": "식비",
+      "sector": "음식점",
+      "aliases": [
+        "홍콩반점0410",
+        "홍콩반점"
+      ],
+      "source": "https://www.theborn.co.kr/theborn-korea/footprints/"
+    },
+    {
+      "name": "역전우동",
+      "category": "식비",
+      "sector": "음식점",
+      "aliases": [
+        "역전우동0410",
+        "역전우동"
+      ],
+      "source": "https://www.theborn.co.kr/theborn-korea/footprints/"
+    },
+    {
+      "name": "CU",
+      "category": "쇼핑",
+      "sector": "편의점",
+      "aliases": [
+        "CU",
+        "씨유"
+      ],
+      "source": "https://cu.bgfretail.com/"
+    },
+    {
+      "name": "GS25",
+      "category": "쇼핑",
+      "sector": "편의점",
+      "aliases": [
+        "GS25",
+        "지에스25",
+        "지에스이십오"
+      ],
+      "source": "https://hpsimg.gsretail.com/gsretail/ko/intro/ceo-message"
+    },
+    {
+      "name": "GS THE FRESH",
+      "category": "쇼핑",
+      "sector": "슈퍼마켓",
+      "aliases": [
+        "GS THE FRESH",
+        "GS더프레시",
+        "지에스더프레시"
+      ],
+      "source": "https://hpsimg.gsretail.com/gsretail/ko/intro/ceo-message"
+    },
+    {
+      "name": "이마트24",
+      "category": "쇼핑",
+      "sector": "편의점",
+      "aliases": [
+        "이마트24",
+        "emart24"
+      ],
+      "source": "https://emart24.co.kr/"
+    },
+    {
+      "name": "세븐일레븐",
+      "category": "쇼핑",
+      "sector": "편의점",
+      "aliases": [
+        "세븐일레븐",
+        "7-eleven"
+      ],
+      "source": "https://www.7-eleven.co.kr/"
+    },
+    {
+      "name": "유니클로",
+      "category": "쇼핑",
+      "sector": "의류",
+      "aliases": [
+        "유니클로",
+        "uniqlo"
+      ],
+      "source": "https://www.uniqlo.com/kr/ko/"
+    },
+    {
+      "name": "다이소",
+      "category": "기타",
+      "sector": "생활용품; 기존 Orbit 기본 분류 유지",
+      "aliases": [
+        "다이소",
+        "아성다이소",
+        "daiso"
+      ],
+      "source": "https://www.daiso.co.kr/"
+    },
+    {
+      "name": "코레일",
+      "category": "교통",
+      "sector": "철도",
+      "aliases": [
+        "코레일",
+        "한국철도공사",
+        "korail"
+      ],
+      "source": "https://www.korail.com/"
+    },
+    {
+      "name": "SRT",
+      "category": "교통",
+      "sector": "철도",
+      "aliases": [
+        "SRT",
+        "에스알티"
+      ],
+      "source": "https://www.srail.or.kr/main.do"
+    }
+  ]
+}

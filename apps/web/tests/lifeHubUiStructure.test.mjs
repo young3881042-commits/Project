@@ -328,8 +328,8 @@ test('v55 경량 캐시는 거래 검색과 기존 생활 기록 화면을 포�
     source('src/features/home/HomePage.jsx')
   ]);
 
-  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v68'/);
-  assert.match(packageJson, /"test:lifehub-data": "node --test src\/features\/automation\/\*\.test\.js src\/features\/backup\/\*\.test\.js src\/features\/finance\/\*\.test\.js src\/features\/life-records\/\*\.test\.js src\/features\/travel\/\*\.test\.js src\/features\/ai-chat\/\*\.test\.js"/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'orbit-web-v70'/);
+  for (const feature of ['assistant-actions', 'schedule', 'automation', 'backup', 'finance', 'life-records', 'travel', 'ai-chat']) assert.ok(JSON.parse(packageJson).scripts['test:lifehub-data'].includes(`src/features/${feature}/*.test.js`));
   assert.match(packageJson, /"test": "npm run test:lifehub-ai && npm run test:lifehub-data/);
   assert.match(entryCss, /@import '\.\/styles\/lifehub-automation\.css'/);
   assert.match(entryCss, /@import '\.\/styles\/lifehub-backup\.css'/);
@@ -466,8 +466,8 @@ test('Android WebView는 Orbit 이름·중앙 O 아이콘과 내장 웹 버전 �
   assert.match(manifest, /android\.permission\.SCHEDULE_EXACT_ALARM/);
   assert.match(manifest, /android\.permission\.VIBRATE/);
   assert.match(manifest, /SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED/);
-  assert.match(manifest, /android:versionName="0\.9\.9-debug"/);
-  assert.match(manifest, /android:versionCode="50"/);
+  assert.match(manifest, /android:versionName="0\.10\.1-debug"/);
+  assert.match(manifest, /android:versionCode="52"/);
   assert.match(manifest, /android:name="\.FinanceNotificationListenerService"/);
   assert.match(manifest, /android:permission="android\.permission\.BIND_NOTIFICATION_LISTENER_SERVICE"/);
   assert.match(manifest, /android:name="android\.service\.notification\.NotificationListenerService"/);
@@ -573,7 +573,7 @@ test('생활 기록은 새 저장이 성공한 뒤에만 이전 데이터와 갱
   const workouts = sectionBetween(lifeHub, 'function saveWorkouts(', 'function normalizeTrip(');
   const trips = sectionBetween(lifeHub, 'function saveTrips(', 'function monthlyBudgetSummary(');
 
-  assert.match(schedules, /const saved = safeSetItem[\s\S]*if \(saved\) \{[\s\S]*safeRemoveItem\(SCHEDULER_KEY\)[\s\S]*emitDataChanged/);
+  assert.match(schedules, /return persistSchedules[\s\S]*write: normalized => safeSetItem[\s\S]*onSaved:[\s\S]*safeRemoveItem\(SCHEDULER_KEY\)[\s\S]*emitDataChanged/);
   assert.match(budget, /const saved = safeSetItem[\s\S]*if \(saved\) \{[\s\S]*safeRemoveItem\(BUDGET_KEY\)[\s\S]*emitDataChanged/);
   assert.match(workouts, /const saved = safeSetItem[\s\S]*if \(saved\) \{[\s\S]*safeRemoveItem\(WORKOUT_LOGS_KEY\)[\s\S]*emitDataChanged/);
   assert.match(trips, /const saved = safeSetItem[\s\S]*if \(saved\) emitDataChanged/);

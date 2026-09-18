@@ -236,6 +236,7 @@ export default function LifeHubBackupPanel({
         <div>
           <strong id="lifehub-backup-title">백업과 복원</strong>
           <p>일정·메모·가계부·정기 결제·여행 기록을 JSON 파일로 옮길 수 있어요.</p>
+          <p>AI 대화·작업공간 파일·실행 이력·되돌리기 자료는 포함되지 않아요. 대화는 AI 메뉴에서 별도로 내보내세요.</p>
         </div>
       </header>
       <div className={'lifeHubBackupHealth' + (health.due ? ' due' : '')} role="status">
